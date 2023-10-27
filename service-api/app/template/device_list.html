@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+{% set active_page = "devices" %}
+
+{% block content %}
+
+<div class="container-fluid p-3">
+
+  <script>
+      let api = new BrewLoggerAPI(window.location.origin, "{{ apikey }}");
+  </script>
+
+  <script>
+    function deleteConfimedCallback(id) {
+      api.deleteDevice(id, function(json, status) { console.log("Delete completed", json, status); location.reload(); } );
+    }
+  </script>
+
+  <h1 class="h1">Device list</h1>
+
+  <div class="row mb-2">
+    <div class="col-sm-1 list-header">ID</div>
+    <div class="col-sm-2 list-header">MDNS</div>
+    <div class="col-sm-1 list-header">Chip ID</div>
+    <div class="col-sm-2 list-header">Chip Family</div>
+    <div class="col-sm-2 list-header">Software</div>
+    <div class="col-sm-2 list-header">Action</div>
+  </div>
+
+  {% for device in device_list %}
+  <div class="row mb-2">
+    <div class="col-sm-1 {{ loop.cycle('row-odd', 'row-even') }}">{{ device.id }}</div>
+    <div class="col-sm-2 {{ loop.cycle('row-odd', 'row-even') }}">{{ device.mdns }}</div>
+    <div class="col-sm-1 {{ loop.cycle('row-odd', 'row-even') }}">{{ device.chip_id }}</div>
+    <div class="col-sm-2 {{ loop.cycle('row-odd', 'row-even') }}">{{ device.chip_family }}</div>
+    <div class="col-sm-2 {{ loop.cycle('row-odd', 'row-even') }}">{{ device.software }}</div>
+    <div class="col-sm-2">
+      <button type="button" class="btn btn-primary btn-sm" onclick="window.location='/html/device/{{ device.id }}?func=edit'"><i class="bi bi-pencil-square"></i></button>
+      <button type="button" class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#confirm-delete-modal" data-bs-value="{{ device.mdns }}" data-bs-callback="deleteConfimedCallback" data-bs-id="{{ device.id }}"><i class="bi bi-file-x"></i></button>
+      <button type="button" class="btn btn-info btn-sm" onclick="window.location='/html/device/{{ device.id }}?func=view'"><i class="bi bi-eye"></i></button>
+    </div>
+  </div>
+  {% endfor %}
+
+  <div class="row mb-2">
+    <div class="col-sm-5">
+      <button type="button" class="btn btn-primary" onclick="event.preventDefault(); window.location.href='/html/device/0?func=create'">Add new device</button>
+    </div>
+  </div>
+</div>
+
+{% endblock %}

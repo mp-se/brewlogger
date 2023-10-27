@@ -1,0 +1,146 @@
+{% extends "base.html" %}
+{% set active_page = "batches" %}
+
+{% block content %}
+
+<div class="container-fluid p-3">
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns@3.0.0/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom@2.0.1/dist/chartjs-plugin-zoom.min.js"></script>
+  
+  <h1 class="h1">Batch - {{ batch.name }} - Graph</h1>
+
+  <div class="row mb-2">
+    <div class="col-sm-1 list-header">ID</div>
+    <div class="col-sm-2 list-header">Name</div>
+    <div class="col-sm-2 list-header">Chip ID</div>
+    <div class="col-sm-2 list-header">Brew date</div>
+    <div class="col-sm-5 list-header">Active</div>
+  </div>
+
+  <div class="row mb-2">
+    <div class="col-sm-1">{{ batch.id }}</div>
+    <div class="col-sm-2">{{ batch.name }}</div>
+    <div class="col-sm-2">{{ batch.chip_id }}</div>
+    <div class="col-sm-2">{{ batch.brew_date }}</div>
+    <div class="col-sm-5">{{ batch.active }}</div>
+  </div>
+
+  <div class="row mb-2">
+    <div class="col-sm-1 list-header"></div>
+    <div class="col-sm-2 list-header">FG</div>
+    <div class="col-sm-2 list-header">OG</div>
+    <div class="col-sm-2 list-header">Est. ABV</div>
+    <div class="col-sm-5 list-header"></div>
+  </div>
+
+  <div class="row mb-2">
+    <div class="col-sm-1"></div>
+    <div class="col-sm-2">{{ "%0.4f" | format(calc.fg) }}</div>
+    <div class="col-sm-2">{{ "%0.4f" | format(calc.og) }}</div>
+    <div class="col-sm-2">{{ "%0.2f" | format(calc.fg) }} %</div>
+    <div class="col-sm-5"></div>
+  </div>
+
+  <hr>
+
+  <canvas id="batchChart"></canvas>
+
+  <script>
+    // Data arrays for chart
+    const data = {
+      datasets: [{
+        label: "Gravity",
+        data: [
+          {% for gravity in batch.gravity %}
+          { x: "{{ gravity.created }}", y: {{ gravity.gravity }} },
+          {% endfor %}
+        ],
+        yAxisID: 'y1',
+      },
+      { 
+        label: "Temperature",
+        data: [
+        {% for gravity in batch.gravity %}
+        { x: "{{ gravity.created }}", y: {{ gravity.temperature }} },
+        {% endfor %}
+        ],
+        yAxisID: 'y2',
+      },{
+        label: "Battery",
+        data: [
+          {% for gravity in batch.gravity %}
+          { x: "{{ gravity.created }}", y: {{ gravity.battery }} },
+          {% endfor %}
+        ],
+        yAxisID: 'y3',
+      }]
+    };
+
+    const config = {
+      type: 'line',
+      data,
+      options: {
+        scales: {
+          x: {
+            type: 'time',
+            time: {
+              unit: 'hour',
+            },
+          },
+          y1: {
+            type: 'linear',
+            position: 'left',
+            title: {
+              display: true,
+              text: 'Gravity',
+            },
+          },
+          y2: {
+            type: 'linear',
+            position: 'right',
+            title: {
+              display: true,
+              text: 'Temperataure',
+            },
+          },
+          y3: {
+            type: 'linear',
+            position: 'right',
+            title: {
+              display: true,
+              text: 'Voltage',
+            },
+          }
+        },
+        plugins: {
+          zoom: {
+            pan: {
+              enabled: true,
+              mode: 'x',
+              modifierKey: 'ctrl',
+            },
+            zoom: {
+              drag: {
+                enabled: true
+              },
+              mode: 'x',
+            },            
+          }
+        },
+      }
+    };
+
+    var chart = new Chart(document.getElementById('batchChart'), config);
+  </script>
+
+  <div class="row mb-2">
+    <div class="col-sm-4">
+      <button type="button" class="btn btn-primary" onclick="chart.resetZoom()">Reset Zoom</button>
+    </div>
+  </div>
+
+</div>
+
+{% endblock %}

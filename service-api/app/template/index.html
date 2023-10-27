@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% set active_page = "index" %}
+
+{% block content %}
+
+<div class="p-3"> 
+  <h1>Brew logger</h1>
+  <p>Welcome to brewlogger, a tool for collecting logging data from GravityMon, iSpindle and KegMon software.</p>
+
+  <p>I built this project since I needed to collect data from my devices and use that to analyse their performance. Its built using 
+    a standard REST API for managing data with a Web/Javascript frontend to display data.</p>
+
+  <h2>Start logging on GravityMon</h2>
+  <p>Use the default settings and start logging data to <b>http://server-hostname/api/gravity/ispindel</b>.</p>
+</div>
+
+{% endblock %}

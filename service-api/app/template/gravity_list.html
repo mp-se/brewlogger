@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% set active_page = "gravity" %}
+
+{% block content %}
+
+<div class="container-fluid p-3">
+
+  <h1 class="h1">Gravity list</h1>
+
+  <div class="row mb-2">
+    <div class="col-sm-1 list-header">ID</div>
+    <div class="col-sm-2 list-header">Chip ID</div>
+    <div class="col-sm-2 list-header">Created</div>
+    <div class="col-sm-2 list-header">Gravity</div>
+    <div class="col-sm-2 list-header">Temperature</div>
+    <div class="col-sm-2 list-header">Battery</div>
+  </div>
+
+  {% for gravity in gravity_list %}
+  <div class="row mb-2">
+    <div class="col-sm-1 {{ loop.cycle('row-odd', 'row-even') }}">{{ gravity.id }}</div>
+    <div class="col-sm-2 {{ loop.cycle('row-odd', 'row-even') }}">{{ gravity.chip_id }}</div>
+    <div class="col-sm-2 {{ loop.cycle('row-odd', 'row-even') }}">{{ gravity.created }}</div>
+    <div class="col-sm-2 {{ loop.cycle('row-odd', 'row-even') }}">{{ "%0.4f" | format(gravity.gravity) }} {{ gravity.gravity_units }}</div>
+    <div class="col-sm-2 {{ loop.cycle('row-odd', 'row-even') }}">{{ "%0.2f" | format(gravity.temperature) }} {{ gravity.temp_units }}</div>
+    <div class="col-sm-2 {{ loop.cycle('row-odd', 'row-even') }}">{{ "%0.2f" | format(gravity.battery) }} V</div>
+  </div>
+  {% endfor %}
+
+</div>
+
+{% endblock %}

@@ -1,0 +1,8 @@
+.env/*
+.venv/*
+.eggs/
+.pytest_cache/
+src/kegmon_api.egg-info/
+*.sqlite
+*__pycache__
+*.pyc

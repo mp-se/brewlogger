@@ -1,0 +1,44 @@
+import logging
+from fastapi import Depends, Request
+from fastapi.routing import APIRouter
+from fastapi.responses import HTMLResponse
+from api.db.session import engine
+from sqlalchemy import text
+from ..security import api_key_auth
+from ..config import get_template, get_settings
+
+logger = logging.getLogger(__name__)
+
+router = APIRouter(prefix="/html/test")
+
+@router.delete(
+    "/cleardb",
+    status_code=204,
+    dependencies=[Depends(api_key_auth)])
+async def delete_all_records_from_databas():
+    with engine.connect() as con:
+        con.execute(text('DELETE FROM gravity'))
+        con.execute(text('DELETE FROM pour'))
+        con.execute(text('DELETE FROM device'))
+        con.execute(text('DELETE FROM batch'))
+        con.commit()
+
+@router.get(
+    "/get",
+    status_code=200)
+async def return_json_payload_using_get():
+    return { "test": "test", "test2": "test2" }
+
+@router.post(
+    "/post",
+    status_code=200)
+async def test_return_json_payload_using_post():
+    return { "test": "test", "test2": "test2" }
+
+@router.get("/unit/", response_class=HTMLResponse)
+async def html_unit_tests(request: Request):
+    return get_template().TemplateResponse("unit_test.html", {"request": request, "apikey": get_settings().api_key })
+
+@router.get("/scripts/", response_class=HTMLResponse)
+async def html_scripts(request: Request):
+    return get_template().TemplateResponse("script_test.html", {"request": request, "apikey": get_settings().api_key })

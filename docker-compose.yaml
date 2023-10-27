@@ -1,0 +1,51 @@
+version: "3.8"
+
+services:
+  web:
+    build: service-web
+    restart: always
+    ports:
+      - 8080:8080
+    depends_on:
+      - api
+      
+  api:
+    build: service-api
+    restart: always
+    ports:
+      - 8000:80
+    environment:
+     - API_KEY=akljnv13bvi2vfo0b0bw789jlljsdf
+     - DATABASE_URL=postgresql://postgres:password@db:5432/app
+     #- DATABASE_URL=sqlite:///./kegmonapi.sqlite
+     - API_KEY_ENABLED=1
+     - TEST_ENDPOINTS_ENABLED=1
+
+  db:
+    image: postgres:14
+    restart: always
+    ports:
+      - "5433"
+    volumes:
+      - pg-data:/var/lib/postgresql/data/pgdata
+    environment:  # 4
+      - PGDATA=/var/lib/postgresql/data/pgdata
+      - POSTGRES_SERVER=db
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=password
+      - POSTGRES_DB=app
+
+  pgadmin:
+      image: dpage/pgadmin4
+      restart: always
+      environment:
+        PGADMIN_DEFAULT_EMAIL: admin@admin.com
+        PGADMIN_DEFAULT_PASSWORD: root
+      ports:
+        - "5050:80"
+      volumes:
+        - pgadmin-data:/var/lib/pgadmin
+
+volumes:
+  pg-data:      
+  pgadmin-data:

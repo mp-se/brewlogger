@@ -1,0 +1,195 @@
+{% extends "base.html" %}
+{% set active_page = "settings" %}
+
+{% block content %}
+
+<div class="container-fluid p-3">
+
+  {% include 'notice.j2' %}
+
+  <script>
+      let api = new BrewLoggerAPI(window.location.origin, "{{ apikey }}");
+  </script>
+
+  <h1 class="h1">Settings</h1>
+
+  <hr>
+
+  <div class="row mb-2">
+    <div class="col-sm-3">Backup</div>
+    <div class="col-sm-5">
+      <button type="button" class="btn btn-primary" onclick="backup()">Backup data</button>
+    </div>
+  </div>
+
+  <hr>
+
+  <form id="uploadForm" enctype="multipart/form-data">
+    <div class="row mb-2">
+      <div class="col-sm-3">Restore</div>
+        <div class="col-sm-5 custom-file">
+          <input type="file" accept=".txt" id="name" class="custom-file-input">
+        </div>
+      </div>
+
+      <!--
+      <div class="row mb-2">
+        <div class="col-sm-3"></div>
+        <div class="col-sm-5 progress">
+          <div class="progress-bar" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
+        </div>
+      </div>-->
+    
+      <div class="row mb-2">
+        <div class="col-sm-3"></div>
+        <div class="col-sm-5">
+          <button type="submit" class="btn btn-primary" value="upload">Restore data</button>
+        </div>
+      </div>
+  </form>
+
+  <script>
+
+    form = document.getElementById('uploadForm');
+    form.addEventListener("submit", function(e) {
+      console.log("Event handler");
+      e.preventDefault();
+
+      records = {{ records }};
+
+      if( (records) != 0) {
+        showError("Database is not empty, unable to do restore.")
+        return;
+      }
+
+      const fileElement = document.getElementById('name');
+
+      if(fileElement.files.length === 0) {
+        showError("You need to select one file to restore configuration from");
+      } else {
+        console.log( "Selected file: " + fileElement.files[0].name );
+
+        let reader = new FileReader();
+       
+        reader.addEventListener('load', function(e) {
+          let text = e.target.result;
+            
+          try {
+            json = JSON.parse( text );
+
+            if( json["meta"]["software"] != "BrewLogger" ) {
+              showError("Invalid configuration file.");
+            } else {
+              console.log( json );
+
+              json["devices"].forEach(device => {
+                api.addDevice(device, function(json, status) { console.log("Added devices."); 
+              })});
+
+              json["batches"].forEach(batch => {
+                api.addBatch(batch, function(json, status) { console.log("Added batches."); 
+              })});              
+
+              json["gravities"].forEach(gravity => {
+                api.addGravity(gravity, function(json, status) { console.log("Added gravities."); 
+              })});              
+            }
+          } catch (error) {
+            console.error(error);
+            showError("Unable to parse configuration file.")
+          } 
+
+        });
+
+        reader.readAsText(fileElement.files[0]);
+      }
+
+    });
+
+    function updateProgress() {
+      progress = progress + (100/1); // In total 1 steps to do restore
+      $('.progress-bar').css('width', progress+'%').attr('aria-valuenow', progress).text(parseFloat(progress).toFixed(0) + "%");
+    }
+
+    async function restore() {
+      console.log("Restoring data");
+    }
+
+    async function backup() {
+      console.log("Creating backup of data");
+
+      backup = {};
+      var meta = {};
+      var batches = [];
+      var devices = [];
+      var gravities = [];
+      meta["version"] = "0.1";
+      meta["software"] = "BrewLogger";
+      backup["meta"] = meta;
+
+      //api.setDebug(true);
+
+      b = api.getBatchList(function(json, status) { batches = json; console.log("Fetched batches."); });
+      d = api.getDeviceList(function(json, status) { devices = json; console.log("Fetched devices."); });
+      g = api.getGravityList(function(json, status) { gravities = json; console.log("Fetched gravities."); });
+
+      Promise.all([b,d,g]).then( function() {
+        console.log("Creating backup file");
+
+        batches.forEach(batch => {
+          delete batch.gravity; // We dont need the data here, this is just a subset. 
+          delete batch.pour; // We dont need the data here, this is just a subset. 
+        });
+
+        backup["batches"] = batches;
+        backup["devices"] = devices;
+        backup["gravities"] = gravities;
+
+        var s = JSON.stringify(backup, null, 2);
+        console.log(s);
+        download(s, "text/plain", "brewlogger_backup.txt");
+      });
+
+    }
+
+    function download(content, mimeType, filename) {
+      const a = document.createElement('a') 
+      const blob = new Blob([content], {type: mimeType}) 
+      const url = URL.createObjectURL(blob) 
+      a.setAttribute('href', url) 
+      a.setAttribute('download', filename) 
+      a.click()
+    }
+  </script>
+
+  {% if testendpoints == True %}
+
+  <hr>
+
+  <div class="row mb-2">
+    <div class="col-sm-3">Unit Tests</div>
+    <div class="col-sm-5">
+      <button type="button" class="btn btn-primary" onclick="event.preventDefault(); window.location.href='/html/test/unit/'">Run javascript unit tests</button>
+    </div>
+  </div>
+
+  <div class="row mb-2">
+    <div class="col-sm-3">Generate data</div>
+    <div class="col-sm-9">
+      <button type="button" class="btn btn-info" onclick="deleteDatabase()">Delete all records</button>
+      <button type="button" class="btn btn-info" onclick="generateDeviceData()">Generate devices</button>
+      <button type="button" class="btn btn-info" onclick="generateBatches()">Generate batches</button>
+      <button type="button" class="btn btn-info" onclick="generateGravityData(50)">Generate gravity</button>
+      <button type="button" class="btn btn-info" onclick="ispindelSimulation()">Simulate iSpindel</button>
+      <button type="button" class="btn btn-info" onclick="location.reload()">Reload</button>
+    </div>
+
+  </div>
+
+  {% include 'tests.j2' %}
+
+  {% endif%}
+
+</div>
+
+{% endblock %}

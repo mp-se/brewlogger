@@ -1,0 +1,12 @@
+<script>
+  function validateChipId() {
+    let regex = /^([0-9,a-f]){6}$/;
+    let chipId = document.getElementById("chip_id");      
+    
+    if (regex.test(chipId.value)) {
+      chipId.classList.remove("is-invalid");
+    } else {
+      chipId.classList.add("is-invalid");
+    }
+  }
+</script>

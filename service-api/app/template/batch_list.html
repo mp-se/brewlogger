@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+{% set active_page = "batches" %}
+
+{% block content %}
+
+<div class="container-fluid p-3">
+
+  <script>
+      let api = new BrewLoggerAPI(window.location.origin, "{{ apikey }}");
+  </script>
+
+  <script>
+    function deleteConfimedCallback(id) {
+      api.deleteBatch(id, function(json, status) { console.log("Delete completed", json, status); location.reload(); } );
+    }
+  </script>
+
+  <h1 class="h1">Batch list</h1>
+
+  <div class="row mb-2">
+    <div class="col-sm-1 list-header">ID</div>
+    <div class="col-sm-2 list-header">Name</div>
+    <div class="col-sm-1 list-header">Chip ID</div>
+    <div class="col-sm-2 list-header">Brew date</div>
+    <div class="col-sm-2 list-header">Gravity readings</div>
+    <div class="col-sm-1 list-header">Active</div>
+    <div class="col-sm-2 list-header">Action</div>
+  </div>
+
+  {% for batch in batch_list %}
+  <div class="row mb-2">
+    <div class="col-sm-1 {{ loop.cycle('row-odd', 'row-even') }}">{{ batch.id }}</div>
+    <div class="col-sm-2 {{ loop.cycle('row-odd', 'row-even') }}">{{ batch.name }}</div>
+    <div class="col-sm-1 {{ loop.cycle('row-odd', 'row-even') }}">{{ batch.chip_id }}</div>
+    <div class="col-sm-2 {{ loop.cycle('row-odd', 'row-even') }}">{{ batch.brew_date }}</div>
+    <div class="col-sm-2 {{ loop.cycle('row-odd', 'row-even') }}">{{ batch.gravity|length }}</div>
+    <div class="col-sm-1 {{ loop.cycle('row-odd', 'row-even') }}">{{ batch.active }}</div>
+    <div class="col-sm-2">
+      <button type="button" class="btn btn-primary btn-sm" onclick="window.location='/html/batch/{{ batch.id }}?func=edit'"><i class="bi bi-pencil-square"></i></button>
+      <button type="button" class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#confirm-delete-modal" data-bs-value="{{ batch.name }}" data-bs-callback="deleteConfimedCallback" data-bs-id="{{ batch.id }}"><i class="bi bi-file-x"></i></button>
+      <button type="button" class="btn btn-info btn-sm" onclick="window.location='/html/batch/{{ batch.id }}?func=view'"><i class="bi bi-eye"></i></button>
+      {% if batch.gravity|length > 0 %}
+      <button type="button" class="btn btn-success btn-sm" onclick="window.location='/html/batch/{{ batch.id }}?func=graph'"><i class="bi bi-graph-down-arrow"></i></button>
+      {% endif %}
+    </div>
+  </div>
+  {% endfor %}
+
+  <div class="row mb-2">
+    <div class="col-sm-5">
+      <button type="button" class="btn btn-primary" onclick="event.preventDefault(); window.location.href='/html/batch/0?func=create'">Add new batch</button>
+    </div>
+  </div>
+</div>
+
+{% endblock %}

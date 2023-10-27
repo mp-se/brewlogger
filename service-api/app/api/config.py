@@ -1,0 +1,31 @@
+from functools import lru_cache
+from pydantic_settings import BaseSettings
+from starlette.config import Config
+from fastapi.templating import Jinja2Templates
+import logging
+
+logger = logging.getLogger(__name__)
+config = Config()
+
+class Settings(BaseSettings):
+    app_name: str = "BrewLogger API"
+    database_url: str = config("DATABASE_URL", cast=str, default="sqlite:///./kegmonapi.sqlite")
+    api_key: str = config("API_KEY", cast=str, default="MySecretKey")
+    api_key_enabled: bool = config("API_KEY_ENABLED", cast=bool, default=True)
+    test_endpoints_enabled: bool = config("TEST_ENDPOINTS_ENABLED", cast=bool, default=False)
+    version: str = "0.1.0"
+
+    logger.info("db_url: %s", database_url)
+    logger.info("api_key: %s", api_key)
+    logger.info("api_key_enabled: %s", api_key_enabled)
+    logger.info("test_endpoints_enabled: %s", test_endpoints_enabled)
+
+@lru_cache
+def get_settings() -> Settings:
+    settings = Settings()
+    return settings
+
+@lru_cache
+def get_template() -> Jinja2Templates:
+    template = Jinja2Templates(directory="template")
+    return template

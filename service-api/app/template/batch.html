@@ -1,0 +1,150 @@
+{% extends "base.html" %}
+{% set active_page = "batches" %}
+
+{% block content %}
+
+<div class="container-fluid p-3">
+
+  <script>
+      let api = new BrewloggerAPI(window.location.origin, "{{ apikey }}");
+  </script>
+
+  {% if func == 'view' %}
+    <h1 class="h1">Batch - {{ batch.name }} - View</h1>
+    {% set readonly = 'readonly' %}
+  {% elif func == 'create' %}
+    <h1 class="h1">Batch - Create new</h1>
+    {% set readonly = '' %}
+  {% else %}
+    <h1 class="h1">Batch - {{ batch.name }} - Edit</h1>
+    {% set readonly = '' %}
+  {% endif %}
+
+  <form>
+    <div class="row mb-2">
+      <div class="col-sm-2 col-form-label">Name:</div>
+      <div class="col-sm-3"><input type="text" maxlength="40" class="form-control" id="name" value="{{ batch.name }}" placeholder="Name of batch" {{ readonly }}></div>
+    </div>
+    <div class="row mb-2">
+
+      <!-- TODO: Convert this to a drown-down list of valid ChipID -->
+
+    <div class="col-sm-2 col-form-label">Chip ID:</div>
+
+      <div class="col-sm-3">
+        <select class="form-select" id="chip_id"{{ readonly }}> 
+          {% for device in device_list %}
+          <option value="{{ device.chip_id }}" {% if batch.chip_id == device.chip_id %} selected{% endif %}>{{ device.chip_id }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <!--
+      <div class="col-sm-3"><input type="text" maxlength="6" class="form-control" id="chip_id" value="{{ batch.chip_id }}" {{ readonly }}></div>
+      -->
+    </div>
+    <div class="row mb-2">
+      <div class="col-sm-2 col-form-label">Description:</div>
+      <div class="col-sm-7"><input type="text" maxlength="80" class="form-control" id="description" value="{{ batch.description }}" placeholder="Short description" {{ readonly }}></div>
+    </div>
+    <div class="row mb-2">
+      <div class="col-sm-2 col-form-label">Brew date:</div>
+      <div class="col-sm-3"><input type="date" class="form-control" id="brew_date" value="{{ batch.brew_date }}" {{ readonly }}></div>
+    </div>
+    <div class="row mb-2">
+      <div class="col-sm-2 col-form-label">Style:</div>
+      <div class="col-sm-3"><input type="text" maxlength="20" class="form-control" id="style" value="{{ batch.style }}" placeholder="Beerstyle" {{ readonly }}></div>
+    </div>
+    <div class="row mb-2">
+      <div class="col-sm-2 col-form-label">Brewer:</div>
+      <div class="col-sm-7"><input type="text" class="form-control" id="brewer" value="{{ batch.brewer }}" placeholder="brewer" {{ readonly }}></div>
+    </div>
+    <div class="row mb-2">
+      <div class="col-sm-2 col-form-label">Brewfather ID:</div>
+      <div class="col-sm-7"><input type="text" class="form-control" id="brewfather_id" value="{{ batch.brewfather_id }}" {{ readonly }}></div>
+    </div>
+    <div class="row mb-2">
+      <div class="col-sm-2 col-form-label">ABV:</div>
+      <div class="col-sm-3"><input type="number" step="0.01" min="0.00" max="30.00" class="form-control" id="abv" value="{{ batch.abv }}"  {{ readonly }}></div>
+    </div>
+    <div class="row mb-2">
+      <div class="col-sm-2 col-form-label">EBC:</div>
+      <div class="col-sm-3"><input type="number" step="0.01" min="0.00" max="30.00" class="form-control" id="ebc" value="{{ batch.ebc }}" {{ readonly }}></div>
+    </div>
+    <div class="row mb-2">
+      <div class="col-sm-2 col-form-label">IBU:</div>
+      <div class="col-sm-3"><input type="number" step="0.01" min="0.00" max="30.00" class="form-control" id="ibu" value="{{ batch.ibu }}" {{ readonly }}></div>
+    </div>
+    <div class="row mb-2">
+      <div class="col-sm-2 col-form-label">Active:</div>
+      <div class="col-sm-3 py-1"><input type="checkbox" class="form-check-input" id="active" {% if batch.active %} checked {% endif %} {% if readonly %} disabled {% endif %} ></div>
+    </div>
+
+    <div class="row mb-2">
+      <div class="col-sm-2 col-form-label"></div>
+      <div class="col-sm-4 col-form-label">
+      {% if func == 'edit' %}
+        <button type="button" class="btn btn-primary" onclick="saveBatch()">Save</button>
+        <button type="button" class="btn btn-secondary" onclick="window.location.reload()">Cancel</button>
+      {% endif %}
+      {% if func == 'create' %}
+        <button type="button" class="btn btn-primary" onclick="createBatch()">Create</button>
+      {% endif %}
+        <button type="button" class="btn btn-secondary" onclick="event.preventDefault(); window.location.href='/html/batch/'">List</button>
+     </div>
+    </div>
+
+    <script>
+      function saveBatch() {
+        json = {
+          "name": document.getElementById("name").value,
+          "chipId": document.getElementById("chip_id").value,
+          "description": document.getElementById("description").value,
+          "brewDate": document.getElementById("brew_date").value,
+          "style": document.getElementById("style").value,
+          "brewer": document.getElementById("brewer").value,
+          "brewfatherId": document.getElementById("brewfather_id").value,
+          "active": document.getElementById("active").checked ? true : false,
+          "abv": Number(document.getElementById("abv").value),
+          "ebc": Number(document.getElementById("ebc").value),
+          "ibu": Number(document.getElementById("ibu").value)
+        };
+      
+        console.log("Updating data: " + JSON.stringify(json));
+
+        api.updateBatch({{ batch.id }}, json, function(json, status) { 
+          if(status != 200)
+            showHttpError(status);
+        });
+      }
+
+      function createBatch() {
+        json = {
+          "name": document.getElementById("name").value,
+          "chipId": document.getElementById("chip_id").value,
+          "description": document.getElementById("description").value,
+          "brewDate": document.getElementById("brew_date").value,
+          "style": document.getElementById("style").value,
+          "brewer": document.getElementById("brewer").value,
+          "brewfatherId": document.getElementById("brewfather_id").value,
+          "active": document.getElementById("active").checked ? true : false,
+          "abv": Number(document.getElementById("abv").value),
+          "ebc": Number(document.getElementById("ebc").value),
+          "ibu": Number(document.getElementById("ibu").value)
+        };
+
+        console.log("Adding data: " + JSON.stringify(json));
+
+        api.addBatch(json, function(json, status) { 
+          if(status != 201)
+            showHttpError(status);
+          else 
+            window.location.href = "/html/batch/" + json["id"] + "?func=edit";
+        });
+      }
+    </script>
+
+  </form>
+</div>
+
+{% endblock %}

@@ -1,0 +1,185 @@
+{% extends "base.html" %}
+{% set active_page = "devices" %}
+
+{% block content %}
+
+<div class="container-fluid p-3">
+
+  {% include 'notice.j2' %}
+
+  <script>
+      let api = new BrewLoggerAPI(window.location.origin, "{{ apikey }}");
+  </script>
+
+  {% if func == 'view' %}
+    <h1 class="h1">Device - {{ device.chip_id }} - View</h1>
+    {% set readonly = 'readonly' %}
+  {% elif func == 'create' %}
+    <h1 class="h1">Device - Create new</h1>
+    {% set readonly = '' %}
+  {% else %}
+    <h1 class="h1">Device - {{ device.chip_id }} - Edit</h1>
+    {% set readonly = '' %}
+  {% endif %}
+
+  <form id="form" class="">
+    <div class="row mb-2">
+      <div class="col-sm-2 col-form-label">Chip ID:</div>
+      {% if func == 'create' %}
+      <div class="col-sm-3"><input type="text" maxlength="6" class="form-control is-invalid" id="chip_id" value="{{ device.chip_id }}" placeholder="Ex: ab0125" required></div>
+      <div class="invalid-feedback">
+        ChipID must be a 6 letter string using only 0-9,A-F characters, example: 01A2B3.
+      </div>
+      {% else %}
+      <div class="col-sm-3"><div class="form-control">{{ device.chip_id }}</div></div>
+      {% endif %}
+    </div>
+    <div class="row mb-2">
+      <div class="col-sm-2 col-form-label">MDNS:</div>
+      <div class="col-sm-3"><input type="text" maxlength="40" class="form-control" id="mdns" value="{{ device.mdns }}" {{ readonly }}></div>
+    </div>
+    <div class="row mb-2">
+      <div class="col-sm-2 col-form-label">Chip Family:</div>
+      <div class="col-sm-3">
+        <select class="form-select" id="chip_family"{{ readonly }}> 
+
+          {% set chip_list = [
+            'unknown',
+            'esp8266',
+            'esp32',
+            'esp32c3',
+            'esp32s2',
+            'esp32s3',
+          ] -%}
+
+          {% for chip in chip_list %}
+          <option value="{{ chip }}" {% if chip == device.chip_family %} selected{% endif %}>{{ chip }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <!--
+      <div class="col-sm-4"><input type="text" maxlength="10" class="form-control" id="chip_family" value="{{ device.chip_family }}" {{ readonly }}></div>
+      -->
+    </div>
+    <div class="row mb-2">
+      <div class="col-sm-2 col-form-label">Software:</div>
+
+      <div class="col-sm-3">
+        <select class="form-select" id="software"{{ readonly }}> 
+
+          {% set software_list = [
+            'unknown',
+            'Kegmon',
+            'Gravitymon',
+            'iSpindel',
+          ] -%}
+
+          {% for software in software_list %}
+          <option value="{{ software }}"{% if software == device.software %} selected{% endif %}>{{ software }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <!--
+      <div class="col-sm-4"><input type="text" maxlength="40" class="form-control" id="software" value="{{ device.software }}" {{ readonly }}></div>
+      -->
+    </div>
+    <div class="row mb-2">
+      <div class="col-sm-2 col-form-label">Device URL:</div>
+      <div class="col-sm-7"><input type="url" maxlength="80" class="form-control" id="url" value="{{ device.url }}" placeholder="http://devicename.local" {{ readonly }}></div>
+      <div class="col-sm-2"><button type="button" class="btn btn-secondary btn-sm" onclick="fetchConfigFromDevice()"><i class="bi bi-box-arrow-down"></i></button></div>
+    </div>
+    <div class="row mb-2">
+      <div class="col-sm-2 col-form-label">Config:</div>
+      <div class="col-sm-7"><input type="text" class="form-control" id="config" value="{{ device.config }}" placeholder="Will be fetched from device" readonly></div>
+    </div>
+
+    <div class="row mb-2">
+      <div class="col-sm-2 col-form-label"></div>
+      <div class="col-sm-4 col-form-label">
+      {% if func == 'edit' %}
+        <button type="button" class="btn btn-primary" onclick="saveDevice()">Save</button>
+        <button type="button" class="btn btn-secondary" onclick="window.location.reload()">Cancel</button>
+      {% endif %}
+      {% if func == 'create' %}
+        <button type="button" class="btn btn-primary" onclick="createDevice()">Create</button>
+      {% endif %}
+        <button type="button" class="btn btn-secondary" onclick="event.preventDefault(); window.location.href='/html/device/'">List</button>
+     </div>
+    </div>
+
+    {% include 'validators.j2' %}
+
+    <script>
+      let chipId = document.getElementById("chip_id");
+      
+      if(chipId != null) {
+        chipId.addEventListener("keyup", () => {
+          validateChipId();
+        });        
+      }
+
+      function fetchConfigFromDevice() {
+        //api.setDebug(true);
+        api.proxyFetch(document.getElementById("url").value + "/api/config", function(json, status) { 
+          if(status != 200) {
+            showHttpError(status);
+          } else {
+            document.getElementById("config").value = JSON.stringify(json);
+          }
+        });
+      }
+
+      function saveDevice() {
+        json = {
+          "chipFamily": document.getElementById("chip_family").value,
+          "software": document.getElementById("software").value,
+          "mdns": document.getElementById("mdns").value,
+          "config": document.getElementById("config").value,
+          "url": document.getElementById("url").value
+        };
+
+        console.log("Updating data: " + JSON.stringify(json));
+
+        api.updateDevice({{ device.id }}, json, function(json, status) { 
+          if(status != 200)
+            showHttpError(status);
+        });
+      }
+
+      function createDevice() {
+        const form = document.getElementById('form');
+        console.log(form);
+        form.classList.add('was-validated');
+
+        const fields = document.querySelectorAll('.is-invalid')
+
+        if( fields != null ) {
+          showError("There are fields that contain invalida data, unable to create");
+          return;
+        }
+
+        json = {
+          "chipId": document.getElementById("chip_id").value,
+          "chipFamily": document.getElementById("chip_family").value,
+          "software": document.getElementById("software").value,
+          "mdns": document.getElementById("mdns").value,
+          "config": document.getElementById("config").value,
+          "url": document.getElementById("url").value
+        };
+
+        console.log("Adding data: " + JSON.stringify(json));
+
+        api.addDevice(json, function(json, status) { 
+          if(status != 201)
+            showHttpError(status);
+          else 
+            window.location.href = "/html/device/" + json["id"] + "?func=edit";
+        });
+      }
+    </script>
+
+  </form>
+</div>
+
+{% endblock %}

@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<title>Test Suite</title>
+<link rel="stylesheet" href="https://code.jquery.com/qunit/qunit-2.20.0.css">
+<body>
+  <div id="qunit"></div>
+  <div id="qunit-fixture"></div>
+  <script src="https://code.jquery.com/qunit/qunit-2.20.0.js"></script>
+</body>
+
+<script src="/static/brewloggerapi.js"></script>
+
+<script>
+    let api = new BrewLoggerAPI(window.location.origin, "{{ apikey }}");
+
+    api.setDebug(true);
+
+    deviceId = 0;
+    batchId = 0;
+    gravityId = 0;
+
+    QUnit.module('1. prepare', function() {
+
+    QUnit.test('1. delete_database', function(assert) {
+      const done = assert.async();
+      api.deleteDatabase(function(json, status) { 
+        assert.notEqual(json, {});
+        assert.equal(status, 204);
+        done(); 
+      });
+    });
+
+    QUnit.test('2. load_device_data', function(assert) {
+      const done = assert.async();
+      api.addDevice({
+          "chipId": "012345",
+          "chipFamily": "fam",
+          "software": "soft",
+          "mdns": "m",
+          "config": "cfg",
+          "url": "http" }, function(json, status) { 
+            deviceId = json["id"];
+            assert.notEqual(json["id"], 0); 
+            assert.equal(json["chipId"], "012345"); 
+            assert.equal(json["chipFamily"], "fam"); 
+            assert.equal(json["software"], "soft"); 
+            assert.equal(json["mdns"], "m"); 
+            assert.equal(json["config"], "cfg"); 
+            assert.equal(json["url"], "http"); 
+            assert.equal(status, 201); 
+        done(); 
+      });
+    });
+
+    QUnit.test('3. load_batch_data', function(assert) {
+      const done = assert.async();
+      api.addBatch({
+        "name": "Batch #1",
+        "chipId": "012345",
+        "description": "desc",
+        "brewDate": "date",
+        "style": "ipa",
+        "brewer": "name",
+        "brewfatherId": "id",
+        "active": true,
+        "abv": 0.3,
+        "ebc": 0.2,
+        "ibu": 0.1 }, function(json, status) { 
+          batchId = json["id"];
+          assert.notEqual(json["id"], 0); 
+          assert.equal(json["name"], "Batch #1"); 
+          assert.equal(json["chipId"], "012345"); 
+          assert.equal(json["description"], "desc"); 
+          assert.equal(json["brewDate"], "date"); 
+          assert.equal(json["style"], "ipa"); 
+          assert.equal(json["brewer"], "name"); 
+          assert.equal(json["brewfatherId"], "id"); 
+          assert.equal(json["active"], true); 
+          assert.equal(json["abv"], 0.3); 
+          assert.equal(json["ebc"], 0.2); 
+          assert.equal(json["ibu"], 0.1); 
+          assert.equal(status, 201); 
+        done(); 
+      });
+    });
+
+  });
+
+  QUnit.module('8. health', function() {
+    QUnit.test('1. response', function(assert) {
+      const done = assert.async();
+      api.getHealth(function(json, status) { 
+        assert.equal(JSON.stringify(json), JSON.stringify({ "status": "ok" }));
+        done(); 
+      });
+    });
+  });
+
+  QUnit.module('2. device', function() {
+
+    QUnit.test('1. device_list', function(assert) {
+      const done = assert.async();
+      api.getDeviceList(function(json, status) { 
+        assert.notEqual(json, {});
+        assert.equal(status, 200);
+        done(); 
+      });
+    });
+
+    QUnit.test('2. device_get', function(assert) {
+      const done = assert.async();
+      api.getDevice(deviceId, function(json, status) { 
+        assert.notEqual(json, {});
+        assert.equal(status, 200);
+        done(); 
+      });
+    });
+
+    QUnit.test('3. device_post', function(assert) {
+      const done = assert.async();
+      api.addDevice({
+          "chipId": "012349",
+          "chipFamily": "",
+          "software": "",
+          "mdns": "",
+          "config": "",
+          "url": "" }, function(json, status) { 
+            assert.notEqual(json["id"], 0); 
+            assert.equal(status, 201); 
+        done(); 
+      });
+    });
+
+    QUnit.test('4. device_patch', function(assert) {
+      const done = assert.async();
+      api.updateDevice(deviceId, {
+          "chipId": "012345",
+          "chipFamily": "",
+          "software": "",
+          "mdns": "",
+          "config": "",
+          "url": "" }, function(json, status) { 
+            assert.notEqual(json["id"], 0); 
+            assert.equal(status, 200); 
+        done(); 
+      });
+    });
+
+    QUnit.test('5. device_del', function(assert) {
+      const done = assert.async();
+      api.deleteDevice(deviceId, function(json, status) { 
+        assert.equal(JSON.stringify(json), JSON.stringify({})); 
+        assert.equal(status, 204); 
+        done(); 
+      });
+    });
+  });
+
+  QUnit.module('3. batch', function() {
+
+    QUnit.test('1. batch_list', function(assert) {
+      const done = assert.async();
+      api.getBatchList(function(json, status) { 
+        assert.notEqual(json, {});
+        assert.equal(status, 200);
+        done(); 
+      });
+    });
+
+    QUnit.test('2. batch_get', function(assert) {
+      const done = assert.async();
+      api.getBatch(batchId, function(json, status) { 
+        assert.notEqual(json, {});
+        assert.equal(status, 200);
+        done(); 
+      });
+    });
+
+    QUnit.test('3. batch_post', function(assert) {
+      const done = assert.async();
+      api.addBatch({
+        "name": "Batch #1",
+        "chipId": "012345",
+        "description": "",
+        "brewDate": "",
+        "style": "",
+        "brewer": "",
+        "brewfatherId": "",
+        "active": true,
+        "abv": 0.0,
+        "ebc": 0.0,
+        "ibu": 0.0 }, function(json, status) { 
+            assert.notEqual(json["id"], 0); 
+            assert.equal(status, 201); 
+        done(); 
+      });
+    });
+
+    QUnit.test('4. batch_patch', function(assert) {
+      const done = assert.async();
+      api.updateBatch(batchId, {
+        "name": "Batch #1",
+        "chipId": "012345",
+        "description": "",
+        "brewDate": "",
+        "style": "",
+        "brewer": "",
+        "brewfatherId": "",
+        "active": true,
+        "abv": 0.0,
+        "ebc": 0.0,
+        "ibu": 0.0 }, function(json, status) { 
+            assert.notEqual(json["id"], 0); 
+            assert.equal(status, 200); 
+        done(); 
+      });
+    });
+
+    QUnit.test('5. batch_del', function(assert) {
+      const done = assert.async();
+      api.deleteBatch(batchId, function(json, status) { 
+        assert.equal(JSON.stringify(json), JSON.stringify({})); 
+        assert.equal(status, 204); 
+        done(); 
+      });
+    });
+  });
+
+  QUnit.module('9. proxy', function() {
+    QUnit.test('1. proxy_get', function(assert) {
+      const done = assert.async();
+        if(window.location.origin.endsWith("8080"))
+          url = "http://web:8080/health"; // When running in docker 
+        else
+          url = "http://localhost:8000/health"; // WHen runnimg on desktop
+
+        api.proxyFetch(url, function(json, status) { 
+        assert.equal(JSON.stringify(json), JSON.stringify({ "status": "ok" }));
+        done(); 
+      });
+    });
+  });
+
+</script>
+
