@@ -71,23 +71,23 @@ jobs:
           push: true
           tags: ${{ steps.prep.outputs.tags }}
 
-      - name: Run Trivy vulnerability scanner
-        uses: aquasecurity/trivy-action@master
-        with:
-          image-ref: 'docker.io/mpse2/brewlogger:latest'
-          format: 'template'
-          template: '@/contrib/sarif.tpl'
-          output: 'trivy-results.sarif'
-          severity: 'HIGH,CRITICAL'
+      # - name: Run Trivy vulnerability scanner
+      #   uses: aquasecurity/trivy-action@master
+      #   with:
+      #     image-ref: 'docker.io/mpse2/brewlogger:latest'
+      #     format: 'template'
+      #     template: '@/contrib/sarif.tpl'
+      #     output: 'trivy-results.sarif'
+      #     severity: 'HIGH,CRITICAL'
 
-      - name: 'Upload Artifact'
-        uses: actions/upload-artifact@v3
-        with:
-          name: 'trivy-results.sarif'
-          path: 'trivy-results.sarif'
-          retention-days: 5
+      # - name: 'Upload Artifact'
+      #   uses: actions/upload-artifact@v3
+      #   with:
+      #     name: 'trivy-results.sarif'
+      #     path: 'trivy-results.sarif'
+      #     retention-days: 5
 
-      - name: Upload Trivy scan results to GitHub Security tab
-        uses: github/codeql-action/upload-sarif@v2
-        with:
-          sarif_file: 'trivy-results.sarif'
+      # - name: Upload Trivy scan results to GitHub Security tab
+      #   uses: github/codeql-action/upload-sarif@v2
+      #   with:
+      #     sarif_file: 'trivy-results.sarif'
