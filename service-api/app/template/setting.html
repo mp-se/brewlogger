@@ -12,7 +12,7 @@
   <hr>
 
   <div class="row mb-2">
-    <div class="col-sm-3">Javsscript debug</div>
+    <div class="col-sm-2">Javsscript debug</div>
     <div class="col-sm-5">
       {% if settings.javascript_debug_enabled %}
       <button type="button" class="btn btn-primary" onclick="disableJavascriptDebug()">Disable debug</button>
@@ -44,13 +44,12 @@
      });
     } 
     </script>
-  
   </div>
 
   <hr>
 
   <div class="row mb-2">
-    <div class="col-sm-3">Backup</div>
+    <div class="col-sm-2">Backup</div>
     <div class="col-sm-5">
       <button type="button" class="btn btn-primary" onclick="backup()">Backup data</button>
     </div>
@@ -60,14 +59,14 @@
 
   <form id="uploadForm" enctype="multipart/form-data">
     <div class="row mb-2">
-      <div class="col-sm-3">Restore</div>
+      <div class="col-sm-2">Restore</div>
         <div class="col-sm-5 custom-file">
           <input type="file" accept=".txt" id="name" class="custom-file-input">
         </div>
       </div>
 
       <div class="row mb-2">
-        <div class="col-sm-3"></div>
+        <div class="col-sm-2"></div>
         <div class="col-sm-9">
           <div class="progress">
             <div class="progress-bar" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
@@ -76,7 +75,7 @@
       </div>
 
       <div class="row mb-2">
-        <div class="col-sm-3"></div>
+        <div class="col-sm-2"></div>
         <div class="col-sm-5">
           <button type="button" class="btn btn-primary" onclick="restore()">Restore data</button>
         </div>
@@ -96,8 +95,13 @@
       console.log("Restoring data");
       const fileElement = document.getElementById('name');
 
+      if( {{ records }} > 0){
+        showError("Database is not empty, unable to restore.");
+        return;
+      }
+
       if(fileElement.files.length === 0) {
-        showError("You need to select one file to restore configuration from");
+        showError("You need to select one file to restore configuration from.");
         return;
       } 
 
@@ -199,12 +203,12 @@
     }
   </script>
 
-  {% if settings.test_endpoints_enabled == True %}
-
   <hr>
 
+  {% if settings.test_endpoints_enabled == True %}
+
   <div class="row mb-2">
-    <div class="col-sm-3">Unit Tests</div>
+    <div class="col-sm-2">Unit Tests</div>
     <div class="col-sm-5">
       <button type="button" class="btn btn-primary" onclick="event.preventDefault(); window.location.href='/html/test/unit/'">Run javascript unit tests</button>
     </div>
@@ -213,7 +217,7 @@
   <hr>
 
   <div class="row mb-2">
-    <div class="col-sm-3">Generate data</div>
+    <div class="col-sm-2">Generate data</div>
     <div class="col-sm-9">
       <button type="button" class="btn btn-info" onclick="deleteDatabase()">Delete all records</button>
       <button type="button" class="btn btn-info" onclick="generateDeviceData()">Generate devices</button>
