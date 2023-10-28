@@ -92,8 +92,7 @@ jobs:
       #   with:
       #     sarif_file: 'trivy-results.sarif'
 
-jobs:
-  build-api:
+  build-web:
     runs-on: ubuntu-latest
     permissions:
       security-events: write
