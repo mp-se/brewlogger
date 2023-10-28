@@ -113,13 +113,13 @@
 
     data = {
       "name": "Batch #2",
-      "chipId": "000001",
+      "chipId": "000002",
       "description": "desc",
       "brewDate": "date",
       "style": "ipa",
       "brewer": "name",
       "brewfatherId": "id",
-      "active": true,
+      "active": false,
       "abv": 0.3,
       "ebc": 0.2,
       "ibu": 0.1 };
@@ -139,33 +139,4 @@
       "ibu": 0.1 };
     await api.addBatch(data, function(json, status) { console.log("Data added"); if(autoRefresh) location.reload(); });    
   }  
-
-  async function tempTest() {
-    await api.getBatchListByActive(function(json, status) { 
-      console.log("Fetched list of batches"); 
-      console.log(json);
-
-      id = json[0].id;
-      console.log("Using batch id", id);
-
-      data = {
-        "name":"name",
-        "chipId":"000003",
-        "token":"token",
-        "interval":1,
-        "temperature":11.543532661542987,
-        "tempUnits":"C",
-        "gravity":1.0540625206085963,
-        "angle":34.45,
-        "battery":4.852994322861489,
-        "rssi":-76.2,
-        "corrGravity":1.23,
-        "gravityUnits":"SG",
-        "runTime":12,
-        "batchId": id,
-      };
-
-      api.addGravity(data, function(json, status) { console.log("Data posted"); });
-    });
-  }
 </script>

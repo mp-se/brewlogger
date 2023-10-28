@@ -85,16 +85,6 @@ class Gravity(GravityCreate):
     model_config = ConfigDict(from_attributes = True)
     id: int
 
-class GravityShort(BaseModel):
-    model_config = ConfigDict(alias_generator = to_camel, populate_by_name = True )
-    id: int
-    temperature: float = Field(description="Temperature value")
-    temp_units: str = Field(min_length=0, max_length=1, description="Temperature unit, either C or F")
-    gravity: float = Field(description="Calculated gravity")
-    angle: float = Field(description="Tilt or angle of the device")
-    gravity_units: str = Field(min_length=0, max_length=2, description="Gravity unit, either P or SG")
-    created: datetime = Field(description="When the record was created")
-
 ################################################################################
 
 class PourBase(BaseModel):
@@ -138,7 +128,7 @@ class BatchCreate(BatchBase):
 class Batch(BatchCreate):
     model_config = ConfigDict(from_attributes = True)
     id: int
-    gravity: List[GravityShort] = None
+    gravity: List[Gravity] = None
     pour: List[Pour] = None
 
 ################################################################################

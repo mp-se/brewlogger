@@ -202,4 +202,8 @@ class BrewLoggerAPI {
   async updateSetting(json, callback) {
     await this.#request( "/api/setting/", "PATCH", json, callback);
   }
+
+  async addGravityList(json, callback) {
+    await this.#request( "/api/gravity/list/", "POST", json, callback);
+  }
 }

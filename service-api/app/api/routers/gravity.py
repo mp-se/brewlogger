@@ -48,11 +48,28 @@ async def create_gravity(
     gravity: schemas.GravityCreate,
     gravity_service: GravityService = Depends(get_gravity_service)
 ) -> models.Gravity:
+    logging.info("Processing item")
     if gravity.created is None:
         gravity.created = datetime.now()
         logging.info("Added timestamp to gravity record %s", gravity.created)
     return gravity_service.create(gravity)
 
+@router.post(
+    "/list/",
+    response_model=List[schemas.Gravity],
+    status_code=201,
+    responses={409: {"description": "Conflict Error"}},
+    dependencies=[Depends(api_key_auth)])
+async def create_gravity_list(
+    gravity_list: List[schemas.GravityCreate],
+    gravity_service: GravityService = Depends(get_gravity_service)
+) -> List[models.Gravity]:
+    logging.info("Processing list")
+
+    res = []
+    for gravity in gravity_list:
+        res.append(gravity_service.create(gravity))
+    return res
 
 @router.patch(
     "/{gravity_id}",

@@ -66,89 +66,82 @@
         </div>
       </div>
 
-      <!--
       <div class="row mb-2">
         <div class="col-sm-3"></div>
-        <div class="col-sm-5 progress">
-          <div class="progress-bar" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
+        <div class="col-sm-9">
+          <div class="progress">
+            <div class="progress-bar" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
+          </div>
         </div>
-      </div>-->
-    
+      </div>
+
       <div class="row mb-2">
         <div class="col-sm-3"></div>
         <div class="col-sm-5">
-          <button type="submit" class="btn btn-primary" value="upload">Restore data</button>
+          <button type="button" class="btn btn-primary" onclick="restore()">Restore data</button>
         </div>
       </div>
   </form>
 
-  <script>
-
-    form = document.getElementById('uploadForm');
-    form.addEventListener("submit", function(e) {
-      console.log("Event handler");
-      e.preventDefault();
-
-      records = {{ records }};
-
-      if( (records) != 0) {
-        showError("Database is not empty, unable to do restore.")
-        return;
-      }
-
-      const fileElement = document.getElementById('name');
-
-      if(fileElement.files.length === 0) {
-        showError("You need to select one file to restore configuration from");
-      } else {
-        console.log( "Selected file: " + fileElement.files[0].name );
-
-        let reader = new FileReader();
-       
-        reader.addEventListener('load', function(e) {
-          let text = e.target.result;
-            
-          try {
-            json = JSON.parse( text );
-
-            if( json["meta"]["software"] != "BrewLogger" ) {
-              showError("Invalid configuration file.");
-            } else {
-              console.log( json );
-
-              // TODO: Need to fix batch references for gravity records, postgres will not reuse record_ids
-
-              json["devices"].forEach(device => {
-                api.addDevice(device, function(json, status) { console.log("Added devices."); 
-              })});
-
-              json["batches"].forEach(batch => {
-                api.addBatch(batch, function(json, status) { console.log("Added batches."); 
-              })});              
-
-              json["gravities"].forEach(gravity => {
-                api.addGravity(gravity, function(json, status) { console.log("Added gravities."); 
-              })});              
-            }
-          } catch (error) {
-            console.error(error);
-            showError("Unable to parse configuration file.")
-          } 
-
-        });
-
-        reader.readAsText(fileElement.files[0]);
-      }
-
-    });
+  <script> 
+    var progress = 0;
+    var progress_max = 1;
 
     function updateProgress() {
-      progress = progress + (100/1); // In total 1 steps to do restore
+      progress = progress + (100/progress_max); // In total 1 steps to do restore
       $('.progress-bar').css('width', progress+'%').attr('aria-valuenow', progress).text(parseFloat(progress).toFixed(0) + "%");
     }
 
     async function restore() {
       console.log("Restoring data");
+      const fileElement = document.getElementById('name');
+
+      if(fileElement.files.length === 0) {
+        showError("You need to select one file to restore configuration from");
+        return;
+      } 
+
+      console.log( "Selected file: " + fileElement.files[0].name );
+
+      let text = await new Promise((resolve) => {
+        let fileReader = new FileReader();
+        fileReader.readAsText(fileElement.files[0]);
+        fileReader.onload = (e) => resolve(fileReader.result);
+      });
+
+      // Process the backup file
+      json = JSON.parse( text );
+      console.log(json);
+
+      dev_cnt = json["devices"].length;
+      batch_cnt = json["batches"].length * 2;
+
+      progress = 0;
+      progress_max = dev_cnt + batch_cnt;
+
+      console.log("Number of requests needed:", progress_max);
+
+      for(device of json["devices"]) {
+        await api.addDevice(device, function(res, status) { 
+          device.id = res.id;
+          updateProgress();
+          console.log("Added device.", device.id); 
+        });
+      };
+
+      for(batch of json["batches"]) {
+        await api.addBatch(batch, function(res, status) { 
+          batch.id = res.id;
+
+          api.addGravityList(batch.gravity, function(res, status) { 
+            updateProgress();
+            console.log("Added gravity list."); 
+          });
+
+          updateProgress();
+          console.log("Added batch.", batch.id); 
+        });
+      }
     }
 
     async function backup() {
@@ -159,25 +152,18 @@
       var batches = [];
       var devices = [];
       var gravities = [];
-      meta["version"] = "0.1";
+      meta["version"] = "0.2";
       meta["software"] = "BrewLogger";
       backup["meta"] = meta;
 
       b = api.getBatchList(function(json, status) { batches = json; console.log("Fetched batches."); });
       d = api.getDeviceList(function(json, status) { devices = json; console.log("Fetched devices."); });
-      g = api.getGravityList(function(json, status) { gravities = json; console.log("Fetched gravities."); });
 
-      Promise.all([b,d,g]).then( function() {
+      Promise.all([b,d]).then( function() {
         console.log("Creating backup file");
-
-        batches.forEach(batch => {
-          delete batch.gravity; // We dont need the data here, this is just a subset. 
-          delete batch.pour; // We dont need the data here, this is just a subset. 
-        });
 
         backup["batches"] = batches;
         backup["devices"] = devices;
-        backup["gravities"] = gravities;
 
         var s = JSON.stringify(backup, null, 2);
         console.log(s);
@@ -218,8 +204,6 @@
       <button type="button" class="btn btn-info" onclick="generateGravityData(50)">Generate gravity</button>
       <button type="button" class="btn btn-info" onclick="ispindelSimulation()">Simulate iSpindel</button>
       <button type="button" class="btn btn-info" onclick="location.reload()">Reload</button>
-
-      <button type="button" class="btn btn-info" onclick="readSetting()">Read settings</button>
     </div>
 
   </div>

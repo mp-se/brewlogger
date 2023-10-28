@@ -14,7 +14,7 @@ class Settings(BaseSettings):
     api_key_enabled: bool = config("API_KEY_ENABLED", cast=bool, default=True)
     test_endpoints_enabled: bool = config("TEST_ENDPOINTS_ENABLED", cast=bool, default=True)
     javascript_debug_enabled: bool = False
-    version: str = "0.1.0"
+    version: str = "0.2.0"
 
     logger.info("db_url: %s", database_url)
     logger.info("api_key: %s", api_key)
