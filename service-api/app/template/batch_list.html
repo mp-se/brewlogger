@@ -9,7 +9,14 @@
 
   <script>
     function deleteConfimedCallback(id) {
-      api.deleteBatch(id, function(json, status) { console.log("Delete completed", json, status); location.reload(); } );
+      api.deleteBatch(id, function(json, status, success) { 
+        if(success) {
+          console.log("Delete completed", json, status, success); 
+          location.reload(); 
+        } else {
+          showError("Failed to delete record.");
+        }       
+      });
     }
   </script>
 

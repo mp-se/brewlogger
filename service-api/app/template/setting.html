@@ -27,7 +27,7 @@
         "javascript_debug_enabled": true
       };
       
-      await api.updateSetting(data, function(json, status) { 
+      await api.updateSetting(data, function() { 
         console.log("Enabled debug"); 
         location.reload();
      });
@@ -38,7 +38,7 @@
         "javascript_debug_enabled": false
       };
       
-      await api.updateSetting(data, function(json, status) { 
+      await api.updateSetting(data, function() { 
         console.log("Disabled debug"); 
         location.reload();
      });
@@ -122,7 +122,7 @@
       console.log("Number of requests needed:", progress_max);
 
       for(device of json["devices"]) {
-        await api.addDevice(device, function(res, status) { 
+        await api.addDevice(device, function(res, status, success) { 
           device.id = res.id;
           updateProgress();
           console.log("Added device.", device.id); 
@@ -130,10 +130,14 @@
       };
 
       for(batch of json["batches"]) {
-        await api.addBatch(batch, function(res, status) { 
+        await api.addBatch(batch, function(res, status, success) { 
           batch.id = res.id;
 
-          api.addGravityList(batch.gravity, function(res, status) { 
+          batch.gravity.forEach(g => {
+            g.batchId = res.id;            
+          });
+
+          api.addGravityList(batch.gravity, function(res, status, success) { 
             updateProgress();
             console.log("Added gravity list."); 
           });
@@ -156,8 +160,21 @@
       meta["software"] = "BrewLogger";
       backup["meta"] = meta;
 
-      b = api.getBatchList(function(json, status) { batches = json; console.log("Fetched batches."); });
-      d = api.getDeviceList(function(json, status) { devices = json; console.log("Fetched devices."); });
+      b = api.getBatchList(function(json, status, success) { 
+        batches = json; 
+        if(!success)
+          showError("Failed to fetch batches");
+        else
+          console.log("Fetched batches."); 
+      });
+  
+      d = api.getDeviceList(function(json, status, success) { 
+        devices = json; 
+        if(!success)
+          showError("Failed to fetch devices");
+        else
+          console.log("Fetched devices."); 
+      });
 
       Promise.all([b,d]).then( function() {
         console.log("Creating backup file");

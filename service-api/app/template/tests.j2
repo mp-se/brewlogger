@@ -11,7 +11,7 @@
       "mdns": "000001",
       "config": "",
       "url": "" };
-    await api.addDevice(data, function(json, status) { console.log("Data added"); });
+    await api.addDevice(data, function() { console.log("Data added"); });
 
     data = {
       "chipId": "000002",
@@ -20,7 +20,7 @@
       "mdns": "000002",
       "config": "",
       "url": "" };
-    await api.addDevice(data, function(json, status) { console.log("Data added"); });
+    await api.addDevice(data, function() { console.log("Data added"); });
 
     data = {
       "chipId": "000003",
@@ -29,7 +29,7 @@
       "mdns": "000003",
       "config": "",
       "url": "" };
-    await api.addDevice(data, function(json, status) { console.log("Data added"); if(autoRefresh) location.reload(); });    
+    await api.addDevice(data, function() { console.log("Data added"); if(autoRefresh) location.reload(); });    
   }
 
   async function generateGravityData(cnt) {
@@ -67,7 +67,7 @@
           "created": dt.toISOString(),
       }
           
-     await api.addGravity(data, function(json, status) { console.log("Data posted"); });
+     await api.addGravity(data, function() { console.log("Data posted"); });
     }
 
     if(autoRefresh) location.reload();
@@ -87,11 +87,11 @@
         "RSSI": -76.2,
     }
 
-    api.sendIspindel(data, function(json, status) { console.log("Data posted"); if(autoRefresh) location.reload(); });
+    api.sendIspindel(data, function() { console.log("Data posted"); if(autoRefresh) location.reload(); });
   }
 
   function deleteDatabase() {
-      api.deleteDatabase(function(json, status) { console.log("Data deleted"); if(autoRefresh) location.reload(); });
+      api.deleteDatabase(function() { console.log("Data deleted"); if(autoRefresh) location.reload(); });
   }
 
   async function generateBatches() {
@@ -109,7 +109,7 @@
       "abv": 0.3,
       "ebc": 0.2,
       "ibu": 0.1 };
-    await api.addBatch(data, function(json, status) { console.log("Data added"); });
+    await api.addBatch(data, function() { console.log("Data added"); });
 
     data = {
       "name": "Batch #2",
@@ -123,7 +123,7 @@
       "abv": 0.3,
       "ebc": 0.2,
       "ibu": 0.1 };
-    await api.addBatch(data, function(json, status) { console.log("Data added"); });
+    await api.addBatch(data, function() { console.log("Data added"); });
 
     data = {
       "name": "Batch #3",
@@ -137,6 +137,6 @@
       "abv": 0.3,
       "ebc": 0.2,
       "ibu": 0.1 };
-    await api.addBatch(data, function(json, status) { console.log("Data added"); if(autoRefresh) location.reload(); });    
+    await api.addBatch(data, function() { console.log("Data added"); if(autoRefresh) location.reload(); });    
   }  
 </script>

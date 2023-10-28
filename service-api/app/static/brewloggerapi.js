@@ -1,4 +1,10 @@
 class BrewLoggerAPI {
+
+  /* Wrapper for BrewLogger REST API
+   *
+   * callback function takes 3 parameters: response(JSON), http response code(int), success(bool) 
+   */
+
   constructor(baseUrl, apiKey) {
     this.baseUrl = baseUrl;
     this.apiKey = apiKey;
@@ -26,10 +32,10 @@ class BrewLoggerAPI {
         if (response.status == 200) {
           this.#debug( "GET fetch returned 200" );
           this.#debug( "GET fetch response, running callback" );
-          await callback(json, response.status);
+          await callback(json, response.status, true);
         } else {
           console.log("GET request failed with response", response.status, json);
-          await callback({}, response.status);
+          await callback({}, response.status, false);
         }
         break;
 
@@ -40,11 +46,11 @@ class BrewLoggerAPI {
         if (response.status == 204) {
           this.#debug( "DELETE fetch returned 204" );
           this.#debug( "DELETE fetch response, running callback" );
-          await callback({}, response.status);
+          await callback({}, response.status, true);
         } else {
           var json = await response.json();
           console.log("DELETE request failed with response", response.status, json);
-          await callback({}, response.status);
+          await callback({}, response.status, false);
         }
 
         break;
@@ -58,10 +64,10 @@ class BrewLoggerAPI {
         if (response.status == 201 || response.status == 200) {
           this.#debug( "POST fetch returned 201/200" );
           this.#debug( "POST fetch response, running callback" );
-          await callback(json, response.status);
+          await callback(json, response.status, true);
         } else {
           console.log("POST request failed with response", response.status, json);
-          await callback({}, response.status);
+          await callback({}, response.status, false);
         }
       break;
 
@@ -73,10 +79,10 @@ class BrewLoggerAPI {
         if (response.status == 200) {
           this.#debug( "PATCH fetch returned 200" );
           this.#debug( "POST fetch response, running callback" );
-          await callback(json, response.status);
+          await callback(json, response.status, true);
         } else {
           console.log("PATCH request failed with response", response.status, json);
-          await callback({}, response.status);
+          await callback({}, response.status, false);
         }
       break;
 

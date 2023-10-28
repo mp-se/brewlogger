@@ -110,8 +110,8 @@
       
         console.log("Updating data: " + JSON.stringify(json));
 
-        api.updateBatch({{ batch.id }}, json, function(json, status) { 
-          if(status != 200)
+        api.updateBatch({{ batch.id }}, json, function(json, status, success) { 
+          if(!success)
             showHttpError(status);
         });
       }
@@ -133,8 +133,8 @@
 
         console.log("Adding data: " + JSON.stringify(json));
 
-        api.addBatch(json, function(json, status) { 
-          if(status != 201)
+        api.addBatch(json, function(json, status, success) { 
+          if(!success)
             showHttpError(status);
           else 
             window.location.href = "/html/batch/" + json["id"] + "?func=edit";

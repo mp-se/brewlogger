@@ -22,7 +22,8 @@
 
     QUnit.test('1. delete_database', function(assert) {
       const done = assert.async();
-      api.deleteDatabase(function(json, status) { 
+      api.deleteDatabase(function(json, status, success) { 
+        assert.equal(success, true);
         assert.notEqual(json, {});
         assert.equal(status, 204);
         done(); 
@@ -32,21 +33,22 @@
     QUnit.test('2. load_device_data', function(assert) {
       const done = assert.async();
       api.addDevice({
-          "chipId": "012345",
-          "chipFamily": "fam",
-          "software": "soft",
-          "mdns": "m",
-          "config": "cfg",
-          "url": "http" }, function(json, status) { 
-            deviceId = json["id"];
-            assert.notEqual(json["id"], 0); 
-            assert.equal(json["chipId"], "012345"); 
-            assert.equal(json["chipFamily"], "fam"); 
-            assert.equal(json["software"], "soft"); 
-            assert.equal(json["mdns"], "m"); 
-            assert.equal(json["config"], "cfg"); 
-            assert.equal(json["url"], "http"); 
-            assert.equal(status, 201); 
+        "chipId": "012345",
+        "chipFamily": "fam",
+        "software": "soft",
+        "mdns": "m",
+        "config": "cfg",
+        "url": "http" }, function(json, status, success) { 
+        assert.equal(success, true);
+        deviceId = json["id"];
+        assert.notEqual(json["id"], 0); 
+        assert.equal(json["chipId"], "012345"); 
+        assert.equal(json["chipFamily"], "fam"); 
+        assert.equal(json["software"], "soft"); 
+        assert.equal(json["mdns"], "m"); 
+        assert.equal(json["config"], "cfg"); 
+        assert.equal(json["url"], "http"); 
+        assert.equal(status, 201); 
         done(); 
       });
     });
@@ -64,21 +66,22 @@
         "active": true,
         "abv": 0.3,
         "ebc": 0.2,
-        "ibu": 0.1 }, function(json, status) { 
-          batchId = json["id"];
-          assert.notEqual(json["id"], 0); 
-          assert.equal(json["name"], "Batch #1"); 
-          assert.equal(json["chipId"], "012345"); 
-          assert.equal(json["description"], "desc"); 
-          assert.equal(json["brewDate"], "date"); 
-          assert.equal(json["style"], "ipa"); 
-          assert.equal(json["brewer"], "name"); 
-          assert.equal(json["brewfatherId"], "id"); 
-          assert.equal(json["active"], true); 
-          assert.equal(json["abv"], 0.3); 
-          assert.equal(json["ebc"], 0.2); 
-          assert.equal(json["ibu"], 0.1); 
-          assert.equal(status, 201); 
+        "ibu": 0.1 }, function(json, status, success) { 
+        assert.equal(success, true);
+        batchId = json["id"];
+        assert.notEqual(json["id"], 0); 
+        assert.equal(json["name"], "Batch #1"); 
+        assert.equal(json["chipId"], "012345"); 
+        assert.equal(json["description"], "desc"); 
+        assert.equal(json["brewDate"], "date"); 
+        assert.equal(json["style"], "ipa"); 
+        assert.equal(json["brewer"], "name"); 
+        assert.equal(json["brewfatherId"], "id"); 
+        assert.equal(json["active"], true); 
+        assert.equal(json["abv"], 0.3); 
+        assert.equal(json["ebc"], 0.2); 
+        assert.equal(json["ibu"], 0.1); 
+        assert.equal(status, 201); 
         done(); 
       });
     });
@@ -88,7 +91,8 @@
   QUnit.module('8. health', function() {
     QUnit.test('1. response', function(assert) {
       const done = assert.async();
-      api.getHealth(function(json, status) { 
+      api.getHealth(function(json, status, success) { 
+        assert.equal(success, true);
         assert.equal(JSON.stringify(json), JSON.stringify({ "status": "ok" }));
         done(); 
       });
@@ -99,7 +103,8 @@
 
     QUnit.test('1. device_list', function(assert) {
       const done = assert.async();
-      api.getDeviceList(function(json, status) { 
+      api.getDeviceList(function(json, status, success) { 
+        assert.equal(success, true);
         assert.notEqual(json, {});
         assert.equal(status, 200);
         done(); 
@@ -108,7 +113,8 @@
 
     QUnit.test('2. device_get', function(assert) {
       const done = assert.async();
-      api.getDevice(deviceId, function(json, status) { 
+      api.getDevice(deviceId, function(json, status, success) { 
+        assert.equal(success, true);
         assert.notEqual(json, {});
         assert.equal(status, 200);
         done(); 
@@ -118,14 +124,15 @@
     QUnit.test('3. device_post', function(assert) {
       const done = assert.async();
       api.addDevice({
-          "chipId": "012349",
-          "chipFamily": "",
-          "software": "",
-          "mdns": "",
-          "config": "",
-          "url": "" }, function(json, status) { 
-            assert.notEqual(json["id"], 0); 
-            assert.equal(status, 201); 
+        "chipId": "012349",
+        "chipFamily": "",
+        "software": "",
+        "mdns": "",
+        "config": "",
+        "url": "" }, function(json, status, success) { 
+        assert.equal(success, true);
+        assert.notEqual(json["id"], 0); 
+        assert.equal(status, 201); 
         done(); 
       });
     });
@@ -133,21 +140,23 @@
     QUnit.test('4. device_patch', function(assert) {
       const done = assert.async();
       api.updateDevice(deviceId, {
-          "chipId": "012345",
-          "chipFamily": "",
-          "software": "",
-          "mdns": "",
-          "config": "",
-          "url": "" }, function(json, status) { 
-            assert.notEqual(json["id"], 0); 
-            assert.equal(status, 200); 
+        "chipId": "012345",
+        "chipFamily": "",
+        "software": "",
+        "mdns": "",
+        "config": "",
+        "url": "" }, function(json, status, success) { 
+        assert.equal(success, true);
+        assert.notEqual(json["id"], 0); 
+        assert.equal(status, 200); 
         done(); 
       });
     });
 
     QUnit.test('5. device_del', function(assert) {
       const done = assert.async();
-      api.deleteDevice(deviceId, function(json, status) { 
+      api.deleteDevice(deviceId, function(json, status, success) { 
+        assert.equal(success, true);
         assert.equal(JSON.stringify(json), JSON.stringify({})); 
         assert.equal(status, 204); 
         done(); 
@@ -159,7 +168,8 @@
 
     QUnit.test('1. batch_list', function(assert) {
       const done = assert.async();
-      api.getBatchList(function(json, status) { 
+      api.getBatchList(function(json, status, success) { 
+        assert.equal(success, true);
         assert.notEqual(json, {});
         assert.equal(status, 200);
         done(); 
@@ -168,7 +178,8 @@
 
     QUnit.test('2. batch_get', function(assert) {
       const done = assert.async();
-      api.getBatch(batchId, function(json, status) { 
+      api.getBatch(batchId, function(json, status, success) { 
+        assert.equal(success, true);
         assert.notEqual(json, {});
         assert.equal(status, 200);
         done(); 
@@ -188,9 +199,10 @@
         "active": true,
         "abv": 0.0,
         "ebc": 0.0,
-        "ibu": 0.0 }, function(json, status) { 
-            assert.notEqual(json["id"], 0); 
-            assert.equal(status, 201); 
+        "ibu": 0.0 }, function(json, status, success) { 
+        assert.equal(success, true);
+        assert.notEqual(json["id"], 0); 
+        assert.equal(status, 201); 
         done(); 
       });
     });
@@ -208,16 +220,18 @@
         "active": true,
         "abv": 0.0,
         "ebc": 0.0,
-        "ibu": 0.0 }, function(json, status) { 
-            assert.notEqual(json["id"], 0); 
-            assert.equal(status, 200); 
+        "ibu": 0.0 }, function(json, status, success) { 
+        assert.equal(success, true);
+        assert.notEqual(json["id"], 0); 
+        assert.equal(status, 200); 
         done(); 
       });
     });
 
     QUnit.test('5. batch_del', function(assert) {
       const done = assert.async();
-      api.deleteBatch(batchId, function(json, status) { 
+      api.deleteBatch(batchId, function(json, status, success) { 
+        assert.equal(success, true);
         assert.equal(JSON.stringify(json), JSON.stringify({})); 
         assert.equal(status, 204); 
         done(); 
@@ -231,7 +245,8 @@
       data = { 
         "javascript_debug_enabled": true
       };
-      api.updateSetting(data, function(json, status) { 
+      api.updateSetting(data, function(json, status, success) { 
+        assert.equal(success, true);
         assert.equal(json["javascript_debug_enabled"], true);
         done(); 
       });
@@ -241,7 +256,8 @@
       data = { 
         "javascript_debug_enabled": false
       };
-      api.updateSetting(data, function(json, status) { 
+      api.updateSetting(data, function(json, status, success) { 
+        assert.equal(success, true);
         assert.equal(json["javascript_debug_enabled"], false);
         done(); 
       });
@@ -256,8 +272,9 @@
         else
           url = "http://localhost:8000/health"; // WHen runnimg on desktop
 
-        api.proxyFetch(url, function(json, status) { 
-        assert.equal(JSON.stringify(json), JSON.stringify({ "status": "ok" }));
+        api.proxyFetch(url, function(json, status, success) { 
+          assert.equal(success, true);
+          assert.equal(JSON.stringify(json), JSON.stringify({ "status": "ok" }));
         done(); 
       });
     });

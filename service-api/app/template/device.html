@@ -116,8 +116,8 @@
       }
 
       function fetchConfigFromDevice() {
-        api.proxyFetch(document.getElementById("url").value + "/api/config", function(json, status) { 
-          if(status != 200) {
+        api.proxyFetch(document.getElementById("url").value + "/api/config", function(json, status, success) { 
+          if(!success) {
             showHttpError(status);
           } else {
             document.getElementById("config").value = JSON.stringify(json);
@@ -136,8 +136,8 @@
 
         console.log("Updating data: " + JSON.stringify(json));
 
-        api.updateDevice({{ device.id }}, json, function(json, status) { 
-          if(status != 200)
+        api.updateDevice({{ device.id }}, json, function(json, status, success) { 
+          if(!success)
             showHttpError(status);
         });
       }
@@ -165,8 +165,8 @@
 
         console.log("Adding data: " + JSON.stringify(json));
 
-        api.addDevice(json, function(json, status) { 
-          if(status != 201)
+        api.addDevice(json, function(json, status, success) { 
+          if(!success)
             showHttpError(status);
           else 
             window.location.href = "/html/device/" + json["id"] + "?func=edit";
