@@ -11,7 +11,7 @@ headers = {
 }
 
 def test_init(app_client):
-    r = app_client.delete("/test/cleardb", headers=headers)
+    r = app_client.delete("/html/test/cleardb", headers=headers)
     assert r.status_code == 204
 
 def test_load_1(app_client):
@@ -29,11 +29,11 @@ def test_load_1(app_client):
         "ibu": 0.3,
     }
 
-    r = app_client.post("/batch", json=data, headers=headers)
+    r = app_client.post("/api/batch/", json=data, headers=headers)
     assert r.status_code == 201
-    r = app_client.post("/batch", json=data, headers=headers)
+    r = app_client.post("/api/batch/", json=data, headers=headers)
     assert r.status_code == 201
-    r = app_client.post("/batch", json=data, headers=headers)
+    r = app_client.post("/api/batch/", json=data, headers=headers)
     assert r.status_code == 201
 
 def test_load_2(app_client):
@@ -55,25 +55,25 @@ def test_load_2(app_client):
         "created": "2012-12-10 14:17:19",
     }
 
-    r = app_client.post("/gravity/", json=data, headers=headers)
+    r = app_client.post("/api/gravity/", json=data, headers=headers)
     assert r.status_code == 201
     if timeDelay: time.sleep(2)
     data["gravity"] = 1.027
     data["temperature"] = 15
-    r = app_client.post("/gravity/", json=data, headers=headers)
+    r = app_client.post("/api/gravity/", json=data, headers=headers)
     assert r.status_code == 201
     if timeDelay: time.sleep(2)
     data["gravity"] = 1.022
     data["temperature"] = 15
-    r = app_client.post("/gravity/", json=data, headers=headers)
+    r = app_client.post("/api/gravity/", json=data, headers=headers)
     assert r.status_code == 201
     if timeDelay: time.sleep(2)
     data["gravity"] = 1.015
     data["temperature"] = 14
-    r = app_client.post("/gravity/", json=data, headers=headers)
+    r = app_client.post("/api/gravity/", json=data, headers=headers)
     assert r.status_code == 201
 
-    #r = app_client.get("/batch/1", headers=headers)
+    #r = app_client.get("/api/batch/1", headers=headers)
     #assert r.status_code == 200
     #data2 = json.loads(r.text)
     #print( data2 )
@@ -88,11 +88,11 @@ def test_load_3(app_client):
         "mdns": "f4",
     }
 
-    r = app_client.post("/device", json=data, headers=headers)
+    r = app_client.post("/api/device/", json=data, headers=headers)
     assert r.status_code == 201
-    r = app_client.post("/device", json=data, headers=headers)
+    r = app_client.post("/api/device/", json=data, headers=headers)
     assert r.status_code == 201
-    r = app_client.post("/device", json=data, headers=headers)
+    r = app_client.post("/api/device/", json=data, headers=headers)
     assert r.status_code == 201
 
 def test_load_3(app_client):
@@ -102,9 +102,9 @@ def test_load_3(app_client):
         "batchId": 1
     }
 
-    r = app_client.post("/pour/", json=data, headers=headers)
+    r = app_client.post("/api/pour/", json=data, headers=headers)
     assert r.status_code == 201
-    r = app_client.post("/pour/", json=data, headers=headers)
+    r = app_client.post("/api/pour/", json=data, headers=headers)
     assert r.status_code == 201
-    r = app_client.post("/pour/", json=data, headers=headers)
+    r = app_client.post("/api/pour/", json=data, headers=headers)
     assert r.status_code == 201

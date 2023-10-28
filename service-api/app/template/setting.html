@@ -5,13 +5,47 @@
 
 <div class="container-fluid p-3">
 
-  {% include 'notice.j2' %}
-
-  <script>
-      let api = new BrewLoggerAPI(window.location.origin, "{{ apikey }}");
-  </script>
+  {% include 'brewloggerapi.j2' %}
 
   <h1 class="h1">Settings</h1>
+
+  <hr>
+
+  <div class="row mb-2">
+    <div class="col-sm-3">Javsscript debug</div>
+    <div class="col-sm-5">
+      {% if settings.javascript_debug_enabled %}
+      <button type="button" class="btn btn-primary" onclick="disableJavascriptDebug()">Disable debug</button>
+      {% else %}
+      <button type="button" class="btn btn-primary" onclick="enableJavascriptDebug()">Enable debug</button>
+      {% endif %}
+    </div>
+
+    <script>
+    async function enableJavascriptDebug() {
+      data = { 
+        "javascript_debug_enabled": true
+      };
+      
+      await api.updateSetting(data, function(json, status) { 
+        console.log("Enabled debug"); 
+        location.reload();
+     });
+    } 
+
+    async function disableJavascriptDebug() {
+      data = { 
+        "javascript_debug_enabled": false
+      };
+      
+      await api.updateSetting(data, function(json, status) { 
+        console.log("Disabled debug"); 
+        location.reload();
+     });
+    } 
+    </script>
+  
+  </div>
 
   <hr>
 
@@ -82,6 +116,8 @@
             } else {
               console.log( json );
 
+              // TODO: Need to fix batch references for gravity records, postgres will not reuse record_ids
+
               json["devices"].forEach(device => {
                 api.addDevice(device, function(json, status) { console.log("Added devices."); 
               })});
@@ -127,8 +163,6 @@
       meta["software"] = "BrewLogger";
       backup["meta"] = meta;
 
-      //api.setDebug(true);
-
       b = api.getBatchList(function(json, status) { batches = json; console.log("Fetched batches."); });
       d = api.getDeviceList(function(json, status) { devices = json; console.log("Fetched devices."); });
       g = api.getGravityList(function(json, status) { gravities = json; console.log("Fetched gravities."); });
@@ -162,7 +196,7 @@
     }
   </script>
 
-  {% if testendpoints == True %}
+  {% if settings.test_endpoints_enabled == True %}
 
   <hr>
 
@@ -173,6 +207,8 @@
     </div>
   </div>
 
+  <hr>
+
   <div class="row mb-2">
     <div class="col-sm-3">Generate data</div>
     <div class="col-sm-9">
@@ -182,9 +218,13 @@
       <button type="button" class="btn btn-info" onclick="generateGravityData(50)">Generate gravity</button>
       <button type="button" class="btn btn-info" onclick="ispindelSimulation()">Simulate iSpindel</button>
       <button type="button" class="btn btn-info" onclick="location.reload()">Reload</button>
+
+      <button type="button" class="btn btn-info" onclick="readSetting()">Read settings</button>
     </div>
 
   </div>
+
+  <hr>
 
   {% include 'tests.j2' %}
 

@@ -11,7 +11,7 @@ headers = {
 }
 
 def test_init(app_client):
-    r = app_client.delete("/test/cleardb", headers=headers)
+    r = app_client.delete("/html/test/cleardb", headers=headers)
     assert r.status_code == 204
 
 def test_add(app_client):
@@ -30,7 +30,7 @@ def test_add(app_client):
     }
 
     # Add new
-    r = app_client.post("/batch", json=data, headers=headers)
+    r = app_client.post("/api/batch/", json=data, headers=headers)
     assert r.status_code == 201
     data1 = json.loads(r.text)
     assert data1["id"] == 1
@@ -47,17 +47,17 @@ def test_add(app_client):
     assert data1["brewfatherId"] == data["brewfatherId"]
 
     # Read data and check values
-    r2 = app_client.get("/batch/1", headers=headers)
+    r2 = app_client.get("/api/batch/1", headers=headers)
     assert r2.status_code == 200
     data2 = json.loads(r.text)
     assert data["name"] == data2["name"]
 
     # Not using a number for index
-    r2 = app_client.get("/batch/hello", headers=headers)
+    r2 = app_client.get("/api/batch/hello", headers=headers)
     assert r2.status_code == 422
 
 def test_list(app_client):
-    r = app_client.get("/batch", headers=headers)
+    r = app_client.get("/api/batch/", headers=headers)
     assert r.status_code == 200
     data = json.loads(r.text)
     assert len(data) == 1
@@ -78,11 +78,11 @@ def test_update(app_client):
     }
 
     # Update existing entity
-    r = app_client.patch("/batch/1", json=data, headers=headers)
+    r = app_client.patch("/api/batch/1", json=data, headers=headers)
     assert r.status_code == 200
 
     # Read the entity and validate data
-    r2 = app_client.get("/batch/1", headers=headers)
+    r2 = app_client.get("/api/batch/1", headers=headers)
     assert r2.status_code == 200
     data2 = json.loads(r.text)
     assert data["name"] == data2["name"]
@@ -98,16 +98,16 @@ def test_update(app_client):
     assert data["brewfatherId"] == data2["brewfatherId"]
 
     # Update missing entity
-    r = app_client.patch("/batch/10", json=data, headers=headers)
+    r = app_client.patch("/api/batch/10", json=data, headers=headers)
     assert r.status_code == 404
 
 def test_delete(app_client):
     # Delete
-    r = app_client.delete("/batch/1", headers=headers)
+    r = app_client.delete("/api/batch/1", headers=headers)
     assert r.status_code == 204
 
     # Check how many are stored
-    r = app_client.get("/batch", headers=headers)
+    r = app_client.get("/api/batch/", headers=headers)
     assert r.status_code == 200
     data = json.loads(r.text)
     assert len(data) == 0
@@ -130,20 +130,20 @@ def test_query(app_client):
     }
 
     # Update existing entity
-    r = app_client.post("/batch", json=data, headers=headers)
+    r = app_client.post("/api/batch/", json=data, headers=headers)
     assert r.status_code == 201
 
-    r = app_client.get("/batch?chipId=012345", headers=headers)
+    r = app_client.get("/api/batch/?chipId=012345", headers=headers)
     assert r.status_code == 200
     data = json.loads(r.text)
     assert len(data) == 1
 
-    r = app_client.get("/batch?chipId=chip1&active=false", headers=headers)
+    r = app_client.get("/api/batch?chipId=chip1&active=false", headers=headers)
     assert r.status_code == 200
     data = json.loads(r.text)
     assert len(data) == 0
 
-    r = app_client.get("/batch?chipId=012345&active=true", headers=headers)
+    r = app_client.get("/api/batch/?chipId=012345&active=true", headers=headers)
     assert r.status_code == 200
     data = json.loads(r.text)
     assert len(data) == 1
@@ -164,7 +164,7 @@ def test_validation(app_client):
     }
 
     # Add new
-    r = app_client.post("/batch", json=data, headers=headers)
+    r = app_client.post("/api/batch/", json=data, headers=headers)
     assert r.status_code == 422
 
     data = {
@@ -182,7 +182,7 @@ def test_validation(app_client):
     }
 
     # Add new
-    r = app_client.post("/batch", json=data, headers=headers)
+    r = app_client.post("/api/batch/", json=data, headers=headers)
     assert r.status_code == 422
 
     data = {
@@ -200,7 +200,7 @@ def test_validation(app_client):
     }
 
     # Add new
-    r = app_client.post("/batch", json=data, headers=headers)
+    r = app_client.post("/api/batch/", json=data, headers=headers)
     assert r.status_code == 422
 
     data = {
@@ -218,7 +218,7 @@ def test_validation(app_client):
     }
 
     # Add new
-    r = app_client.post("/batch", json=data, headers=headers)
+    r = app_client.post("/api/batch/", json=data, headers=headers)
     assert r.status_code == 422
 
     data = {
@@ -236,7 +236,7 @@ def test_validation(app_client):
     }
 
     # Add new
-    r = app_client.post("/batch", json=data, headers=headers)
+    r = app_client.post("/api/batch/", json=data, headers=headers)
     assert r.status_code == 422
 
     data = {
@@ -254,5 +254,5 @@ def test_validation(app_client):
     }
 
     # Add new
-    r = app_client.post("/batch", json=data, headers=headers)
+    r = app_client.post("/api/batch/", json=data, headers=headers)
     assert r.status_code == 422

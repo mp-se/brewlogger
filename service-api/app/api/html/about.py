@@ -29,4 +29,4 @@ batches_service: BatchService = Depends(get_batch_service), devices_service: Dev
 
     data["version"] = get_settings().version
 
-    return get_template().TemplateResponse("about.html", {"request": request, "config": data, "apikey": get_settings().api_key})
+    return get_template().TemplateResponse("about.html", {"request": request, "config": data, "settings": get_settings()})

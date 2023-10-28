@@ -5,9 +5,7 @@
 
 <div class="container-fluid p-3">
 
-  <script>
-      let api = new BrewLoggerAPI(window.location.origin, "{{ apikey }}");
-  </script>
+  {% include 'brewloggerapi.j2' %}
 
   <script>
     function deleteConfimedCallback(id) {

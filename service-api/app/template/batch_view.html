@@ -5,11 +5,7 @@
 
 <div class="container-fluid p-3">
 
-  {% include 'notice.j2' %}
-
-  <script>
-      let api = new BrewLoggerAPI(window.location.origin, "{{ apikey }}");
-  </script>
+  {% include 'brewloggerapi.j2' %}
 
   {% if func == 'view' %}
     <h1 class="h1">Batch - view</h1>

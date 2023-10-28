@@ -9,7 +9,7 @@ headers = {
 }
 
 def test_init(app_client):
-    r = app_client.delete("/test/cleardb", headers=headers)
+    r = app_client.delete("/html/test/cleardb", headers=headers)
     assert r.status_code == 204
 
     data = {
@@ -27,9 +27,9 @@ def test_init(app_client):
     }
 
     # Add new
-    r = app_client.post("/batch", json=data, headers=headers)
+    r = app_client.post("/api/batch/", json=data, headers=headers)
     assert r.status_code == 201
-    #r = app_client.post("/batch", json=data, headers=headers)
+    #r = app_client.post("/api/batch/", json=data, headers=headers)
     #assert r.status_code == 201
 
 
@@ -52,13 +52,13 @@ def test_add(app_client):
     }
 
     # Add new
-    r = app_client.post("/gravity/", json=data, headers=headers)
+    r = app_client.post("/api/gravity/", json=data, headers=headers)
     assert r.status_code == 201
     data1 = json.loads(r.text)
     assert data1["id"] == 1
 
     # Read data and check values
-    r2 = app_client.get("/gravity/1", headers=headers)
+    r2 = app_client.get("/api/gravity/1", headers=headers)
     assert r2.status_code == 200
     data2 = json.loads(r.text)
     assert data["chipId"] == data2["chipId"]
@@ -75,11 +75,11 @@ def test_add(app_client):
     assert data["runTime"] == data2["runTime"]
 
     # Not using a number for index
-    r2 = app_client.get("/gravity/hello", headers=headers)
+    r2 = app_client.get("/api/gravity/hello", headers=headers)
     assert r2.status_code == 422
 
 def test_list(app_client):
-    r = app_client.get("/gravity", headers=headers)
+    r = app_client.get("/api/gravity/", headers=headers)
     assert r.status_code == 200
     data = json.loads(r.text)
     assert len(data) == 1
@@ -101,11 +101,11 @@ def test_update(app_client):
         "runTime": 1.8,    }
 
     # Update existing entity
-    r = app_client.patch("/gravity/1", json=data, headers=headers)
+    r = app_client.patch("/api/gravity/1", json=data, headers=headers)
     assert r.status_code == 200
 
     # Read the entity and validate data
-    r2 = app_client.get("/batch/1", headers=headers)
+    r2 = app_client.get("/api/batch/1", headers=headers)
     assert r2.status_code == 200
     data2 = json.loads(r.text)
     assert data["chipId"] == data2["chipId"]
@@ -123,16 +123,16 @@ def test_update(app_client):
 
 
     # Update missing entity
-    r = app_client.patch("/gravity/10", json=data, headers=headers)
+    r = app_client.patch("/api/gravity/10", json=data, headers=headers)
     assert r.status_code == 404
 
 def test_delete(app_client):
     # Delete
-    r = app_client.delete("/gravity/1", headers=headers)
+    r = app_client.delete("/api/gravity/1", headers=headers)
     assert r.status_code == 204
 
     # Check how many are stored
-    r = app_client.get("/gravity", headers=headers)
+    r = app_client.get("/api/gravity/", headers=headers)
     assert r.status_code == 200
     data = json.loads(r.text)
     assert len(data) == 0
@@ -156,13 +156,13 @@ def test_gravity_batch(app_client):
     }
 
     # Add new
-    r = app_client.post("/gravity/", json=data, headers=headers)
+    r = app_client.post("/api/gravity/", json=data, headers=headers)
     assert r.status_code == 201
-    r = app_client.post("/gravity/", json=data, headers=headers)
+    r = app_client.post("/api/gravity/", json=data, headers=headers)
     assert r.status_code == 201
 
     # Check relation to batch
-    r = app_client.get("/batch/1", headers=headers)
+    r = app_client.get("/api/batch/1", headers=headers)
     assert r.status_code == 200
     data2 = json.loads(r.text)
     assert len(data2["gravity"]) == 2
@@ -182,21 +182,21 @@ def test_ispindel(app_client):
         "battery": 3.85,
         "RSSI": -76.2,
     }
-    r = app_client.post("/gravity/ispindel", json=data)
+    r = app_client.post("/api/gravity/ispindel", json=data)
     assert r.status_code == 200
 
     # Check relation to batch
-    r = app_client.get("/batch/", headers=headers)
+    r = app_client.get("/api/batch/", headers=headers)
     assert r.status_code == 200
     data2 = json.loads(r.text)
     assert len(data2) == 1
 
     data["ID"] = "012346"
-    r = app_client.post("/gravity/ispindel", json=data)
+    r = app_client.post("/api/gravity/ispindel", json=data)
     assert r.status_code == 200
 
     # Check relation to batch
-    r = app_client.get("/batch/", headers=headers)
+    r = app_client.get("/api/batch/", headers=headers)
     assert r.status_code == 200
     data2 = json.loads(r.text)
     assert len(data2) == 2
@@ -220,7 +220,7 @@ def test_validation(app_client):
     }
 
     # Add new
-    r = app_client.post("/gravity/", json=data, headers=headers)
+    r = app_client.post("/api/gravity/", json=data, headers=headers)
     assert r.status_code == 422
 
     data = {
@@ -241,7 +241,7 @@ def test_validation(app_client):
     }
 
     # Add new
-    r = app_client.post("/gravity/", json=data, headers=headers)
+    r = app_client.post("/api/gravity/", json=data, headers=headers)
     assert r.status_code == 422
 
     data = {
@@ -262,7 +262,7 @@ def test_validation(app_client):
     }
 
     # Add new
-    r = app_client.post("/gravity/", json=data, headers=headers)
+    r = app_client.post("/api/gravity/", json=data, headers=headers)
     assert r.status_code == 422
 
     data = {
@@ -283,7 +283,7 @@ def test_validation(app_client):
     }
 
     # Add new
-    r = app_client.post("/gravity/", json=data, headers=headers)
+    r = app_client.post("/api/gravity/", json=data, headers=headers)
     assert r.status_code == 422
 
     data = {
@@ -303,5 +303,5 @@ def test_validation(app_client):
         "runTime": 0.0
     }
 
-    r = app_client.post("/gravity/", json=data, headers=headers)
+    r = app_client.post("/api/gravity/", json=data, headers=headers)
     assert r.status_code == 422

@@ -12,7 +12,6 @@
 
 <script>
     let api = new BrewLoggerAPI(window.location.origin, "{{ apikey }}");
-
     api.setDebug(true);
 
     deviceId = 0;
@@ -221,6 +220,29 @@
       api.deleteBatch(batchId, function(json, status) { 
         assert.equal(JSON.stringify(json), JSON.stringify({})); 
         assert.equal(status, 204); 
+        done(); 
+      });
+    });
+  });
+
+  QUnit.module('8. settings', function() {
+    QUnit.test('1. set debug', function(assert) {
+      const done = assert.async();
+      data = { 
+        "javascript_debug_enabled": true
+      };
+      api.updateSetting(data, function(json, status) { 
+        assert.equal(json["javascript_debug_enabled"], true);
+        done(); 
+      });
+    });
+    QUnit.test('2. set debug', function(assert) {
+      const done = assert.async();
+      data = { 
+        "javascript_debug_enabled": false
+      };
+      api.updateSetting(data, function(json, status) { 
+        assert.equal(json["javascript_debug_enabled"], false);
         done(); 
       });
     });

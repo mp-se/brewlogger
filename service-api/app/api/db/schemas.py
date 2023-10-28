@@ -18,6 +18,13 @@ class ProxyRequest(BaseModel):
     method: str
     body: Optional[str]
 
+class AppSetting(BaseModel):
+    javascript_debug_enabled: bool = Field(default=False)
+
+    api_key_enabled: Optional[bool] = Field(default=True)
+    test_endpoints_enabled: Optional[bool] = Field(default=False)
+    version: Optional[str] = Field(default="")
+
 ################################################################################
 
 class DeviceBase(BaseModel):

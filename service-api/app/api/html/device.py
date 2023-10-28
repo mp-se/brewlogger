@@ -12,7 +12,7 @@ router = APIRouter(prefix="/html/device")
 @router.get("/", response_class=HTMLResponse)
 async def html_list_devices(request: Request, devices_service: DeviceService = Depends(get_device_service)):
     device_list = devices_service.list()
-    return get_template().TemplateResponse("device_list.html", {"request": request, "device_list": device_list, "apikey": get_settings().api_key })
+    return get_template().TemplateResponse("device_list.html", {"request": request, "device_list": device_list, "settings": get_settings() })
 
 @router.get(
     "/{device_id}", response_class=HTMLResponse)
@@ -36,4 +36,4 @@ async def html_get_device_by_id(
         device.url = ""
     
     logger.info(device)
-    return get_template().TemplateResponse("device.html", {"request": request, "device": device, "func": func, "apikey": get_settings().api_key })
+    return get_template().TemplateResponse("device.html", {"request": request, "device": device, "func": func, "settings": get_settings() })

@@ -193,4 +193,13 @@ class BrewLoggerAPI {
   async proxyFetch(url, callback) {
     await this.#request( "/api/device/proxy_fetch", "POST", { "url": url, "method": "get", "body": "" }, callback);
   }
+
+  // New in 0.2.0
+  async getSetting(callback) {
+    await this.#request( "/api/setting/", "GET", {}, callback);
+  }
+
+  async updateSetting(json, callback) {
+    await this.#request( "/api/setting/", "PATCH", json, callback);
+  }
 }

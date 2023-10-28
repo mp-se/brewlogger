@@ -5,11 +5,7 @@
 
 <div class="container-fluid p-3">
 
-  {% include 'notice.j2' %}
-
-  <script>
-      let api = new BrewLoggerAPI(window.location.origin, "{{ apikey }}");
-  </script>
+  {% include 'brewloggerapi.j2' %}
 
   {% if func == 'view' %}
     <h1 class="h1">Device - {{ device.chip_id }} - View</h1>
@@ -120,7 +116,6 @@
       }
 
       function fetchConfigFromDevice() {
-        //api.setDebug(true);
         api.proxyFetch(document.getElementById("url").value + "/api/config", function(json, status) { 
           if(status != 200) {
             showHttpError(status);

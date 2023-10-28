@@ -9,7 +9,7 @@ headers = {
 }
 
 def test_init(app_client):
-    r = app_client.delete("/test/cleardb", headers=headers)
+    r = app_client.delete("/html/test/cleardb", headers=headers)
     assert r.status_code == 204
 
     data = {
@@ -27,7 +27,7 @@ def test_init(app_client):
     }
 
     # Add new
-    r = app_client.post("/batch", json=data, headers=headers)
+    r = app_client.post("/api/batch/", json=data, headers=headers)
     assert r.status_code == 201
 
 
@@ -39,24 +39,24 @@ def test_add(app_client):
     }
 
     # Add new
-    r = app_client.post("/pour/", json=data, headers=headers)
+    r = app_client.post("/api/pour/", json=data, headers=headers)
     assert r.status_code == 201
     data1 = json.loads(r.text)
     assert data1["id"] == 1
 
     # Read data and check values
-    r2 = app_client.get("/pour/1", headers=headers)
+    r2 = app_client.get("/api/pour/1", headers=headers)
     assert r2.status_code == 200
     data2 = json.loads(r.text)
     assert data["pour"] == data2["pour"]
     assert data["volume"] == data2["volume"]
 
     # Not using a number for index
-    r2 = app_client.get("/pour/hello", headers=headers)
+    r2 = app_client.get("/api/pour/hello", headers=headers)
     assert r2.status_code == 422
 
 def test_list(app_client):
-    r = app_client.get("/pour", headers=headers)
+    r = app_client.get("/api/pour/", headers=headers)
     assert r.status_code == 200
     data = json.loads(r.text)
     assert len(data) == 1
@@ -69,16 +69,16 @@ def test_update(app_client):
     }
 
     # Update existing entity
-    r = app_client.patch("/pour/1", json=data, headers=headers)
+    r = app_client.patch("/api/pour/1", json=data, headers=headers)
     assert r.status_code == 200
 
 def test_delete(app_client):
     # Delete
-    r = app_client.delete("/pour/1", headers=headers)
+    r = app_client.delete("/api/pour/1", headers=headers)
     assert r.status_code == 204
 
     # Check how many are stored
-    r = app_client.get("/pour", headers=headers)
+    r = app_client.get("/api/pour/", headers=headers)
     assert r.status_code == 200
     data = json.loads(r.text)
     assert len(data) == 0

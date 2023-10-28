@@ -8,7 +8,7 @@ headers = {
     "Content-Type": "application/json",
 }
 
-r = requests.delete(url + "/test/cleardb", headers=headers)
+r = requests.delete(url + "/api/test/cleardb", headers=headers)
 
 device_data = {
     "chipId": "chip0001",
@@ -19,10 +19,10 @@ device_data = {
     "url": "",
 }
 
-r = requests.post(url + "/device", json=device_data, headers=headers)
+r = requests.post(url + "/api/device", json=device_data, headers=headers)
 
 device_data["chipId"] = "chip0002"
-r = requests.post(url + "/device", json=device_data, headers=headers)
+r = requests.post(url + "/api/device", json=device_data, headers=headers)
 
 device_data["chipId"] = "chip0003"
-r = requests.post(url + "/device", json=device_data, headers=headers)
+r = requests.post(url + "/api/device", json=device_data, headers=headers)

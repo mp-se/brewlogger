@@ -15,7 +15,7 @@ async def html_list_batches(
     batches_service: BatchService = Depends(get_batch_service)
 ):
     batch_list = batches_service.list()
-    return get_template().TemplateResponse("batch_list.html", {"request": request, "batch_list": batch_list, "apikey": get_settings().api_key })
+    return get_template().TemplateResponse("batch_list.html", {"request": request, "batch_list": batch_list, "settings": get_settings() })
 
 @router.get(
     "/{batch_id}", response_class=HTMLResponse)
@@ -55,7 +55,7 @@ async def html_get_batch_by_id(
                 calc["og"] = gravity.gravity
 
         calc["abv"] = (calc["og"] - calc["fg"]) * 131.25
-        return get_template().TemplateResponse("batch_graph.html", {"request": request, "batch": batch, "func": func, "calc": calc, "apikey": get_settings().api_key })
+        return get_template().TemplateResponse("batch_graph.html", {"request": request, "batch": batch, "func": func, "calc": calc, "settings": get_settings() })
 
     devices = devices_service.list()
-    return get_template().TemplateResponse("batch.html", {"request": request, "batch": batch, "func": func, "device_list": devices,"apikey": get_settings().api_key })
+    return get_template().TemplateResponse("batch.html", {"request": request, "batch": batch, "func": func, "device_list": devices, "settings": get_settings() })
