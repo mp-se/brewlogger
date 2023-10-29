@@ -1,10 +1,14 @@
-import logging
+import httpx, logging
+from datetime import datetime
+from json import JSONDecodeError
 from typing import List, Optional
 from fastapi import Depends
 from fastapi.routing import APIRouter
+from starlette.exceptions import HTTPException
 from api.db import models, schemas
 from api.services import BatchService, get_batch_service
 from ..security import api_key_auth
+from ..config import get_settings
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/api/batch")
@@ -82,3 +86,90 @@ async def delete_batch_by_id(
     batch_service: BatchService = Depends(get_batch_service)):
     batch_service.delete(batch_id)
 
+@router.get(
+    "/brewfather/",
+    response_model=List[schemas.Batch],
+    dependencies=[Depends(api_key_auth)])
+async def get_batches_from_brewfather(
+    batch_service: BatchService = Depends(get_batch_service)
+) -> List[models.Batch]:
+
+    try:
+        async with httpx.AsyncClient() as client:
+            url = "https://api.brewfather.app/v2/batches"
+            data = { "include": "name,recipe.name,recipe.style.type,brewer,brewDate,estimatedColor,estimatedIbu,measuredAbv", "complete": False, "status": "Completed", "limit": 100 }
+            res = await client.get(url=url, params=data, auth=(get_settings().brewfather_user_key, get_settings().brewfather_api_key))
+            json = res.json()
+
+            for batch in json:
+                logging.info("Processing response from brewfather API #%d", batch["batchNo"])
+                logging.info(batch)
+
+                batch_list = batch_service.search_brewfatherId(batch["_id"])
+
+                if len(batch_list) == 0: 
+                    logging.info("Creating batch for brewfather #%d", batch["batchNo"])
+                    newBatch = schemas.BatchCreate(
+                        name = batch["name"],
+                        chipId = "000000",
+                        description = "Imported from brewfather",
+                        brewDate = datetime.fromtimestamp(batch["brewDate"]/1000.0).strftime("%Y-%m-%d"),
+                        style = "",
+                        brewer = batch["brewer"],
+                        brewfatherId = batch["_id"],
+                        active = True,
+                        abv = 0,
+                        ebc = 0,
+                        ibu = 0,
+                    )
+
+                    if "style" in batch["recipe"]: 
+                      newBatch.style = batch["recipe"]["style"]["type"] 
+                    if "measuredAbv" in batch:
+                      newBatch.abv = batch["measuredAbv"]
+                    if "estimatedColor" in batch:
+                      newBatch.ebc = batch["estimatedColor"]
+                    if "estimatedIbu" in batch:
+                      newBatch.ibu = batch["estimatedIbu"]
+
+                    batch_service.create(newBatch)
+                else:
+                    logging.info("Updating batch for brewfather #%d", batch["batchNo"])
+
+                    updBatch = schemas.BatchUpdate(
+                        name = batch["name"],
+                        chipId = batch_list[0].chip_id,
+                        description = batch_list[0].description,
+                        brewDate = datetime.fromtimestamp(batch["brewDate"]/1000.0).strftime("%Y-%m-%d"),
+                        style = batch_list[0].style,
+                        brewer = batch["brewer"],
+                        brewfatherId = batch["_id"],
+                        active = batch_list[0].active,
+                        abv = batch_list[0].abv,
+                        ebc = batch_list[0].ebc,
+                        ibu = batch_list[0].ibu,
+                    )
+
+                    if "style" in batch["recipe"]: 
+                      updBatch.style = batch["recipe"]["style"]["type"] 
+                    if "measuredAbv" in batch:
+                      updBatch.abv = batch["measuredAbv"]
+                    if "estimatedColor" in batch:
+                      updBatch.ebc = batch["estimatedColor"]
+                    if "estimatedIbu" in batch:
+                      updBatch.ibu = batch["estimatedIbu"]
+
+                    batch_service.update(batch_list[0].id, updBatch)
+
+    except JSONDecodeError:
+        logging.error("Unable to parse JSON response")
+        raise HTTPException(
+            status_code=400,
+            detail=f"Unable to parse JSON from remote endpoint.")
+    except httpx.ConnectError:
+        logging.error("Unable to connect to device")
+        raise HTTPException(
+            status_code=400,
+            detail=f"Unable to connect to remote endpoint.")
+
+    return batch_service.list()

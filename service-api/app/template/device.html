@@ -9,7 +9,7 @@
 
   {% if func == 'view' %}
     <h1 class="h1">Device - {{ device.chip_id }} - View</h1>
-    {% set readonly = 'readonly' %}
+    {% set readonly = 'disabled' %}
   {% elif func == 'create' %}
     <h1 class="h1">Device - Create new</h1>
     {% set readonly = '' %}
@@ -27,7 +27,7 @@
         ChipID must be a 6 letter string using only 0-9,A-F characters, example: 01A2B3.
       </div>
       {% else %}
-      <div class="col-sm-3"><div class="form-control">{{ device.chip_id }}</div></div>
+      <div class="col-sm-3"><input type="text" class="form-control" value="{{ device.chip_id }}" disabled></div>
       {% endif %}
     </div>
     <div class="row mb-2">
@@ -87,7 +87,7 @@
     </div>
     <div class="row mb-2">
       <div class="col-sm-2 col-form-label">Config:</div>
-      <div class="col-sm-7"><input type="text" class="form-control" id="config" value="{{ device.config }}" placeholder="Will be fetched from device" readonly></div>
+      <div class="col-sm-7"><input type="text" class="form-control" id="config" value="{{ device.config }}" placeholder="Will be fetched from device" disabled></div>
     </div>
 
     <div class="row mb-2">

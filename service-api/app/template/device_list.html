@@ -11,8 +11,8 @@
     function deleteConfimedCallback(id) {
       api.deleteDevice(id, function(json, status, success) { 
         if(success) {
-          console.log("Delete completed", json, status, success); 
-          location.reload(); 
+          showSuccess("Record deleted, refreshing in 5 seconds.");
+          setTimeout(function() { location.reload() }, 5000);
         } else {
           showError("Failed to delete record.");
         }       
@@ -47,7 +47,7 @@
   {% endfor %}
 
   <div class="row mb-2">
-    <div class="col-sm-5">
+    <div class="col-sm-10">
       <button type="button" class="btn btn-primary" onclick="event.preventDefault(); window.location.href='/html/device/0?func=create'">Add new device</button>
     </div>
   </div>

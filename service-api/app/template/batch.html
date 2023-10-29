@@ -9,7 +9,7 @@
 
   {% if func == 'view' %}
     <h1 class="h1">Batch - {{ batch.name }} - View</h1>
-    {% set readonly = 'readonly' %}
+    {% set readonly = 'disabled' %}
   {% elif func == 'create' %}
     <h1 class="h1">Batch - Create new</h1>
     {% set readonly = '' %}
@@ -58,10 +58,6 @@
       <div class="col-sm-7"><input type="text" class="form-control" id="brewer" value="{{ batch.brewer }}" placeholder="brewer" {{ readonly }}></div>
     </div>
     <div class="row mb-2">
-      <div class="col-sm-2 col-form-label">Brewfather ID:</div>
-      <div class="col-sm-7"><input type="text" class="form-control" id="brewfather_id" value="{{ batch.brewfather_id }}" {{ readonly }}></div>
-    </div>
-    <div class="row mb-2">
       <div class="col-sm-2 col-form-label">ABV:</div>
       <div class="col-sm-3"><input type="number" step="0.01" min="0.00" max="30.00" class="form-control" id="abv" value="{{ batch.abv }}"  {{ readonly }}></div>
     </div>
@@ -77,6 +73,12 @@
       <div class="col-sm-2 col-form-label">Active:</div>
       <div class="col-sm-3 py-1"><input type="checkbox" class="form-check-input" id="active" {% if batch.active %} checked {% endif %} {% if readonly %} disabled {% endif %} ></div>
     </div>
+    {% if batch.brewfather_id != "" %}
+    <div class="row mb-2">
+      <div class="col-sm-2 col-form-label">Brewfather ID:</div>
+      <div class="col-sm-3"><input type="text" class="form-control" id="brewfather_id" value="{{ batch.brewfather_id }}" disabled></div>
+    </div>
+    {% endif %}
 
     <div class="row mb-2">
       <div class="col-sm-2 col-form-label"></div>

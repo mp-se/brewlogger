@@ -1,4 +1,6 @@
 API_KEY="akljnv13bvi2vfo0b0bw789jlljsdf"
-DATABASE_URL="sqlite:///./kegmonapi.sqlite"
+DATABASE_URL="sqlite:///./brewlogger.sqlite"
 API_KEY_ENABLED=false
 TEST_ENDPOINTS_ENABLED=true
+BREWFATHER_API_KEY=
+BREWFATHER_USER_KEY=

@@ -28,3 +28,9 @@ class BatchService(BaseService[models.Batch, schemas.BatchCreate, schemas.BatchU
         objs: List[self.model] = self.db_session.scalars(select(self.model).filter_by(**filters)).all()
         logging.info("Fetched batches based on active=%s + chipId=%s, records found %d", active, chipId, len(objs))
         return objs
+
+    def search_brewfatherId(self, id: int) -> List[models.Batch]:
+        filters = { "brewfather_id": id }
+        objs: List[self.model] = self.db_session.scalars(select(self.model).filter_by(**filters)).all()
+        logging.info("Fetched batches based on brewfather_id=%s, records found %d", id, len(objs))
+        return objs

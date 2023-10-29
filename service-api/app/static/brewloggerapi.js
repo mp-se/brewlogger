@@ -212,4 +212,8 @@ class BrewLoggerAPI {
   async addGravityList(json, callback) {
     await this.#request( "/api/gravity/list/", "POST", json, callback);
   }
+
+  async synchronizeBrewfather(callback) {
+    await this.#request( "/api/batch/brewfather/", "GET", {}, callback);
+  }
 }

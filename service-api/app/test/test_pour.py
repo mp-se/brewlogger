@@ -19,7 +19,7 @@ def test_init(app_client):
         "brewDate": "f4",
         "style": "f5",
         "brewer": "f6",
-        "brewfatherId": "f7",
+        "brewfatherId": "",
         "active": True,
         "abv": 0.1,
         "ebc": 0.2,

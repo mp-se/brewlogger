@@ -117,7 +117,7 @@ class BatchBase(BaseModel):
     abv: float = Field(description="Alcohol level of the batch")
     ebc: float = Field(description="Color of the batch")
     ibu: float = Field(description="Bitterness of the batch")
-    brewfather_id: str = Field(min_length=0, max_length=20, description="ID used in brewfather")
+    brewfather_id: str = Field(min_length=0, max_length=30, description="ID used in brewfather")
 
 class BatchUpdate(BatchBase):
     pass

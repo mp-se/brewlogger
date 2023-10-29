@@ -13,7 +13,7 @@ class Device(Base):
     # TODO: Ensure that chipId only contains lowercase letters
 
     id = Column(Integer, primary_key=True, index=True)
-    chip_id = Column(String(6), unique=False, index=True)
+    chip_id = Column(String(6), unique=True, index=True)
     chip_family = Column(String(10), nullable=False)
     software = Column(String(40), nullable=False)
     mdns = Column(String(40), nullable=False)
@@ -37,7 +37,7 @@ class Batch(Base):
     ebc = Column(Float, default=0.0)
     ibu = Column(Float, default=0.0)
 
-    brewfather_id = Column(String)
+    brewfather_id = Column(String(30))
 
     gravity = relationship("Gravity", back_populates="batch", cascade="all,delete")
     pour = relationship("Pour", back_populates="batch", cascade="all,delete")
