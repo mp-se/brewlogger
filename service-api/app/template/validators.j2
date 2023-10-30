@@ -4,8 +4,10 @@
     let chipId = document.getElementById("chip_id");      
     
     if (regex.test(chipId.value)) {
+      console.log("ChipID is valid");
       chipId.classList.remove("is-invalid");
     } else {
+      console.log("ChipID is invalid");
       chipId.classList.add("is-invalid");
     }
   }

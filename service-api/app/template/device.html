@@ -103,78 +103,76 @@
         <button type="button" class="btn btn-secondary" onclick="event.preventDefault(); window.location.href='/html/device/'">List</button>
      </div>
     </div>
-
-    {% include 'validators.j2' %}
-
-    <script>
-      let chipId = document.getElementById("chip_id");
-      
-      if(chipId != null) {
-        chipId.addEventListener("keyup", () => {
-          validateChipId();
-        });        
-      }
-
-      function fetchConfigFromDevice() {
-        api.proxyFetch(document.getElementById("url").value + "/api/config", function(json, status, success) { 
-          if(!success) {
-            showHttpError(status);
-          } else {
-            document.getElementById("config").value = JSON.stringify(json);
-          }
-        });
-      }
-
-      function saveDevice() {
-        json = {
-          "chipFamily": document.getElementById("chip_family").value,
-          "software": document.getElementById("software").value,
-          "mdns": document.getElementById("mdns").value,
-          "config": document.getElementById("config").value,
-          "url": document.getElementById("url").value
-        };
-
-        console.log("Updating data: " + JSON.stringify(json));
-
-        api.updateDevice({{ device.id }}, json, function(json, status, success) { 
-          if(!success)
-            showHttpError(status);
-        });
-      }
-
-      function createDevice() {
-        const form = document.getElementById('form');
-        console.log(form);
-        form.classList.add('was-validated');
-
-        const fields = document.querySelectorAll('.is-invalid')
-
-        if( fields != null ) {
-          showError("There are fields that contain invalida data, unable to create");
-          return;
-        }
-
-        json = {
-          "chipId": document.getElementById("chip_id").value,
-          "chipFamily": document.getElementById("chip_family").value,
-          "software": document.getElementById("software").value,
-          "mdns": document.getElementById("mdns").value,
-          "config": document.getElementById("config").value,
-          "url": document.getElementById("url").value
-        };
-
-        console.log("Adding data: " + JSON.stringify(json));
-
-        api.addDevice(json, function(json, status, success) { 
-          if(!success)
-            showHttpError(status);
-          else 
-            window.location.href = "/html/device/" + json["id"] + "?func=edit";
-        });
-      }
-    </script>
-
   </form>
+
+  {% include 'validators.j2' %}
+
+  <script>
+    let chipId = document.getElementById("chip_id");
+    
+    if(chipId != null) {
+      chipId.addEventListener("keyup", () => {
+        validateChipId();
+      });        
+    }
+
+    function fetchConfigFromDevice() {
+      api.proxyFetch(document.getElementById("url").value + "/api/config", function(json, status, success) { 
+        if(!success) {
+          showHttpError(status);
+        } else {
+          document.getElementById("config").value = JSON.stringify(json);
+        }
+      });
+    }
+
+    function saveDevice() {
+      json = {
+        "chipFamily": document.getElementById("chip_family").value,
+        "software": document.getElementById("software").value,
+        "mdns": document.getElementById("mdns").value,
+        "config": document.getElementById("config").value,
+        "url": document.getElementById("url").value
+      };
+
+      console.log("Updating data: " + JSON.stringify(json));
+
+      api.updateDevice({{ device.id }}, json, function(json, status, success) { 
+        if(!success)
+          showHttpError(status);
+      });
+    }
+
+    function createDevice() {
+      const fields = document.querySelectorAll('.is-invalid')
+
+      if( fields != null && fields.length>0) {
+        showError("There are fields that contain invalida data, unable to create");
+        return;
+      }
+
+      const form = document.getElementById('form');
+      form.classList.add('was-validated');
+
+      json = {
+        "chipId": document.getElementById("chip_id").value,
+        "chipFamily": document.getElementById("chip_family").value,
+        "software": document.getElementById("software").value,
+        "mdns": document.getElementById("mdns").value,
+        "config": document.getElementById("config").value,
+        "url": document.getElementById("url").value
+      };
+
+      console.log("Adding data: " + JSON.stringify(json));
+
+      api.addDevice(json, function(json, status, success) { 
+        if(!success)
+          showHttpError(status);
+        else 
+          window.location.href = "/html/device/" + json["id"] + "?func=edit";
+      });
+    }
+  </script>
 </div>
 
 {% endblock %}
