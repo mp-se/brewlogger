@@ -115,8 +115,11 @@ async def create_gravity_using_ispindel_format(
             corr_gravity = json["corr-gravity"]
         if "gravity-unit" in json:
             gravity_units = json["gravity-unit"]
+            if gravity_units == 'G':
+                gravity_units = 'SG'
         if "run-time" in json:
             run_time = json["run-time"]
+
 
         # Check if there is an active batch
         batchList = batch_service.search_chipId_active(json["ID"], True)
