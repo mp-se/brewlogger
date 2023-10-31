@@ -20,27 +20,30 @@
   </div>
 
   <div class="row mb-2">
-    <div class="col-sm-1">{{ batch.id }}</div>
+    <div class="col-sm-2">{{ batch.id }}</div>
     <div class="col-sm-2">{{ batch.name }}</div>
     <div class="col-sm-2">{{ batch.chip_id }}</div>
     <div class="col-sm-2">{{ batch.brew_date }}</div>
-    <div class="col-sm-5">{{ batch.active }}</div>
+    <div class="col-sm-2">{{ batch.active }}</div>
+    <div class="col-sm-2">{{ batch.active }}</div>
   </div>
 
   <div class="row mb-2">
-    <div class="col-sm-1 list-header"></div>
     <div class="col-sm-2 list-header">FG</div>
     <div class="col-sm-2 list-header">OG</div>
     <div class="col-sm-2 list-header">Est. ABV</div>
-    <div class="col-sm-5 list-header"></div>
+    <div class="col-sm-2 list-header">Start</div>
+    <div class="col-sm-2 list-header">End</div>
+    <div class="col-sm-2 list-header">Days</div>
   </div>
 
   <div class="row mb-2">
-    <div class="col-sm-1"></div>
     <div class="col-sm-2">{{ "%0.4f" | format(calc.fg) }}</div>
     <div class="col-sm-2">{{ "%0.4f" | format(calc.og) }}</div>
     <div class="col-sm-2">{{ "%0.2f" | format(calc.fg) }} %</div>
-    <div class="col-sm-5"></div>
+    <div class="col-sm-2">{{ calc.dateMin }}</div>
+    <div class="col-sm-2">{{ calc.dateMax }}</div>
+    <div class="col-sm-2">{{ calc.dateDelta }}</div>
   </div>
 
   <hr>

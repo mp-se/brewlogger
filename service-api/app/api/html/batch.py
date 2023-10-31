@@ -1,4 +1,5 @@
 import logging
+from datetime import datetime
 from fastapi import Depends, Request
 from fastapi.routing import APIRouter
 from fastapi.responses import HTMLResponse
@@ -45,7 +46,9 @@ async def html_get_batch_by_id(
         batch.brewfather_id = ""
     
     if func == "graph":
-        calc = { "fg": 2.0, "og": 0.0, "abv": 0.0 }
+        dateMin = datetime.now()
+        dateMax = datetime.fromtimestamp(0)
+        calc = { "fg": 2.0, "og": 0.0, "abv": 0.0, "records": len(batch.gravity) }
 
         # calculate the abv based on min / max values (gravity recordings)
         for gravity in batch.gravity:
@@ -53,6 +56,17 @@ async def html_get_batch_by_id(
                 calc["fg"] = gravity.gravity
             if gravity.gravity > calc["og"]:
                 calc["og"] = gravity.gravity
+
+            if gravity.created < dateMin:
+                dateMin = gravity.created
+            if gravity.created > dateMax:
+                dateMax = gravity.created
+
+
+        calc["dateMin"] = dateMin.strftime('%Y-%m-%d')
+        calc["dateMax"] = dateMax.strftime('%Y-%m-%d')
+        calc["dateDelta"] = (dateMax - dateMin).days
+        logging.info(calc)
 
         calc["abv"] = (calc["og"] - calc["fg"]) * 131.25
         return get_template().TemplateResponse("batch_graph.html", {"request": request, "batch": batch, "func": func, "calc": calc, "settings": get_settings() })
