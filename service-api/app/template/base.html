@@ -77,6 +77,25 @@
       </ul>
     </div>
 
+    <script>
+      function lockScreen(flag) {
+        let lstInput = document.querySelectorAll("input");
+        Array.from(lstInput, i => {
+          i.disabled = flag;
+        });
+
+        let lstButton = document.querySelectorAll("button");
+        Array.from(lstButton, b => {
+          b.disabled = flag;
+        });
+
+        let lstSelect = document.querySelectorAll("select");
+        Array.from(lstSelect, s => {
+          s.disabled = flag;
+        });
+      }
+    </script>
+
   {% block content required %}
 
   {% endblock %}
