@@ -53,9 +53,6 @@
           {% endfor %}
         </select>
       </div>
-      <!--
-      <div class="col-sm-4"><input type="text" maxlength="10" class="form-control" id="chip_family" value="{{ device.chip_family }}" {{ readonly }}></div>
-      -->
     </div>
     <div class="row mb-2">
       <div class="col-sm-2 col-form-label">Software:</div>
@@ -75,10 +72,6 @@
           {% endfor %}
         </select>
       </div>
-
-      <!--
-      <div class="col-sm-4"><input type="text" maxlength="40" class="form-control" id="software" value="{{ device.software }}" {{ readonly }}></div>
-      -->
     </div>
     <div class="row mb-2">
       <div class="col-sm-2 col-form-label">Device URL:</div>
@@ -95,7 +88,7 @@
       <div class="col-sm-4 col-form-label">
       {% if func == 'edit' %}
         <button type="button" class="btn btn-primary" onclick="saveDevice()">Save</button>
-        <button type="button" class="btn btn-secondary" onclick="window.location.reload()">Cancel</button>
+        <button type="button" class="btn btn-secondary" onclick="window.location.href='/html/device/'">Cancel</button>
       {% endif %}
       {% if func == 'create' %}
         <button type="button" class="btn btn-primary" onclick="createDevice()">Create</button>
