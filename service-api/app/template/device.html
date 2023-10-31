@@ -27,7 +27,7 @@
         ChipID must be a 6 letter string using only 0-9,A-F characters, example: 01A2B3.
       </div>
       {% else %}
-      <div class="col-sm-3"><input type="text" class="form-control" value="{{ device.chip_id }}" disabled></div>
+      <div class="col-sm-3"><input type="text" class="form-control" value="{{ device.chip_id }}" disabled readonly></div>
       {% endif %}
     </div>
     <div class="row mb-2">
@@ -87,7 +87,7 @@
     </div>
     <div class="row mb-2">
       <div class="col-sm-2 col-form-label">Config:</div>
-      <div class="col-sm-7"><input type="text" class="form-control" id="config" value="{{ device.config }}" placeholder="Will be fetched from device" disabled></div>
+      <div class="col-sm-7"><input type="text" class="form-control" id="config" value="{{ device.config }}" placeholder="Will be fetched from device" disabled readonly></div>
     </div>
 
     <div class="row mb-2">
@@ -117,16 +117,21 @@
     }
 
     function fetchConfigFromDevice() {
+      lockScreen(true);
+
       api.proxyFetch(document.getElementById("url").value + "/api/config", function(json, status, success) { 
         if(!success) {
           showHttpError(status);
         } else {
           document.getElementById("config").value = JSON.stringify(json);
         }
+        lockScreen(false);
       });
     }
 
     function saveDevice() {
+      lockScreen(true);
+
       json = {
         "chipFamily": document.getElementById("chip_family").value,
         "software": document.getElementById("software").value,
@@ -138,12 +143,19 @@
       console.log("Updating data: " + JSON.stringify(json));
 
       api.updateDevice({{ device.id }}, json, function(json, status, success) { 
-        if(!success)
+        if(!success) {
           showHttpError(status);
+          lockScreen(false);
+        } else {
+          showSuccess("Record updated.");
+          setTimeout(function() { window.location.href='/html/device/'; }, 500);
+        }
       });
     }
 
     function createDevice() {
+      lockScreen(true);
+
       const fields = document.querySelectorAll('.is-invalid')
 
       if( fields != null && fields.length>0) {
@@ -166,10 +178,14 @@
       console.log("Adding data: " + JSON.stringify(json));
 
       api.addDevice(json, function(json, status, success) { 
-        if(!success)
+        if(!success) {
           showHttpError(status);
-        else 
-          window.location.href = "/html/device/" + json["id"] + "?func=edit";
+          lockScreen(false);
+        } else {
+          showSuccess("Record added.");
+          setTimeout(function() { window.location.href='/html/device/'; }, 500);
+          // setTimeout(function() { window.location.href = "/html/device/" + json["id"] + "?func=edit"; }, 500);
+        }          
       });
     }
   </script>
