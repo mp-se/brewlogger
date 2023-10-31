@@ -33,7 +33,7 @@ def create_app() -> FastAPI:
 
     @app.get("/", response_class=HTMLResponse)
     async def html_get_index(request: Request):
-        return get_template().TemplateResponse("index.html", {"request": request})
+        return get_template().TemplateResponse("index.html", {"request": request, "settings": get_settings()})
 
     app.include_router(apiDevice.router)
     app.include_router(apiBatch.router)
