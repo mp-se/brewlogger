@@ -101,6 +101,11 @@ async def fetch_data_from_device(
         logging.error("Unable to connect to device")
         raise HTTPException(
             status_code=400,
-            detail=f"Unable to connect to remote endpoint.")
+            detail=f"Unable to connect to remote endpoint (ConnectError).")
+    except httpx.ConnectTimeout:
+        logging.error("Unable to connect to device")
+        raise HTTPException(
+            status_code=400,
+            detail=f"Unable to connect to remote endpoint (ConnectTimeout).")
     #except:
     #    logging.error("Unknown error occured when trying to fetch data from remote")
