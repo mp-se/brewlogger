@@ -11,8 +11,8 @@
     function deleteConfimedCallback(id) {
       api.deleteBatch(id, function(json, status, success) { 
         if(success) {
-          showSuccess("Record deleted, refreshing in 5 seconds.");
-          setTimeout(function() { location.reload() }, 5000);
+          showSuccess("Record deleted.");
+          setTimeout(function() { location.reload(); }, 500);
         } else {
           showError("Failed to delete record.");
         }       
