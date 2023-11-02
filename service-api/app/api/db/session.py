@@ -21,7 +21,7 @@ models.Base.metadata.create_all(bind=engine)
 
 @lru_cache
 def create_session() -> scoped_session:
-    logger.info("Creating database session.")
+    logging.info("Creating database session.")
     Session = scoped_session(sessionmaker(autocommit=False, autoflush=False, bind=engine))
     return Session
 

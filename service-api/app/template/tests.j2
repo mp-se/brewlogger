@@ -121,6 +121,10 @@
       api.deleteDatabase(function() { console.log("Data deleted"); if(autoRefresh) location.reload(); });
   }
 
+  function migrateDatabase() {
+      api.migrateDatabase(function() { console.log("Database migrated"); if(autoRefresh) location.reload(); });
+  }
+
   async function generateBatches() {
     console.log("Loading data to database using API.");
 

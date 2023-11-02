@@ -245,4 +245,8 @@ class BrewLoggerAPI {
   async addPressureList(json, callback) {
     await this.#request( "/api/pressure/list/", "POST", json, callback);
   }
+
+  async migrateDatabase(callback) {
+    await this.#request( "/html/test/migrate", "PATCH", {}, callback);
+  }
 }

@@ -2,6 +2,7 @@ import logging
 from fastapi import Depends, Request
 from fastapi.routing import APIRouter
 from fastapi.responses import HTMLResponse
+from sqlalchemy.exc import OperationalError
 from api.db.session import engine
 from sqlalchemy import text
 from ..security import api_key_auth
@@ -10,6 +11,24 @@ from ..config import get_template, get_settings
 logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/html/test")
+
+@router.patch(
+    "/migrate",
+    status_code=200,
+    dependencies=[Depends(api_key_auth)])
+async def check_and_migrate_database():
+    logging.info("Running sql commands to migrate database from v0.2 to v.3")
+    with engine.connect() as con:
+        try:
+            con.execute(text('ALTER TABLE gravity DROP COLUMN name;'))
+            con.execute(text('ALTER TABLE gravity DROP COLUMN chip_id;'))
+            con.execute(text('ALTER TABLE gravity DROP COLUMN interval;'))
+            con.execute(text('ALTER TABLE gravity DROP COLUMN token;'))
+            con.execute(text('ALTER TABLE gravity DROP COLUMN temp_units;'))
+            con.execute(text('ALTER TABLE gravity DROP COLUMN gravity_units;'))
+            con.commit()
+        except OperationalError:
+            logging.error("Failed to update database.")
 
 @router.delete(
     "/cleardb",
