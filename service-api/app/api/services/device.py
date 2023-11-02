@@ -10,7 +10,7 @@ logger = logging.getLogger(__name__)
 class DeviceService(BaseService[models.Device, schemas.DeviceCreate, schemas.DeviceUpdate]):
     def __init__(self, db_session: Session):
         super(DeviceService, self).__init__(models.Device, db_session)
-
+    
     def search_chipId(self, chipId: str) -> List[models.Device]:
         filters = { "chip_id": chipId }
         objs: List[self.model] = self.db_session.scalars(select(self.model).filter_by(**filters)).all()

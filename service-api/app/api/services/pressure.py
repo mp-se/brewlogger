@@ -8,11 +8,11 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-class GravityService(BaseService[models.Gravity, schemas.GravityCreate, schemas.GravityUpdate]):
+class PressureService(BaseService[models.Pressure, schemas.PressureCreate, schemas.PressureUpdate]):
     def __init__(self, db_session: Session):
-        super(GravityService, self).__init__(models.Gravity, db_session)
+        super(PressureService, self).__init__(models.Pressure, db_session)
 
-    def create(self, obj: schemas.GravityCreate) -> models.Gravity:
+    def create(self, obj: schemas.PressureCreate) -> models.Pressure:
         batch = self.db_session.get(models.Batch, obj.batch_id)
         logging.info("Searching for batch with id=%s %s", obj.batch_id, batch)
         if batch is None:
@@ -20,9 +20,9 @@ class GravityService(BaseService[models.Gravity, schemas.GravityCreate, schemas.
                 status_code=400,
                 detail=f"Batch with id = {obj.batch_id} not found.",
             )
-        return super(GravityService, self).create(obj)
+        return super(PressureService, self).create(obj)
 
-    def createList(self, lst: List[schemas.GravityCreate]) -> List[models.Gravity]:
+    def createList(self, lst: List[schemas.PressureCreate]) -> List[models.Pressure]:
         batch = self.db_session.get(models.Batch, lst[0].batch_id)
         logging.info("Searching for batch with id=%s %s", lst[0].batch_id, batch)
         if batch is None:
@@ -30,10 +30,10 @@ class GravityService(BaseService[models.Gravity, schemas.GravityCreate, schemas.
                 status_code=400,
                 detail=f"Batch with id = {lst[0].batch_id} not found.",
             )
-        return super(GravityService, self).createList(lst)
-
-    def search(self, chipId: str) -> List[models.Gravity]:
+        return super(PressureService, self).createList(lst)
+    
+    def search(self, chipId: str) -> List[models.Pressure]:
         filters = { "chip_id": chipId }
         objs: List[self.model] = self.db_session.scalars(select(self.model).filter_by(**filters)).all()
-        logging.info("Fetched gravity based on chipId=%s, records found %d", chipId, len(objs))
+        logging.info("Fetched pressure based on chipId=%s, records found %d", chipId, len(objs))
         return objs

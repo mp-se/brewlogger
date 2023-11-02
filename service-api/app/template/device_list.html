@@ -42,6 +42,7 @@
       <button type="button" class="btn btn-primary btn-sm" onclick="window.location='/html/device/{{ device.id }}?func=edit'"><i class="bi bi-pencil-square"></i></button>
       <button type="button" class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#confirm-delete-modal" data-bs-value="{{ device.mdns }}" data-bs-callback="deleteConfimedCallback" data-bs-id="{{ device.id }}"><i class="bi bi-file-x"></i></button>
       <button type="button" class="btn btn-info btn-sm" onclick="window.location='/html/device/{{ device.id }}?func=view'"><i class="bi bi-eye"></i></button>
+      <button type="button" class="btn btn-dark btn-sm" onclick="window.location='/html/batch/?chipId={{ device.chip_id }}'"><i class="bi bi-boxes"></i></button>
     </div>
   </div>
   {% endfor %}

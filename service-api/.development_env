@@ -1,4 +1,4 @@
-API_KEY="akljnv13bvi2vfo0b0bw789jlljsdf"
+API_KEY_1="akljnv13bvi2vfo0b0bw789jlljsdf"
 DATABASE_URL="sqlite:///./brewlogger.sqlite"
 API_KEY_ENABLED=false
 TEST_ENDPOINTS_ENABLED=true

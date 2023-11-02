@@ -21,6 +21,7 @@ async def delete_all_records_from_databas():
         con.execute(text('DELETE FROM pour'))
         con.execute(text('DELETE FROM device'))
         con.execute(text('DELETE FROM batch'))
+        con.execute(text('DELETE FROM pressure'))
         con.commit()
 
 @router.get(

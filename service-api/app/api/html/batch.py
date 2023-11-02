@@ -13,9 +13,14 @@ router = APIRouter(prefix="/html/batch")
 @router.get("/", response_class=HTMLResponse)
 async def html_list_batches(
     request: Request, 
+    chipId: str = "*",
     batches_service: BatchService = Depends(get_batch_service)
 ):
-    batch_list = batches_service.list()
+    if chipId == "*":
+        batch_list = batches_service.list()
+    else:
+        batch_list = batches_service.search_chipId(chipId)
+
     return get_template().TemplateResponse("batch_list.html", {"request": request, "batch_list": batch_list, "settings": get_settings() })
 
 @router.get(
@@ -62,13 +67,18 @@ async def html_get_batch_by_id(
             if gravity.created > dateMax:
                 dateMax = gravity.created
 
-
         calc["dateMin"] = dateMin.strftime('%Y-%m-%d')
         calc["dateMax"] = dateMax.strftime('%Y-%m-%d')
-        calc["dateDelta"] = (dateMax - dateMin).days
+        calc["dateDelta"] = (dateMax - dateMin).days + 1
         logging.info(calc)
 
         calc["abv"] = (calc["og"] - calc["fg"]) * 131.25
+
+        def sort_created(item):
+            return item.created
+
+        batch.gravity = sorted(batch.gravity, key=sort_created)
+        batch.pressure = sorted(batch.pressure, key=sort_created)
         return get_template().TemplateResponse("batch_graph.html", {"request": request, "batch": batch, "func": func, "calc": calc, "settings": get_settings() })
 
     devices = devices_service.list()

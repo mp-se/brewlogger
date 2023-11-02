@@ -50,18 +50,12 @@
       dt.setMinutes( dt.getMinutes() + 180);
 
       data = {
-          "name": "name",
-          "chipId": "000003",
-          "token": "token",
-          "interval": 1,
           "temperature": Math.random()*20,
-          "tempUnits": "C",
           "gravity": Math.random()+1,
           "angle": 34.45,
           "battery": Math.random()*5,
           "rssi": -76.2,
           "corrGravity": 1.230,
-          "gravityUnits": "SG",
           "runTime": 12,
           "batchId": id,
           "created": dt.toISOString(),
@@ -72,7 +66,40 @@
 
     if(autoRefresh) location.reload();
   }
- 
+
+  async function generatePressureData(cnt) {
+    id = 0;
+
+    await api.getBatchListByChipIdActive("000001", true, function(json, status) { 
+      console.log("Fetched list of batches"); 
+      console.log(json);
+      id = json[0].id;
+    });
+
+    console.log("Using batch id", id);
+
+    dt = Date.parse("2023-10-10 01:00:0");
+    dt = new Date(dt);
+
+    for( i = 0; i < cnt; i++ ) {
+      dt.setMinutes( dt.getMinutes() + 5);
+
+      data = {
+          "temperature": Math.random()*20,
+          "pressure": Math.random()+1,
+          "battery": Math.random()*5,
+          "rssi": -76.2,
+          "runTime": 12,
+          "batchId": id,
+          "created": dt.toISOString(),
+      }
+          
+     await api.addPressure(data, function() { console.log("Data posted"); });
+    }
+
+    if(autoRefresh) location.reload();
+  }
+
   function ispindelSimulation() {
     data = {
         "name": "name",

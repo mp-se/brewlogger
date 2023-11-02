@@ -32,58 +32,53 @@ def test_init(app_client):
     #r = app_client.post("/api/batch/", json=data, headers=headers)
     #assert r.status_code == 201
 
+
 def test_add(app_client):
     data = {
         "batchId": 1,
-        "temperature": 0.2,
-        "gravity": 0.3,
-        "angle": 0.4,
+        "temperature": 0,
+        "pressure": 0.3,
         "battery": 0.5,
         "rssi": 0.6,
-        "corrGravity": 0.7,
         "runTime": 0.8
     }
 
     # Add new
-    r = app_client.post("/api/gravity/", json=data, headers=headers)
+    r = app_client.post("/api/pressure/", json=data, headers=headers)
     assert r.status_code == 201
     data1 = json.loads(r.text)
     assert data1["id"] == 1
 
     # Read data and check values
-    r2 = app_client.get("/api/gravity/1", headers=headers)
+    r2 = app_client.get("/api/pressure/1", headers=headers)
     assert r2.status_code == 200
     data2 = json.loads(r.text)
     assert data["temperature"] == data2["temperature"]
-    assert data["gravity"] == data2["gravity"]
-    assert data["angle"] == data2["angle"]
+    assert data["pressure"] == data2["pressure"]
     assert data["battery"] == data2["battery"]
     assert data["rssi"] == data2["rssi"]
-    assert data["corrGravity"] == data2["corrGravity"]
     assert data["runTime"] == data2["runTime"]
 
     # Not using a number for index
-    r2 = app_client.get("/api/gravity/hello", headers=headers)
+    r2 = app_client.get("/api/pressure/hello", headers=headers)
     assert r2.status_code == 422
 
 def test_list(app_client):
-    r = app_client.get("/api/gravity/", headers=headers)
+    r = app_client.get("/api/pressure/", headers=headers)
     assert r.status_code == 200
     data = json.loads(r.text)
     assert len(data) == 1
 
 def test_update(app_client):
     data = {
-        "temperature": 1.2,
-        "gravity": 1.3,
-        "angle": 1.4,
+        "temperature": 0,
+        "pressure": 1.3,
         "battery": 1.5,
         "rssi": 1.6,
-        "corrGravity": 1.7,
-        "runTime": 1.8,    }
+        "runTime": 1.8, }
 
     # Update existing entity
-    r = app_client.patch("/api/gravity/1", json=data, headers=headers)
+    r = app_client.patch("/api/pressure/1", json=data, headers=headers)
     assert r.status_code == 200
 
     # Read the entity and validate data
@@ -91,67 +86,66 @@ def test_update(app_client):
     assert r2.status_code == 200
     data2 = json.loads(r.text)
     assert data["temperature"] == data2["temperature"]
-    assert data["gravity"] == data2["gravity"]
-    assert data["angle"] == data2["angle"]
+    assert data["pressure"] == data2["pressure"]
     assert data["battery"] == data2["battery"]
     assert data["rssi"] == data2["rssi"]
-    assert data["corrGravity"] == data2["corrGravity"]
     assert data["runTime"] == data2["runTime"]
 
     # Update missing entity
-    r = app_client.patch("/api/gravity/10", json=data, headers=headers)
+    r = app_client.patch("/api/pressure/10", json=data, headers=headers)
     assert r.status_code == 404
 
 def test_delete(app_client):
     # Delete
-    r = app_client.delete("/api/gravity/1", headers=headers)
+    r = app_client.delete("/api/pressure/1", headers=headers)
     assert r.status_code == 204
 
     # Check how many are stored
-    r = app_client.get("/api/gravity/", headers=headers)
+    r = app_client.get("/api/pressure/", headers=headers)
     assert r.status_code == 200
     data = json.loads(r.text)
     assert len(data) == 0
 
-def test_gravity_batch(app_client):
+def test_pressure_batch(app_client):
     data = {
         "batchId": 1,
-        "temperature": 0.2,
-        "gravity": 0.3,
-        "angle": 0.4,
+        "temperature": 0,
+        "pressure": 0.3,
         "battery": 0.5,
         "rssi": 0.6,
-        "corrGravity": 0.7,
         "runTime": 0.8
     }
 
     # Add new
-    r = app_client.post("/api/gravity/", json=data, headers=headers)
+    r = app_client.post("/api/pressure/", json=data, headers=headers)
     assert r.status_code == 201
-    r = app_client.post("/api/gravity/", json=data, headers=headers)
+    r = app_client.post("/api/pressure/", json=data, headers=headers)
     assert r.status_code == 201
 
     # Check relation to batch
     r = app_client.get("/api/batch/1", headers=headers)
     assert r.status_code == 200
     data2 = json.loads(r.text)
-    assert len(data2["gravity"]) == 2
+    assert len(data2["pressure"]) == 2
+
 
 def test_public(app_client):
     test_init(app_client)
     data = {
-        "name": "name",
-        "ID": "012345",
-        "token": "token",
-        "interval": 1,
-        "temperature": 20.2,
-        "temp_units": "C",
-        "gravity": 1.05,
-        "angle": 34.45,
+        "name": "012345",
+        "token": "",
+        "interval": 0,
+
+        "chipId": "012345",
+        "temperature": 0,
+        "temp_format": "C",
+        "pressure": 1.05,
+        "press_format": "hpa",
         "battery": 3.85,
-        "RSSI": -76.2,
+        "rssi": -76.2,
+        "runTime": 1.0,
     }
-    r = app_client.post("/api/gravity/public", json=data)
+    r = app_client.post("/api/pressure/public", json=data)
     assert r.status_code == 200
 
     # Check relation to batch
@@ -160,8 +154,8 @@ def test_public(app_client):
     data2 = json.loads(r.text)
     assert len(data2) == 1
 
-    data["ID"] = "012346"
-    r = app_client.post("/api/gravity/public", json=data)
+    data["chipId"] = "012346"
+    r = app_client.post("/api/pressure/public", json=data)
     assert r.status_code == 200
 
     # Check relation to batch
@@ -169,22 +163,6 @@ def test_public(app_client):
     assert r.status_code == 200
     data2 = json.loads(r.text)
     assert len(data2) == 2
-
-    data = {
-        "name": "name",
-        "ID": "012345",
-        "token": "token",
-        "interval": 1,
-        "temperature": 56.2,
-        "temp_units": "F",
-        "gravity": 5.0,
-        "angle": 34.45,
-        "gravity_units": "P",
-        "battery": 3.85,
-        "RSSI": -76.2,
-    }
-    r = app_client.post("/api/gravity/public", json=data)
-    assert r.status_code == 200
 
 def test_validation(app_client):
     pass

@@ -94,7 +94,7 @@
     async function restore() {
       console.log("Restoring data");
       const fileElement = document.getElementById('name');
-
+   
       if( {{ records }} > 0){
         showError("Database is not empty, unable to restore.");
         return;
@@ -117,8 +117,26 @@
       json = JSON.parse( text );
       console.log(json);
 
+      if( json["meta"]["software"] != "BrewLogger") {
+        showError("Backup file is not for brewlogger, unable to process.");
+        return;
+      }
+
+      if( json["meta"]["version"] != "0.2" && json["meta"]["version"] != "0.3" ) {
+        showError("Unknown backup version, unable to process.");
+        return;
+      }
+
+      if( json["meta"]["version"] == "0.2" )  {
+        console.log("Pre-processing backup file to work in this version");
+
+        for(batch of json["batches"]) {
+          batch.pressure = [];
+        }
+      }
+
       dev_cnt = json["devices"].length;
-      batch_cnt = json["batches"].length * 2;
+      batch_cnt = json["batches"].length * 3;
 
       progress = 0;
       progress_max = dev_cnt + batch_cnt;
@@ -141,10 +159,27 @@
             g.batchId = res.id;            
           });
 
-          api.addGravityList(batch.gravity, function(res, status, success) { 
+          if( batch.gravity.length > 0 ){
+            api.addGravityList(batch.gravity, function(res, status, success) { 
+              updateProgress();
+              console.log("Added gravity list."); 
+            });
+          } else {
             updateProgress();
-            console.log("Added gravity list."); 
+          }
+
+          batch.pressure.forEach(p => {
+            p.batchId = res.id;            
           });
+
+          if( batch.pressure.length > 0 ) {
+            api.addPressureList(batch.pressure, function(res, status, success) { 
+              updateProgress();
+              console.log("Added pressure list."); 
+            });
+          } else {
+            updateProgress();
+          }
 
           updateProgress();
           console.log("Added batch.", batch.id); 
@@ -159,8 +194,7 @@
       var meta = {};
       var batches = [];
       var devices = [];
-      var gravities = [];
-      meta["version"] = "0.2";
+      meta["version"] = "0.3";
       meta["software"] = "BrewLogger";
       backup["meta"] = meta;
 
@@ -223,6 +257,7 @@
       <button type="button" class="btn btn-info" onclick="generateDeviceData()">Generate devices</button>
       <button type="button" class="btn btn-info" onclick="generateBatches()">Generate batches</button>
       <button type="button" class="btn btn-info" onclick="generateGravityData(50)">Generate gravity</button>
+      <button type="button" class="btn btn-info" onclick="generatePressureData(50)">Generate pressure</button>
       <button type="button" class="btn btn-info" onclick="ispindelSimulation()">Simulate iSpindel</button>
       <button type="button" class="btn btn-info" onclick="location.reload()">Reload</button>
     </div>
