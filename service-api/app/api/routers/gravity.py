@@ -65,11 +65,7 @@ async def create_gravity_list(
     gravity_service: GravityService = Depends(get_gravity_service)
 ) -> List[models.Gravity]:
     logging.info("Processing list")
-
-    res = []
-    for gravity in gravity_list:
-        res.append(gravity_service.create(gravity))
-    return res
+    return gravity_service.createList(gravity_list)
 
 @router.patch(
     "/{gravity_id}",

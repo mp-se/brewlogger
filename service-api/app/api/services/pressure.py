@@ -22,6 +22,16 @@ class PressureService(BaseService[models.Pressure, schemas.PressureCreate, schem
             )
         return super(PressureService, self).create(obj)
 
+    def createList(self, lst: List[schemas.PressureCreate]) -> List[models.Pressure]:
+        batch = self.db_session.get(models.Batch, lst[0].batch_id)
+        logging.info("Searching for batch with id=%s %s", lst[0].batch_id, batch)
+        if batch is None:
+            raise HTTPException(
+                status_code=400,
+                detail=f"Batch with id = {lst[0].batch_id} not found.",
+            )
+        return super(PressureService, self).createList(lst)
+    
     def search(self, chipId: str) -> List[models.Pressure]:
         filters = { "chip_id": chipId }
         objs: List[self.model] = self.db_session.scalars(select(self.model).filter_by(**filters)).all()

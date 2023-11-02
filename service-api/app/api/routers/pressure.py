@@ -65,11 +65,7 @@ async def create_pressure_list(
     pressure_service: PressureService = Depends(get_pressure_service)
 ) -> List[models.Pressure]:
     logging.info("Processing list")
-
-    res = []
-    for pressure in pressure_list:
-        res.append(pressure_service.create(pressure))
-    return res
+    return pressure_service.createList(pressure_list)
 
 @router.patch(
     "/{pressure_id}",

@@ -42,6 +42,22 @@ class BaseService(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
                 raise e
         return db_obj
 
+    def createList(self, lst: List[CreateSchemaType]) -> List[ModelType]:
+        db_obj_lst = []
+        for obj in lst:
+            db_obj: ModelType = self.model(**obj.model_dump())
+            self.db_session.add(db_obj)        
+            db_obj_lst.append(db_obj)
+        try:
+            self.db_session.commit()
+        except sqlalchemy.exc.IntegrityError as e:
+            self.db_session.rollback()
+            if "duplicate key" in str(e):
+                raise HTTPException(status_code=409, detail="Conflict Error")
+            else:
+                raise e
+        return db_obj_lst
+
     def update(self, id: Any, obj: UpdateSchemaType) -> Optional[ModelType]:
         db_obj = self.get(id)
         for column, value in obj.model_dump(exclude_unset=True).items():

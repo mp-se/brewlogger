@@ -73,6 +73,12 @@ async def html_get_batch_by_id(
         logging.info(calc)
 
         calc["abv"] = (calc["og"] - calc["fg"]) * 131.25
+
+        def sort_created(item):
+            return item.created
+
+        batch.gravity = sorted(batch.gravity, key=sort_created)
+        batch.pressure = sorted(batch.pressure, key=sort_created)
         return get_template().TemplateResponse("batch_graph.html", {"request": request, "batch": batch, "func": func, "calc": calc, "settings": get_settings() })
 
     devices = devices_service.list()
