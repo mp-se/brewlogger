@@ -25,60 +25,6 @@
         done(); 
       });
     });
-
-    QUnit.test('2. load_device_data', function(assert) {
-      const done = assert.async();
-      api.addDevice({
-        "chipId": "012345",
-        "chipFamily": "fam",
-        "software": "soft",
-        "mdns": "m",
-        "config": "cfg",
-        "url": "http" }, function(json, status, success) { 
-        assert.equal(success, true);
-        assert.notEqual(json["id"], 0); 
-        assert.equal(json["chipId"], "012345"); 
-        assert.equal(json["chipFamily"], "fam"); 
-        assert.equal(json["software"], "soft"); 
-        assert.equal(json["mdns"], "m"); 
-        assert.equal(json["config"], "cfg"); 
-        assert.equal(json["url"], "http"); 
-        assert.equal(status, 201); 
-        done(); 
-      });
-    });
-
-    QUnit.test('3. load_batch_data', function(assert) {
-      const done = assert.async();
-      api.addBatch({
-        "name": "Batch #1",
-        "chipId": "012345",
-        "description": "desc",
-        "brewDate": "date",
-        "style": "ipa",
-        "brewer": "name",
-        "brewfatherId": "",
-        "active": true,
-        "abv": 0.3,
-        "ebc": 0.2,
-        "ibu": 0.1 }, function(json, status, success) { 
-        assert.equal(success, true);
-        assert.notEqual(json["id"], 0); 
-        assert.equal(json["name"], "Batch #1"); 
-        assert.equal(json["chipId"], "012345"); 
-        assert.equal(json["description"], "desc"); 
-        assert.equal(json["brewDate"], "date"); 
-        assert.equal(json["style"], "ipa"); 
-        assert.equal(json["brewer"], "name"); 
-        assert.equal(json["brewfatherId"], ""); 
-        assert.equal(json["active"], true); 
-        assert.equal(json["abv"], 0.3); 
-        assert.equal(json["ebc"], 0.2); 
-        assert.equal(json["ibu"], 0.1); 
-        assert.equal(status, 201); 
-        done(); 
-      });
-    });
   });
 
   QUnit.module('8. health', function() {
@@ -93,23 +39,36 @@
   });
 
   QUnit.module('2. device', function() {
-
     QUnit.test('1. device_list', function(assert) {
       const done = assert.async();
-      api.getDeviceList(function(json, status, success) { 
-        assert.equal(success, true);
-        assert.notEqual(json, {});
-        assert.equal(status, 200);
-        done(); 
+      api.addDevice({
+        "chipId": "000000",
+        "chipFamily": "",
+        "software": "",
+        "mdns": "",
+        "config": "",
+        "url": "" }, function(json, status, success) { 
+        api.getDeviceList(function(json2, status, success) { 
+          assert.equal(success, true);
+          assert.notEqual(json2, {});
+          assert.equal(status, 200);
+          done(); 
+        });
       });
     });
 
     QUnit.test('2. device_get', function(assert) {
       const done = assert.async();
-      api.getDeviceList(function(json, status, success) { 
-        api.getDevice(json[0]["id"], function(json, status, success) { 
+      api.addDevice({
+      "chipId": "000001",
+      "chipFamily": "",
+      "software": "",
+      "mdns": "",
+      "config": "",
+      "url": "" }, function(json, status, success) { 
+        api.getDevice(json["id"], function(json2, status, success) { 
           assert.equal(success, true);
-          assert.notEqual(json, {});
+          assert.notEqual(json2, {});
           assert.equal(status, 200);
           done(); 
         });
@@ -119,7 +78,7 @@
     QUnit.test('3. device_post', function(assert) {
       const done = assert.async();
       api.addDevice({
-        "chipId": "012349",
+        "chipId": "000003",
         "chipFamily": "",
         "software": "",
         "mdns": "",
@@ -141,9 +100,9 @@
           "software": "",
           "mdns": "",
           "config": "",
-          "url": "" }, function(json, status, success) { 
+          "url": "" }, function(json2, status, success) { 
           assert.equal(success, true);
-          assert.notEqual(json["id"], 0); 
+          assert.notEqual(json2["id"], 0); 
           assert.equal(status, 200); 
           done(); 
         });
@@ -153,9 +112,9 @@
     QUnit.test('5. device_del', function(assert) {
       const done = assert.async();
       api.getDeviceList(function(json, status, success) { 
-        api.deleteDevice(json[0]["id"], function(json, status, success) { 
+        api.deleteDevice(json[0]["id"], function(json2, status, success) { 
           assert.equal(success, true);
-          assert.equal(JSON.stringify(json), JSON.stringify({})); 
+          assert.equal(JSON.stringify(json2), JSON.stringify({})); 
           assert.equal(status, 204); 
           done(); 
         });
@@ -167,20 +126,44 @@
 
     QUnit.test('1. batch_list', function(assert) {
       const done = assert.async();
-      api.getBatchList(function(json, status, success) { 
-        assert.equal(success, true);
-        assert.notEqual(json, {});
-        assert.equal(status, 200);
-        done(); 
+      api.addBatch({
+      "name": "",
+      "chipId": "000001",
+      "description": "",
+      "brewDate": "",
+      "style": "",
+      "brewer": "",
+      "brewfatherId": "",
+      "active": true,
+      "abv": 0.0,
+      "ebc": 0.0,
+      "ibu": 0.0 }, function(json, status, success) { 
+        api.getBatchList(function(json2, status, success) { 
+          assert.equal(success, true);
+          assert.notEqual(json2, {});
+          assert.equal(status, 200);
+          done(); 
+        });
       });
     });
 
     QUnit.test('2. batch_get', function(assert) {
       const done = assert.async();
-      api.getBatchList(function(json, status, success) { 
-        api.getBatch(json[0]["id"], function(json, status, success) { 
+      api.addBatch({
+      "name": "",
+      "chipId": "000001",
+      "description": "",
+      "brewDate": "",
+      "style": "",
+      "brewer": "",
+      "brewfatherId": "",
+      "active": true,
+      "abv": 0.0,
+      "ebc": 0.0,
+      "ibu": 0.0 }, function(json, status, success) { 
+        api.getBatch(json["id"], function(json2, status, success) { 
           assert.equal(success, true);
-          assert.notEqual(json, {});
+          assert.notEqual(json2, {});
           assert.equal(status, 200);
           done(); 
         });
@@ -222,9 +205,9 @@
           "active": true,
           "abv": 0.0,
           "ebc": 0.0,
-          "ibu": 0.0 }, function(json, status, success) { 
+          "ibu": 0.0 }, function(json2, status, success) { 
           assert.equal(success, true);
-          assert.notEqual(json["id"], 0); 
+          assert.notEqual(json2["id"], 0); 
           assert.equal(status, 200); 
           done(); 
         });
@@ -234,9 +217,9 @@
     QUnit.test('5. batch_del', function(assert) {
       const done = assert.async();
       api.getBatchList(function(json, status, success) { 
-        api.deleteBatch(json[0]["id"], function(json, status, success) { 
+        api.deleteBatch(json[0]["id"], function(json2, status, success) { 
           assert.equal(success, true);
-          assert.equal(JSON.stringify(json), JSON.stringify({})); 
+          assert.equal(JSON.stringify(json2), JSON.stringify({})); 
           assert.equal(status, 204); 
           done(); 
         });
