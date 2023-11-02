@@ -62,10 +62,9 @@ async def html_get_batch_by_id(
             if gravity.created > dateMax:
                 dateMax = gravity.created
 
-
         calc["dateMin"] = dateMin.strftime('%Y-%m-%d')
         calc["dateMax"] = dateMax.strftime('%Y-%m-%d')
-        calc["dateDelta"] = (dateMax - dateMin).days
+        calc["dateDelta"] = (dateMax - dateMin).days + 1
         logging.info(calc)
 
         calc["abv"] = (calc["og"] - calc["fg"]) * 131.25
