@@ -5,7 +5,7 @@ from sqlalchemy import Column, Integer, String, Float, DateTime, ForeignKey, Tex
 from sqlalchemy.orm import declarative_base, relationship
 from sqlalchemy.sql import func
 
-Base: Any = declarative_base()    
+Base: Any = declarative_base()
 
 class Device(Base):
     __tablename__ = "device"

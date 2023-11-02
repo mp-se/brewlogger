@@ -7,15 +7,15 @@
 <script>
     function showHttpError(code) {
     switch(code) {
-        case 422: 
+        case 422:
         showError("Unable to save data, data is invalid.");
         break;
 
-        case 404: 
+        case 404:
         showError("Unable to fetch data from the defined URL.");
         break;
 
-        case 409: 
+        case 409:
         showError("Duplicate, there is already a entry with this unique ID.");
         break;
 
@@ -38,7 +38,7 @@
 
     $("#alert-btn").click(function (e) {
     $('#alert').addClass('hide').removeClass('show').addClass('d-none');
-    });    
+    });
 </script>
 
 <script src="/static/brewloggerapi.js"></script>
@@ -51,4 +51,3 @@
     api.setDebug(false);
     {% endif %}
 </script>
-

@@ -22,7 +22,7 @@ async def list_batches(
     active: str = "*",
     batch_service: BatchService = Depends(get_batch_service)
 ) -> List[models.Batch]:
-    logging.info("Using filters chipid=%s and active=%s", chipId, active)
+    logger.info("Endpoint GET /api/batch/?chipId=%s&active=%s", chipId, active)
 
     if chipId != "*": # ChipId + Active flas
         if active == "True" or active == "true":
@@ -36,7 +36,7 @@ async def list_batches(
         elif active == "False" or active == "false":
             return batch_service.search_active(False)
 
-    # return all records        
+    # return all records
     return batch_service.list()
 
 
@@ -49,8 +49,8 @@ async def get_batch_by_id(
     batch_id: int,
     batch_service: BatchService = Depends(get_batch_service)
 ) -> Optional[models.Batch]:
+    logger.info("Endpoint GET /api/batch/%d", batch_id)
     return batch_service.get(batch_id)
-
 
 @router.post(
     "/",
@@ -62,6 +62,7 @@ async def create_batch(
     batch: schemas.BatchCreate,
     batch_service: BatchService = Depends(get_batch_service)
 ) -> models.Batch:
+    logger.info("Endpoint POST /api/batch/")
     return batch_service.create(batch)
 
 
@@ -74,6 +75,7 @@ async def update_batch_by_id(
     batch: schemas.BatchUpdate,
     batch_service: BatchService = Depends(get_batch_service)
 ) -> Optional[models.Batch]:
+    logger.info("Endpoint PATCH /api/batch/%d", batch_id)
     return batch_service.update(batch_id, batch)
 
 
@@ -84,6 +86,7 @@ async def update_batch_by_id(
 async def delete_batch_by_id(
     batch_id: int,
     batch_service: BatchService = Depends(get_batch_service)):
+    logger.info("Endpoint DELETE /api/batch/%d", batch_id)
     batch_service.delete(batch_id)
 
 @router.get(
@@ -93,6 +96,7 @@ async def delete_batch_by_id(
 async def get_batches_from_brewfather(
     batch_service: BatchService = Depends(get_batch_service)
 ) -> List[models.Batch]:
+    logger.info("Endpoint GET /api/batch/brewfather/")
 
     try:
         async with httpx.AsyncClient() as client:
@@ -102,13 +106,13 @@ async def get_batches_from_brewfather(
             json = res.json()
 
             for batch in json:
-                logging.info("Processing response from brewfather API #%d", batch["batchNo"])
-                logging.info(batch)
+                logger.info("Processing response from brewfather API #%d", batch["batchNo"])
+                logger.info(batch)
 
                 batch_list = batch_service.search_brewfatherId(batch["_id"])
 
-                if len(batch_list) == 0: 
-                    logging.info("Creating batch for brewfather #%d", batch["batchNo"])
+                if len(batch_list) == 0:
+                    logger.info("Creating batch for brewfather #%d", batch["batchNo"])
                     newBatch = schemas.BatchCreate(
                         name = batch["name"],
                         chipId = "000000",
@@ -123,8 +127,8 @@ async def get_batches_from_brewfather(
                         ibu = 0,
                     )
 
-                    if "style" in batch["recipe"]: 
-                      newBatch.style = batch["recipe"]["style"]["type"] 
+                    if "style" in batch["recipe"]:
+                      newBatch.style = batch["recipe"]["style"]["type"]
                     if "measuredAbv" in batch:
                       newBatch.abv = batch["measuredAbv"]
                     if "estimatedColor" in batch:
@@ -134,7 +138,7 @@ async def get_batches_from_brewfather(
 
                     batch_service.create(newBatch)
                 else:
-                    logging.info("Updating batch for brewfather #%d", batch["batchNo"])
+                    logger.info("Updating batch for brewfather #%d", batch["batchNo"])
 
                     updBatch = schemas.BatchUpdate(
                         name = batch["name"],
@@ -150,8 +154,8 @@ async def get_batches_from_brewfather(
                         ibu = batch_list[0].ibu,
                     )
 
-                    if "style" in batch["recipe"]: 
-                      updBatch.style = batch["recipe"]["style"]["type"] 
+                    if "style" in batch["recipe"]:
+                      updBatch.style = batch["recipe"]["style"]["type"]
                     if "measuredAbv" in batch:
                       updBatch.abv = batch["measuredAbv"]
                     if "estimatedColor" in batch:
@@ -162,12 +166,12 @@ async def get_batches_from_brewfather(
                     batch_service.update(batch_list[0].id, updBatch)
 
     except JSONDecodeError:
-        logging.error("Unable to parse JSON response")
+        logger.error("Unable to parse JSON response")
         raise HTTPException(
             status_code=400,
             detail=f"Unable to parse JSON from remote endpoint.")
     except httpx.ConnectError:
-        logging.error("Unable to connect to device")
+        logger.error("Unable to connect to device")
         raise HTTPException(
             status_code=400,
             detail=f"Unable to connect to remote endpoint.")

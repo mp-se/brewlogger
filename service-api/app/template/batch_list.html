@@ -9,18 +9,18 @@
 
   <script>
     function deleteConfimedCallback(id) {
-      api.deleteBatch(id, function(json, status, success) { 
+      api.deleteBatch(id, function(json, status, success) {
         if(success) {
           showSuccess("Record deleted.");
           setTimeout(function() { location.reload(); }, 500);
         } else {
           showError("Failed to delete record.");
-        }       
+        }
       });
     }
 
     async function synchronizeBrewfather() {
-        await api.synchronizeBrewfather(function(json, status, success) { 
+        await api.synchronizeBrewfather(function(json, status, success) {
           if(!success)
             showHttpError(status);
           else {

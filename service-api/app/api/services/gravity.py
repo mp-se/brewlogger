@@ -14,7 +14,7 @@ class GravityService(BaseService[models.Gravity, schemas.GravityCreate, schemas.
 
     def create(self, obj: schemas.GravityCreate) -> models.Gravity:
         batch = self.db_session.get(models.Batch, obj.batch_id)
-        logging.info("Searching for batch with id=%s %s", obj.batch_id, batch)
+        logger.info("Searching for batch with id=%s %s", obj.batch_id, batch)
         if batch is None:
             raise HTTPException(
                 status_code=400,
@@ -24,7 +24,7 @@ class GravityService(BaseService[models.Gravity, schemas.GravityCreate, schemas.
 
     def createList(self, lst: List[schemas.GravityCreate]) -> List[models.Gravity]:
         batch = self.db_session.get(models.Batch, lst[0].batch_id)
-        logging.info("Searching for batch with id=%s %s", lst[0].batch_id, batch)
+        logger.info("Searching for batch with id=%s %s", lst[0].batch_id, batch)
         if batch is None:
             raise HTTPException(
                 status_code=400,
@@ -35,5 +35,5 @@ class GravityService(BaseService[models.Gravity, schemas.GravityCreate, schemas.
     def search(self, chipId: str) -> List[models.Gravity]:
         filters = { "chip_id": chipId }
         objs: List[self.model] = self.db_session.scalars(select(self.model).filter_by(**filters)).all()
-        logging.info("Fetched gravity based on chipId=%s, records found %d", chipId, len(objs))
+        logger.info("Fetched gravity based on chipId=%s, records found %d", chipId, len(objs))
         return objs

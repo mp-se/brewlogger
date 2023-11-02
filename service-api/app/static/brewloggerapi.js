@@ -2,7 +2,7 @@ class BrewLoggerAPI {
 
   /* Wrapper for BrewLogger REST API
    *
-   * callback function takes 3 parameters: response(JSON), http response code(int), success(bool) 
+   * callback function takes 3 parameters: response(JSON), http response code(int), success(bool)
    */
 
   constructor(baseUrl, apiKey) {

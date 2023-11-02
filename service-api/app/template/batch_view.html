@@ -96,10 +96,10 @@
           "ebc": Number(document.getElementById("ebc").value),
           "ibu": Number(document.getElementById("ibu").value)
         };
-      
+
         console.log("Updating data: " + JSON.stringify(json));
 
-        api.updateBatch({{ batch.id }}, json, function(json, status) { 
+        api.updateBatch({{ batch.id }}, json, function(json, status) {
           if(status != 200)
             showHttpError(status);
         });
@@ -122,10 +122,10 @@
 
         console.log("Adding data: " + JSON.stringify(json));
 
-        api.addBatch(json, function(json, status, success) { 
+        api.addBatch(json, function(json, status, success) {
           if(!success)
             showHttpError(status);
-          else 
+          else
             window.location.href = "/html/batch/" + json["id"] + "?func=edit";
         });
       }

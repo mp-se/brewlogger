@@ -13,15 +13,17 @@ logger = logging.getLogger(__name__)
 db_url = get_settings().database_url
 
 if db_url.startswith("sqlite:"):
+    logger.info("Creating database engine for SQLite.")
     engine = create_engine(db_url, connect_args={"check_same_thread": False}) # SQLITE
 else:
+    logger.info("Creating database engine for Postgres.")
     engine = create_engine(db_url, pool_pre_ping=True) # POSTGRES
 
 models.Base.metadata.create_all(bind=engine)
 
 @lru_cache
 def create_session() -> scoped_session:
-    logging.info("Creating database session.")
+    logger.info("Creating database session.")
     Session = scoped_session(sessionmaker(autocommit=False, autoflush=False, bind=engine))
     return Session
 

@@ -10,5 +10,6 @@ router = APIRouter(prefix="/html/pressure")
 
 @router.get("/", response_class=HTMLResponse)
 async def html_list_pressures(request: Request, pressures_service: PressureService = Depends(get_pressure_service)):
+    logger.info("Endpoint GET /html/pressure/")
     pressure_list = pressures_service.list()
     return get_template().TemplateResponse("pressure_list.html", {"request": request, "pressure_list": pressure_list, "settings": get_settings() })

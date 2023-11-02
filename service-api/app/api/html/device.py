@@ -11,6 +11,7 @@ router = APIRouter(prefix="/html/device")
 
 @router.get("/", response_class=HTMLResponse)
 async def html_list_devices(request: Request, devices_service: DeviceService = Depends(get_device_service)):
+    logger.info("Endpoint GET /html/device/")
     device_list = devices_service.list()
     return get_template().TemplateResponse("device_list.html", {"request": request, "device_list": device_list, "settings": get_settings() })
 
@@ -18,11 +19,12 @@ async def html_list_devices(request: Request, devices_service: DeviceService = D
     "/{device_id}", response_class=HTMLResponse)
 async def html_get_device_by_id(
     device_id: int,
-    request: Request, 
+    request: Request,
     func: str = "edit",
     devices_service: DeviceService = Depends(get_device_service)
 ):
     # Accepable func parameters are: edit, view, create
+    logger.info("Endpoint GET /html/device/%d?func=%s", device_id, func)
 
     if func != "create":
         device = devices_service.get(device_id)
@@ -34,6 +36,6 @@ async def html_get_device_by_id(
         device.mdns = ""
         device.software = ""
         device.url = ""
-    
+
     logger.info(device)
     return get_template().TemplateResponse("device.html", {"request": request, "device": device, "func": func, "settings": get_settings() })

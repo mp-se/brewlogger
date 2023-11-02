@@ -46,7 +46,7 @@ class BaseService(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
         db_obj_lst = []
         for obj in lst:
             db_obj: ModelType = self.model(**obj.model_dump())
-            self.db_session.add(db_obj)        
+            self.db_session.add(db_obj)
             db_obj_lst.append(db_obj)
         try:
             self.db_session.commit()

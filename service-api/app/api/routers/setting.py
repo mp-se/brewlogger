@@ -23,6 +23,7 @@ def get_current_appsetting() -> schemas.AppSetting:
     response_model=schemas.AppSetting,
     dependencies=[Depends(api_key_auth)])
 async def get_appsetting():
+    logger.info("Endpoint GET /api/setting/")
     return get_current_appsetting()
 
 @router.patch(
@@ -32,7 +33,7 @@ async def get_appsetting():
 async def update_batch_by_id(
     setting: schemas.AppSetting,
 ):
+    logger.info("Endpoint PATCH /api/setting/")
     logger.info("Javascript debugging set to %s", get_settings().javascript_debug_enabled)
     get_settings().javascript_debug_enabled = setting.javascript_debug_enabled
     return get_current_appsetting()
-

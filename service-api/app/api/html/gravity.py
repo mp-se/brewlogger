@@ -10,5 +10,6 @@ router = APIRouter(prefix="/html/gravity")
 
 @router.get("/", response_class=HTMLResponse)
 async def html_list_gravities(request: Request, gravities_service: GravityService = Depends(get_gravity_service)):
+    logger.info("Endpoint GET /html/gravity/")
     gravity_list = gravities_service.list()
     return get_template().TemplateResponse("gravity_list.html", {"request": request, "gravity_list": gravity_list, "settings": get_settings() })

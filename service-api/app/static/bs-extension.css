@@ -5,7 +5,7 @@ main {
 
 .navbar-left {
   width: 280px;
-  background-color: #5c6bc0; 
+  background-color: #5c6bc0;
 }
 
 .nav-link {
@@ -22,21 +22,21 @@ main {
 
 .active {
   color: white;
-  background-color: #3949ab; 
+  background-color: #3949ab;
 }
 
 .btn-primary {
-  background-color: #3949ab; 
+  background-color: #3949ab;
 }
 
 .list-header {
   color: white;
-  background-color: #5c6bc0; 
+  background-color: #5c6bc0;
 }
 
 .row-even {
-  
-  background-color: white; 
+
+  background-color: white;
 }
 
 .row-odd {

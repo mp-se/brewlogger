@@ -29,14 +29,14 @@
       "mdns": "000003",
       "config": "",
       "url": "" };
-    await api.addDevice(data, function() { console.log("Data added"); if(autoRefresh) location.reload(); });    
+    await api.addDevice(data, function() { console.log("Data added"); if(autoRefresh) location.reload(); });
   }
 
   async function generateGravityData(cnt) {
     id = 0;
 
-    await api.getBatchListByChipIdActive("000001", true, function(json, status) { 
-      console.log("Fetched list of batches"); 
+    await api.getBatchListByChipIdActive("000001", true, function(json, status) {
+      console.log("Fetched list of batches");
       console.log(json);
       id = json[0].id;
     });
@@ -60,7 +60,7 @@
           "batchId": id,
           "created": dt.toISOString(),
       }
-          
+
      await api.addGravity(data, function() { console.log("Data posted"); });
     }
 
@@ -70,8 +70,8 @@
   async function generatePressureData(cnt) {
     id = 0;
 
-    await api.getBatchListByChipIdActive("000001", true, function(json, status) { 
-      console.log("Fetched list of batches"); 
+    await api.getBatchListByChipIdActive("000001", true, function(json, status) {
+      console.log("Fetched list of batches");
       console.log(json);
       id = json[0].id;
     });
@@ -93,7 +93,7 @@
           "batchId": id,
           "created": dt.toISOString(),
       }
-          
+
      await api.addPressure(data, function() { console.log("Data posted"); });
     }
 
@@ -168,6 +168,6 @@
       "abv": 0.3,
       "ebc": 0.2,
       "ibu": 0.1 };
-    await api.addBatch(data, function() { console.log("Data added"); if(autoRefresh) location.reload(); });    
-  }  
+    await api.addBatch(data, function() { console.log("Data added"); if(autoRefresh) location.reload(); });
+  }
 </script>

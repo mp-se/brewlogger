@@ -23,26 +23,26 @@
 
     <script>
     async function enableJavascriptDebug() {
-      data = { 
+      data = {
         "javascript_debug_enabled": true
       };
-      
-      await api.updateSetting(data, function() { 
-        console.log("Enabled debug"); 
+
+      await api.updateSetting(data, function() {
+        console.log("Enabled debug");
         location.reload();
      });
-    } 
+    }
 
     async function disableJavascriptDebug() {
-      data = { 
+      data = {
         "javascript_debug_enabled": false
       };
-      
-      await api.updateSetting(data, function() { 
-        console.log("Disabled debug"); 
+
+      await api.updateSetting(data, function() {
+        console.log("Disabled debug");
         location.reload();
      });
-    } 
+    }
     </script>
   </div>
 
@@ -82,7 +82,7 @@
       </div>
   </form>
 
-  <script> 
+  <script>
     var progress = 0;
     var progress_max = 1;
 
@@ -94,7 +94,7 @@
     async function restore() {
       console.log("Restoring data");
       const fileElement = document.getElementById('name');
-   
+
       if( {{ records }} > 0){
         showError("Database is not empty, unable to restore.");
         return;
@@ -103,7 +103,7 @@
       if(fileElement.files.length === 0) {
         showError("You need to select one file to restore configuration from.");
         return;
-      } 
+      }
 
       console.log( "Selected file: " + fileElement.files[0].name );
 
@@ -144,45 +144,45 @@
       console.log("Number of requests needed:", progress_max);
 
       for(device of json["devices"]) {
-        await api.addDevice(device, function(res, status, success) { 
+        await api.addDevice(device, function(res, status, success) {
           device.id = res.id;
           updateProgress();
-          console.log("Added device.", device.id); 
+          console.log("Added device.", device.id);
         });
       };
 
       for(batch of json["batches"]) {
-        await api.addBatch(batch, function(res, status, success) { 
+        await api.addBatch(batch, function(res, status, success) {
           batch.id = res.id;
 
           batch.gravity.forEach(g => {
-            g.batchId = res.id;            
+            g.batchId = res.id;
           });
 
           if( batch.gravity.length > 0 ){
-            api.addGravityList(batch.gravity, function(res, status, success) { 
+            api.addGravityList(batch.gravity, function(res, status, success) {
               updateProgress();
-              console.log("Added gravity list."); 
+              console.log("Added gravity list.");
             });
           } else {
             updateProgress();
           }
 
           batch.pressure.forEach(p => {
-            p.batchId = res.id;            
+            p.batchId = res.id;
           });
 
           if( batch.pressure.length > 0 ) {
-            api.addPressureList(batch.pressure, function(res, status, success) { 
+            api.addPressureList(batch.pressure, function(res, status, success) {
               updateProgress();
-              console.log("Added pressure list."); 
+              console.log("Added pressure list.");
             });
           } else {
             updateProgress();
           }
 
           updateProgress();
-          console.log("Added batch.", batch.id); 
+          console.log("Added batch.", batch.id);
         });
       }
     }
@@ -198,20 +198,20 @@
       meta["software"] = "BrewLogger";
       backup["meta"] = meta;
 
-      b = api.getBatchList(function(json, status, success) { 
-        batches = json; 
+      b = api.getBatchList(function(json, status, success) {
+        batches = json;
         if(!success)
           showError("Failed to fetch batches");
         else
-          console.log("Fetched batches."); 
+          console.log("Fetched batches.");
       });
-  
-      d = api.getDeviceList(function(json, status, success) { 
-        devices = json; 
+
+      d = api.getDeviceList(function(json, status, success) {
+        devices = json;
         if(!success)
           showError("Failed to fetch devices");
         else
-          console.log("Fetched devices."); 
+          console.log("Fetched devices.");
       });
 
       Promise.all([b,d]).then( function() {
@@ -228,11 +228,11 @@
     }
 
     function download(content, mimeType, filename) {
-      const a = document.createElement('a') 
-      const blob = new Blob([content], {type: mimeType}) 
-      const url = URL.createObjectURL(blob) 
-      a.setAttribute('href', url) 
-      a.setAttribute('download', filename) 
+      const a = document.createElement('a')
+      const blob = new Blob([content], {type: mimeType})
+      const url = URL.createObjectURL(blob)
+      a.setAttribute('href', url)
+      a.setAttribute('download', filename)
       a.click()
     }
   </script>

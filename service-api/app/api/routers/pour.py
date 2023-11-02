@@ -18,6 +18,7 @@ async def list_pours(
     chipId: str = "*",
     pour_service: PourService = Depends(get_pour_service),
 ) -> List[models.Pour]:
+    logger.info("Endpoint GET /api/pour/?chipId=%s", chipId)
     if chipId != "*":
         return pour_service.search(chipId)
     return pour_service.list()
@@ -32,6 +33,7 @@ async def get_pour_by_id(
     pour_id: int,
     pour_service: PourService = Depends(get_pour_service)
 ) -> Optional[models.Pour]:
+    logger.info("Endpoint GET /api/pour/%d", pour_id)
     return pour_service.get(pour_id)
 
 
@@ -44,10 +46,11 @@ async def get_pour_by_id(
 async def create_pour(
     pour: schemas.PourCreate,
     pour_service: PourService = Depends(get_pour_service)
-) -> models.Pour:  
+) -> models.Pour:
+    logger.info("Endpoint POST /api/pour/")
     if pour.created is None:
         pour.created = datetime.now()
-        logging.info("Added timestamp to pour record %s", pour.created)
+        logger.info("Added timestamp to pour record %s", pour.created)
     return pour_service.create(pour)
 
 
@@ -60,6 +63,7 @@ async def update_pour_by_id(
     gravity: schemas.PourUpdate,
     pour_service: PourService = Depends(get_pour_service),
 ) -> Optional[models.Pour]:
+    logger.info("Endpoint PATCH /api/pour/%d", pour_id)
     return pour_service.update(pour_id, gravity)
 
 
@@ -71,5 +75,5 @@ async def delete_pour_by_id(
     pour_id: int,
     pour_service: PourService = Depends(get_pour_service)
 ):
+    logger.info("Endpoint DELETE /api/pour/%d", pour_id)
     pour_service.delete(pour_id)
-

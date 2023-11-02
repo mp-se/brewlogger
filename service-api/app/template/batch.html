@@ -27,7 +27,7 @@
 
     <div class="col-sm-2 col-form-label">Chip ID:</div>
       <div class="col-sm-3">
-        <select class="form-select" id="chip_id"{{ readonly }}> 
+        <select class="form-select" id="chip_id"{{ readonly }}>
           {% for device in device_list %}
           <option value="{{ device.chip_id }}" {% if batch.chip_id == device.chip_id %} selected{% endif %}>{{ device.chip_id }}</option>
           {% endfor %}
@@ -66,7 +66,7 @@
       <div class="col-sm-2 col-form-label">Active:</div>
       <div class="col-sm-3 py-1"><input type="checkbox" class="form-check-input" id="active" {% if batch.active %} checked {% endif %} {% if readonly %} disabled {% endif %} ></div>
     </div>
-    
+
     <div class="row mb-2" {% if batch.brewfather_id == "" %}hidden{% endif %}>
       <div class="col-sm-2 col-form-label">Brewfather ID:</div>
       <div class="col-sm-3"><input type="text" class="form-control" id="brewfather_id" value="{{ batch.brewfather_id }}" disabled></div>
@@ -103,10 +103,10 @@
           "ebc": Number(document.getElementById("ebc").value),
           "ibu": Number(document.getElementById("ibu").value)
         };
-      
+
         console.log("Updating data: " + JSON.stringify(json));
 
-        api.updateBatch({{ batch.id }}, json, function(json, status, success) { 
+        api.updateBatch({{ batch.id }}, json, function(json, status, success) {
           if(!success) {
             showHttpError(status);
             lockScreen(false);
@@ -136,7 +136,7 @@
 
         console.log("Adding data: " + JSON.stringify(json));
 
-        api.addBatch(json, function(json, status, success) { 
+        api.addBatch(json, function(json, status, success) {
           if(!success) {
             showHttpError(status);
             lockScreen(false);

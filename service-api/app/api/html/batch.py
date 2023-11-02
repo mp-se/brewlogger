@@ -12,10 +12,12 @@ router = APIRouter(prefix="/html/batch")
 
 @router.get("/", response_class=HTMLResponse)
 async def html_list_batches(
-    request: Request, 
+    request: Request,
     chipId: str = "*",
     batches_service: BatchService = Depends(get_batch_service)
 ):
+    logger.info("Endpoint GET /html/batch/?chipId=%s", chipId)
+
     if chipId == "*":
         batch_list = batches_service.list()
     else:
@@ -27,12 +29,13 @@ async def html_list_batches(
     "/{batch_id}", response_class=HTMLResponse)
 async def html_get_batch_by_id(
     batch_id: int,
-    request: Request, 
+    request: Request,
     func: str = "edit",
     batches_service: BatchService = Depends(get_batch_service),
     devices_service: DeviceService = Depends(get_device_service)
 ):
     # Accepable func parameters are: edit, view, create, graph
+    logger.info("Endpoint GET /html/batch/%d?func=%s", batch_id, func)
 
     if func != "create":
         batch = batches_service.get(batch_id)
@@ -49,7 +52,7 @@ async def html_get_batch_by_id(
         batch.abv = 0.0
         batch.ibu = 0.0
         batch.brewfather_id = ""
-    
+
     if func == "graph":
         dateMin = datetime.now()
         dateMax = datetime.fromtimestamp(0)
@@ -70,7 +73,7 @@ async def html_get_batch_by_id(
         calc["dateMin"] = dateMin.strftime('%Y-%m-%d')
         calc["dateMax"] = dateMax.strftime('%Y-%m-%d')
         calc["dateDelta"] = (dateMax - dateMin).days + 1
-        logging.info(calc)
+        logger.info(calc)
 
         calc["abv"] = (calc["og"] - calc["fg"]) * 131.25
 

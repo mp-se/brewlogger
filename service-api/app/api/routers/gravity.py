@@ -20,6 +20,7 @@ async def list_gravities(
     chipId: str = "*",
     gravity_service: GravityService = Depends(get_gravity_service),
 ) -> List[models.Gravity]:
+    logger.info("Endpoint GET /api/gravity/?chipId=%s", chipId)
     if chipId != "*":
         return gravity_service.search(chipId)
 
@@ -35,6 +36,7 @@ async def get_gravity_by_id(
     gravity_id: int,
     gravity_service: GravityService = Depends(get_gravity_service)
 ) -> Optional[models.Gravity]:
+    logger.info("Endpoint GET /api/gravity/%d", gravity_id)
     return gravity_service.get(gravity_id)
 
 
@@ -48,10 +50,10 @@ async def create_gravity(
     gravity: schemas.GravityCreate,
     gravity_service: GravityService = Depends(get_gravity_service)
 ) -> models.Gravity:
-    logging.info("Processing item")
+    logger.info("Endpoint POST /api/gravity/")
     if gravity.created is None:
         gravity.created = datetime.now()
-        logging.info("Added timestamp to gravity record %s", gravity.created)
+        logger.info("Added timestamp to gravity record %s", gravity.created)
     return gravity_service.create(gravity)
 
 @router.post(
@@ -64,7 +66,7 @@ async def create_gravity_list(
     gravity_list: List[schemas.GravityCreate],
     gravity_service: GravityService = Depends(get_gravity_service)
 ) -> List[models.Gravity]:
-    logging.info("Processing list")
+    logger.info("Endpoint GET /api/gravity/list/")
     return gravity_service.createList(gravity_list)
 
 @router.patch(
@@ -76,6 +78,7 @@ async def update_gravity_by_id(
     gravity: schemas.GravityUpdate,
     gravity_service: GravityService = Depends(get_gravity_service),
 ) -> Optional[models.Gravity]:
+    logger.info("Endpoint PATCH /api/gravity/%d", gravity_id)
     return gravity_service.update(gravity_id, gravity)
 
 
@@ -87,6 +90,7 @@ async def delete_gravity_by_id(
     gravity_id: int,
     gravity_service: GravityService = Depends(get_gravity_service)
 ):
+    logger.info("Endpoint DELETE /api/gravity/%d", gravity_id)
     gravity_service.delete(gravity_id)
 
 
@@ -99,12 +103,14 @@ async def create_gravity_using_ispindel_format(
     batch_service: BatchService = Depends(get_batch_service),
     device_service: DeviceService = Depends(get_device_service)
 ):
+    logger.info("Endpoint POST /api/gravity/public")
+
     try:
         json = await request.json()
 
         # Extensions from Gravitymon
         corr_gravity = 0
-        gravity_units = "SG" 
+        gravity_units = "SG"
         run_time = 0
 
         if "corr-gravity" in json:

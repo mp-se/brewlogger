@@ -9,13 +9,13 @@
 
   <script>
     function deleteConfimedCallback(id) {
-      api.deleteDevice(id, function(json, status, success) { 
+      api.deleteDevice(id, function(json, status, success) {
         if(success) {
           showSuccess("Record deleted.");
           setTimeout(function() { location.reload() }, 500);
         } else {
           showError("Failed to delete record.");
-        }       
+        }
       });
     }
   </script>

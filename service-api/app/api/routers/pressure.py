@@ -20,9 +20,9 @@ async def list_pressures(
     chipId: str = "*",
     pressure_service: PressureService = Depends(get_pressure_service),
 ) -> List[models.Pressure]:
+    logger.info("Endpoint GET /api/pressure/?chipId=%s", chipId)
     if chipId != "*":
         return pressure_service.search(chipId)
-
     return pressure_service.list()
 
 
@@ -35,6 +35,7 @@ async def get_pressure_by_id(
     pressure_id: int,
     pressure_service: PressureService = Depends(get_pressure_service)
 ) -> Optional[models.Pressure]:
+    logger.info("Endpoint GET /api/pressure/%d", pressure_id)
     return pressure_service.get(pressure_id)
 
 
@@ -48,10 +49,10 @@ async def create_pressure(
     pressure: schemas.PressureCreate,
     pressure_service: PressureService = Depends(get_pressure_service)
 ) -> models.Pressure:
-    logging.info("Processing item")
+    logger.info("Endpoint POST /api/pressure/")
     if pressure.created is None:
         pressure.created = datetime.now()
-        logging.info("Added timestamp to pressure record %s", pressure.created)
+        logger.info("Added timestamp to pressure record %s", pressure.created)
     return pressure_service.create(pressure)
 
 @router.post(
@@ -64,7 +65,7 @@ async def create_pressure_list(
     pressure_list: List[schemas.PressureCreate],
     pressure_service: PressureService = Depends(get_pressure_service)
 ) -> List[models.Pressure]:
-    logging.info("Processing list")
+    logger.info("Endpoint POST /api/pressure/list/")
     return pressure_service.createList(pressure_list)
 
 @router.patch(
@@ -76,6 +77,7 @@ async def update_pressure_by_id(
     pressure: schemas.PressureUpdate,
     pressure_service: PressureService = Depends(get_pressure_service),
 ) -> Optional[models.Pressure]:
+    logger.info("Endpoint PATCH /api/pressure/%d", pressure_id)
     return pressure_service.update(pressure_id, pressure)
 
 
@@ -87,6 +89,7 @@ async def delete_pressure_by_id(
     pressure_id: int,
     pressure_service: PressureService = Depends(get_pressure_service)
 ):
+    logger.info("Endpoint DELETE /api/pressure/%d", pressure_id)
     pressure_service.delete(pressure_id)
 
 
@@ -98,7 +101,9 @@ async def create_pressure_using_json(
     pressure_service: PressureService = Depends(get_pressure_service),
     batch_service: BatchService = Depends(get_batch_service),
     device_service: DeviceService = Depends(get_device_service)
-):   
+):
+    logger.info("Endpoint POST /api/pressure/public")
+
     try:
         json = await request.json()
 
@@ -139,7 +144,7 @@ async def create_pressure_using_json(
             )
             device_service.create(device)
 
-        """ Example payload 
+        """ Example payload
         {
             "name": "name",
             "token": "token",
@@ -152,7 +157,7 @@ async def create_pressure_using_json(
             "battery": 3.85,
             "rssi": -76.2,
             "runTime": 1.0,
-        }    
+        }
         """
 
         pressure = schemas.PressureCreate(

@@ -9,11 +9,13 @@ logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/html/about")
 
 @router.get("/", response_class=HTMLResponse)
-async def html_get_about(request: Request, gravities_service: GravityService = Depends(get_gravity_service), 
+async def html_get_about(request: Request, gravities_service: GravityService = Depends(get_gravity_service),
 batches_service: BatchService = Depends(get_batch_service), devices_service: DeviceService = Depends(get_device_service), pressures_service: PressureService = Depends(get_pressure_service)):
+    logger.info("Endpoint GET /html/about/")
+
     data = { "apikey": False, "testendpoints": False, "database": "Postgres" }
     setting = get_settings()
-    
+
     if setting.api_key_enabled:
         data["apikey"] = True
 
