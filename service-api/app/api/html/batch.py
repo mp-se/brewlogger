@@ -13,9 +13,14 @@ router = APIRouter(prefix="/html/batch")
 @router.get("/", response_class=HTMLResponse)
 async def html_list_batches(
     request: Request, 
+    chipId: str = "*",
     batches_service: BatchService = Depends(get_batch_service)
 ):
-    batch_list = batches_service.list()
+    if chipId == "*":
+        batch_list = batches_service.list()
+    else:
+        batch_list = batches_service.search_chipId(chipId)
+
     return get_template().TemplateResponse("batch_list.html", {"request": request, "batch_list": batch_list, "settings": get_settings() })
 
 @router.get(

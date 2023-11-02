@@ -8,6 +8,7 @@ from api.routers import setting as apiSetting
 from api.html import device as htmlDevice
 from api.html import batch as htmlBatch
 from api.html import gravity as htmlGravity
+from api.html import pressure as htmlPressure
 from api.html import setting as htmlSetting
 from api.html import test as htmlTest
 from api.html import about as htmlAbout
@@ -46,6 +47,7 @@ def create_app() -> FastAPI:
     app.include_router(htmlDevice.router)
     app.include_router(htmlBatch.router)
     app.include_router(htmlGravity.router)
+    app.include_router(htmlPressure.router)
     app.include_router(htmlSetting.router)
     app.include_router(htmlAbout.router)
 

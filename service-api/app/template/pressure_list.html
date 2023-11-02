@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% set active_page = "gravity" %}
+
+{% block content %}
+
+<div class="container-fluid p-3">
+
+  <h1 class="h1">Pressure list</h1>
+
+  <div class="row mb-2">
+    <div class="col-sm-1 list-header">ID</div>
+    <div class="col-sm-2 list-header">Created</div>
+    <div class="col-sm-2 list-header">Pressure</div>
+    <div class="col-sm-2 list-header">Temperature</div>
+    <div class="col-sm-2 list-header">Battery</div>
+  </div>
+
+  {% for pressure in pressure_list %}
+  <div class="row mb-2">
+    <div class="col-sm-1 {{ loop.cycle('row-odd', 'row-even') }}">{{ pressure.id }}</div>
+    <div class="col-sm-2 {{ loop.cycle('row-odd', 'row-even') }}">{{ pressure.created }}</div>
+    <div class="col-sm-2 {{ loop.cycle('row-odd', 'row-even') }}">{{ "%0.4f" | format(pressure.pressure) }} hPA</div>
+    <div class="col-sm-2 {{ loop.cycle('row-odd', 'row-even') }}">{{ "%0.2f" | format(pressure.temperature) }} C</div>
+    <div class="col-sm-2 {{ loop.cycle('row-odd', 'row-even') }}">{{ "%0.2f" | format(pressure.battery) }} V</div>
+  </div>
+  {% endfor %}
+
+</div>
+
+{% endblock %}

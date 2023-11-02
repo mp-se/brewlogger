@@ -61,8 +61,15 @@
           {% endfor %}
         ],
         yAxisID: 'y1',
-      },
-      { 
+      },{ 
+        label: "Pressure",
+        data: [
+        {% for pressure in batch.pressure %}
+        { x: "{{ pressure.created }}", y: {{ pressure.pressure }} },
+        {% endfor %}
+        ],
+        yAxisID: 'y4',
+      },{ 
         label: "Temperature",
         data: [
         {% for gravity in batch.gravity %}
@@ -114,6 +121,14 @@
             title: {
               display: true,
               text: 'Voltage',
+            },
+          },
+          y4: {
+            type: 'linear',
+            position: 'left',
+            title: {
+              display: true,
+              text: 'Pressure',
             },
           }
         },

@@ -40,8 +40,9 @@
     <div class="col-sm-1 list-header">ID</div>
     <div class="col-sm-2 list-header">Name</div>
     <div class="col-sm-1 list-header">Chip ID</div>
-    <div class="col-sm-2 list-header">Brew date</div>
-    <div class="col-sm-2 list-header">Gravity readings</div>
+    <div class="col-sm-1 list-header">Brew date</div>
+    <div class="col-sm-1 list-header">Gravity #</div>
+    <div class="col-sm-1 list-header">Pressure #</div>
     <div class="col-sm-1 list-header">Active</div>
     <div class="col-sm-2 list-header">Action</div>
   </div>
@@ -51,14 +52,15 @@
     <div class="col-sm-1 {{ loop.cycle('row-odd', 'row-even') }}">{{ batch.id }}</div>
     <div class="col-sm-2 {{ loop.cycle('row-odd', 'row-even') }}">{{ batch.name }}</div>
     <div class="col-sm-1 {{ loop.cycle('row-odd', 'row-even') }}">{{ batch.chip_id }}</div>
-    <div class="col-sm-2 {{ loop.cycle('row-odd', 'row-even') }}">{{ batch.brew_date }}</div>
-    <div class="col-sm-2 {{ loop.cycle('row-odd', 'row-even') }}">{{ batch.gravity|length }}</div>
+    <div class="col-sm-1 {{ loop.cycle('row-odd', 'row-even') }}">{{ batch.brew_date }}</div>
+    <div class="col-sm-1 {{ loop.cycle('row-odd', 'row-even') }}">{{ batch.gravity|length }}</div>
+    <div class="col-sm-1 {{ loop.cycle('row-odd', 'row-even') }}">{{ batch.pressure|length }}</div>
     <div class="col-sm-1 {{ loop.cycle('row-odd', 'row-even') }}">{{ batch.active }}</div>
     <div class="col-sm-2">
       <button type="button" class="btn btn-primary btn-sm" onclick="window.location='/html/batch/{{ batch.id }}?func=edit'"><i class="bi bi-pencil-square"></i></button>
       <button type="button" class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#confirm-delete-modal" data-bs-value="{{ batch.name }}" data-bs-callback="deleteConfimedCallback" data-bs-id="{{ batch.id }}"><i class="bi bi-file-x"></i></button>
       <button type="button" class="btn btn-info btn-sm" onclick="window.location='/html/batch/{{ batch.id }}?func=view'"><i class="bi bi-eye"></i></button>
-      {% if batch.gravity|length > 0 %}
+      {% if (batch.gravity|length > 0) or (batch.pressure|length > 0) %}
       <button type="button" class="btn btn-success btn-sm" onclick="window.location='/html/batch/{{ batch.id }}?func=graph'"><i class="bi bi-graph-down-arrow"></i></button>
       {% endif %}
     </div>
