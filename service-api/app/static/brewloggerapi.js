@@ -193,7 +193,11 @@ class BrewLoggerAPI {
   }
 
   async sendIspindel(json, callback) {
-    await this.#request( "/api/gravity/ispindel", "POST", json, callback);
+    await this.#request( "/api/gravity/public", "POST", json, callback);
+  }
+
+  async sendGravity(json, callback) {
+    await this.#request( "/api/gravity/public", "POST", json, callback);
   }
 
   async proxyFetch(url, callback) {

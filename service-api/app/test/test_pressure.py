@@ -35,7 +35,6 @@ def test_init(app_client):
 
 def test_add(app_client):
     data = {
-        "chipId": "012345",
         "batchId": 1,
         "temperature": 0,
         "pressure": 0.3,
@@ -54,7 +53,6 @@ def test_add(app_client):
     r2 = app_client.get("/api/pressure/1", headers=headers)
     assert r2.status_code == 200
     data2 = json.loads(r.text)
-    assert data["chipId"] == data2["chipId"]
     assert data["temperature"] == data2["temperature"]
     assert data["pressure"] == data2["pressure"]
     assert data["battery"] == data2["battery"]
@@ -73,7 +71,6 @@ def test_list(app_client):
 
 def test_update(app_client):
     data = {
-        "chipId": "012345",
         "temperature": 0,
         "pressure": 1.3,
         "battery": 1.5,
@@ -88,7 +85,6 @@ def test_update(app_client):
     r2 = app_client.get("/api/batch/1", headers=headers)
     assert r2.status_code == 200
     data2 = json.loads(r.text)
-    assert data["chipId"] == data2["chipId"]
     assert data["temperature"] == data2["temperature"]
     assert data["pressure"] == data2["pressure"]
     assert data["battery"] == data2["battery"]
@@ -112,7 +108,6 @@ def test_delete(app_client):
 
 def test_pressure_batch(app_client):
     data = {
-        "chipId": "012345",
         "batchId": 1,
         "temperature": 0,
         "pressure": 0.3,
@@ -170,17 +165,4 @@ def test_public(app_client):
     assert len(data2) == 2
 
 def test_validation(app_client):
-    data = {
-        "chipId": "0123456", # too long name
-        "batchId": 1,
-        "temperature": 0,
-        "pressure": 0.0,
-        "battery": 0.0,
-        "rssi": 0.0,
-        "runTime": 0.0
-    }
-
-    # Add new
-    r = app_client.post("/api/pressure/", json=data, headers=headers)
-    assert r.status_code == 422
-
+    pass

@@ -50,30 +50,14 @@ class Device(DeviceCreate):
 class GravityBase(BaseModel):
     model_config = ConfigDict(alias_generator = to_camel, populate_by_name = True )
 
-    chip_id: str = Field(min_length=6, max_length=6, description="Chip id, must be 6 characters")
-    name: str = Field(min_length=0, max_length=40, description="Network name of the device")
-    token: str = Field(min_length=0, max_length=40, description="Token that can be used on the server to process the data.")
-    interval: int = Field(description="Time between transmissions")
-    temperature: float = Field(description="Temperature value")
-    temp_units: str = Field(min_length=0, max_length=1, description="Temperature unit, either C or F")
-    gravity: float = Field(description="Calculated gravity")
+    temperature: float = Field(description="Temperature value in C")
+    gravity: float = Field(description="Calculated gravity in SG")
     angle: float = Field(description="Tilt or angle of the device")
     battery: float = Field(description="Battery voltage")
     rssi: float = Field(description="WIFI signal strenght")
     corr_gravity: float = Field(description="Temperature corrected gravity")
-    gravity_units: str = Field(min_length=0, max_length=2, description="Gravity unit, either P or SG")
     run_time: float = Field(description="Number of seconds the execution took")
     created: Optional[datetime] | None = Field(default=None, description="If undefined the current time will be used")
-
-    @field_validator('temp_units')
-    def validate_temp_units(cls, v: str, info: ValidationInfo) -> str:
-        assert v == "C" or v == "F"
-        return v
-
-    @field_validator('gravity_units')
-    def validate_gravity_units(cls, v: str, info: ValidationInfo) -> str:
-        assert v == "SG" or v == "P"
-        return v
 
 class GravityUpdate(GravityBase):
     pass
@@ -90,7 +74,6 @@ class Gravity(GravityCreate):
 class PressureBase(BaseModel):
     model_config = ConfigDict(alias_generator = to_camel, populate_by_name = True )
 
-    chip_id: str = Field(min_length=6, max_length=6, description="Chip id, must be 6 characters")
     temperature: float = Field(description="Temperature value in C")
     pressure: float = Field(description="Measured pressure in hPA")
     battery: float = Field(description="Battery voltage")
@@ -112,8 +95,6 @@ class Pressure(PressureCreate):
 
 class PourBase(BaseModel):
     model_config = ConfigDict(alias_generator = to_camel, populate_by_name = True )
-    chip_id: str = Field(min_length=6, max_length=6, description="Chip id, must be 6 characters")
-    name: str = Field(min_length=0, max_length=40, description="Network name of the device")
     pour: float = Field(description="How much was poured from the device")
     volume: float = Field(description="Total volume left in the device")
     created: Optional[datetime] | None = Field(default=None, description="If undefined the current time will be used")

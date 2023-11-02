@@ -108,18 +108,15 @@ async def create_gravity_using_ispindel_format(
 
         # Extensions from Gravitymon
         corr_gravity = 0
-        gravity_units = "SG"
+        gravity_units = "SG" 
         run_time = 0
 
         if "corr-gravity" in json:
             corr_gravity = json["corr-gravity"]
         if "gravity-unit" in json:
             gravity_units = json["gravity-unit"]
-            if gravity_units == 'G':
-                gravity_units = 'SG'
         if "run-time" in json:
             run_time = json["run-time"]
-
 
         # Check if there is an active batch
         batchList = batch_service.search_chipId_active(json["ID"], True)
@@ -159,22 +156,22 @@ async def create_gravity_using_ispindel_format(
             device_service.create(device)
 
         gravity = schemas.GravityCreate(
-            name = json["name"],
-            chip_id = json["ID"],
-            token = json["token"],
-            interval = json["interval"],
             temperature = json["temperature"],
-            temp_units = json["temp_units"],
             gravity = json["gravity"],
             angle = json["angle"],
             battery = json["battery"],
             rssi = json["RSSI"],
             corr_gravity = corr_gravity,
-            gravity_units = gravity_units,
             run_time = run_time,
             batch_id = batchList[0].id,
             created = datetime.now()
         )
+
+        if json["temp_units"] == 'F':
+            gravity.temperature = (gravity.temperature-32) * 5 / 9 # °C = (°F − 32) x 5/9
+
+        if gravity_units == 'P':
+            gravity.gravity = 1 + (gravity.gravity / (258.6 - ((gravity.gravity/258.2) * 227.1))) # SG = 1+ (plato / (258.6 – ((plato/258.2) *227.1)))
 
         return gravity_service.create(gravity)
 

@@ -45,18 +45,12 @@ class Gravity(Base):
     __tablename__ = "gravity"
 
     id = Column(Integer, primary_key=True, index=True)
-    name = Column(String(40))
-    chip_id = Column(String(6))
-    token = Column(String(40))
-    interval = Column(Integer)
     temperature = Column(Float)
-    temp_units = Column(String(1))
     gravity = Column(Float)
     angle = Column(Float)
     battery = Column(Float)
     rssi = Column(Float)
     corr_gravity = Column(Float)
-    gravity_units = Column(String(2))
     run_time = Column(Float)
     created = Column(DateTime)
 
@@ -67,7 +61,6 @@ class Pressure(Base):
     __tablename__ = "pressure"
 
     id = Column(Integer, primary_key=True, index=True)
-    chip_id = Column(String(6))
     temperature = Column(Float)
     pressure = Column(Float)
     battery = Column(Float)
@@ -82,8 +75,6 @@ class Pour(Base):
     __tablename__ = "pour"
 
     id = Column(Integer, primary_key=True, index=True)
-    name = Column(String(40))
-    chip_id = Column(String(6))
     pour = Column(Float)
     volume = Column(Float)
     created = Column(DateTime)

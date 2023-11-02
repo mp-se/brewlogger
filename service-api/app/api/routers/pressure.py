@@ -160,7 +160,6 @@ async def create_pressure_using_json(
         """
 
         pressure = schemas.PressureCreate(
-            chip_id = json["chipId"],
             temperature = json["temperature"],
             pressure = json["pressure"],
             battery = json["battery"],

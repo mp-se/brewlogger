@@ -97,8 +97,6 @@ def test_load_3(app_client):
 
 def test_load_3(app_client):
     data = {
-        "name": "f1",
-        "chipId": "012345",
         "pour": 1.1,
         "volume": 1.2,
         "batchId": 1
