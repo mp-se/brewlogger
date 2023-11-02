@@ -3,6 +3,7 @@ from api.routers import device as apiDevice
 from api.routers import batch as apiBatch
 from api.routers import pour as apiPour
 from api.routers import gravity as apiGravity
+from api.routers import pressure as apiPressure
 from api.routers import setting as apiSetting
 from api.html import device as htmlDevice
 from api.html import batch as htmlBatch
@@ -38,6 +39,7 @@ def create_app() -> FastAPI:
     app.include_router(apiDevice.router)
     app.include_router(apiBatch.router)
     app.include_router(apiGravity.router)
+    app.include_router(apiPressure.router)
     app.include_router(apiPour.router)
     app.include_router(apiSetting.router)
 

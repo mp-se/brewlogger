@@ -216,4 +216,29 @@ class BrewLoggerAPI {
   async synchronizeBrewfather(callback) {
     await this.#request( "/api/batch/brewfather/", "GET", {}, callback);
   }
+
+  // New in 0.3.0
+  async getPressureList(callback) {
+    await this.#request( "/api/pressure/", "GET", {}, callback);
+  }
+
+  async getPressure(id, callback) {
+    await this.#request( "/api/pressure/" + id.toString(), "GET", {}, callback);
+  }
+
+  async addPressure(json, callback) {
+    await this.#request( "/api/pressure/", "POST", json, callback);
+  }
+
+  async updatePressure(id, json, callback) {
+    await this.#request( "/api/pressure/" + id.toString(), "PATCH", json, callback);
+  }
+
+  async deletePressure(id, callback) {
+    await this.#request( "/api/pressure/" + id.toString(), "DELETE", {}, callback);
+  }
+
+  async addPressureList(json, callback) {
+    await this.#request( "/api/pressure/list/", "POST", json, callback);
+  }
 }

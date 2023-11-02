@@ -168,7 +168,7 @@ def test_gravity_batch(app_client):
     assert len(data2["gravity"]) == 2
 
 
-def test_ispindel(app_client):
+def test_public(app_client):
     test_init(app_client)
     data = {
         "name": "name",
@@ -182,7 +182,7 @@ def test_ispindel(app_client):
         "battery": 3.85,
         "RSSI": -76.2,
     }
-    r = app_client.post("/api/gravity/ispindel", json=data)
+    r = app_client.post("/api/gravity/public", json=data)
     assert r.status_code == 200
 
     # Check relation to batch
@@ -192,7 +192,7 @@ def test_ispindel(app_client):
     assert len(data2) == 1
 
     data["ID"] = "012346"
-    r = app_client.post("/api/gravity/ispindel", json=data)
+    r = app_client.post("/api/gravity/public", json=data)
     assert r.status_code == 200
 
     # Check relation to batch

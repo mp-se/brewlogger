@@ -95,7 +95,7 @@ async def delete_gravity_by_id(
 
 
 @router.post(
-    "/ispindel",
+    "/public",
     status_code=200)
 async def create_gravity_using_ispindel_format(
     request: Request,
@@ -124,10 +124,6 @@ async def create_gravity_using_ispindel_format(
         # Check if there is an active batch
         batchList = batch_service.search_chipId_active(json["ID"], True)
 
-        # TODO: Figure our how to store dates that can be shown in the currect locale.
-
-        # TODO: Convert gravity to SG when storing in database
-
         if len(batchList) == 0:
             batch = schemas.BatchCreate(
                 name = "Batch for " + json["ID"],
@@ -148,7 +144,7 @@ async def create_gravity_using_ispindel_format(
         if len(batchList) == 0:
             raise HTTPException(status_code=409, detail="No batch found")
 
-        # Check if there is an active batch
+        # Check if there is an device
         deviceList = device_service.search_chipId(json["ID"])
 
         if len(deviceList) == 0:

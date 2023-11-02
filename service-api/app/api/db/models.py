@@ -10,8 +10,6 @@ Base: Any = declarative_base()
 class Device(Base):
     __tablename__ = "device"
 
-    # TODO: Ensure that chipId only contains lowercase letters
-
     id = Column(Integer, primary_key=True, index=True)
     chip_id = Column(String(6), unique=True, index=True)
     chip_family = Column(String(10), nullable=False)
@@ -40,6 +38,7 @@ class Batch(Base):
     brewfather_id = Column(String(30))
 
     gravity = relationship("Gravity", back_populates="batch", cascade="all,delete")
+    pressure = relationship("Pressure", back_populates="batch", cascade="all,delete")
     pour = relationship("Pour", back_populates="batch", cascade="all,delete")
 
 class Gravity(Base):
@@ -64,10 +63,27 @@ class Gravity(Base):
     batch_id = Column(Integer, ForeignKey(Batch.__table__.c.id))
     batch = relationship("Batch", back_populates="gravity")
 
+class Pressure(Base):
+    __tablename__ = "pressure"
+
+    id = Column(Integer, primary_key=True, index=True)
+    chip_id = Column(String(6))
+    temperature = Column(Float)
+    pressure = Column(Float)
+    battery = Column(Float)
+    rssi = Column(Float)
+    run_time = Column(Float)
+    created = Column(DateTime)
+
+    batch_id = Column(Integer, ForeignKey(Batch.__table__.c.id))
+    batch = relationship("Batch", back_populates="pressure")
+
 class Pour(Base):
     __tablename__ = "pour"
 
     id = Column(Integer, primary_key=True, index=True)
+    name = Column(String(40))
+    chip_id = Column(String(6))
     pour = Column(Float)
     volume = Column(Float)
     created = Column(DateTime)

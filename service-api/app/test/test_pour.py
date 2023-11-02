@@ -33,6 +33,8 @@ def test_init(app_client):
 
 def test_add(app_client):
     data = {
+        "name": "f1",
+        "chipId": "012345",
         "pour": 0.1,
         "volume": 0.2,
         "batchId": 1
@@ -63,6 +65,8 @@ def test_list(app_client):
 
 def test_update(app_client):
     data = {
+        "name": "f1",
+        "chipId": "012345",
         "pour": 1.1,
         "volume": 1.2,
         "batchId": 1

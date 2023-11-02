@@ -87,8 +87,33 @@ class Gravity(GravityCreate):
 
 ################################################################################
 
+class PressureBase(BaseModel):
+    model_config = ConfigDict(alias_generator = to_camel, populate_by_name = True )
+
+    chip_id: str = Field(min_length=6, max_length=6, description="Chip id, must be 6 characters")
+    temperature: float = Field(description="Temperature value in C")
+    pressure: float = Field(description="Measured pressure in hPA")
+    battery: float = Field(description="Battery voltage")
+    rssi: float = Field(description="WIFI signal strenght")
+    run_time: float = Field(description="Number of seconds the execution took")
+    created: Optional[datetime] | None = Field(default=None, description="If undefined the current time will be used")
+
+class PressureUpdate(PressureBase):
+    pass
+
+class PressureCreate(PressureBase):
+    batch_id: int
+
+class Pressure(PressureCreate):
+    model_config = ConfigDict(from_attributes = True)
+    id: int
+
+################################################################################
+
 class PourBase(BaseModel):
     model_config = ConfigDict(alias_generator = to_camel, populate_by_name = True )
+    chip_id: str = Field(min_length=6, max_length=6, description="Chip id, must be 6 characters")
+    name: str = Field(min_length=0, max_length=40, description="Network name of the device")
     pour: float = Field(description="How much was poured from the device")
     volume: float = Field(description="Total volume left in the device")
     created: Optional[datetime] | None = Field(default=None, description="If undefined the current time will be used")
@@ -129,6 +154,7 @@ class Batch(BatchCreate):
     model_config = ConfigDict(from_attributes = True)
     id: int
     gravity: List[Gravity] = None
+    pressure: List[Pressure] = None
     pour: List[Pour] = None
 
 ################################################################################
