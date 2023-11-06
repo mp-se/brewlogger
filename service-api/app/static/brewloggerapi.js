@@ -27,7 +27,10 @@ class BrewLoggerAPI {
       case "GET":
         this.#debug( "GET fetch " + this.baseUrl + path );
         response = await fetch( this.baseUrl + path, { method: method, headers: { "Authorization": "Bearer " + this.apiKey } } );
-        var json = await response.json();
+        var text = await response.text();
+        this.#debug(text);
+        var json = JSON.parse(text);
+        this.#debug(json);
 
         if (response.status == 200) {
           this.#debug( "GET fetch returned 200" );
@@ -59,7 +62,10 @@ class BrewLoggerAPI {
         this.#debug( "POST fetch " + this.baseUrl + path );
         this.#debug( "POST fetch body " + JSON.stringify(json));
         response = await fetch( this.baseUrl + path, { method: method, body: JSON.stringify(json), headers: { "Content-Type": "application/json", "Authorization": "Bearer " + this.apiKey } } );
-        var json = await response.json();
+        var text = await response.text();
+        this.#debug(text);
+        var json = JSON.parse(text);
+        this.#debug(json);
 
         if (response.status == 201 || response.status == 200) {
           this.#debug( "POST fetch returned 201/200" );
@@ -74,7 +80,10 @@ class BrewLoggerAPI {
       case "PATCH":
         this.#debug( "PATCH fetch " + this.baseUrl + path );
         response = await fetch( this.baseUrl + path, { method: method, body: JSON.stringify(json), headers: { "Content-Type": "application/json", "Authorization": "Bearer " + this.apiKey } } );
-        var json = await response.json();
+        var text = await response.text();
+        this.#debug(text);
+        var json = JSON.parse(text);
+        this.#debug(json);
 
         if (response.status == 200) {
           this.#debug( "PATCH fetch returned 200" );
@@ -248,5 +257,9 @@ class BrewLoggerAPI {
 
   async migrateDatabase(callback) {
     await this.#request( "/html/test/migrate", "PATCH", {}, callback);
+  }
+
+  async getMDNS(callback) {
+    await this.#request( "/api/device/mdns/", "GET", {}, callback);
   }
 }

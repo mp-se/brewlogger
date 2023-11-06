@@ -117,6 +117,10 @@
     api.sendIspindel(data, function() { console.log("Data posted"); if(autoRefresh) location.reload(); });
   }
 
+  function mdns() {
+      api.getMDNS(function(json, status, success) { console.log("MDNS result:" + JSON.stringify(json)); if(autoRefresh) location.reload(); });
+  }
+
   function deleteDatabase() {
       api.deleteDatabase(function() { console.log("Data deleted"); if(autoRefresh) location.reload(); });
   }
