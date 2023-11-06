@@ -27,7 +27,7 @@
         ChipID must be a 6 letter string using only 0-9,A-F characters, example: 01A2B3.
       </div>
       {% else %}
-      <div class="col-sm-3"><input type="text" class="form-control" value="{{ device.chip_id }}" disabled readonly></div>
+      <div class="col-sm-3"><input type="text" class="form-control" id="chip_id" value="{{ device.chip_id }}" disabled readonly></div>
       {% endif %}
     </div>
     <div class="row mb-2">
@@ -64,6 +64,8 @@
             'unknown',
             'Kegmon',
             'Gravitymon',
+            'Pressuremon',
+            'BrewpiESP',
             'iSpindel',
           ] -%}
 
@@ -76,7 +78,10 @@
     <div class="row mb-2">
       <div class="col-sm-2 col-form-label">Device URL:</div>
       <div class="col-sm-7"><input type="url" maxlength="80" class="form-control" id="url" value="{{ device.url }}" placeholder="http://devicename.local" {{ readonly }}></div>
-      <div class="col-sm-2"><button type="button" class="btn btn-secondary btn-sm" onclick="fetchConfigFromDevice()"><i class="bi bi-box-arrow-down"></i></button></div>
+      <div class="col-sm-2">
+        <button type="button" class="btn btn-secondary btn-sm" onclick="fetchConfigFromDevice()" data-bs-toggle="tooltip" data-bs-placement="top" title="Fetch configuration from device"><i class="bi bi-box-arrow-down"></i></button>
+        <button type="button" class="btn btn-secondary btn-sm" onclick="detectDeviceType()" data-bs-toggle="tooltip" data-bs-placement="top" title="Detect device type based on configuration"><i class="bi bi-binoculars"></i></button>
+      </div>
     </div>
     <div class="row mb-2">
       <div class="col-sm-2 col-form-label">Config:</div>
@@ -116,10 +121,37 @@
         if(!success) {
           showHttpError(status);
         } else {
+          console.log("Received config from device: " + JSON.stringify(json));
           document.getElementById("config").value = JSON.stringify(json);
         }
         lockScreen(false);
       });
+    }
+
+    function detectDeviceType() {
+      lockScreen(true);
+
+      json = JSON.parse(document.getElementById("config").value);
+
+      if( json.hasOwnProperty("id") ) {
+        if( document.getElementById("chip_id").value != json["id"] ) {
+          showError("The ID in the configuration does not match the ID stored in the database")          
+        }
+      }
+
+      if( json.hasOwnProperty("platform") ) {
+        document.getElementById("chip_family").value = json["platform"];
+      }
+
+      if( json.hasOwnProperty("mdns") ) {
+        document.getElementById("mdns").value = json["mdns"];
+      }
+
+      if( json.hasOwnProperty("pressure-zero-correction") ) {
+        document.getElementById("software").value = "Pressuremon";
+      }
+
+      lockScreen(false);
     }
 
     function saveDevice() {
