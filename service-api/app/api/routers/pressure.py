@@ -107,13 +107,15 @@ async def create_pressure_using_json(
     try:
         json = await request.json()
 
+        chipId = json["id"] 
+
         # Check if there is an active batch
-        batchList = batch_service.search_chipId_active(json["chipId"], True)
+        batchList = batch_service.search_chipId_active(chipId, True)
 
         if len(batchList) == 0:
             batch = schemas.BatchCreate(
-                name = "Batch for " + json["chipId"],
-                chipId = json["chipId"],
+                name = "Batch for " + chipId,
+                chipId = chipId,
                 description = "Automatically created",
                 brewDate = datetime.today().strftime("%Y-%m-%d"),
                 style = "",
@@ -125,17 +127,17 @@ async def create_pressure_using_json(
                 ibu = 0.0
             )
             batch_service.create(batch)
-            batchList = batch_service.search_chipId_active(json["chipId"], True)
+            batchList = batch_service.search_chipId_active(chipId, True)
 
         if len(batchList) == 0:
             raise HTTPException(status_code=409, detail="No batch found")
 
         # Check if there is an device registered
-        deviceList = device_service.search_chipId(json["chipId"])
+        deviceList = device_service.search_chipId(chipId)
 
         if len(deviceList) == 0:
             device = schemas.DeviceCreate(
-                chipId = json["chipId"],
+                chipId = chipId,
                 chipFamily = "",
                 software = "",
                 mdns = "",
@@ -144,34 +146,39 @@ async def create_pressure_using_json(
             )
             device_service.create(device)
 
-        """ Example payload
+        """ Example payload from pressuremon v0.4
         {
-            "name": "name",
-            "token": "token",
-            "interval": 1,
-            "chipId": "012345",
-            "temperature": 0,
-            "temp_format": "C",
-            "pressure": 1.05,
-            "press_format": "hpa",
-            "battery": 3.85,
-            "rssi": -76.2,
-            "runTime": 1.0,
+            "name": "aaaa",
+            "id": "cb3818",
+            "interval": 10,
+            "temp": 21.71,
+            "temp_units": "C",
+            "pressure": -0.0023,
+            "pressure_units": "PSI",
+            "battery": 0.00,
+            "rssi": -82,
+            "run-time": 0
         }
         """
 
         pressure = schemas.PressureCreate(
-            temperature = json["temperature"],
+            temperature = json["temp"],
             pressure = json["pressure"],
             battery = json["battery"],
             rssi = json["rssi"],
-            run_time = json["runTime"],
+            run_time = json["run-time"],
             batch_id = batchList[0].id,
             created = datetime.now()
         )
 
-        if json["temp_format"] == 'F':
+        if json["temp_units"] == 'F':
             pressure.temperature = (pressure.temperature-32) * 5 / 9 # °C = (°F − 32) x 5/9
+
+        if json["pressure_units"] == 'BAR':
+            pressure.pressure = pressure.pressure / 0.0689475729
+
+        if json["pressure_units"] == 'HPA':
+            pressure.pressure = pressure.pressure / 68.947572932
 
         return pressure_service.create(pressure)
 
