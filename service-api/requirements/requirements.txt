@@ -9,7 +9,7 @@ annotated-types==0.6.0
 anyio==3.7.1
     # via
     #   fastapi
-    #   httpcore
+    #   httpx
     #   starlette
 certifi==2023.7.22
     # via
@@ -19,48 +19,49 @@ click==8.1.7
     # via uvicorn
 colorama==0.4.6
     # via click
-fastapi==0.104.0
-    # via kegmon-api (setup.py)
+fastapi==0.104.1
+    # via brewlogger-api (setup.py)
 greenlet==3.0.1
     # via sqlalchemy
 h11==0.14.0
     # via
     #   httpcore
     #   uvicorn
-httpcore==0.18.0
+httpcore==1.0.1
     # via httpx
-httpx==0.25.0
-    # via kegmon-api (setup.py)
+httpx==0.25.1
+    # via brewlogger-api (setup.py)
 idna==3.4
     # via
     #   anyio
     #   httpx
+ifaddr==0.2.0
+    # via zeroconf
 jinja2==3.1.2
-    # via kegmon-api (setup.py)
+    # via brewlogger-api (setup.py)
 markupsafe==2.1.3
     # via jinja2
 psycopg2==2.9.9
-    # via kegmon-api (setup.py)
+    # via brewlogger-api (setup.py)
 pydantic==2.4.2
     # via
+    #   brewlogger-api (setup.py)
     #   fastapi
-    #   kegmon-api (setup.py)
     #   pydantic-settings
 pydantic-core==2.10.1
     # via pydantic
 pydantic-settings==2.0.3
-    # via kegmon-api (setup.py)
+    # via brewlogger-api (setup.py)
 python-dotenv==1.0.0
     # via pydantic-settings
 pyyaml==6.0.1
-    # via kegmon-api (setup.py)
+    # via brewlogger-api (setup.py)
 sniffio==1.3.0
     # via
     #   anyio
-    #   httpcore
     #   httpx
-sqlalchemy==2.0.22
-    # via kegmon-api (setup.py)
+sqlalchemy==2.0.23
+    # via brewlogger-api (setup.py)
 starlette==0.27.0
     # via fastapi
 typing-extensions==4.8.0
@@ -69,5 +70,7 @@ typing-extensions==4.8.0
     #   pydantic
     #   pydantic-core
     #   sqlalchemy
-uvicorn==0.23.2
-    # via kegmon-api (setup.py)
+uvicorn==0.24.0.post1
+    # via brewlogger-api (setup.py)
+zeroconf==0.120.0
+    # via brewlogger-api (setup.py)
