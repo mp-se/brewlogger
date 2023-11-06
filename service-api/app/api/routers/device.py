@@ -1,12 +1,14 @@
-import httpx, logging
+import httpx, logging, json
 from json import JSONDecodeError
 from typing import List, Optional
 from fastapi import Depends
 from fastapi.routing import APIRouter
+from fastapi.responses import Response
 from starlette.exceptions import HTTPException
 from api.db import models, schemas
 from api.services import DeviceService, get_device_service
 from ..security import api_key_auth
+from ..mdns import scan_for_mdns
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/api/device")
@@ -116,3 +118,12 @@ async def fetch_data_from_device(
             detail=f"Unable to connect to remote endpoint (ConnectTimeout).")
     #except:
     #    logger.error("Unknown error occured when trying to fetch data from remote")
+
+@router.get(
+    "/mdns/",
+    status_code=200,
+    dependencies=[Depends(api_key_auth)])
+async def scan_for_mdns_devices():
+    logger.info("Endpoint GET /api/device/mdns/")
+    mdns = await scan_for_mdns(5)
+    return Response(content=json.dumps(mdns), media_type="application/json")

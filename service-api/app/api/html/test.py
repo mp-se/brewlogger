@@ -68,7 +68,7 @@ async def html_unit_tests(request: Request):
     logger.info("Endpoint GET /html/test/unit/")
     return get_template().TemplateResponse("unit_test.html", {"request": request, "apikey": get_settings().api_key })
 
-@router.get("/scripts/", response_class=HTMLResponse)
-async def html_scripts(request: Request):
-    logger.info("Endpoint GET /html/test/scripts/")
-    return get_template().TemplateResponse("script_test.html", {"request": request, "apikey": get_settings().api_key })
+# @router.get("/scripts/", response_class=HTMLResponse)
+# async def html_scripts(request: Request):
+#     logger.info("Endpoint GET /html/test/scripts/")
+#     return get_template().TemplateResponse("script_test.html", {"request": request, "apikey": get_settings().api_key })
