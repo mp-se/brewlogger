@@ -100,27 +100,6 @@
     if(autoRefresh) location.reload();
   }
 
-  function ispindelSimulation() {
-    data = {
-        "name": "name",
-        "ID": "ABCDEF",
-        "token": "token",
-        "interval": 1,
-        "temperature": Math.random()*20,
-        "temp_units": "C",
-        "gravity": Math.random()+1,
-        "angle": 34.45,
-        "battery": 3.85,
-        "RSSI": -76.2,
-    }
-
-    api.sendIspindel(data, function() { console.log("Data posted"); if(autoRefresh) location.reload(); });
-  }
-
-  function mdns() {
-      api.getMDNS(function(json, status, success) { console.log("MDNS result:" + JSON.stringify(json)); if(autoRefresh) location.reload(); });
-  }
-
   function deleteDatabase() {
       api.deleteDatabase(function() { console.log("Data deleted"); if(autoRefresh) location.reload(); });
   }
