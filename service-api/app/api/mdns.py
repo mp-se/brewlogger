@@ -8,7 +8,8 @@ ALL_SERVICES = [
     "_pressuremon._tcp.local.",
     "_gravitymon._tcp.local.",
     "_kegmon._tcp.local.",
-    "_http._tcp.local.",
+    #"_http._tcp.local.",
+    #"_brewpi._tcp.local.",
 ]
 
 logger = logging.getLogger(__name__)
@@ -16,9 +17,8 @@ scan_result = []
 
 async def scan_for_mdns(timeout):
     logger.info(f"Scanning for mdns devices, timout {timeout}")
-    #loop = asyncio.get_event_loop()
+    scan_result.clear()
     runner = AsyncDeviceScanner(timeout)
-    #loop.run_until_complete(runner.async_run())
     await runner.async_run()
     logger.info(f"Scanning completed {scan_result}")
     return scan_result
@@ -39,7 +39,7 @@ async def _async_show_service_info(zeroconf: Zeroconf, service_type: str, name: 
         adresses = ", ".join(addresses)
         host = info.server
         logger.info(f"Endpoint: {type} {adresses} {host}" )
-        mdns = { "type": type, "url": str(adresses[0]), "mdns": host.strip('.') }
+        mdns = { "type": type, "host": str(adresses), "name": host.strip('.') }
         scan_result.append(mdns)
 
 class AsyncDeviceScanner:

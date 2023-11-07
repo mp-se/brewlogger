@@ -85,7 +85,9 @@ async def fetch_data_from_device(
     logger.info("Endpoint POST /api/device/proxy_fetch")
 
     try:
-        async with httpx.AsyncClient() as client:
+        timeout = httpx.Timeout(10.0, connect=10.0, read=10.0)
+
+        async with httpx.AsyncClient(timeout=timeout) as client:
             if proxy_req.method == "post":
                 logger.info("Fetching data using post %s", proxy_req.url)
                 res = await client.post(proxy_req.url, proxy_req.body)
@@ -106,11 +108,16 @@ async def fetch_data_from_device(
         raise HTTPException(
             status_code=400,
             detail=f"Unable to parse JSON from remote endpoint.")
-    except httpx.ConnectError:
+    except httpx.ReadTimeout:
         logger.error("Unable to connect to device")
         raise HTTPException(
             status_code=400,
             detail=f"Unable to connect to remote endpoint (ConnectError).")
+    except httpx.ConnectError:
+        logger.error("Unable to read from device")
+        raise HTTPException(
+            status_code=400,
+            detail=f"Unable to connect to remote endpoint (ReadTimeout).")
     except httpx.ConnectTimeout:
         logger.error("Unable to connect to device")
         raise HTTPException(
