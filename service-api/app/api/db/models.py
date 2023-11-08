@@ -16,6 +16,7 @@ class Device(Base):
     software = Column(String(40), nullable=False)
     mdns = Column(String(40), nullable=False)
     config = Column(Text, nullable=False)
+    ble_color = Column(String(15), nullable=False)
     url = Column(String(80), nullable=False)
 
 class Batch(Base):

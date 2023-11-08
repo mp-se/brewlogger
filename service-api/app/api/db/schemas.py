@@ -34,6 +34,7 @@ class DeviceBase(BaseModel):
     mdns: str = Field(min_length=0, max_length=40, description="Network name of the device")
     config: str = Field(default="", description="JSON document containing the device configuration")
     url: str = Field(min_length=0, max_length=80, description="URL to the device, will be used to communicate with it")
+    ble_color: str = Field(min_length=0, max_length=15, description="Bluetooth color")
 
 class DeviceUpdate(DeviceBase):
     pass

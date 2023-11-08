@@ -22,6 +22,7 @@ def test_add(app_client):
         "mdns": "f4",
         "config": "f5",
         "url": "f6",
+        "bleColor": "f7",
     }
 
     # Add new
@@ -40,6 +41,7 @@ def test_add(app_client):
     assert data["mdns"] == data2["mdns"]
     assert data["config"] == data2["config"]
     assert data["url"] == data2["url"]
+    assert data["bleColor"] == data2["bleColor"]
 
     # Not using a number for index
     r2 = app_client.get("/api/device/hello", headers=headers)
@@ -59,6 +61,7 @@ def test_update(app_client):
         "mdns": "ff4",
         "config": "ff5",
         "url": "ff6",
+        "bleColor": "ff7",
     }
 
     # Update existing
@@ -75,6 +78,7 @@ def test_update(app_client):
     assert data["mdns"] == data2["mdns"]
     assert data["config"] == data2["config"]
     assert data["url"] == data2["url"]
+    assert data["bleColor"] == data2["bleColor"]
 
     # Update missing entity
     r = app_client.patch("/api/device/10", json=data, headers=headers)
@@ -109,6 +113,7 @@ def test_validation(app_client):
         "mdns": "",
         "config": "",
         "url": "",
+        "bleColor": "",
     }
     r = app_client.post("/api/device/", json=data, headers=headers)
     assert r.status_code == 201
@@ -120,6 +125,7 @@ def test_validation(app_client):
         "mdns": "",
         "config": "",
         "url": "",
+        "bleColor": "",
     }
     r = app_client.post("/api/device/", json=data, headers=headers)
     assert r.status_code == 422
@@ -131,6 +137,7 @@ def test_validation(app_client):
         "mdns": "",
         "config": "",
         "url": "",
+        "bleColor": "",
     }
     r = app_client.post("/api/device/", json=data, headers=headers)
     assert r.status_code == 422
@@ -142,6 +149,7 @@ def test_validation(app_client):
         "mdns": "",
         "config": "",
         "url": "",
+        "bleColor": "",
     }
     r = app_client.post("/api/device/", json=data, headers=headers)
     assert r.status_code == 422
@@ -153,6 +161,7 @@ def test_validation(app_client):
         "mdns": "0123456789012345678900123456789012345678901",
         "config": "",
         "url": "",
+        "bleColor": "",
     }
     r = app_client.post("/api/device/", json=data, headers=headers)
     assert r.status_code == 422
@@ -164,6 +173,7 @@ def test_validation(app_client):
         "mdns": "",
         "config": "",
         "url": "012345678901234567890012345678901234567890123456789012345678901234567890123456789012345678901",
+        "bleColor": "",
     }
     r = app_client.post("/api/device/", json=data, headers=headers)
     assert r.status_code == 422

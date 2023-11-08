@@ -28,6 +28,9 @@ async def check_and_migrate_database():
             con.execute(text('ALTER TABLE gravity DROP COLUMN token;'))
             con.execute(text('ALTER TABLE gravity DROP COLUMN temp_units;'))
             con.execute(text('ALTER TABLE gravity DROP COLUMN gravity_units;'))
+
+            # TODO: Add bleColor field
+
             con.commit()
         except OperationalError:
             logger.error("Failed to update database.")

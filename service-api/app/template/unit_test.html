@@ -47,6 +47,7 @@
         "software": "",
         "mdns": "",
         "config": "",
+        "bleColor": "",
         "url": "" }, function(json, status, success) {
         api.getDeviceList(function(json2, status, success) {
           assert.equal(success, true);
@@ -64,6 +65,7 @@
       "chipFamily": "",
       "software": "",
       "mdns": "",
+      "bleColor": "",
       "config": "",
       "url": "" }, function(json, status, success) {
         api.getDevice(json["id"], function(json2, status, success) {
@@ -83,6 +85,7 @@
         "software": "",
         "mdns": "",
         "config": "",
+        "bleColor": "",
         "url": "" }, function(json, status, success) {
         assert.equal(success, true);
         assert.notEqual(json["id"], 0);
@@ -100,6 +103,7 @@
           "software": "",
           "mdns": "",
           "config": "",
+          "bleColor": "",
           "url": "" }, function(json2, status, success) {
           assert.equal(success, true);
           assert.notEqual(json2["id"], 0);
