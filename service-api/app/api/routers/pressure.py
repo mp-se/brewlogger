@@ -142,6 +142,7 @@ async def create_pressure_using_json(
                 software = "",
                 mdns = "",
                 config = "",
+                bleColor = "",
                 url = "http://" + request.client.host
             )
             device_service.create(device)

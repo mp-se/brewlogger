@@ -75,6 +75,24 @@
         </select>
       </div>
     </div>
+
+    <div class="row mb-2">
+      <div class="col-sm-2 col-form-label">BLE Color:</div>
+      <div class="col-sm-3">
+        <select class="form-select" id="ble_color" {{ readonly }}>
+          <option value="">-not active-</option>
+          <option value="red">red</option>
+          <option value="green">green</option>
+          <option value="black">black</option>
+          <option value="purple">purple</option>
+          <option value="orange">orange</option>
+          <option value="blue">blue</option>
+          <option value="yellow">yellow</option>
+          <option value="pink">pink</option>
+        </select>
+      </div>
+    </div>
+
     <div class="row mb-2">
       <div class="col-sm-2 col-form-label">Device URL:</div>
       <div class="col-sm-7"><input type="url" maxlength="80" class="form-control" id="url" value="{{ device.url }}" placeholder="http://devicename.local" {{ readonly }}></div>
@@ -162,6 +180,7 @@
         "software": document.getElementById("software").value,
         "mdns": document.getElementById("mdns").value,
         "config": document.getElementById("config").value,
+        "bleColor": document.getElementById("ble_color").value,
         "url": document.getElementById("url").value
       };
 
@@ -197,6 +216,7 @@
         "software": document.getElementById("software").value,
         "mdns": document.getElementById("mdns").value,
         "config": document.getElementById("config").value,
+        "bleColor": document.getElementById("ble_color").value,
         "url": document.getElementById("url").value
       };
 
