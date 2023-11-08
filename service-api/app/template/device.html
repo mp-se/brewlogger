@@ -169,6 +169,10 @@
         document.getElementById("software").value = "Pressuremon";
       }
 
+      if( json.hasOwnProperty("gyro-calibration-data") ) {
+        document.getElementById("software").value = "Gravitymon";
+      }
+
       lockScreen(false);
     }
 
