@@ -186,5 +186,30 @@ def test_public(app_client):
     r = app_client.post("/api/gravity/public", json=data)
     assert r.status_code == 200
 
+def test_public2(app_client):
+    test_init(app_client)
+
+    data = {
+        "chipId": "123456",
+        "chipFamily": "",
+        "software": "",
+        "mdns": "",
+        "config": "",
+        "url": "",
+        "bleColor": "red",
+    }
+
+    r = app_client.post("/api/device/", json=data, headers=headers)
+    assert r.status_code == 201
+
+    data = {
+        "color": "red",
+        "gravity": 1.001,
+        "temperature": 42,
+        "RSSI": -65,
+    }
+    r = app_client.post("/api/gravity/public", json=data)
+    assert r.status_code == 200
+
 def test_validation(app_client):
     pass

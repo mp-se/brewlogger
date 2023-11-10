@@ -108,6 +108,19 @@ async def create_gravity_using_ispindel_format(
     try:
         json = await request.json()
 
+        # This means the post is in TILT format so we need to look up the correct device and add the missing data.
+        if "color" in json:
+            logger.info("Detected tilt post, searching for device id for %s", json["color"])
+
+            deviceList = device_service.search_ble_color(json["color"])         
+            if len(deviceList) == 0:
+                raise HTTPException(status_code=404, detail="Device with color not found")
+
+            json["ID"] = deviceList[0].chip_id
+            json["temp_units"] = 'F'
+            json["angle"] = 0
+            json["battery"] = 0
+
         # Extensions from Gravitymon
         corr_gravity = 0
         gravity_units = "SG"
@@ -154,7 +167,7 @@ async def create_gravity_using_ispindel_format(
                 mdns = "",
                 config = "",
                 bleColor = "",
-                url = "http://" + request.client.host
+                url = "http://",
             )
             device_service.create(device)
 

@@ -16,3 +16,9 @@ class DeviceService(BaseService[models.Device, schemas.DeviceCreate, schemas.Dev
         objs: List[self.model] = self.db_session.scalars(select(self.model).filter_by(**filters)).all()
         logger.info("Fetched device based on chipId=%s, records found %d", chipId, len(objs))
         return objs
+
+    def search_ble_color(self, ble_color: str) -> List[models.Device]:
+        filters = { "ble_color": ble_color }
+        objs: List[self.model] = self.db_session.scalars(select(self.model).filter_by(**filters)).all()
+        logger.info("Fetched device based on ble_color=%s, records found %d", ble_color, len(objs))
+        return objs
