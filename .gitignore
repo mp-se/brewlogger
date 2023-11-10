@@ -6,3 +6,5 @@ src/kegmon_api.egg-info/
 *.sqlite
 *__pycache__
 *.pyc
+production/*
+docker-compose.yaml
