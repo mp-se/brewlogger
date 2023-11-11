@@ -132,5 +132,5 @@ async def fetch_data_from_device(
     dependencies=[Depends(api_key_auth)])
 async def scan_for_mdns_devices():
     logger.info("Endpoint GET /api/device/mdns/")
-    mdns = await scan_for_mdns(5)
+    mdns = await scan_for_mdns(10)
     return Response(content=json.dumps(mdns), media_type="application/json")

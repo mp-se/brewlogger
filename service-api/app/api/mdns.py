@@ -8,7 +8,7 @@ ALL_SERVICES = [
     "_pressuremon._tcp.local.",
     "_gravitymon._tcp.local.",
     "_kegmon._tcp.local.",
-    #"_http._tcp.local.",
+    "_http._tcp.local.",
     #"_brewpi._tcp.local.",
 ]
 
