@@ -6,5 +6,7 @@ ENV PYTHONUNBUFFERED 1
 COPY ./requirements.txt /app/requirements.txt
 RUN pip install --no-cache-dir --upgrade -r /app/requirements.txt
 #RUN setcap cap_net_raw,cap_net_admin+eip /usr/local/bin/python3.11
-COPY ./*.py /app
-ENTRYPOINT ["sh", "-c", "python3 gravitymon_scan.py && python3 tilt_scan.py"]
+COPY ./*.py /app/
+COPY entrypoint.sh /entrypoint.sh
+RUN chmod a+x /entrypoint.sh
+ENTRYPOINT [ "/entrypoint.sh" ]

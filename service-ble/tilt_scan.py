@@ -8,7 +8,7 @@ from bleak import BleakScanner
 from bleak.backends.device import BLEDevice
 from bleak.backends.scanner import AdvertisementData
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger("tilt")
 
 endpoint = "http://brew_api:80/api/gravity/public"
 headers = {
@@ -84,12 +84,10 @@ def device_found(
 
                 try:
                     logger.info( "Posting data.")
-                    #r = requests.post(endpoint, json=data, headers=headers)
-                    #logger.info( f"Response {r}.")
+                    r = requests.post(endpoint, json=data, headers=headers)
+                    logger.info( f"Response {r}.")
                 except Exception as e:
                     logger.error( "Failed to post data, Error: %s", e)
-            else:
-                logger.info("Too short time between transmissions, skipping.")
 
     except KeyError as e:
         pass
@@ -111,12 +109,22 @@ async def main():
     logger.info("Minium interval = %d", minium_interval)
 
     init()
-    scanner = BleakScanner(detection_callback=device_found,scanning_mode="passive")
+    #scanner = BleakScanner(detection_callback=device_found,scanning_mode="passive")
+    scanner = BleakScanner(detection_callback=device_found)
 
     while True:
-        logger.info("Scanning for tilt devices...")
         await scanner.start()
         await asyncio.sleep(1.0)
         await scanner.stop()
 
-asyncio.run(main())
+if __name__ == "__main__":
+    logging.basicConfig(
+        level=logging.INFO,
+        format="%(asctime)-15s %(name)-8s %(levelname)s: %(message)s",
+    )
+
+    logger.info("Scanning for tilt devices...")
+
+    asyncio.run(main())
+    
+    logger.info("Exit from tilt scanner")

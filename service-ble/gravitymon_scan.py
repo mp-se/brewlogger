@@ -2,7 +2,7 @@ import asyncio, logging, json, requests
 
 from bleak import BleakClient, BleakScanner
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger("gravmon")
 
 endpoint = "http://brew_api:80/api/gravity/public"
 headers = {
@@ -11,11 +11,9 @@ headers = {
 
 async def main():
     while True:
-        logger.info("Scanning for gravitymon devices...")
-        
         device = await BleakScanner.find_device_by_name("gravitymon", cb=dict(use_bdaddr=False))
         if device is None:
-            logger.error("Could not find any device with name 'gravitymon'")
+            pass
         else:
             logger.info("Connecting to gravitymon.")
             async with BleakClient(
@@ -47,4 +45,8 @@ if __name__ == "__main__":
         format="%(asctime)-15s %(name)-8s %(levelname)s: %(message)s",
     )
 
+    logger.info("Scanning for gravitymon devices...")
+
     asyncio.run(main())
+    
+    logger.info("Exit from gravitymon scanner")
