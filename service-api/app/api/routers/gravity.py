@@ -191,5 +191,10 @@ async def create_gravity_using_ispindel_format(
 
         return gravity_service.create(gravity)
 
-    except JSONDecodeError:
-        raise HTTPException(status_code=409, detail="Unable to parse request")
+    except KeyError as e:
+        logging.error(e)
+        raise HTTPException(status_code=422, detail="Unable to parse request")
+
+    except JSONDecodeError as e:
+        logging.error(e)
+        raise HTTPException(status_code=422, detail="Unable to parse request")

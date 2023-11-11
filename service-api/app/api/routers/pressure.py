@@ -184,4 +184,4 @@ async def create_pressure_using_json(
         return pressure_service.create(pressure)
 
     except JSONDecodeError:
-        raise HTTPException(status_code=409, detail="Unable to parse request")
+        raise HTTPException(status_code=422, detail="Unable to parse request")
