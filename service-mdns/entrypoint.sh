@@ -13,10 +13,9 @@ echo "Options:  ${OPTIONS}"
 #NON_VIRTUAL_INTERFACES=($(ip addr | grep "state UP" -A2 | awk '/inet/{print $(NF)}' | grep -P '^(?:(?!veth).)*$' | tr '\n' ' '))
 
 if [[ ${USE_MDNS_REPEATER} -eq 1 ]]; then
+  echo "Starting MDNS repeater"
   exec mdns-repeater -f ${OPTIONS} "${EXTERNAL_INTERFACE}" "br-${DOCKER_INTERFACE}"
-  echo "Testing 5"
 else
   # If the local user has disabled the app, then just sleep forever
-  echo "Testing 4"
   sleep infinity
 fi
