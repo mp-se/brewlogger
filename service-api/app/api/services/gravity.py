@@ -32,8 +32,9 @@ class GravityService(BaseService[models.Gravity, schemas.GravityCreate, schemas.
             )
         return super(GravityService, self).createList(lst)
 
-    def search(self, chipId: str) -> List[models.Gravity]:
-        filters = { "chip_id": chipId }
+    def search_by_batchId(self, batchId: int) -> List[models.Gravity]:
+        filters = { "batch_id": batchId }
         objs: List[self.model] = self.db_session.scalars(select(self.model).filter_by(**filters)).all()
-        logger.info("Fetched gravity based on chipId=%s, records found %d", chipId, len(objs))
+        logger.info("Fetched gravity based on batchId=%d, records found %d", batchId, len(objs))
         return objs
+

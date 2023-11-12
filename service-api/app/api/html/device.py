@@ -10,7 +10,10 @@ logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/html/device")
 
 @router.get("/", response_class=HTMLResponse)
-async def html_list_devices(request: Request, devices_service: DeviceService = Depends(get_device_service)):
+async def html_list_devices(
+    request: Request, 
+    devices_service: DeviceService = Depends(get_device_service)
+):
     logger.info("Endpoint GET /html/device/")
     device_list = devices_service.list()
     return get_template().TemplateResponse("device_list.html", {"request": request, "device_list": device_list, "settings": get_settings() })

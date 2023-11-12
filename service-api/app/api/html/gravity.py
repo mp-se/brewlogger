@@ -9,7 +9,16 @@ logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/html/gravity")
 
 @router.get("/", response_class=HTMLResponse)
-async def html_list_gravities(request: Request, gravities_service: GravityService = Depends(get_gravity_service)):
+async def html_list_gravities(
+    request: Request, 
+    batch_id: str = "*",
+    gravities_service: GravityService = Depends(get_gravity_service)
+):
     logger.info("Endpoint GET /html/gravity/")
-    gravity_list = gravities_service.list()
+    
+    if batch_id == "*":
+        gravity_list = gravities_service.list()
+    else:
+        gravity_list = gravities_service.search_by_batchId(int(batch_id))  
+    
     return get_template().TemplateResponse("gravity_list.html", {"request": request, "gravity_list": gravity_list, "settings": get_settings() })
