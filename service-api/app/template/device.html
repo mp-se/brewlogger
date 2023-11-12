@@ -200,11 +200,11 @@
       api.updateDevice({{ device.id }}, json, function(json, status, success) {
         if(!success) {
           showHttpError(status);
-          lockScreen(false);
         } else {
           showSuccess("Record updated.");
-          setTimeout(function() { window.location.href='/html/device/'; }, 500);
+          // setTimeout(function() { window.location.href='/html/device/'; }, 500);
         }
+        lockScreen(false);
       });
     }
 
@@ -236,12 +236,13 @@
       api.addDevice(json, function(json, status, success) {
         if(!success) {
           showHttpError(status);
-          lockScreen(false);
         } else {
           showSuccess("Record added.");
-          setTimeout(function() { window.location.href='/html/device/'; }, 500);
+          setTimeout(function() { window.location.href='/html/device/' + json["id"] + "?func=edit"; }, 500);
+          // setTimeout(function() { window.location.href='/html/device/'; }, 500);
           // setTimeout(function() { window.location.href = "/html/device/" + json["id"] + "?func=edit"; }, 500);
         }
+        lockScreen(false);
       });
     }
   </script>

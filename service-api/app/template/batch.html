@@ -109,11 +109,11 @@
         api.updateBatch({{ batch.id }}, json, function(json, status, success) {
           if(!success) {
             showHttpError(status);
-            lockScreen(false);
           } else {
             showSuccess("Record updated.");
-            setTimeout(function() { window.location.href='/html/batch/'; }, 500);
+            //setTimeout(function() { window.location.href='/html/batch/'; }, 500);
           }
+          lockScreen(false);
         });
       }
 
@@ -139,12 +139,13 @@
         api.addBatch(json, function(json, status, success) {
           if(!success) {
             showHttpError(status);
-            lockScreen(false);
           } else {
             showSuccess("Record added.");
-            setTimeout(function() { window.location.href='/html/batch/'; }, 500);
+            setTimeout(function() { window.location.href='/html/batch/' + json["id"] + "?func=edit"; }, 500);
+            // setTimeout(function() { window.location.href='/html/batch/'; }, 500);
             // setTimeout(function() { window.location.href = "/html/batch/" + json["id"] + "?func=edit"; }, 500);
           }
+          lockScreen(false);
         });
       }
     </script>
