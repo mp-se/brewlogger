@@ -1,6 +1,4 @@
-from typing import List
 from fastapi import HTTPException
-from sqlalchemy import select
 from sqlalchemy.orm import Session
 from api.db import models, schemas
 from .base import BaseService

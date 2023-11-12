@@ -39,6 +39,7 @@ async def html_get_device_by_id(
         device.mdns = ""
         device.software = ""
         device.url = ""
+        device.ble_color = ""
 
     logger.info(device)
     return get_template().TemplateResponse("device.html", {"request": request, "device": device, "func": func, "settings": get_settings() })

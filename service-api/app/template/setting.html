@@ -165,6 +165,10 @@
       console.log("Number of requests needed:", progress_max);
 
       for(device of json["devices"]) {
+
+        if( !device.hasOwnProperty("ble_color") ) // New field from 0.2
+          device["ble_color"] = "";
+
         await api.addDevice(device, function(res, status, success) {
           device.id = res.id;
           updateProgress();

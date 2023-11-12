@@ -1,6 +1,6 @@
 from setuptools import find_packages, setup
 
-install_requires = ["fastapi", "uvicorn", "sqlalchemy", "pydantic", "pydantic-settings", "pyyaml", "httpx", "jinja2", "psycopg2", "zeroconf"]
+install_requires = ["fastapi", "uvicorn", "sqlalchemy", "pydantic", "pydantic-settings", "pyyaml", "httpx", "jinja2", "psycopg2", "zeroconf", "asyncpg"]
 
 setup(
     name="brewlogger_api",

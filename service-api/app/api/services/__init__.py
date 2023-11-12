@@ -7,6 +7,7 @@ from .device import DeviceService
 from .batch import BatchService
 from .gravity import GravityService
 from .pressure import PressureService
+from .brewlogger import BrewLoggerService
 from .pour import PourService
 
 def get_device_service(db_session: Session = Depends(get_session)) -> DeviceService:
@@ -24,4 +25,7 @@ def get_pressure_service(db_session: Session = Depends(get_session)) -> Pressure
 def get_pour_service(db_session: Session = Depends(get_session)) -> PourService:
     return PourService(db_session)
 
-__all__ = ("get_device_service", "get_batch_service", "get_gravity_service", "get_pressure_service", "get_pour_service")
+def get_brewlogger_service(db_session: Session = Depends(get_session)) -> BrewLoggerService:
+    return BrewLoggerService(db_session)
+
+__all__ = ("get_device_service", "get_batch_service", "get_gravity_service", "get_pressure_service", "get_pour_service", "get_brewlogger_service")

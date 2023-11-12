@@ -1,9 +1,8 @@
-import string, random
+import string, random, logging
 from functools import lru_cache
 from pydantic_settings import BaseSettings
 from starlette.config import Config
 from fastapi.templating import Jinja2Templates
-import logging
 
 logger = logging.getLogger(__name__)
 config = Config()

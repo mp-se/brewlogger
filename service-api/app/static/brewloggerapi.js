@@ -255,10 +255,6 @@ class BrewLoggerAPI {
     await this.#request( "/api/pressure/list/", "POST", json, callback);
   }
 
-  async migrateDatabase(callback) {
-    await this.#request( "/html/test/migrate", "PATCH", {}, callback);
-  }
-
   async getMDNS(callback) {
     await this.#request( "/api/device/mdns/", "GET", {}, callback);
   }

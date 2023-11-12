@@ -1,8 +1,6 @@
 from datetime import datetime
 from typing import List, Optional
-from pydantic import BaseModel, Field, ConfigDict, ValidationError, ValidationInfo, field_validator
-from pydantic.functional_validators import AfterValidator
-from typing_extensions import Annotated
+from pydantic import BaseModel, Field, ConfigDict
 
 def to_camel(string: str) -> str:
     if "_" not in string:
@@ -24,6 +22,27 @@ class AppSetting(BaseModel):
     api_key_enabled: Optional[bool] = Field(default=True)
     test_endpoints_enabled: Optional[bool] = Field(default=False)
     version: Optional[str] = Field(default="")
+
+################################################################################
+
+class BrewLoggerBase(BaseModel):
+    model_config = ConfigDict(alias_generator = to_camel, populate_by_name = True )
+
+    version: str = Field(min_length=0, max_length=10, description="Database software version")
+    mdns_timeout: int = Field(description="mDNS search timeout")
+    temperature_format: str = Field(min_length=0, max_length=1, description="Temperature format for presentation")
+    pressure_format: str = Field(min_length=0, max_length=3, description="Pressure format for presentation")
+    gravity_format: str = Field(min_length=0, max_length=2, description="Gravity format for presentation")
+
+class BrewLoggerUpdate(BrewLoggerBase):
+    pass
+
+class BrewLoggerCreate(BrewLoggerBase):
+    pass
+
+class BrewLogger(BrewLoggerCreate):
+    model_config = ConfigDict(from_attributes = True)
+    id: int
 
 ################################################################################
 

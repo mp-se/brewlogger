@@ -1,11 +1,18 @@
-import datetime
 from typing import Any
-
 from sqlalchemy import Column, Integer, String, Float, DateTime, ForeignKey, Text, Boolean
 from sqlalchemy.orm import declarative_base, relationship
-from sqlalchemy.sql import func
 
 Base: Any = declarative_base()
+
+class BrewLogger(Base):
+    __tablename__ = "brewlogger"
+
+    id = Column(Integer, primary_key=True, index=True)
+    version = Column(String(10), nullable=False)
+    mdns_timeout = Column(Integer, nullable=False, default=10)
+    temperature_format = Column(String(3), nullable=False)
+    pressure_format = Column(String(3), nullable=False)
+    gravity_format = Column(String(3), nullable=False)
 
 class Device(Base):
     __tablename__ = "device"

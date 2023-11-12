@@ -16,8 +16,19 @@ from fastapi import FastAPI, Request
 from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
 from .config import get_settings, get_template
+from contextlib import asynccontextmanager
+from .utils import load_settings
 
 logger = logging.getLogger(__name__)
+
+@asynccontextmanager
+async def lifespan_handler(app: FastAPI):
+    # Running on startup
+    logger.info("Running startup handler")
+    load_settings()
+    yield
+    # Running on closedown
+    logger.info("Running shutdown handler")
 
 def create_app() -> FastAPI:
     logger.info("Creating FastAPI application and registering routers.")
@@ -27,12 +38,13 @@ def create_app() -> FastAPI:
         title="BrewLogger API",
         description="Application for managing brews and brew devices.",
         version=settings.version,
+        lifespan=lifespan_handler,
     )
 
     @app.get("/health")
     async def health():
         return { "status": "ok" }
-
+    
     @app.get("/", response_class=HTMLResponse)
     async def html_get_index(request: Request):
         return get_template().TemplateResponse("index.html", {"request": request, "settings": get_settings()})
