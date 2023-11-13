@@ -1,18 +1,46 @@
-import unittest
+import unittest, requests
 
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.select import Select
 from selenium.webdriver.support.wait import WebDriverWait
 
-class BrewLoggerTest(unittest.TestCase):
+url = "http://localhost:8000"
+api_key = "akljnv13bvi2vfo0b0bw789jlljsdf"
+headers = {
+    "Authorization": "Bearer " + api_key,
+    "Content-Type": "application/json",
+}
 
+class TestBase(unittest.TestCase):
     def setUp(self):
-        self.baseUrl = "http://localhost:8000"
+        self.baseUrl = url
         self.driver = webdriver.Chrome()
+        self.wait = WebDriverWait(self.driver, timeout=2)
+
+    def tearDown(self):
+        self.driver.quit()
 
     def find_element(self, name):
         return self.driver.find_element(by=By.NAME, value=name)
+
+    def wait_for_alert(self):
+        alert = self.find_element("alert")
+        alertmsg = self.find_element("alert-msg")
+        self.wait.until(lambda d : alert.get_dom_attribute("class").find("show") )      
+        assert "alert-success" in alert.get_dom_attribute("class").split(' '), f"Failed to save record. {alertmsg.text}"
+
+    def set_textfield(self, field, value):
+        f = self.find_element(field)
+        f.clear()
+        f.send_keys(value)
+
+    def set_selectfield(self, field, array):
+        f = Select(self.find_element(field))
+        for a in array:
+            f.select_by_value(a)
+
+class BrewLoggerTest(TestBase):
 
     def test_01_device_list(self):
         self.driver.get(self.baseUrl + "/html/device/")     
@@ -20,54 +48,25 @@ class BrewLoggerTest(unittest.TestCase):
 
     def test_02_add_device(self):
         self.driver.get(self.baseUrl + "/html/device/")     
-        add = self.find_element("add-button")
-        add.click()
+        self.find_element("add-button").click()
         assert self.driver.current_url == self.baseUrl + "/html/device/0?func=create"
 
-        chipId = self.find_element("chip_id-field")
-        chipId.send_keys("123456")
-        mdns = self.find_element("mdns-field")
-        mdns.send_keys("123456.local")
-        chipFamily = self.find_element("chip_family-field")
-        chipFamilySelect = Select(chipFamily)
-        chipFamilySelect.select_by_value("esp8266")
-        chipFamilySelect.select_by_value("esp32")
-        chipFamilySelect.select_by_value("esp32s2")
-        chipFamilySelect.select_by_value("esp32s3")
-        chipFamilySelect.select_by_value("esp32c3")
-        chipFamilySelect.select_by_value("unknown")
-        software = self.find_element("software-field")
-        softwareSelect = Select(software)
-        softwareSelect.select_by_value("Gravitymon")
-        softwareSelect.select_by_value("Pressuremon")
-        softwareSelect.select_by_value("Kegmon")
-        softwareSelect.select_by_value("Brewpi")
-        softwareSelect.select_by_value("iSpindel")
-        softwareSelect.select_by_value("unknown")
-        url = self.find_element("url-field")
-        url.send_keys("http://localhost")
-        bleColor = self.find_element("ble_color-field")
-        bleColorSelect = Select(bleColor)
-        bleColorSelect.select_by_value("")
-        bleColorSelect.select_by_value("red")
-        bleColorSelect.select_by_value("green")
-        bleColorSelect.select_by_value("black")
-        bleColorSelect.select_by_value("purple")
-        bleColorSelect.select_by_value("orange")
-        bleColorSelect.select_by_value("blue")
-        bleColorSelect.select_by_value("yellow")
-        bleColorSelect.select_by_value("pink")
-        config = self.find_element("config-field")
+        self.set_textfield("chip_id-field", "123456")
+        self.set_textfield("mdns-field", "123456.local")
+        self.set_selectfield("chip_family-field", ["","esp8266","esp32","esp32s2","esp32s3","esp32c3"])
+        self.set_selectfield("software-field", ["","Gravitymon","Pressuremon","Kegmon","Brewpi","iSpindel"])
+        self.set_textfield("url-field", "http://localhost")
+        self.set_selectfield("ble_color-field", ["","red","green","black","purple","orange","blue","yellow","pink"])
+        self.find_element("config-field")
+        self.find_element("create-button").click()
 
-        create = self.find_element("create-button")
-        create.click()
+        self.wait_for_alert()
 
-        alert = self.find_element("alert")
-        alertmsg = self.find_element("alert-msg")
+        self.wait.until(lambda d : self.driver.current_url.endswith("?func=edit") )      
+        id = self.driver.current_url[self.driver.current_url.rfind('/')+1:self.driver.current_url.find('?')]
+        assert self.driver.current_url == self.baseUrl + "/html/device/" + id + "?func=edit"
 
-        wait = WebDriverWait(self.driver, timeout=2)
-        wait.until(lambda d : alert.get_dom_attribute("class").find("show") )      
-        assert "alert-success" in alert.get_dom_attribute("class").split(' '), f"Failed to save record. {alertmsg.text}"
+        print(f"Added device record with id {id}")
 
     def test_03_batch_list(self):
         self.driver.get(self.baseUrl + "/html/batch/")     
@@ -79,43 +78,27 @@ class BrewLoggerTest(unittest.TestCase):
         add.click()
         assert self.driver.current_url == self.baseUrl + "/html/batch/0?func=create"
 
-        name = self.find_element("name-field")
-        name.send_keys("Batch name")
-        chipId = self.find_element("chip_id-field")
-        chipIdSelect = Select(chipId)
-        chipIdSelect.select_by_value("123456")
-        description = self.find_element("description-field")
-        description.send_keys("This is a description")
-        brewDate = self.find_element("brew_date-field")
-        brewDate.send_keys("2023-01-01")
-        style = self.find_element("style-field")
-        style.send_keys("IPA")
-        brewer = self.find_element("brewer-field")
-        brewer.send_keys("Anonymous")
-        abv = self.find_element("abv-field")
-        abv.clear()
-        abv.send_keys("4.5")
-        ebc = self.find_element("ebc-field")
-        ebc.clear()
-        ebc.send_keys("25")
-        ibu = self.find_element("ibu-field")
-        ibu.clear()
-        ibu.send_keys("45")
-        active = self.find_element("active-field")
-        active.click()
+        self.set_textfield("name-field","Batch name")
+        self.set_selectfield("chip_id-field", ["123456"])
+        self.set_textfield("description-field", "This is a description")
+        self.set_textfield("brew_date-field", "2023-01-01")
+        self.set_textfield("style-field", "IPA")
+        self.set_textfield("brewer-field", "Anonymous")
+        self.set_textfield("abv-field", "4.5")
+        self.set_textfield("ebc-field", "25")
+        self.set_textfield("ibu-field", "45")
+        self.find_element("active-field").click()
+        self.find_element("create-button").click()
 
-        create = self.find_element("create-button")
-        create.click()
+        self.wait_for_alert()
 
-        alert = self.find_element("alert")
-        alertmsg = self.find_element("alert-msg")
+        self.wait.until(lambda d : self.driver.current_url.endswith("?func=edit") )      
+        id = self.driver.current_url[self.driver.current_url.rfind('/')+1:self.driver.current_url.find('?')]
+        assert self.driver.current_url == self.baseUrl + "/html/batch/" + id + "?func=edit"
 
-        wait = WebDriverWait(self.driver, timeout=2)
-        wait.until(lambda d : alert.get_dom_attribute("class").find("show") )      
-        assert "alert-success" in alert.get_dom_attribute("class").split(' '), f"Failed to save record. {alertmsg.text}"
-
-    def tearDown(self):
-        self.driver.quit()
+        print(f"Added batch record with id {id}")
 
 if __name__ == '__main__':
+    r = requests.delete(url + "/html/test/cleardb", headers=headers)
+    assert r.status_code == 204
     unittest.main()
