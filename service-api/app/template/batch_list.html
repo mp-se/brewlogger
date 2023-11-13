@@ -69,9 +69,9 @@
 
   <div class="row mb-2">
     <div class="col-sm-10">
-      <button type="button" class="btn btn-primary" onclick="event.preventDefault(); window.location.href='/html/batch/0?func=create'">Add new batch</button>
+      <button type="button" name="add-button" class="btn btn-primary" onclick="event.preventDefault(); window.location.href='/html/batch/0?func=create'">Add new batch</button>
       {% if settings.brewfather_user_key != "" and settings.brewfather_api_key != "" %}
-      <button type="button" class="btn btn-secondary" onclick="synchronizeBrewfather()">Synchronize with brewfather</button>
+      <button type="button" name="brewfather-button" class="btn btn-secondary" onclick="synchronizeBrewfather()">Synchronize with brewfather</button>
       {% endif %}
     </div>
   </div>

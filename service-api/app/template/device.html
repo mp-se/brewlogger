@@ -22,22 +22,22 @@
     <div class="row mb-2">
       <div class="col-sm-2 col-form-label">Chip ID:</div>
       {% if func == 'create' %}
-      <div class="col-sm-3"><input type="text" maxlength="6" class="form-control is-invalid" id="chip_id" value="{{ device.chip_id }}" placeholder="Ex: ab0125" required></div>
+      <div class="col-sm-3"><input type="text" name="chip_id-field" maxlength="6" class="form-control is-invalid" id="chip_id" value="{{ device.chip_id }}" placeholder="Ex: ab0125" required></div>
       <div class="invalid-feedback">
         ChipID must be a 6 letter string using only 0-9,A-F characters, example: 01A2B3.
       </div>
       {% else %}
-      <div class="col-sm-3"><input type="text" class="form-control" id="chip_id" value="{{ device.chip_id }}" disabled readonly></div>
+      <div class="col-sm-3"><input type="text" name="chip_id-field" class="form-control" id="chip_id" value="{{ device.chip_id }}" disabled readonly></div>
       {% endif %}
     </div>
     <div class="row mb-2">
       <div class="col-sm-2 col-form-label">MDNS:</div>
-      <div class="col-sm-3"><input type="text" maxlength="40" class="form-control" id="mdns" value="{{ device.mdns }}" {{ readonly }}></div>
+      <div class="col-sm-3"><input type="text" name="mdns-field" maxlength="40" class="form-control" id="mdns" value="{{ device.mdns }}" {{ readonly }}></div>
     </div>
     <div class="row mb-2">
       <div class="col-sm-2 col-form-label">Chip Family:</div>
       <div class="col-sm-3">
-        <select class="form-select" id="chip_family"{{ readonly }}>
+        <select class="form-select" name="chip_family-field" id="chip_family"{{ readonly }}>
 
           {% set chip_list = [
             'unknown',
@@ -58,7 +58,7 @@
       <div class="col-sm-2 col-form-label">Software:</div>
 
       <div class="col-sm-3">
-        <select class="form-select" id="software"{{ readonly }}>
+        <select class="form-select" name="software-field" id="software"{{ readonly }}>
 
           {% set software_list = [
             'unknown',
@@ -79,7 +79,7 @@
     <div class="row mb-2">
       <div class="col-sm-2 col-form-label">BLE Color:</div>
       <div class="col-sm-3">
-        <select class="form-select" id="ble_color" {{ readonly }}>
+        <select class="form-select" name="ble_color-field" id="ble_color" {{ readonly }}>
 
           {% set color_list = [
             '',
@@ -102,7 +102,7 @@
 
     <div class="row mb-2">
       <div class="col-sm-2 col-form-label">Device URL:</div>
-      <div class="col-sm-7"><input type="url" maxlength="80" class="form-control" id="url" value="{{ device.url }}" placeholder="http://devicename.local" {{ readonly }}></div>
+      <div class="col-sm-7"><input type="url" name="url-field" maxlength="80" class="form-control" id="url" value="{{ device.url }}" placeholder="http://devicename.local" {{ readonly }}></div>
       <div class="col-sm-2">
         <button type="button" class="btn btn-secondary btn-sm" onclick="fetchConfigFromDevice()" data-bs-toggle="tooltip" data-bs-placement="top" title="Fetch configuration from device"><i class="bi bi-box-arrow-down"></i></button>
         <button type="button" class="btn btn-secondary btn-sm" onclick="detectDeviceType()" data-bs-toggle="tooltip" data-bs-placement="top" title="Detect device type based on configuration"><i class="bi bi-binoculars"></i></button>
@@ -110,20 +110,20 @@
     </div>
     <div class="row mb-2">
       <div class="col-sm-2 col-form-label">Config:</div>
-      <div class="col-sm-7"><input type="text" class="form-control" id="config" value="{{ device.config }}" placeholder="Will be fetched from device" disabled readonly></div>
+      <div class="col-sm-7"><input type="text" name="config-field" class="form-control" id="config" value="{{ device.config }}" placeholder="Will be fetched from device" disabled readonly></div>
     </div>
 
     <div class="row mb-2">
       <div class="col-sm-2 col-form-label"></div>
       <div class="col-sm-4 col-form-label">
       {% if func == 'edit' %}
-        <button type="button" class="btn btn-primary" onclick="saveDevice()">Save</button>
-        <button type="button" class="btn btn-secondary" onclick="window.location.href='/html/device/'">Cancel</button>
+        <button type="button" name="save-button" class="btn btn-primary" onclick="saveDevice()">Save</button>
+        <button type="button" name="cancel-button" class="btn btn-secondary" onclick="window.location.href='/html/device/'">Cancel</button>
       {% endif %}
       {% if func == 'create' %}
-        <button type="button" class="btn btn-primary" onclick="createDevice()">Create</button>
+        <button type="button" name="create-button" class="btn btn-primary" onclick="createDevice()">Create</button>
       {% endif %}
-        <button type="button" class="btn btn-secondary" onclick="event.preventDefault(); window.location.href='/html/device/'">List</button>
+        <button type="button" name="list-button" class="btn btn-secondary" onclick="event.preventDefault(); window.location.href='/html/device/'">List</button>
      </div>
     </div>
   </form>
