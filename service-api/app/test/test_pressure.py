@@ -136,14 +136,14 @@ def test_public(app_client):
         "token": "",
         "interval": 0,
 
-        "chipId": "012345",
-        "temperature": 0,
-        "temp_format": "C",
+        "id": "012345",
+        "temp": 0,
+        "temp_units": "C",
         "pressure": 1.05,
-        "press_format": "hpa",
+        "pressure_units": "hpa",
         "battery": 3.85,
         "rssi": -76.2,
-        "runTime": 1.0,
+        "run-time": 1.0,
     }
     r = app_client.post("/api/pressure/public", json=data)
     assert r.status_code == 200
@@ -154,7 +154,7 @@ def test_public(app_client):
     data2 = json.loads(r.text)
     assert len(data2) == 1
 
-    data["chipId"] = "012346"
+    data["id"] = "012346"
     r = app_client.post("/api/pressure/public", json=data)
     assert r.status_code == 200
 
