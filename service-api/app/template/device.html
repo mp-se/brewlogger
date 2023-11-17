@@ -35,6 +35,10 @@
       <div class="col-sm-3"><input type="text" name="mdns-field" maxlength="40" class="form-control" id="mdns" value="{{ device.mdns }}" {{ readonly }}></div>
     </div>
     <div class="row mb-2">
+      <div class="col-sm-2 col-form-label">Description:</div>
+      <div class="col-sm-8"><input type="text" name="description-field" maxlength="150" class="form-control" id="description" value="{{ device.description }}" {{ readonly }}></div>
+    </div>
+    <div class="row mb-2">
       <div class="col-sm-2 col-form-label">Chip Family:</div>
       <div class="col-sm-3">
         <select class="form-select" name="chip_family-field" id="chip_family"{{ readonly }}>
@@ -192,7 +196,8 @@
         "mdns": document.getElementById("mdns").value,
         "config": document.getElementById("config").value,
         "bleColor": document.getElementById("ble_color").value,
-        "url": document.getElementById("url").value
+        "url": document.getElementById("url").value,
+        "description": document.getElementById("description").value
       };
 
       console.log("Updating data: " + JSON.stringify(json));
@@ -228,7 +233,8 @@
         "mdns": document.getElementById("mdns").value,
         "config": document.getElementById("config").value,
         "bleColor": document.getElementById("ble_color").value,
-        "url": document.getElementById("url").value
+        "url": document.getElementById("url").value,
+        "description": document.getElementById("description").value
       };
 
       console.log("Adding data: " + JSON.stringify(json));

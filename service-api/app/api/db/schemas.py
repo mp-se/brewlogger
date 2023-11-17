@@ -54,6 +54,7 @@ class DeviceBase(BaseModel):
     config: str = Field(default="", description="JSON document containing the device configuration")
     url: str = Field(min_length=0, max_length=80, description="URL to the device, will be used to communicate with it")
     ble_color: str = Field(min_length=0, max_length=15, description="Bluetooth color")
+    description: str = Field(min_length=0, max_length=150, description="Longer description of the device")
 
 class DeviceUpdate(DeviceBase):
     pass

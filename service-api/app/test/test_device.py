@@ -23,6 +23,7 @@ def test_add(app_client):
         "config": "f5",
         "url": "f6",
         "bleColor": "f7",
+        "description": "f8",
     }
 
     # Add new
@@ -42,6 +43,7 @@ def test_add(app_client):
     assert data["config"] == data2["config"]
     assert data["url"] == data2["url"]
     assert data["bleColor"] == data2["bleColor"]
+    assert data["description"] == data2["description"]
 
     # Not using a number for index
     r2 = app_client.get("/api/device/hello", headers=headers)
@@ -62,6 +64,7 @@ def test_update(app_client):
         "config": "ff5",
         "url": "ff6",
         "bleColor": "ff7",
+        "description": "ff8",
     }
 
     # Update existing
@@ -79,6 +82,7 @@ def test_update(app_client):
     assert data["config"] == data2["config"]
     assert data["url"] == data2["url"]
     assert data["bleColor"] == data2["bleColor"]
+    assert data["description"] == data2["description"]
 
     # Update missing entity
     r = app_client.patch("/api/device/10", json=data, headers=headers)
@@ -114,6 +118,7 @@ def test_validation(app_client):
         "config": "",
         "url": "",
         "bleColor": "",
+        "description": "",
     }
     r = app_client.post("/api/device/", json=data, headers=headers)
     assert r.status_code == 201
@@ -126,6 +131,7 @@ def test_validation(app_client):
         "config": "",
         "url": "",
         "bleColor": "",
+        "description": "",
     }
     r = app_client.post("/api/device/", json=data, headers=headers)
     assert r.status_code == 422
@@ -138,6 +144,7 @@ def test_validation(app_client):
         "config": "",
         "url": "",
         "bleColor": "",
+        "description": "",
     }
     r = app_client.post("/api/device/", json=data, headers=headers)
     assert r.status_code == 422
@@ -150,6 +157,7 @@ def test_validation(app_client):
         "config": "",
         "url": "",
         "bleColor": "",
+        "description": "",
     }
     r = app_client.post("/api/device/", json=data, headers=headers)
     assert r.status_code == 422
@@ -162,6 +170,7 @@ def test_validation(app_client):
         "config": "",
         "url": "",
         "bleColor": "",
+        "description": "",
     }
     r = app_client.post("/api/device/", json=data, headers=headers)
     assert r.status_code == 422
@@ -174,6 +183,7 @@ def test_validation(app_client):
         "config": "",
         "url": "012345678901234567890012345678901234567890123456789012345678901234567890123456789012345678901",
         "bleColor": "",
+        "description": "",
     }
     r = app_client.post("/api/device/", json=data, headers=headers)
     assert r.status_code == 422

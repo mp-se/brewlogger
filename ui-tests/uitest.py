@@ -53,6 +53,7 @@ class BrewLoggerTest(TestBase):
 
         self.set_textfield("chip_id-field", "123456")
         self.set_textfield("mdns-field", "123456.local")
+        self.set_textfield("description-field", "longer description")
         self.set_selectfield("chip_family-field", ["","esp8266","esp32","esp32s2","esp32s3","esp32c3"])
         self.set_selectfield("software-field", ["","Gravitymon","Pressuremon","Kegmon","Brewpi","iSpindel"])
         self.set_textfield("url-field", "http://localhost")

@@ -48,6 +48,7 @@
         "mdns": "",
         "config": "",
         "bleColor": "",
+        "description": "",
         "url": "" }, function(json, status, success) {
         api.getDeviceList(function(json2, status, success) {
           assert.equal(success, true);
@@ -67,6 +68,7 @@
       "mdns": "",
       "bleColor": "",
       "config": "",
+      "description": "",
       "url": "" }, function(json, status, success) {
         api.getDevice(json["id"], function(json2, status, success) {
           assert.equal(success, true);
@@ -86,6 +88,7 @@
         "mdns": "",
         "config": "",
         "bleColor": "",
+        "description": "",
         "url": "" }, function(json, status, success) {
         assert.equal(success, true);
         assert.notEqual(json["id"], 0);
@@ -104,6 +107,7 @@
           "mdns": "",
           "config": "",
           "bleColor": "",
+          "description": "",
           "url": "" }, function(json2, status, success) {
           assert.equal(success, true);
           assert.notEqual(json2["id"], 0);

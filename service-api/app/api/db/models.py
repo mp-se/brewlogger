@@ -25,25 +25,26 @@ class Device(Base):
     config = Column(Text, nullable=False)
     ble_color = Column(String(15), nullable=False)
     url = Column(String(80), nullable=False)
+    description = Column(String(150), nullable=False)
 
 class Batch(Base):
     __tablename__ = "batch"
 
     id = Column(Integer, primary_key=True, index=True)
-    name = Column(String(40))
-    chip_id = Column(String(6))
-    description = Column(String(80))
-    active = Column(Boolean)
+    name = Column(String(40), nullable=False)
+    chip_id = Column(String(6), nullable=False)
+    description = Column(String(80), nullable=False)
+    active = Column(Boolean, nullable=False)
 
-    brew_date = Column(String)
-    description = Column(String)
-    style = Column(String)
-    brewer = Column(String)
-    abv = Column(Float, default=0.0)
-    ebc = Column(Float, default=0.0)
-    ibu = Column(Float, default=0.0)
+    brew_date = Column(String, nullable=False)
+    description = Column(String, nullable=False)
+    style = Column(String, nullable=False)
+    brewer = Column(String, nullable=False)
+    abv = Column(Float, default=0.0, nullable=False)
+    ebc = Column(Float, default=0.0, nullable=False)
+    ibu = Column(Float, default=0.0, nullable=False)
 
-    brewfather_id = Column(String(30))
+    brewfather_id = Column(String(30), nullable=False)
 
     gravity = relationship("Gravity", back_populates="batch", cascade="all,delete")
     pressure = relationship("Pressure", back_populates="batch", cascade="all,delete")
@@ -52,15 +53,15 @@ class Batch(Base):
 class Gravity(Base):
     __tablename__ = "gravity"
 
-    id = Column(Integer, primary_key=True, index=True)
-    temperature = Column(Float)
-    gravity = Column(Float)
-    angle = Column(Float)
-    battery = Column(Float)
-    rssi = Column(Float)
-    corr_gravity = Column(Float)
-    run_time = Column(Float)
-    created = Column(DateTime)
+    id = Column(Integer, primary_key=True, index=True, nullable=False)
+    temperature = Column(Float, nullable=False)
+    gravity = Column(Float, nullable=False)
+    angle = Column(Float, nullable=False)
+    battery = Column(Float, nullable=False)
+    rssi = Column(Float, nullable=False)
+    corr_gravity = Column(Float, nullable=False)
+    run_time = Column(Float, nullable=False)
+    created = Column(DateTime, nullable=False)
 
     batch_id = Column(Integer, ForeignKey(Batch.__table__.c.id))
     batch = relationship("Batch", back_populates="gravity")
@@ -68,13 +69,13 @@ class Gravity(Base):
 class Pressure(Base):
     __tablename__ = "pressure"
 
-    id = Column(Integer, primary_key=True, index=True)
-    temperature = Column(Float)
-    pressure = Column(Float)
-    battery = Column(Float)
-    rssi = Column(Float)
-    run_time = Column(Float)
-    created = Column(DateTime)
+    id = Column(Integer, primary_key=True, index=True, nullable=False)
+    temperature = Column(Float, nullable=False)
+    pressure = Column(Float, nullable=False)
+    battery = Column(Float, nullable=False)
+    rssi = Column(Float, nullable=False)
+    run_time = Column(Float, nullable=False)
+    created = Column(DateTime, nullable=False)
 
     batch_id = Column(Integer, ForeignKey(Batch.__table__.c.id))
     batch = relationship("Batch", back_populates="pressure")
@@ -82,10 +83,10 @@ class Pressure(Base):
 class Pour(Base):
     __tablename__ = "pour"
 
-    id = Column(Integer, primary_key=True, index=True)
-    pour = Column(Float)
-    volume = Column(Float)
-    created = Column(DateTime)
+    id = Column(Integer, primary_key=True, index=True, nullable=False)
+    pour = Column(Float, nullable=False)
+    volume = Column(Float, nullable=False)
+    created = Column(DateTime, nullable=False)
 
     batch_id = Column(Integer, ForeignKey(Batch.__table__.c.id))
     batch = relationship("Batch", back_populates="pour")

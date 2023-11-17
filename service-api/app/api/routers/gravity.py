@@ -168,6 +168,7 @@ async def create_gravity_using_ispindel_format(
                 config = "",
                 bleColor = "",
                 url = "http://",
+                description = "",
             )
             device_service.create(device)
 

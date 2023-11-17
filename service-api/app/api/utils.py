@@ -44,7 +44,10 @@ def load_settings():
         logger.info(cfg2)
         brewlogger_service.update(cfg.id, cfg2)
 
-def migrate_database():
+def migrate_database():  
+    if get_settings().database_url.startswith("sqlite:"):
+       return
+
     logger.info("Running postgres sql commands to migrate database from v0.2 to v0.3")
 
     with engine.connect() as con:
@@ -61,6 +64,7 @@ def migrate_database():
 
     with engine.connect() as con:
         try:
+            con.execute(text('ALTER TABLE device ADD COLUMN description VARCHAR(150)'))
             con.execute(text('ALTER TABLE device ADD COLUMN ble_color VARCHAR(15)'))
             con.commit()
         except (OperationalError, ProgrammingError, InternalError) as e:
@@ -68,6 +72,7 @@ def migrate_database():
 
     with engine.connect() as con:
         try:
+            con.execute(text("UPDATE device SET description = '' WHERE description IS NULL"))
             con.execute(text("UPDATE device SET ble_color = '' WHERE ble_color IS NULL"))
             con.commit()
         except (OperationalError, ProgrammingError, InternalError) as e:
@@ -75,6 +80,7 @@ def migrate_database():
 
     with engine.connect() as con:
         try:
+            con.execute(text('ALTER TABLE device ALTER COLUMN description SET NOT NULL'))
             con.execute(text('ALTER TABLE device ALTER COLUMN ble_color SET NOT NULL'))
             con.commit()
         except (OperationalError, ProgrammingError, InternalError) as e:
