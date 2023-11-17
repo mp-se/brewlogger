@@ -27,7 +27,7 @@ h11==0.14.0
     # via
     #   httpcore
     #   uvicorn
-httpcore==1.0.1
+httpcore==1.0.2
     # via httpx
 httpx==0.25.1
     # via brewlogger-api (setup.py)
@@ -43,14 +43,14 @@ markupsafe==2.1.3
     # via jinja2
 psycopg2==2.9.9
     # via brewlogger-api (setup.py)
-pydantic==2.4.2
+pydantic==2.5.1
     # via
     #   brewlogger-api (setup.py)
     #   fastapi
     #   pydantic-settings
-pydantic-core==2.10.1
+pydantic-core==2.14.3
     # via pydantic
-pydantic-settings==2.0.3
+pydantic-settings==2.1.0
     # via brewlogger-api (setup.py)
 python-dotenv==1.0.0
     # via pydantic-settings
@@ -72,5 +72,5 @@ typing-extensions==4.8.0
     #   sqlalchemy
 uvicorn==0.24.0.post1
     # via brewlogger-api (setup.py)
-zeroconf==0.120.0
+zeroconf==0.127.0
     # via brewlogger-api (setup.py)

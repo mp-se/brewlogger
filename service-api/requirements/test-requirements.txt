@@ -34,7 +34,9 @@ colorama==0.4.6
     #   click
     #   pytest
 coverage[toml]==7.2.7
-    # via pytest-cov
+    # via
+    #   coverage
+    #   pytest-cov
 distlib==0.3.7
     # via virtualenv
 fastapi==0.104.1
@@ -50,7 +52,7 @@ h11==0.14.0
     #   -r service-api/requirements\requirements.txt
     #   httpcore
     #   uvicorn
-httpcore==1.0.1
+httpcore==1.0.2
     # via
     #   -r service-api/requirements\requirements.txt
     #   httpx
@@ -88,16 +90,16 @@ pre-commit==3.4.0
     # via -r service-api/requirements/test-requirements.in
 psycopg2==2.9.9
     # via -r service-api/requirements\requirements.txt
-pydantic==2.4.2
+pydantic==2.5.1
     # via
     #   -r service-api/requirements\requirements.txt
     #   fastapi
     #   pydantic-settings
-pydantic-core==2.10.1
+pydantic-core==2.14.3
     # via
     #   -r service-api/requirements\requirements.txt
     #   pydantic
-pydantic-settings==2.0.3
+pydantic-settings==2.1.0
     # via -r service-api/requirements\requirements.txt
 pytest==7.4.0
     # via
@@ -139,7 +141,7 @@ uvicorn==0.24.0.post1
     # via -r service-api/requirements\requirements.txt
 virtualenv==20.24.5
     # via pre-commit
-zeroconf==0.120.0
+zeroconf==0.127.0
     # via -r service-api/requirements\requirements.txt
 
 # The following packages are considered to be unsafe in a requirements file:
