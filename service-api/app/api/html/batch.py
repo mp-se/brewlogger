@@ -1,5 +1,5 @@
 import logging
-from datetime import datetime
+from datetime import datetime, timedelta
 from fastapi import Depends, Request
 from fastapi.routing import APIRouter
 from fastapi.responses import HTMLResponse
@@ -80,8 +80,33 @@ async def html_get_batch_by_id(
         def sort_created(item):
             return item.created
 
-        batch.gravity = sorted(batch.gravity, key=sort_created)
-        batch.pressure = sorted(batch.pressure, key=sort_created)
+        batch.gravity = sorted(batch.gravity, key=sort_created, reverse=True)
+        batch.pressure = sorted(batch.pressure, key=sort_created, reverse=True)
+
+        # Analyse the batch contents
+
+        ts = [] 
+
+        for gravity in batch.gravity:
+            ts.append( gravity.created )
+
+        ts_min = min(ts)
+        ts_max = max(ts)
+        ts_ave = (ts_max-ts_min)/(len(ts))
+
+        calc["aMinDate"] = ts_min
+        calc["aMaxDate"] = ts_max
+        calc["aAveTime"] = ts_ave
+
+        calc["batt60s"] = timedelta(seconds=len(ts) * 60)
+        calc["batt300s"] = timedelta(seconds=len(ts) * 300)
+        calc["batt900s"] = timedelta(seconds=len(ts) * 900)
+        calc["batt1800s"] = timedelta(seconds=len(ts) * 1800)
+        calc["batt3600s"] = timedelta(seconds=len(ts) * 3600)
+
+        logger.info(calc)
+
+        # Create the html file
         return get_template().TemplateResponse("batch_graph.html", {"request": request, "batch": batch, "func": func, "calc": calc, "settings": get_settings() })
 
     devices = devices_service.list()

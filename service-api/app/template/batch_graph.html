@@ -160,6 +160,25 @@
     </div>
   </div>
 
+  <div class="row mb-2">
+    <div class="col-sm-2 list-header">Ave interval (s)</div>
+    <div class="col-sm-2 list-header">60 s</div>
+    <div class="col-sm-2 list-header">300 s</div>
+    <div class="col-sm-2 list-header">600 s</div>
+    <div class="col-sm-2 list-header">1800 s</div>
+    <div class="col-sm-2 list-header">3600 s</div>
+  </div>
+
+  <div class="row mb-2">
+    <div class="col-sm-2">{{ calc.aAveTime.seconds }} s</div>
+    <div class="col-sm-2">{{ calc.batt60s.days }} days</div>
+    <div class="col-sm-2">{{ calc.batt300s.days }} days</div>
+    <div class="col-sm-2">{{ calc.batt900s.days }} days</div>
+    <div class="col-sm-2">{{ calc.batt1800s.days }} days</div>
+    <div class="col-sm-2">{{ calc.batt3600s.days }} days</div>
+  </div>
+
+
 </div>
 
 {% endblock %}
