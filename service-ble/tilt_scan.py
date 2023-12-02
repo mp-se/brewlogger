@@ -64,7 +64,7 @@ def device_found(
         tilt = first(x for x in tilts if x.uuid == uuid)
 
         if tilt is not None:
-            logger.info(f"Found tilt device, checking if time has expired {minium_interval}")
+            logger.debug(f"Found tilt device, checking if time has expired, min={minium_interval}s")
 
             now = time.time()
 

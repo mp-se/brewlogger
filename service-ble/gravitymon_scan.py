@@ -1,6 +1,7 @@
 import asyncio, logging, json, requests
 
 from bleak import BleakClient, BleakScanner
+from bleak.exc import BleakError
 
 logger = logging.getLogger("gravmon")
 
@@ -17,6 +18,7 @@ async def main():
                 pass
             else:
                 logger.info("Connecting to gravitymon.")
+
                 async with BleakClient(
                     device,
                 ) as client:
@@ -39,8 +41,12 @@ async def main():
                                 except Exception as e:
                                     logger.error( "Failed to read data, Error: %s", e)
                 logger.info("Disconnected from gravitymon")
+        except TimeoutError as e:
+            logger.error( "Timeout reading from gravitymon, Error: %s", e)          
+        except BleakError as e:
+            logger.error( "Bleak error reading from gravitymon, Error: %s", e)          
         except Exception as e:
-            logger.error( "Unexpected error: %s", e)          
+            logger.error( "Unexpected error: %s", str(e))          
 
 if __name__ == "__main__":
     logging.basicConfig(
