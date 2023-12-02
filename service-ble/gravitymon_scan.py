@@ -11,33 +11,36 @@ headers = {
 
 async def main():
     while True:
-        device = await BleakScanner.find_device_by_name("gravitymon", cb=dict(use_bdaddr=False))
-        if device is None:
-            pass
-        else:
-            logger.info("Connecting to gravitymon.")
-            async with BleakClient(
-                device,
-            ) as client:
-                logger.info("Connected to gravitymon.")
-                for service in client.services:
-                    for char in service.characteristics:
-                        if "read" in char.properties and char.uuid.startswith("00002903"):
-                            try:
-                                value = await client.read_gatt_char(char.uuid)
-                                data = json.loads( value.decode() )
-                                logger.info( "Data received: %s", json.dumps(data) )
-
+        try:
+            device = await BleakScanner.find_device_by_name("gravitymon", cb=dict(use_bdaddr=False))
+            if device is None:
+                pass
+            else:
+                logger.info("Connecting to gravitymon.")
+                async with BleakClient(
+                    device,
+                ) as client:
+                    logger.info("Connected to gravitymon.")
+                    for service in client.services:
+                        for char in service.characteristics:
+                            if "read" in char.properties and char.uuid.startswith("00002903"):
                                 try:
-                                    logger.info( "Posting data.")
-                                    r = requests.post(endpoint, json=data, headers=headers)
-                                    logger.info( f"Response {r}.")
-                                except Exception as e:
-                                    logger.error( "Failed to post data, Error: %s", e)
+                                    value = await client.read_gatt_char(char.uuid)
+                                    data = json.loads( value.decode() )
+                                    logger.info( "Data received: %s", json.dumps(data) )
 
-                            except Exception as e:
-                                logger.error( "Failed to read data, Error: %s", e)
-            logger.info("Disconnected from gravitymon")
+                                    try:
+                                        logger.info( "Posting data.")
+                                        r = requests.post(endpoint, json=data, headers=headers)
+                                        logger.info( f"Response {r}.")
+                                    except Exception as e:
+                                        logger.error( "Failed to post data, Error: %s", e)
+
+                                except Exception as e:
+                                    logger.error( "Failed to read data, Error: %s", e)
+                logger.info("Disconnected from gravitymon")
+        except Exception as e:
+            logger.error( "Unexpected error: %s", e)          
 
 if __name__ == "__main__":
     logging.basicConfig(
