@@ -160,6 +160,8 @@
     </div>
   </div>
 
+  <hr>
+
   <div class="row mb-2">
     <div class="col-sm-2 list-header">Ave interval (s)</div>
     <div class="col-sm-2 list-header">60 s</div>
@@ -176,6 +178,18 @@
     <div class="col-sm-2">{{ calc.batt900s.days }} days</div>
     <div class="col-sm-2">{{ calc.batt1800s.days }} days</div>
     <div class="col-sm-2">{{ calc.batt3600s.days }} days</div>
+  </div>
+
+  <div class="row mb-2">
+    <div class="col-sm-2 list-header">Ave runtime (s)</div>
+    <div class="col-sm-2 list-header"></div>
+    <div class="col-sm-8 list-header">Description</div>
+  </div>
+
+  <div class="row mb-2">
+    <div class="col-sm-2">{{ "%0.2f" | format(calc.aAveRunTime ) }} s</div>
+    <div class="col-sm-2"></div>
+    <div class="col-sm-8">{{ batch.description }}</div>
   </div>
 
 

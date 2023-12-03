@@ -86,17 +86,21 @@ async def html_get_batch_by_id(
         # Analyse the batch contents
 
         ts = [] 
+        rt_ave = 0 
 
         for gravity in batch.gravity:
             ts.append( gravity.created )
+            rt_ave += gravity.run_time
 
         ts_min = min(ts)
         ts_max = max(ts)
         ts_ave = (ts_max-ts_min)/(len(ts))
+        rt_ave = rt_ave / len(ts)
 
         calc["aMinDate"] = ts_min
         calc["aMaxDate"] = ts_max
         calc["aAveTime"] = ts_ave
+        calc["aAveRunTime"] = rt_ave
 
         calc["batt60s"] = timedelta(seconds=len(ts) * 60)
         calc["batt300s"] = timedelta(seconds=len(ts) * 300)
