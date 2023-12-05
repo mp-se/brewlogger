@@ -1,4 +1,4 @@
-import asyncio, logging, json, requests
+import asyncio, logging, json, requests, time
 
 from bleak import BleakClient, BleakScanner
 from bleak.exc import BleakError
@@ -65,6 +65,8 @@ if __name__ == "__main__":
         format="%(asctime)-15s %(name)-8s %(levelname)s: %(message)s",
     )
 
+    time.sleep(2)
+    
     logger.info("Scanning for gravitymon devices...")
 
     asyncio.run(main())
