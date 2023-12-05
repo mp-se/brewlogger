@@ -31,6 +31,8 @@ async def main():
                                     data = json.loads( value.decode() )
                                     logger.info( "Data received: %s", json.dumps(data) )
 
+                                    await client.disconnect()
+
                                     try:
                                         logger.info( "Posting data.")
                                         r = requests.post(endpoint, json=data, headers=headers)
@@ -42,11 +44,15 @@ async def main():
                                     logger.error( "Failed to read data, Error: %s", e)
                 logger.info("Disconnected from gravitymon")
         except TimeoutError as e:
-            logger.error( "Timeout reading from gravitymon, Error: %s", e)          
+            logger.error( "Timeout reading from gravitymon, Error: %s", e)
         except BleakError as e:
-            logger.error( "Bleak error reading from gravitymon, Error: %s", e)          
+            logger.error( "Bleak error reading from gravitymon, Error: %s", e)
+            logger.error( "Restarting...")
+            exit(-1)
         except Exception as e:
             logger.error( "Unexpected error: %s", str(e))          
+            logger.error( "Restarting...")
+            exit(-2)
 
 if __name__ == "__main__":
     logging.basicConfig(
