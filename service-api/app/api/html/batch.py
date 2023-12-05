@@ -108,7 +108,7 @@ async def html_get_batch_by_id(
         calc["batt1800s"] = timedelta(seconds=len(ts) * 1800)
         calc["batt3600s"] = timedelta(seconds=len(ts) * 3600)
 
-        logger.info(calc)
+        #logger.info(calc)
 
         # Create the html file
         return get_template().TemplateResponse("batch_graph.html", {"request": request, "batch": batch, "func": func, "calc": calc, "settings": get_settings() })
