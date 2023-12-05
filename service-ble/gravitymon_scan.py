@@ -11,6 +11,8 @@ headers = {
 }
 
 async def main():
+    lastData = ""
+
     while True:
         try:
             device = await BleakScanner.find_device_by_name("gravitymon", cb=dict(use_bdaddr=False))
@@ -30,13 +32,16 @@ async def main():
                                     value = await client.read_gatt_char(char.uuid)
                                     data = json.loads( value.decode() )
                                     logger.info( "Data received: %s", json.dumps(data) )
-
                                     await client.disconnect()
 
                                     try:
-                                        logger.info( "Posting data.")
-                                        r = requests.post(endpoint, json=data, headers=headers)
-                                        logger.info( f"Response {r}.")
+                                        if json.dumps(data) == lastData:
+                                            logger.info( "Skipping post since data is identical with last read.")
+                                        else:
+                                            logger.info( "Posting data.")
+                                            lastData = json.dumps(data)                                           
+                                            r = requests.post(endpoint, json=data, headers=headers)
+                                            logger.info( f"Response {r}.")
                                     except Exception as e:
                                         logger.error( "Failed to post data, Error: %s", e)
 
