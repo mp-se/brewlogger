@@ -146,25 +146,13 @@ async def main():
     logger.info("Minium interval = %d", minium_interval)
 
     init()
-    scanner = BleakScanner(detection_callback=device_found,scanning_mode="passive")
+    scanner = BleakScanner(detection_callback=device_found,scanning_mode="active")
 
     logger.info("Scanning for tilt/gravitymon BLE devices...")
     while True:
         await scanner.start()
         await asyncio.sleep(0.1)
         await scanner.stop()
-
-    #scanner = BleakScanner(scanning_mode="passive")
-    #logger.info("Scanning for tilt/gravitymon BLE devices...")
-    #while True:
-    #    results = await scanner.discover(timeout=3,return_adv=True)     
-    #    for d, a  in results.values():
-    #        if d.name == "gravitymon":
-    #            pass
-    #            #await parse_gravitymon(d)
-    #        else:
-    #            parse_tilt(a)
-    #    print(".",end="")
 
 asyncio.run(main())
 logger.info("Exit from tilt scanner")
