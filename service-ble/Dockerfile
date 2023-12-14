@@ -6,6 +6,6 @@ ENV PYTHONUNBUFFERED 1
 COPY ./requirements.txt /app/requirements.txt
 RUN pip install --no-cache-dir --upgrade -r /app/requirements.txt
 RUN mkdir -p /var/log/supervisor
-COPY ./*.py /app/
+COPY ./scan.py /app/
 COPY supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 CMD ["/usr/bin/supervisord"]

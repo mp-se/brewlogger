@@ -135,7 +135,7 @@ class Pour(PourCreate):
 class BatchBase(BaseModel):
     model_config = ConfigDict(alias_generator = to_camel, populate_by_name = True)
     name: str = Field(min_length=0, max_length=40, description="Short name of the batch")
-    description: str = Field(min_length=0, max_length=40, description="Longer description of the batch")
+    description: str = Field(min_length=0, max_length=80, description="Longer description of the batch")
     chip_id: str = Field(min_length=6, max_length=6, description="Chip id, must be 6 characters")
     active: bool = Field(description="If the batch is active or not, active = can recive new gravity data")
     brew_date: str = Field(min_length=0, max_length=20, description="When the brew date was")
