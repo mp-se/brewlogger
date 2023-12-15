@@ -26,7 +26,7 @@
     <div class="col-sm-1 list-header">ID</div>
     <div class="col-sm-3 list-header">MDNS</div>
     <div class="col-sm-1 list-header">Chip ID</div>
-    <div class="col-sm-2 list-header">Chip Family</div>
+    <div class="col-sm-1 list-header">Chip Family</div>
     <div class="col-sm-2 list-header">Software</div>
     <div class="col-sm-2 list-header">Action</div>
   </div>
@@ -36,7 +36,7 @@
     <div class="col-sm-1 {{ loop.cycle('row-odd', 'row-even') }}">{{ device.id }}</div>
     <div class="col-sm-3 {{ loop.cycle('row-odd', 'row-even') }}">{{ device.mdns }}</div>
     <div class="col-sm-1 {{ loop.cycle('row-odd', 'row-even') }}">{{ device.chip_id }}</div>
-    <div class="col-sm-2 {{ loop.cycle('row-odd', 'row-even') }}">{{ device.chip_family }}</div>
+    <div class="col-sm-1 {{ loop.cycle('row-odd', 'row-even') }}">{{ device.chip_family }}</div>
     <div class="col-sm-2 {{ loop.cycle('row-odd', 'row-even') }}">{{ device.software }}</div>
     <div class="col-sm-2">
       <button type="button" class="btn btn-primary btn-sm" onclick="window.location='/html/device/{{ device.id }}?func=edit'"><i class="bi bi-pencil-square"></i></button>

@@ -40,7 +40,7 @@
     <div class="col-sm-1 list-header">ID</div>
     <div class="col-sm-2 list-header">Name</div>
     <div class="col-sm-1 list-header">Chip ID</div>
-    <div class="col-sm-1 list-header">Brew date</div>
+    <div class="col-sm-2 list-header">Brew date</div>
     <div class="col-sm-1 list-header">Gravity #</div>
     <div class="col-sm-1 list-header">Pressure #</div>
     <div class="col-sm-1 list-header">Active</div>
@@ -52,7 +52,7 @@
     <div class="col-sm-1 {{ loop.cycle('row-odd', 'row-even') }}">{{ batch.id }}</div>
     <div class="col-sm-2 {{ loop.cycle('row-odd', 'row-even') }}">{{ batch.name }}</div>
     <div class="col-sm-1 {{ loop.cycle('row-odd', 'row-even') }}">{{ batch.chip_id }}</div>
-    <div class="col-sm-1 {{ loop.cycle('row-odd', 'row-even') }}">{{ batch.brew_date }}</div>
+    <div class="col-sm-2 {{ loop.cycle('row-odd', 'row-even') }}">{{ batch.brew_date }}</div>
     <div class="col-sm-1 {{ loop.cycle('row-odd', 'row-even') }}">{{ batch.gravity|length }}</div>
     <div class="col-sm-1 {{ loop.cycle('row-odd', 'row-even') }}">{{ batch.pressure|length }}</div>
     <div class="col-sm-1 {{ loop.cycle('row-odd', 'row-even') }}">{{ batch.active }}</div>
