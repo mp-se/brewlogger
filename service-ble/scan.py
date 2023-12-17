@@ -63,7 +63,7 @@ async def parse_gravitymon(device: BLEDevice):
             for service in client.services:
                 if service.uuid.startswith("0000180a-"):
                     for char in service.characteristics:
-                        if "read" in char.properties and char.uuid.startswith("00002900-"):
+                        if "read" in char.properties and char.uuid.startswith("00002ac4-"):
                             try:
                                 value = await client.read_gatt_char(char.uuid)
                                 data = json.loads( value.decode() )
