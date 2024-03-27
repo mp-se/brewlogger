@@ -20,33 +20,39 @@ def load_settings():
       logger.error(f"Failed to connect to database, {e}")
 
     brewlogger_service = BrewLoggerService(create_session())
-    list = brewlogger_service.list()
+    try:
+      list = brewlogger_service.list()
 
-    if len(list) == 0:
-      logger.info("Missing configuration data, creating default settings")
+      if len(list) == 0:
+        logger.info("Missing configuration data, creating default settings")
 
-      cfg = schemas.BrewLoggerCreate(
-        version = get_settings().version,
-        mdns_timeout = 10,
-        temperature_format = "C",
-        pressure_format = "PSI",
-        gravity_format = "SG",
-      )
-      brewlogger_service.create(cfg)
-      migrate_database()
-    else:
-      cfg = list[0]
-      if cfg.version != get_settings().version:
-        logger.info("Database does not match the application version, trying to do migration")
+        cfg = schemas.BrewLoggerCreate(
+          version = get_settings().version,
+          mdns_timeout = 10,
+          temperature_format = "C",
+          pressure_format = "PSI",
+          gravity_format = "SG",
+          dark_mode = False
+        )
+        brewlogger_service.create(cfg)
         migrate_database()
-        cfg2 = schemas.BrewLoggerUpdate(**cfg.__dict__)
-        cfg2.version = get_settings().version
-        logger.info(cfg2)
-        brewlogger_service.update(cfg.id, cfg2)
+      else:
+        cfg = list[0]
+        if cfg.version != get_settings().version:
+          logger.info("Database does not match the application version, trying to do migration")
+          migrate_database()
+          cfg2 = schemas.BrewLoggerUpdate(**cfg.__dict__)
+          cfg2.version = get_settings().version
+          logger.info(cfg2)
+          brewlogger_service.update(cfg.id, cfg2)
+    except Exception as e:
+      logger.error(f"Failed to query database, {e}")
+      migrate_database()
 
 def migrate_database():  
     if get_settings().database_url.startswith("sqlite:"):
-       return
+      logger.info("Running on sqlite so we skip trying to migrate")
+      return
 
     logger.info("Running postgres sql commands to migrate database from v0.2 to v0.3")
 
@@ -85,4 +91,18 @@ def migrate_database():
             con.commit()
         except (OperationalError, ProgrammingError, InternalError) as e:
             logger.error(f"Failed to update database, Step 4, {e}")
-            
+          
+    logger.info("Running postgres sql commands to migrate database from v0.3 to v0.4")
+    with engine.connect() as con:
+        try:
+            con.execute(text('ALTER TABLE brewlogger ADD COLUMN dark_mode BOOLEAN'))
+            con.commit()
+        except (OperationalError, ProgrammingError, InternalError) as e:
+            logger.error(f"Failed to update database, Step 5, {e}")
+
+    with engine.connect() as con:
+        try:
+            con.execute(text('ALTER TABLE brewlogger ALTER COLUMN dark_mode SET NOT NULL'))
+            con.commit()
+        except (OperationalError, ProgrammingError, InternalError) as e:
+            logger.error(f"Failed to update database, Step 6, {e}")
