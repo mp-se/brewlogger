@@ -38,9 +38,7 @@ class BrewLogger(BrewLoggerCreate):
     model_config = ConfigDict(from_attributes = True)
     id: int
 
-    javascript_debug_enabled: Optional[bool]
     api_key_enabled: Optional[bool]
-    test_endpoints_enabled: Optional[bool]
 
 ################################################################################
 
