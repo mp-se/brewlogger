@@ -9,12 +9,9 @@ headers = {
 }
 
 def test_init(app_client):
-    r = app_client.delete("/html/test/cleardb", headers=headers)
-    assert r.status_code == 204
-
     data = {
         "name": "f1",
-        "chipId": "012345",
+        "chipId": "EEEEEE",
         "description": "f3",
         "brewDate": "f4",
         "style": "f5",
@@ -29,9 +26,6 @@ def test_init(app_client):
     # Add new
     r = app_client.post("/api/batch/", json=data, headers=headers)
     assert r.status_code == 201
-    #r = app_client.post("/api/batch/", json=data, headers=headers)
-    #assert r.status_code == 201
-
 
 def test_add(app_client):
     data = {
@@ -136,7 +130,7 @@ def test_public(app_client):
         "token": "",
         "interval": 0,
 
-        "id": "012345",
+        "id": "EEEEE1",
         "temp": 0,
         "temp_units": "C",
         "pressure": 1.05,
@@ -149,20 +143,20 @@ def test_public(app_client):
     assert r.status_code == 200
 
     # Check relation to batch
-    r = app_client.get("/api/batch/", headers=headers)
+    r = app_client.get("/api/batch/?chipId=EEEEE1", headers=headers)
     assert r.status_code == 200
     data2 = json.loads(r.text)
     assert len(data2) == 1
 
-    data["id"] = "012346"
+    data["id"] = "EEEEE2"
     r = app_client.post("/api/pressure/public", json=data)
     assert r.status_code == 200
 
     # Check relation to batch
-    r = app_client.get("/api/batch/", headers=headers)
+    r = app_client.get("/api/batch/?chipId=EEEEE2", headers=headers)
     assert r.status_code == 200
     data2 = json.loads(r.text)
-    assert len(data2) == 2
+    assert len(data2) == 1
 
 def test_validation(app_client):
     pass

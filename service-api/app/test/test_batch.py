@@ -10,14 +10,10 @@ headers = {
     "Content-Type": "application/json",
 }
 
-def test_init(app_client):
-    r = app_client.delete("/html/test/cleardb", headers=headers)
-    assert r.status_code == 204
-
 def test_add(app_client):
     data = {
         "name": "f1",
-        "chipId": "012345",
+        "chipId": "BBBBBB",
         "description": "f3",
         "brewDate": "f4",
         "style": "f5",
@@ -65,7 +61,7 @@ def test_list(app_client):
 def test_update(app_client):
     data = {
         "name": "ff1",
-        "chipId": "012345",
+        "chipId": "BBBBBB",
         "description": "ff3",
         "brewDate": "ff4",
         "style": "ff5",
@@ -113,11 +109,9 @@ def test_delete(app_client):
     assert len(data) == 0
 
 def test_query(app_client):
-    test_init(app_client)
-
     data = {
         "name": "f1",
-        "chipId": "012345",
+        "chipId": "BBBBB2",
         "description": "f3",
         "brewDate": "f4",
         "style": "f5",
@@ -133,7 +127,7 @@ def test_query(app_client):
     r = app_client.post("/api/batch/", json=data, headers=headers)
     assert r.status_code == 201
 
-    r = app_client.get("/api/batch/?chipId=012345", headers=headers)
+    r = app_client.get("/api/batch/?chipId=BBBBB2", headers=headers)
     assert r.status_code == 200
     data = json.loads(r.text)
     assert len(data) == 1
@@ -143,7 +137,7 @@ def test_query(app_client):
     data = json.loads(r.text)
     assert len(data) == 0
 
-    r = app_client.get("/api/batch/?chipId=012345&active=true", headers=headers)
+    r = app_client.get("/api/batch/?chipId=BBBBB2&active=true", headers=headers)
     assert r.status_code == 200
     data = json.loads(r.text)
     assert len(data) == 1
@@ -151,7 +145,7 @@ def test_query(app_client):
 def test_validation(app_client):
     data = {
         "name": "f1",
-        "chipId": "0123456",
+        "chipId": "BBBBBBB",
         "description": "f3",
         "brewDate": "f4",
         "style": "f5",
@@ -188,7 +182,7 @@ def test_validation(app_client):
     data = {
         "name": "f1",
         "chipId": "012345",
-        "description": "01234567890123456789012345678901234567890",
+        "description": "0123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890",
         "brewDate": "f4",
         "style": "f5",
         "brewer": "f6",

@@ -5,18 +5,15 @@ from api.config import get_settings
 import asyncio
 import httpx
 
+
 headers = {
     "Authorization": "Bearer " + get_settings().api_key,
     "Content-Type": "application/json",
 }
 
-def test_init(app_client):
-    r = app_client.delete("/html/test/cleardb", headers=headers)
-    assert r.status_code == 204
-
 def test_add(app_client):
     data = {
-        "chipId": "012345",
+        "chipId": "CCCCCC",
         "chipFamily": "f2",
         "software": "f3",
         "mdns": "f4",
@@ -110,19 +107,6 @@ def test_delete(app_client):
         assert res.status_code == 200 """
 
 def test_validation(app_client):
-    data = {
-        "chipId": "012345",
-        "chipFamily": "",
-        "software": "",
-        "mdns": "",
-        "config": "",
-        "url": "",
-        "bleColor": "",
-        "description": "",
-    }
-    r = app_client.post("/api/device/", json=data, headers=headers)
-    assert r.status_code == 201
-
     data = {
         "chipId": "012345678",
         "chipFamily": "",

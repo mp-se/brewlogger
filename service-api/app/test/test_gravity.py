@@ -9,12 +9,9 @@ headers = {
 }
 
 def test_init(app_client):
-    r = app_client.delete("/html/test/cleardb", headers=headers)
-    assert r.status_code == 204
-
     data = {
         "name": "f1",
-        "chipId": "012345",
+        "chipId": "AAAAAA",
         "description": "f3",
         "brewDate": "f4",
         "style": "f5",
@@ -29,8 +26,6 @@ def test_init(app_client):
     # Add new
     r = app_client.post("/api/batch/", json=data, headers=headers)
     assert r.status_code == 201
-    #r = app_client.post("/api/batch/", json=data, headers=headers)
-    #assert r.status_code == 201
 
 def test_add(app_client):
     data = {
@@ -141,7 +136,7 @@ def test_public(app_client):
     test_init(app_client)
     data = {
         "name": "name",
-        "ID": "012345",
+        "ID": "AAAAA1",
         "token": "token",
         "interval": 1,
         "temperature": 20.2,
@@ -155,24 +150,26 @@ def test_public(app_client):
     assert r.status_code == 200
 
     # Check relation to batch
-    r = app_client.get("/api/batch/", headers=headers)
+    r = app_client.get("/api/batch/?chipId=AAAAA1", headers=headers)
     assert r.status_code == 200
     data2 = json.loads(r.text)
+    print(data2)
     assert len(data2) == 1
 
-    data["ID"] = "012346"
+    data["ID"] = "AAAAA2"
     r = app_client.post("/api/gravity/public", json=data)
     assert r.status_code == 200
 
     # Check relation to batch
-    r = app_client.get("/api/batch/", headers=headers)
+    r = app_client.get("/api/batch/?chipId=AAAAA2", headers=headers)
     assert r.status_code == 200
     data2 = json.loads(r.text)
-    assert len(data2) == 2
+    print(data2)
+    assert len(data2) == 1
 
     data = {
         "name": "name",
-        "ID": "012345",
+        "ID": "AAAAAA",
         "token": "token",
         "interval": 1,
         "temperature": 56.2,
@@ -190,9 +187,10 @@ def test_public2(app_client):
     test_init(app_client)
 
     data = {
-        "chipId": "123456",
+        "chipId": "AAAAA3",
         "chipFamily": "",
         "software": "",
+        "description": "",
         "mdns": "",
         "config": "",
         "url": "",
