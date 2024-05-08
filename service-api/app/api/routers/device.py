@@ -76,7 +76,7 @@ async def delete_device_by_id(
     devices_service.delete(device_id)
 
 @router.post(
-    "/proxy_fetch",
+    "/proxy_fetch/",
     status_code=200,
     dependencies=[Depends(api_key_auth)])
 async def fetch_data_from_device(
