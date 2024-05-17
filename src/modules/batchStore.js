@@ -122,7 +122,7 @@ export const useBatchStore = defineStore('batchStore', {
                 })
         },
         getBatch(id, callback) {
-            // callback => (success, device)
+            // callback => (success, batch)
 
             logDebug("batchStore.getBatch()", id)
             global.disabled = true
