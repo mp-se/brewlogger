@@ -48,3 +48,12 @@ export function isValidMqttData(s) {
 export function isValidFormData(s) {
   return false // Used in common components so it needs to be defined
 }
+
+export function download(content, mimeType, filename) {
+  const a = document.createElement('a')
+  const blob = new Blob([content], { type: mimeType })
+  const url = URL.createObjectURL(blob)
+  a.setAttribute('href', url)
+  a.setAttribute('download', filename)
+  a.click()
+}

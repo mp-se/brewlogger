@@ -53,6 +53,7 @@
 <script setup>
 import { ref } from 'vue'
 import { batchStore, deviceStore, global } from "@/modules/pinia"
+import { download } from '@/modules/utils'
 import { logDebug, logError, logInfo } from '@/modules/logger'
 
 const progress = ref(0)
@@ -105,17 +106,6 @@ function getDeviceList(callback) {
       logError("BackupView.getDeviceList()", err)
       callback(false, {})
     })
-}
-
-function download(content, mimeType, filename) {
-  logDebug("BackupView.download()")
-
-  const a = document.createElement('a')
-  const blob = new Blob([content], { type: mimeType })
-  const url = URL.createObjectURL(blob)
-  a.setAttribute('href', url)
-  a.setAttribute('download', filename)
-  a.click()
 }
 
 function createBackup() {
