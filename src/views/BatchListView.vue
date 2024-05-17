@@ -41,6 +41,7 @@
             <router-link :to="{ name: 'batch-gravity', params: { id: b.id } }">
               <button type="button" class="btn btn-success btn-sm"><i class="bi bi-graph-down"></i></button>
             </router-link>&nbsp;
+            <button @click="exportBatch(b.id)" type="button" class="btn btn-info btn-sm"><i class="bi bi-box-arrow-down"></i></button>&nbsp;
 
             <!-- 
               <button type="button" class="btn btn-info btn-sm"><i class="bi bi-eye"></i></button>&nbsp;
@@ -56,6 +57,7 @@
         <router-link :to="{ name: 'batch', params: { id: 'new' } }">
           <button type="button" class="btn btn-secondary">Add Batch</button>
         </router-link>&nbsp;
+        <button disabled type="button" class="btn btn-secondary">Fetch from Brewfather</button>
       </div>
     </div>
 
@@ -69,8 +71,9 @@
 <script setup>
 import { onMounted, ref, watch } from "vue";
 import { global, batchStore, deviceStore } from "@/modules/pinia"
-import { logDebug, logError, logInfo } from '@/modules/logger'
 import { router } from '@/modules/router'
+import { download } from '@/modules/utils'
+import { logDebug, logError, logInfo } from '@/modules/logger'
 
 const confirmDeleteMessage = ref(null)
 const confirmDeleteId = ref(null)
@@ -154,5 +157,40 @@ const deleteBatch = (id, name) => {
   confirmDeleteMessage.value = "Do you really want to delete batch ''" + name + "''"
   confirmDeleteId.value = id
   document.getElementById('deleteBatch').click()
+}
+
+function exportBatch(id) {
+  logDebug("BatchListView.exportBatch()", id)
+
+  getBatch(id, (success, b) => {
+    if (success) {
+      logDebug("BatchListView.exportBatch()", "Collected batch")
+      var s = JSON.stringify(b, null, 2)
+      download(s, "text/plain", "brewlogger_batch_" + id + ".txt")
+    } else {
+      global.messageError = "Failed to fetch batch with id " + id
+      global.disabled = false
+    }
+  })
+}
+
+function getBatch(id, callback) {
+  fetch(global.baseURL + 'api/batch/' + id, {
+    method: "GET",
+    headers: { "Authorization": global.token },
+    signal: AbortSignal.timeout(global.fetchTimout),
+  })
+    .then(res => {
+      logDebug("BatchListView.getBatch()", res.status)
+      if (!res.ok) throw res
+      return res.json()
+    })
+    .then(json => {
+      callback(true, json)
+    })
+    .catch(err => {
+      logError("BatchListView.getBatch()", err)
+      callback(false, {})
+    })
 }
 </script>
