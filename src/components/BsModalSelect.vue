@@ -20,24 +20,20 @@
 </template>
 
 <script setup>
-import { ref } from "vue";
-
-const result = ref(null)
 /**
  * Purpose: Show a yes/no dialog to confirm an action
  */
 defineOptions({
   inheritAttrs: false
 })
-
+/**
+ * This is the v-model field that will be used to bind the component to (required).
+ */
+const result = defineModel()
 /**
  * Ref to callback where true/false will be a parameter (required)
  */
 const callback = defineModel("callback")
-/**
- * Ref to dialog message (required)
- */
-const message = defineModel('message')
 /**
  * Ref to dialog id (required)
  */

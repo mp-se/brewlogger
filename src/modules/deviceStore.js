@@ -53,6 +53,34 @@ export class Device {
     set description(description) { this._description = description }
 }
 
+export class MDNS {
+    constructor(host, name, type) {
+        this.host = host
+        this.name = name
+        this.type = type
+    }
+
+    static fromJson(m) {
+        return new MDNS(m.host, m.name, m.type)
+    }
+
+    toJson() {
+        return {
+            "host": this.host,
+            "name": this.name,
+            "type": this.type,
+        }
+    }
+
+    get host() { return this._host }
+    get name() { return this._name }
+    get type() { return this._type }
+
+    set host(host) { this._host = host }
+    set name(name) { this._name = name }
+    set type(type) { this._type = type }
+}
+
 export const useDeviceStore = defineStore('deviceStore', {
     state: () => {
         return { devices: [] }
@@ -85,7 +113,7 @@ export const useDeviceStore = defineStore('deviceStore', {
                     json.forEach(d => {
                         var device = Device.fromJson(d)
                         this.devices.push(device)
-                    });
+                    })
 
                     callback(true, this.devices)
                     global.disabled = false
@@ -228,16 +256,17 @@ export const useDeviceStore = defineStore('deviceStore', {
                     callback(false, null)
                 })
         },
-        searchNetwork(url, callback) {
+        searchNetwork(callback) {
             // callback => (success, json_response)
             // mdns = { "type": type, "host": adresses, "name": host }
 
-            logDebug("deviceStore.searchNetwork()", url)
+            logDebug("deviceStore.searchNetwork()")
             global.disabled = true
             fetch(global.baseURL + 'api/device/mdns/', {
                 method: "GET",
                 headers: { "Authorization": global.token },
-                signal: AbortSignal.timeout(global.fetchTimout),
+                // signal: AbortSignal.timeout(global.fetchTimout),
+                signal: AbortSignal.timeout(30000),
             })
                 .then(res => {
                     logDebug("deviceStore.searchNetwork()", res.status)
@@ -246,7 +275,14 @@ export const useDeviceStore = defineStore('deviceStore', {
                 })
                 .then(json => {
                     logDebug("deviceStore.searchNetwork()", json)
-                    callback(true, json)
+                    var mdnsList = []
+
+                    json.forEach(m => {
+                        var mdns = MDNS.fromJson(m)
+                        mdnsList.push(mdns)
+                    })
+
+                    callback(true, mdnsList)
                     global.disabled = false
                 })
                 .catch(err => {

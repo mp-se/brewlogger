@@ -187,9 +187,11 @@ function updateDevice() {
 function searchDevice() {
   logDebug("TestView.searchDevice()")
 
-  deviceStore.searchNetwork((success, response) => {
+  deviceStore.searchNetwork((success, ml) => {
     if (success) {
-      output.value += response + "\n"
+      ml.forEach(m => {
+        output.value += m.host + "," + m.type + "," + m.name + "\n"
+      })
     } else {
       output.value += "Failed to search for devices\n"
     }

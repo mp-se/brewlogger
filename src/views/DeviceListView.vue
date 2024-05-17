@@ -49,27 +49,33 @@
           <button type="button" class="btn btn-secondary">Add Device</button>
         </router-link>&nbsp;
 
-        <button disabled type="button" class="btn btn-secondary">Search for Devices</button>&nbsp;
+        <button @click="search()" type="button" class="btn btn-secondary">Search for Devices</button>&nbsp;
       </div>
     </div>
 
     <BsModalConfirm :callback="confirmDeleteCallback" :message="confirmDeleteMessage" id="deleteDevice"
       title="Delete device" :disabled="global.disabled" />
 
+    <BsModalSelect v-model="searchSelected" :disabled="searchOptions == null ? true : false"
+      :callback="confirmSearchCallback" message="Select a device to add" id="searchDevice" title="Select device"
+      :options="searchOptions" />
+
   </div>
 </template>
 
 <script setup>
 import { onMounted, ref } from "vue";
+import { Device } from "@/modules/deviceStore"
 import { global, deviceStore, batchStore } from "@/modules/pinia"
 import { logDebug, logError, logInfo } from '@/modules/logger'
 
 const confirmDeleteMessage = ref(null)
 const confirmDeleteId = ref(null)
 
-// TODO: Add function/view to search for devices on network
+const deviceList = ref(null)
 
-const deviceList = ref(null);
+const searchOptions = ref(null)
+const searchSelected = ref("")
 
 onMounted(() => {
   logDebug("DeviceListView.onMounted()")
@@ -113,5 +119,110 @@ const deleteDevice = (id, name) => {
   confirmDeleteMessage.value = "Do you really want to delete device ''" + name + "'"
   confirmDeleteId.value = id
   document.getElementById('deleteDevice').click()
+}
+
+function search() {
+  logDebug("DeviceListView.search()")
+
+  global.disabled = true
+  global.clearMessages()
+  searchOptions.value = null
+  searchSelected.value = ""
+  document.getElementById('searchDevice').click()
+
+  /*
+  searchOptions.value = [{ label: "- none -", value: "", host: "", type: "", name: "" }]
+  searchOptions.value.push({ label: "Test 1", value: "192.168.1.2", host: "host1", type: "http.local.", name: "name1" })
+  searchOptions.value.push({ label: "Test 2", value: "192.168.1.3", host: "host2", type: "http.local.", name: "name2" })
+  */
+
+  deviceStore.searchNetwork((success, ml) => {
+    if (success) {
+      searchOptions.value = [{ label: "- none -", value: "" }]
+
+      ml.forEach(m => {
+        searchOptions.value.push({ label: m.name + "," + m.host + " (" + m.type + ")", value: m.host, host: m.host, type: m.type, name: m.name })
+      })
+    } else {
+      global.messageError = "Failed to search for mDNS devices on the local network"
+    }
+  })
+}
+
+const confirmSearchCallback = (result, value) => {
+  logDebug("DeviceListView.confirmSearchCallback()", result, value)
+
+  if (result) {
+    global.clearMessages()
+    global.disabled = true
+    if (value != "") {
+      searchOptions.value.forEach(e => {
+        if (e.value == value) {
+          logDebug("DeviceListView.confirmSearchCallback()", e)
+          detectDeviceType("http://" + e.name)
+        }
+      })
+    }
+  }
+}
+
+async function detectDeviceType(url) {
+  logDebug("DeviceListView.detectDeviceType()", url)
+
+  // This should detect the GravityMon, KegMon and PressureMon software
+  await fetch(url + '/api/status', {
+    method: "GET",
+    signal: AbortSignal.timeout(global.fetchTimout),
+  })
+    .then(res => {
+      logDebug("DeviceListView.detectDeviceType()", res.status)
+      if (!res.ok) throw res
+      return res.json()
+    })
+    .then(json => {
+      logDebug("DeviceListView.detectDeviceType()", json)
+
+      var device = new Device(0, "", "", "", "", "", "", url, "")
+
+      if (json.hasOwnProperty("id")) {
+        logDebug("DeviceListView.detectDeviceType()", "ID found", json.id)
+        device.chipId = json.id
+      }
+
+      if (json.hasOwnProperty("mdns")) {
+        logDebug("DeviceListView.detectDeviceType()", "mDNS found", json.mdns)
+        device.mdns = json.mdns
+      }
+
+      if (json.hasOwnProperty("platform")) {
+        logDebug("DeviceListView.detectDeviceType()", "Platform found", json.platform.split(' ')[0])
+        device.chipFamily = json.platform.split(' ')[0]
+      }
+
+      if (json.hasOwnProperty("scale-raw1")) {
+        logDebug("DeviceListView.detectDeviceType()", "Software Kegmon")
+        device.software = "Kegmon"
+      }
+
+      // TODO: Add detection of gravitymon
+      // TODO: Add detection of pressuremon
+
+      if (device.chipId != "") {
+        deviceStore.addDevice(device, (success) => {
+          if (success) {
+            global.messageSuccess = "Saved device " + device.mdns
+            updateDeviceList()
+          } else {
+            global.messageError = "Failed to save device"
+          }
+        })
+      } else {
+        global.messageError = "Unable to detect device type for " + device.mdns
+      }
+
+    })
+    .catch(err => {
+      logDebug("DeviceListView.detectDeviceType()", err)
+    })
 }
 </script>
