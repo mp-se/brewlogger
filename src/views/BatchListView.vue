@@ -57,7 +57,8 @@
         <router-link :to="{ name: 'batch', params: { id: 'new' } }">
           <button type="button" class="btn btn-secondary">Add Batch</button>
         </router-link>&nbsp;
-        <button disabled type="button" class="btn btn-secondary">Fetch from Brewfather</button>
+        <button @click="synchronizeBrewfather()" type="button" class="btn btn-secondary">Fetch from Brewfather</button>&nbsp;
+        <button @click="updateBatchList()" type="button" class="btn btn-secondary">Refresh</button>&nbsp;
       </div>
     </div>
 
@@ -121,7 +122,7 @@ watch(filterDevice, async (selected, previous) => {
 })
 
 function updateBatchList() {
-  logDebug("DeviceListView.updateBatchList()")
+  logDebug("BatchListView.updateBatchList()")
 
   batchStore.getBatchList((success, bl) => {
     if (success) {
@@ -130,6 +131,27 @@ function updateBatchList() {
       global.messageError = "Failed to load batch list"
     }
   })
+}
+
+function synchronizeBrewfather() {
+  logDebug("BatchListView.synchronizeBrewfather()")
+
+  fetch(global.baseURL + 'api/batch/brewfather/', {
+    method: "GET",
+    headers: { "Authorization": global.token },
+    signal: AbortSignal.timeout(global.fetchTimout),
+  })
+    .then(res => {
+      logDebug("BatchListView.synchronizeBrewfather()", res.status)
+      if (!res.ok) throw res
+      return res.json()
+    })
+    .then(json => {
+      logDebug("BatchListView.synchronizeBrewfather()", json)
+    })
+    .catch(err => {
+      logError("BatchListView.synchronizeBrewfather()", err)
+    })
 }
 
 const confirmDeleteCallback = (result) => {
