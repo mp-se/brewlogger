@@ -29,7 +29,7 @@
           <th scope="row">{{ b.id }}</th>
           <td>{{ b.name }}</td>
           <td>{{ b.brewDate }}</td>
-          <td>{{ b.chipId }}</td>
+          <td><pre>{{ b.chipId }}</pre></td>
           <td>{{ b.active }}</td>
           <td>{{ b.gravityCount }}</td>
           <td>

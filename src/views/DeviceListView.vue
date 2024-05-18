@@ -18,7 +18,7 @@
         <tr v-for="d in deviceList" :key="d.id">
           <th scope="row">{{ d.id }}</th>
           <td>{{ d.mdns }}</td>
-          <td>{{ d.chipId }}</td>
+          <td><pre>{{ d.chipId }}</pre></td>
           <td>{{ d.chipFamily }}</td>
           <td>{{ d.software }}</td>
           <td>

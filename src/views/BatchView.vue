@@ -115,7 +115,6 @@ import { router } from '@/modules/router'
 import { logDebug, logError, logInfo } from '@/modules/logger'
 
 // TODO: Add date selector
-// TODO: Add synchronization with brewfather
 
 const batch = ref(null)
 const chipIdOptions = ref([])
