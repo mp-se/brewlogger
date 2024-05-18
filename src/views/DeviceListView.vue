@@ -34,10 +34,16 @@
               </router-link>&nbsp;
             </template>
 
-            <router-link v-if="batchStore.anyBatchesForDevice(d.chipId)"
-              :to="{ name: 'batch-list', query: { chipId: d.chipId } }">
+            <template v-if="batchStore.anyBatchesForDevice(d.chipId)">
+            <router-link  :to="{ name: 'batch-list', query: { chipId: d.chipId } }">
               <button type="button" class="btn btn-success btn-sm"><i class="bi bi-boxes"></i></button>
             </router-link>&nbsp;
+          </template>
+
+          <template v-if="d.url.length > 7">
+            <button @click="openUrl(d.url)" type="button" class="btn btn-secondary btn-sm"><i class="bi bi-link"></i></button>&nbsp;
+          </template>
+
           </td>
         </tr>
       </tbody>
@@ -50,6 +56,7 @@
         </router-link>&nbsp;
 
         <button @click="search()" type="button" class="btn btn-secondary">Search for Devices</button>&nbsp;
+        <button @click="updateDeviceList()" type="button" class="btn btn-secondary">Refresh</button>&nbsp;
       </div>
     </div>
 
@@ -119,6 +126,10 @@ const deleteDevice = (id, name) => {
   confirmDeleteMessage.value = "Do you really want to delete device ''" + name + "'"
   confirmDeleteId.value = id
   document.getElementById('deleteDevice').click()
+}
+function openUrl(url) {
+  logDebug("DeviceListView.openUrl()", url)
+  window.open(url, "_blank")
 }
 
 function search() {
