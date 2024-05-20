@@ -15,6 +15,11 @@ pip-compile -U -o service-api/requirements/requirements.txt
 pip-compile --output-file=service-api/requirements/test-requirements.txt service-api/requirements/test-requirements.in
 ```
 
+Add postgres to PATH on MacOS for above install script
+```
+export PATH="$PATH:/Applications/Postgres.app/Contents/Versions/latest/bin"
+```
+
 # Setting up a development environment
 ## Install venv
 

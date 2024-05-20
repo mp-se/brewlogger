@@ -76,7 +76,7 @@ async def delete_device_by_id(
     devices_service.delete(device_id)
 
 @router.post(
-    "/proxy_fetch",
+    "/proxy_fetch/",
     status_code=200,
     dependencies=[Depends(api_key_auth)])
 async def fetch_data_from_device(
@@ -89,10 +89,16 @@ async def fetch_data_from_device(
 
         async with httpx.AsyncClient(timeout=timeout) as client:
             if proxy_req.method == "post":
-                logger.info("Fetching data using post %s", proxy_req.url)
-                res = await client.post(proxy_req.url, proxy_req.body)
+                logger.info("Request using post %s", proxy_req.url)
+                res = await client.post(proxy_req.url, data=proxy_req.body)
+            elif proxy_req.method == "put":
+                logger.info("Request using put %s", proxy_req.url)
+                res = await client.put(proxy_req.url, data=proxy_req.body)
+            elif proxy_req.method == "delete":
+                logger.info("Request using delete %s", proxy_req.url)
+                res = await client.delete(proxy_req.url)
             else:
-                logger.info("Fetching data using get %s", proxy_req.url)
+                logger.info("Request using get %s", proxy_req.url)
                 res = await client.get(proxy_req.url)
 
             logger.info("Response received %s", res)
@@ -100,7 +106,11 @@ async def fetch_data_from_device(
             if res.status_code != 200:
                 raise HTTPException(status_code=res.status_code, detail="Response from endpoint.")
 
-            json = res.json()
+            # if the data is not pure Json, return it as text
+            try: 
+                json = res.json() 
+            except:
+                json = res.text
             logger.info( "Payload from external service: %s", json)
             return json
     except JSONDecodeError:

@@ -8,3 +8,5 @@ src/kegmon_api.egg-info/
 *.pyc
 production/*
 docker-compose.yaml
+.DS_Store
+#service-web/ui

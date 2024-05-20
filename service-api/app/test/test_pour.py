@@ -9,12 +9,9 @@ headers = {
 }
 
 def test_init(app_client):
-    r = app_client.delete("/html/test/cleardb", headers=headers)
-    assert r.status_code == 204
-
     data = {
         "name": "f1",
-        "chipId": "012345",
+        "chipId": "DDDDDD",
         "description": "f3",
         "brewDate": "f4",
         "style": "f5",

@@ -13,6 +13,7 @@ class BrewLogger(Base):
     temperature_format = Column(String(3), nullable=False)
     pressure_format = Column(String(3), nullable=False)
     gravity_format = Column(String(3), nullable=False)
+    dark_mode = Column(Boolean, nullable=False)
 
 class Device(Base):
     __tablename__ = "device"

@@ -16,23 +16,17 @@ class ProxyRequest(BaseModel):
     method: str
     body: Optional[str]
 
-class AppSetting(BaseModel):
-    javascript_debug_enabled: bool = Field(default=False)
-
-    api_key_enabled: Optional[bool] = Field(default=True)
-    test_endpoints_enabled: Optional[bool] = Field(default=False)
-    version: Optional[str] = Field(default="")
-
-################################################################################
+################################################################################ 
 
 class BrewLoggerBase(BaseModel):
-    model_config = ConfigDict(alias_generator = to_camel, populate_by_name = True )
+    model_config = ConfigDict(alias_generator = to_camel, populate_by_name = True)
 
-    version: str = Field(min_length=0, max_length=10, description="Database software version")
     mdns_timeout: int = Field(description="mDNS search timeout")
     temperature_format: str = Field(min_length=0, max_length=1, description="Temperature format for presentation")
     pressure_format: str = Field(min_length=0, max_length=3, description="Pressure format for presentation")
     gravity_format: str = Field(min_length=0, max_length=2, description="Gravity format for presentation")
+    version: str = Field(min_length=0, max_length=10, description="Database software version")
+    dark_mode: bool = Field(description="Enable dark mode in UI")
 
 class BrewLoggerUpdate(BrewLoggerBase):
     pass
@@ -44,10 +38,12 @@ class BrewLogger(BrewLoggerCreate):
     model_config = ConfigDict(from_attributes = True)
     id: int
 
+    api_key_enabled: Optional[bool]
+
 ################################################################################
 
 class DeviceBase(BaseModel):
-    model_config = ConfigDict(alias_generator = to_camel, populate_by_name = True )
+    model_config = ConfigDict(alias_generator = to_camel, populate_by_name = True)
     chip_family: str = Field(min_length=0, max_length=10, description="Name of the chip type")
     software: str = Field(min_length=0, max_length=40, description="Software on the device")
     mdns: str = Field(min_length=0, max_length=40, description="Network name of the device")
@@ -69,7 +65,7 @@ class Device(DeviceCreate):
 ################################################################################
 
 class GravityBase(BaseModel):
-    model_config = ConfigDict(alias_generator = to_camel, populate_by_name = True )
+    model_config = ConfigDict(alias_generator = to_camel, populate_by_name = True)
 
     temperature: float = Field(description="Temperature value in C")
     gravity: float = Field(description="Calculated gravity in SG")

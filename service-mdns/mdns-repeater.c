@@ -74,7 +74,7 @@ struct subnet whitelisted_subnets[MAX_SUBNETS];
 void *pkt_data = NULL;
 
 int foreground = 0;
-int verbose = 0;
+int verbose = 1;
 int shutdown_flag = 0;
 
 char *pid_file = PIDFILE;

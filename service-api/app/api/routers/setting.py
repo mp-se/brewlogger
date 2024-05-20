@@ -1,39 +1,41 @@
 import logging
-from functools import lru_cache
-from typing import List, Optional
 from fastapi import Depends
 from fastapi.routing import APIRouter
-from api.db import models, schemas
+from api.services import BrewLoggerService, get_brewlogger_service
+from api.db import schemas
 from ..security import api_key_auth, get_settings
 
 logger = logging.getLogger(__name__)
-router = APIRouter(prefix="/api/setting")
-
-def get_current_appsetting() -> schemas.AppSetting:
-    setting = schemas.AppSetting()
-    setting.test_endpoints_enabled = get_settings().test_endpoints_enabled
-    setting.api_key_enabled = get_settings().api_key_enabled
-    setting.version = get_settings().version
-    setting.javascript_debug_enabled = get_settings().javascript_debug_enabled
-    logger.info("App settings=%s", setting)
-    return setting
+router = APIRouter(prefix="/api/config")
 
 @router.get(
     "/",
-    response_model=schemas.AppSetting,
+    response_model=schemas.BrewLogger,
     dependencies=[Depends(api_key_auth)])
-async def get_appsetting():
-    logger.info("Endpoint GET /api/setting/")
-    return get_current_appsetting()
+async def get_configuration(
+    brewlogger_service: BrewLoggerService = Depends(get_brewlogger_service)
+):
+    logger.info("Endpoint GET /api/config/")
+    list = brewlogger_service.list()
+
+    # The following settings are defined during bootstrap and values in db are ignored
+    if len(list) > 0:
+        list[0].api_key_enabled = get_settings().api_key_enabled
+        return list[0]
+
+    return None
 
 @router.patch(
-    "/",
-    response_model=schemas.AppSetting,
+    "/{id}",
+    response_model=schemas.BrewLogger,
     dependencies=[Depends(api_key_auth)])
-async def update_batch_by_id(
-    setting: schemas.AppSetting,
+async def update_configuration(
+    id: int,
+    brewLogger: schemas.BrewLoggerUpdate,
+    brewlogger_service: BrewLoggerService = Depends(get_brewlogger_service),
 ):
-    logger.info("Endpoint PATCH /api/setting/")
-    logger.info("Javascript debugging set to %s", get_settings().javascript_debug_enabled)
-    get_settings().javascript_debug_enabled = setting.javascript_debug_enabled
-    return get_current_appsetting()
+    logger.info("Endpoint PATCH /api/config/%d", id)
+    brewLogger.version = get_settings().version
+    bl = brewlogger_service.update(id, brewLogger)
+    bl.api_key_enabled = get_settings().api_key_enabled
+    return bl
