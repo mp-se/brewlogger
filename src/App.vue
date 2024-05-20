@@ -45,6 +45,8 @@ import { global, config, batchStore, deviceStore, saveConfigState } from "@/modu
 import { storeToRefs } from 'pinia'
 import { logDebug, logError, logInfo } from '@/modules/logger'
 
+// TODO: Add login screen / api to fetch a valid API key
+
 const props = defineProps(['App'])
 const { disabled } = storeToRefs(global)
 
