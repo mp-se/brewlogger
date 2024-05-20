@@ -38,9 +38,12 @@
             </router-link>&nbsp;
             <button type="button" class="btn btn-danger btn-sm" @click.prevent="deleteBatch(b.id, b.name)"><i
                 class="bi bi-file-x"></i></button>&nbsp;
-            <router-link :to="{ name: 'batch-gravity', params: { id: b.id } }">
+            <template v-if="b.gravityCount>0">
+              <router-link :to="{ name: 'batch-gravity', params: { id: b.id } }">
               <button type="button" class="btn btn-success btn-sm"><i class="bi bi-graph-down"></i></button>
             </router-link>&nbsp;
+
+            </template>
             <button @click="exportBatch(b.id)" type="button" class="btn btn-info btn-sm"><i class="bi bi-box-arrow-down"></i></button>&nbsp;
 
             <!-- 
