@@ -23,6 +23,13 @@ class GravityService(BaseService[models.Gravity, schemas.GravityCreate, schemas.
         return super(GravityService, self).create(obj)
 
     def createList(self, lst: List[schemas.GravityCreate]) -> List[models.Gravity]:
+        logger.info("Adding %d gravity records for batch", len(lst))
+        if len(lst) == 0:
+            raise HTTPException(
+                status_code=400,
+                detail=f"No gravity readings in request.",
+            )
+
         batch = self.db_session.get(models.Batch, lst[0].batch_id)
         logger.info("Searching for batch with id=%s %s", lst[0].batch_id, batch)
         if batch is None:
