@@ -127,7 +127,7 @@ async def get_batches_from_brewfather(
                         ibu = 0,
                     )
 
-                    if "style" in batch["recipe"]:
+                    if "style" in batch["recipe"] and batch["recipe"]["style"]["type"] != None:
                       newBatch.style = batch["recipe"]["style"]["type"]
                     if "measuredAbv" in batch:
                       newBatch.abv = batch["measuredAbv"]
