@@ -43,7 +43,6 @@
           <p></p>
           <BsProgress :progress="progress"></BsProgress>
         </div>
-
       </form>
 
     </div>
@@ -55,6 +54,7 @@ import { ref } from 'vue'
 import { batchStore, deviceStore, global } from "@/modules/pinia"
 import { download } from '@/modules/utils'
 import { logDebug, logError, logInfo } from '@/modules/logger'
+import { lastDayOfDecade } from 'date-fns'
 
 const progress = ref(0)
 const progressMax = ref(0)
@@ -66,46 +66,38 @@ const backup = ref({
   },
   "batches": [],
   "devices": [],
-});
+})
 
-function getBatchList(callback) {
-  fetch(global.baseURL + 'api/batch/', {
+async function getBatchList(callback) {
+  const res = await fetch(global.baseURL + 'api/batch/', {
     method: "GET",
     headers: { "Authorization": global.token },
-    signal: AbortSignal.timeout(global.fetchTimout),
+    // signal: AbortSignal.timeout(global.fetchTimout),
   })
-    .then(res => {
-      logDebug("BackupView.getBatchList()", res.status)
-      if (!res.ok) throw res
-      return res.json()
-    })
-    .then(json => {
-      callback(true, json)
-    })
-    .catch(err => {
-      logError("BackupView.getBatchList()", err)
-      callback(false, {})
-    })
+
+  if (!res.ok) {
+    logError("BackupView.getBatchList()", res.status)
+    throw res
+  }
+
+  const json = await res.json()
+  callback(true, json)
 }
 
-function getDeviceList(callback) {
-  fetch(global.baseURL + 'api/device/', {
+async function getDeviceList(callback) {
+  const res = await fetch(global.baseURL + 'api/device/', {
     method: "GET",
     headers: { "Authorization": global.token },
-    signal: AbortSignal.timeout(global.fetchTimout),
+    // signal: AbortSignal.timeout(global.fetchTimout),
   })
-    .then(res => {
-      logDebug("BackupView.getDeviceList()", res.status)
-      if (!res.ok) throw res
-      return res.json()
-    })
-    .then(json => {
-      callback(true, json)
-    })
-    .catch(err => {
-      logError("BackupView.getDeviceList()", err)
-      callback(false, {})
-    })
+
+  if (!res.ok) {
+    logDebug("BackupView.getDeviceList()", res.status)
+    throw res
+  }
+
+  const json = await res.json()
+  callback(true, json)
 }
 
 function createBackup() {
@@ -179,20 +171,22 @@ async function processRestore(json) {
 
   /* Check the current database and delete records if needed */
 
-  deleteDevices()
-  deleteBatches()
+  logDebug("BackupView.processRestore()", "Deleting devices")
+  await deleteDevices()
+  logDebug("BackupView.processRestore()", "Deleting batches")
+  await deleteBatches()
 
   /* Do the restore */
 
   restoreErrors.value = 0
 
-  json.devices.forEach(d => {
-    restoreDevice(d)
-  })
+  logDebug("BackupView.processRestore()", "Restore devices")
+  await restoreDevices(json.devices)
 
-  json.batches.forEach(b => {
-    restoreBatch(b)
-  })
+  logDebug("BackupView.processRestore()", "Restore batches")
+  await restoreBatches(json.batches)
+
+  logDebug("BackupView.processRestore()", "Restore completed")
 
   if (restoreErrors.value) {
     global.messageError = "Restore failed"
@@ -219,142 +213,130 @@ async function processRestore(json) {
   global.disabled = false
 }
 
-async function restoreDevice(d) {
-  await fetch(global.baseURL + 'api/device/', {
-    method: "POST",
-    headers: { "Content-Type": "application/json", "Authorization": global.token },
-    body: JSON.stringify(d),
-    signal: AbortSignal.timeout(global.fetchTimout),
-  })
-    .then(res => {
-      updateProgress()
-      logDebug("BackupView.restoreDevice()", res.status)
-      if (res.status != 201) {
-        logError("BackupView.restoreDevice()", "Got error from API", res.status)
-        restoreErrors.value += 1
-      }
+async function restoreDevices(dl) {
+  const results = await Promise.all(dl.map(async d => {
+    logDebug("BackupView.restoreDevice()", "Restore device", d.id)
+
+    const res = await fetch(global.baseURL + 'api/device/', {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "Authorization": global.token },
+      body: JSON.stringify(d),
+      // signal: AbortSignal.timeout(global.fetchTimout),
     })
-    .catch(err => {
-      logError("BackupView.restoreDevice()", err)
-      restoreErrors.value += 1
-    })
+    updateProgress()
+    return res.json()
+  }))
 }
 
-async function restoreBatch(b) {
-  await fetch(global.baseURL + 'api/batch/', {
-    method: "POST",
-    headers: { "Content-Type": "application/json", "Authorization": global.token },
-    body: JSON.stringify(b),
-    signal: AbortSignal.timeout(global.fetchTimout),
-  })
-    .then(res => {
-      logDebug("BackupView.restoreBatch()", res.status)
-      if (!res.ok) throw res
-      return res.json()
+async function restoreBatches(bl) {
+  const results = await Promise.all(bl.map(async b => {
+    logDebug("BackupView.restoreBatch()", "Restore batch", b.id)
+
+    const res = await fetch(global.baseURL + 'api/batch/', {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "Authorization": global.token },
+      body: JSON.stringify(b),
+      // signal: AbortSignal.timeout(global.fetchTimout),
     })
-    .then(json => {
+
+    const json = await res.json()
+    updateProgress()
+    b.id = json.id;
+    b.gravity.forEach(g => {
+      g.batchId = json.id;
+    })
+
+    return b
+  }))
+
+  logDebug("BackupView.restoreBatch()", "Results", results)
+
+  const results2 = await Promise.all(results.map(async b => {
+    logDebug("BackupView.restoreBatch()", "Restore batch gravity", b.id)
+
+    if (b.gravity.length == 0) {
+      logInfo("BackupView.restoreBatch()", "No gravity readings for batch", b.id)
       updateProgress()
+      return {}
+    }
 
-      // The record can be assgined a new ID so we need to update all gravity records with that
-      b.gravity.forEach(g => {
-        g.batchId = json.id;
-      })
+    const res = await fetch(global.baseURL + 'api/gravity/list/', {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "Authorization": global.token },
+      body: JSON.stringify(b.gravity),
+      // signal: AbortSignal.timeout(global.fetchTimout),
+    })
 
-      fetch(global.baseURL + 'api/gravity/list/', {
-        method: "POST",
-        headers: { "Content-Type": "application/json", "Authorization": global.token },
-        body: JSON.stringify(b.gravity),
-        signal: AbortSignal.timeout(global.fetchTimout),
-      })
-        .then(res => {
-          updateProgress()
-          logDebug("BackupView.restoreBatch()", res.status)
-          if (res.status != 201) {
-            logError("BackupView.restoreBatch()", "Got error from API", res.status)
-            restoreErrors.value += 1
-          }
-        })
-        .catch(err => {
-          logError("BackupView.restoreBatch()", err)
-          restoreErrors.value += 1
-        })
-    })
-    .catch(err => {
-      logError("BackupView.restoreBatch()", err)
-      restoreErrors.value += 1
-    })
+    const json = await res.json()
+    updateProgress()
+    return json
+  }))
+
+  logDebug("BackupView.restoreBatch()", "Results2", results2)
+}
+
+async function deleteDevice(d) {
+  const res = await fetch(global.baseURL + 'api/device/' + d.id, {
+    method: "DELETE",
+    headers: { "Content-Type": "application/json", "Authorization": global.token },
+    // signal: AbortSignal.timeout(global.fetchTimout),
+  })
+
+  if (res.status != 204) {
+    logError("BackupView.deleteDevice()", "Got error from API", res.status)
+  }
 }
 
 async function deleteDevices() {
-  await fetch(global.baseURL + 'api/device/', {
+  const res = await fetch(global.baseURL + 'api/device/', {
     method: "GET",
     headers: { "Content-Type": "application/json", "Authorization": global.token },
-    signal: AbortSignal.timeout(global.fetchTimout),
+    // signal: AbortSignal.timeout(global.fetchTimout),
   })
-    .then(res => {
-      logDebug("BackupView.deleteDevices()", res.status)
-      if (!res.ok) throw res
-      return res.json()
-    })
-    .then(json => {
-      json.forEach(d => {
-        logDebug("BackupView.deleteDevices()", "Deleting device", d.id)
 
-        fetch(global.baseURL + 'api/device/' + d.id, {
-          method: "DELETE",
-          headers: { "Content-Type": "application/json", "Authorization": global.token },
-          signal: AbortSignal.timeout(global.fetchTimout),
-        })
-          .then(res => {
-            logDebug("BackupView.deleteDevices()", res.status)
-            if (res.status != 204) {
-              logError("BackupView.deleteDevices()", "Got error from API", res.status)
-            }
-          })
-          .catch(err => {
-            logError("BackupView.deleteDevices()", err)
-          })
-      })
-    })
-    .catch(err => {
-      logError("BackupView.deleteDevices()", err)
-    })
+  if (!res.ok) {
+    logDebug("BackupView.deleteDevices()", res.status)
+    throw res
+  }
+
+  const json = await res.json()
+
+  json.forEach(d => {
+    logDebug("BackupView.deleteDevices()", "Deleting device", d.id)
+    deleteDevice(d)
+  })
+}
+
+async function deleteBatch(b) {
+  const res = await fetch(global.baseURL + 'api/batch/' + b.id, {
+    method: "DELETE",
+    headers: { "Content-Type": "application/json", "Authorization": global.token },
+    // signal: AbortSignal.timeout(global.fetchTimout),
+  })
+
+  if (res.status != 204) {
+    logError("BackupView.deleteBatches()", "Got error from API", res.status)
+  }
 }
 
 async function deleteBatches() {
-  await fetch(global.baseURL + 'api/batch/', {
+  const res = await fetch(global.baseURL + 'api/batch/', {
     method: "GET",
     headers: { "Content-Type": "application/json", "Authorization": global.token },
-    signal: AbortSignal.timeout(global.fetchTimout),
+    // signal: AbortSignal.timeout(global.fetchTimout),
   })
-    .then(res => {
-      logDebug("BackupView.deleteBatches()", res.status)
-      if (!res.ok) throw res
-      return res.json()
-    })
-    .then(json => {
-      json.forEach(b => {
-        logDebug("BackupView.deleteDevices()", "Deleting batch", b.id)
 
-        fetch(global.baseURL + 'api/batch/' + b.id, {
-          method: "DELETE",
-          headers: { "Content-Type": "application/json", "Authorization": global.token },
-          signal: AbortSignal.timeout(global.fetchTimout),
-        })
-          .then(res => {
-            logDebug("BackupView.deleteBatches()", res.status)
-            if (res.status != 204) {
-              logError("BackupView.deleteBatches()", "Got error from API", res.status)
-            }
-          })
-          .catch(err => {
-            logError("BackupView.deleteBatches()", err)
-          })
-      })
-    })
-    .catch(err => {
-      logError("BackupView.deleteBatches()", err)
-    })
+  if (!res.ok) {
+    logDebug("BackupView.deleteBatches()", res.status)
+    throw res
+  }
+
+  const json = await res.json()
+
+  json.forEach(b => {
+    logDebug("BackupView.deleteDevices()", "Deleting batch", b.id)
+    deleteBatch(b)
+  })
 }
 
 function updateProgress() {
