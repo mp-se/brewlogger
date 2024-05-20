@@ -5,14 +5,14 @@ const info = ref(true)
 
 export function logDebug(...args) {
   if(debug.value)
-    console.log(...args)
+    console.log("Debug", ...args)
 }
 
 export function logInfo(...args) {
   if(info.value)
-    console.log(...args)
+    console.log("Info", ...args)
 }
 
 export function logError(...args) {
-  console.log(...args)
+  console.log("Error", ...args)
 }
