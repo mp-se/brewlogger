@@ -39,8 +39,13 @@ export const useGlobalStore = defineStore('global', {
       return process.env.VUE_APP_HOST
     },
     token() {
-      logDebug("globalStore.token()", process.env.VUE_APP_TOKEN)
-      return "Bearer " + process.env.VUE_APP_TOKEN
+      logDebug("globalStore.token()", "env:", process.env.VUE_APP_TOKEN, "js:", window.VUE_APP_TOKEN)
+
+      // If the token is not defined in the env-config.js then use the environment instead
+      if(window.VUE_APP_TOKEN === undefined || window.VUE_APP_TOKEN === '__TOKEN__') 
+        return "Bearer " + process.env.VUE_APP_TOKEN
+
+      return "Bearer " + window.VUE_APP_TOKEN
     },
     uiVersion() {
       return process.env.VUE_APP_VERSION
