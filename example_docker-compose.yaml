@@ -1,0 +1,94 @@
+version: "3.8"
+
+services:
+  brew_web:
+    build: .
+    hostname: brew_web
+    restart: always
+    environment:
+     - API_KEY=mykey
+    networks:
+      - brew_net
+    ports:
+      - 8080:8080
+    depends_on:
+      - brew_api
+      
+  brew_api:
+    image: mpse2/brewlogger-api
+    hostname: brew_api
+    restart: always
+    networks:
+      - brew_net
+    environment:
+     - API_KEY=mykey
+     - DATABASE_URL=postgresql://postgres:password@brew_db:5432/app
+     - API_KEY_ENABLED=1
+     - BREWFATHER_API_KEY=
+     - BREWFATHER_USER_KEY=
+    depends_on:
+     - brew_db
+
+  brew_db:
+    image: postgres:14
+    hostname: brew_db
+    restart: always
+    networks:
+      - brew_net
+    volumes:
+      - pg-data:/var/lib/postgresql/data/pgdata
+    environment:
+      - PGDATA=/var/lib/postgresql/data/pgdata
+      - POSTGRES_SERVER=brew_db
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=password
+      - POSTGRES_DB=app
+
+  brew_pgadmin:
+    image: dpage/pgadmin4
+    hostname: brew_pgadmin
+    restart: always
+    networks:
+      - brew_net
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@admin.com
+      PGADMIN_DEFAULT_PASSWORD: root
+    ports:
+      - "5050:80"
+    volumes:
+      - pgadmin-data:/var/lib/pgadmin
+
+  brew_mdns:
+    image: mpse2/brewlogger-mdns
+    hostname: brew_mdns
+    restart: always
+    network_mode: "host"
+    privileged: true
+    environment:
+      USE_MDNS_REPEATER: 1
+      EXTERNAL_INTERFACE: eth0
+      DOCKER_NETWORK_NAME: brew_net
+      OPTIONS: ""
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+
+  brew_ble:
+    image: mpse2/brewlogger-ble
+    hostname: brew_ble
+    networks:
+      - brew_net
+    restart: always
+    privileged: true
+    environment:
+      MIN_INTERVAL: 300
+    volumes:
+      - /dev:/dev
+      - /var/run/dbus:/var/run/dbus
+
+networks:
+  brew_net:
+
+volumes:
+  pg-data:      
+  pgadmin-data:
+  
