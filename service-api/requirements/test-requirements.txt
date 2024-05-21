@@ -150,7 +150,7 @@ pyyaml==6.0.1
     #   -r service-api/requirements/requirements.txt
     #   pre-commit
     #   uvicorn
-requests==2.31.0
+requests==2.32.0
     # via -r service-api/requirements/test-requirements.in
 rich==13.7.1
     # via
