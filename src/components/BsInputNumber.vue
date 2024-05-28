@@ -10,6 +10,10 @@
 
 <script setup>
 /**
+ * 2024-05-28 Bootstrap VueJS wrapper, Magnus Persson
+ */
+
+/**
  * Purpose: Provide an inputfield for numbers
  */
 defineOptions({

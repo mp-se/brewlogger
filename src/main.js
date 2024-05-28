@@ -13,9 +13,6 @@ app.use(router).use(piniaInstance)
 import BsIcon from '@/components/BsIcon'
 import BsMessage from '@/components/BsMessage'
 import BsCard from '@/components/BsCard'
-import BsModal from '@/components/BsModal'
-import BsModalConfirm from '@/components/BsModalConfirm'
-import BsModalSelect from '@/components/BsModalSelect'
 import BsFileUpload from '@/components/BsFileUpload'
 import BsProgress from '@/components/BsProgress'
 import BsInputBase from '@/components/BsInputBase'
@@ -23,11 +20,14 @@ import BsInputText from '@/components/BsInputText'
 import BsInputReadonly from '@/components/BsInputReadonly'
 import BsSelect from '@/components/BsSelect'
 import BsInputTextArea from '@/components/BsInputTextArea'
-import BsInputTextAreaFormat from '@/components/BsInputTextAreaFormat'
 import BsInputNumber from '@/components/BsInputNumber'
 import BsInputSwitch from '@/components/BsInputSwitch'
 import BsInputRadio from '@/components/BsInputRadio'
 import BsDropdown from '@/components/BsDropdown'
+
+import BsModal from '@/components2/BsModal'
+import BsModalConfirm from '@/components2/BsModalConfirm'
+import BsModalSelect from '@/components2/BsModalSelect'
 
 app.component('BsIcon', BsIcon)
 app.component('BsMessage', BsMessage)

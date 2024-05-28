@@ -14,7 +14,7 @@
   </dialog>
 
   <div v-if="!global.initialized" class="container text-center">
-    <BsMessage message="Initalizing Gravitymon Web interface" class="h2" :dismissable="false" alert="info"></BsMessage>
+    <BsMessage message="Initalizing Brewlogger interface" class="h2" :dismissable="false" alert="info"></BsMessage>
   </div>
 
   <Menubar v-if="global.initialized" :disabled="global.disabled" />

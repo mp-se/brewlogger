@@ -15,6 +15,10 @@
 
 <script setup>
 /**
+ * 2024-05-28 Bootstrap VueJS wrapper, Magnus Persson
+ */
+
+ /**
  * Purpose: Show a drop down button with options
  */
 defineOptions({

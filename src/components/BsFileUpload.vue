@@ -8,6 +8,10 @@
 
 <script setup>
 /**
+ * 2024-05-28 Bootstrap VueJS wrapper, Magnus Persson
+ */
+
+/**
  * Purpose: How a file upload component that allows the user to select a file. s
  */
 defineOptions({

@@ -5,6 +5,10 @@
 </template>
 
 <script setup>
+/**
+ * 2024-05-28 Bootstrap VueJS wrapper, Magnus Persson
+ */
+
 import { computed } from 'vue'
 /**
  * Purpose: Show a progress bar

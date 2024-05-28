@@ -12,6 +12,10 @@
 
 <script setup>
 /**
+ * 2024-05-28 Bootstrap VueJS wrapper, Magnus Persson
+ */
+
+/**
  * Purpose: Show a selector with a number of options.
  */
 defineOptions({

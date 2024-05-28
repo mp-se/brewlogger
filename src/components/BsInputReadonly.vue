@@ -9,6 +9,10 @@
 
 <script setup>
 /**
+ * 2024-05-28 Bootstrap VueJS wrapper, Magnus Persson
+ */
+
+/**
  * Purpose: Proviude an input field
  */
 defineOptions({

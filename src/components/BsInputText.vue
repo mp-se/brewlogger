@@ -9,6 +9,10 @@
 </template>
 
 <script setup>
+/**
+ * 2024-05-28 Bootstrap VueJS wrapper, Magnus Persson
+ */
+
 import { ref } from 'vue';
 /**
  * Purpose: Proviude an input field

@@ -84,6 +84,10 @@
 
 <script setup>
 /**
+ * 2024-05-28 Bootstrap VueJS wrapper, Magnus Persson
+ */
+
+/**
  * Purpose: Show an svg icon on the UI. Used embedded svg to avoid downloading data from internet. 
  */
 defineOptions({

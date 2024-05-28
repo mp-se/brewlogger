@@ -7,6 +7,10 @@
 
 <script setup>
 /**
+ * 2024-05-28 Bootstrap VueJS wrapper, Magnus Persson
+ */
+
+/**
  * Purpose: Use as a building block for providing a text area that can allow for multiple lines of text.
  */
 defineOptions({

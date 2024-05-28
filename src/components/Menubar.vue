@@ -63,6 +63,10 @@
 </template>
 
 <script setup>
+/**
+ * 2024-05-28 Bootstrap VueJS wrapper, Magnus Persson
+ */
+
 import { config, global } from "@/modules/pinia";
 import { onMounted, watch } from "vue"
 import { storeToRefs } from 'pinia'

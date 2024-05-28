@@ -8,7 +8,10 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+/**
+ * 2024-05-28 Bootstrap VueJS wrapper, Magnus Persson
+ */
+
 /**
  * Purpose: Display a switch in for of a checkbox
  */

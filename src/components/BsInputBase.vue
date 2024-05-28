@@ -1,7 +1,7 @@
 <template>
   <div class="has-validation pt-2">
-    <label v-if="label!==undefined" class="form-label fw-bold">{{ label }}&nbsp;</label>
-    <span v-if="badge" class="badge text-bg-danger rounded-circle">1</span>
+    <label v-if="label!==undefined" class="form-label fw-bold">{{ label }}</label>
+    &nbsp;<span v-if="badge" class="badge text-bg-danger rounded-circle">1</span>
     <div :class="[width === undefined ? '' : 'col-' + width]">
       <!-- @slot this is where the main component is located -->
       <slot></slot>
@@ -11,6 +11,10 @@
 </template>
 
 <script setup>
+/**
+ * 2024-05-28 Bootstrap VueJS wrapper, Magnus Persson
+ */
+
 /**
  * Purpose: Basic layout of a form component with label on top and help text below. 
  * 
