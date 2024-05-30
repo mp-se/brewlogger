@@ -6,7 +6,7 @@
         <p class="h3">Device List</p>
       </div>
       <div class="col-md-4">
-        <BsSelect v-model="filterSoftware" :options="softwareOptions" help="" :disabled="global.disabled">
+        <BsSelect v-model="global.deviceListFilterSoftware" :options="softwareOptions" help="" :disabled="global.disabled">
         </BsSelect>
       </div>
     </div>
@@ -81,6 +81,7 @@
 
 <script setup>
 import { onMounted, ref, watch } from "vue";
+import { storeToRefs } from 'pinia'
 import { Device } from "@/modules/deviceStore"
 import { global, deviceStore, batchStore } from "@/modules/pinia"
 import { logDebug, logError, logInfo } from '@/modules/logger'
@@ -89,7 +90,7 @@ const confirmDeleteMessage = ref(null)
 const confirmDeleteId = ref(null)
 
 const deviceList = ref(null)
-const filterSoftware = ref('*')
+const { deviceListFilterSoftware } = storeToRefs(global)
 
 const softwareOptions = ref([
   { label: '(All)', value: '*' },
@@ -107,30 +108,33 @@ const searchSelected = ref("")
 onMounted(() => {
   logDebug("DeviceListView.onMounted()")
   deviceList.value = deviceStore.deviceList
+  filterDeviceList()
 })
 
 function filterDeviceList() {
-  logDebug("DeviceListView.filterDeviceList", filterSoftware.value)
+  logDebug("DeviceListView.filterDeviceList", global.deviceListFilterSoftware)
 
   deviceList.value = []
   deviceStore.deviceList.forEach(d => {
 
-    if(filterSoftware.value == '*') {
+    if(global.deviceListFilterSoftware == '*') {
       deviceList.value.push(d)
     } else {
-      if(d.software == filterSoftware.value)
+      if(d.software == global.deviceListFilterSoftware)
         deviceList.value.push(d)
     }
   })
 }
 
-watch(filterSoftware, async (selected, previous) => {
+watch(deviceListFilterSoftware, async (selected, previous) => {
   logDebug("DeviceListView.watch(filterSoftware)", selected)
   filterDeviceList()
 })
 
 function updateDeviceList() {
   logDebug("DeviceListView.updateDeviceList()")
+
+  global.deviceListFilterSoftware = "*"
 
   deviceStore.getDeviceList((success, dl) => {
     if (success) {

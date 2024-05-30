@@ -14,6 +14,12 @@ export const useGlobalStore = defineStore('global', {
       messageInfo: "",
 
       fetchTimout: 8000,
+
+      // Global variables
+      batchListFilterDevice: "*",
+      batchListFilterActive: false,
+
+      deviceListFilterSoftware: "*",
     }
   },
   getters: {

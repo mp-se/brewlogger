@@ -6,11 +6,11 @@
         <p class="h3">Batch List</p>
       </div>
       <div class="col-md-4">
-        <BsSelect v-model="filterDevice" :options="deviceList" help="" :disabled="global.disabled">
+        <BsSelect v-model="global.batchListFilterDevice" :options="deviceList" help="" :disabled="global.disabled">
         </BsSelect>
       </div>
       <div class="col-md-1">
-        <BsInputSwitch v-model="filterActive" help="" :disabled="global.disabled"></BsInputSwitch>
+        <BsInputSwitch v-model="global.batchListFilterActive" help="" :disabled="global.disabled"></BsInputSwitch>
       </div>
     </div>
 
@@ -77,6 +77,7 @@
 <script setup>
 import { onMounted, ref, watch } from "vue";
 import { global, batchStore, deviceStore } from "@/modules/pinia"
+import { storeToRefs } from 'pinia'
 import { router } from '@/modules/router'
 import { download } from '@/modules/utils'
 import { logDebug, logError, logInfo } from '@/modules/logger'
@@ -86,8 +87,7 @@ const confirmDeleteId = ref(null)
 
 const batchList = ref(null);
 const deviceList = ref([])
-const filterDevice = ref('*')
-const filterActive = ref(false)
+const { batchListFilterDevice, batchListFilterActive } = storeToRefs(global)
 
 onMounted(() => {
   logDebug("BatchListView.onMounted()")
@@ -96,10 +96,11 @@ onMounted(() => {
 
   if(query.hasOwnProperty("chipId")) {
     logDebug("BatchListView.onMounted()", "Filter by chipId", query.chipId)
-    filterDevice.value = query.chipId
+    global.batchListFilterDevice = query.chipId
   }
 
-  filterBatchList(filterDevice.value)
+  filterBatchList()
+
   deviceList.value.push({ label: 'All', value: '*' })
   deviceStore.deviceList.forEach(d => {
     deviceList.value.push({ label: d.chipId + ' (' + d.mdns + ')', value: d.chipId })
@@ -107,38 +108,41 @@ onMounted(() => {
 })
 
 function filterBatchList() {
-  logDebug("BatchListView.filterBatchList", filterDevice.value, filterActive.value)
+  logDebug("BatchListView.filterBatchList()", global.batchListFilterDevice, global.batchListFilterActive)
 
   batchList.value = []
   batchStore.batchList.forEach(b => {
 
-    if(filterDevice.value == '*' && filterActive.value == false) {
+    if(global.batchListFilterDevice == '*' && global.batchListFilterActive == false) {
       batchList.value.push(b)
-    } else if(filterDevice.value == '*' && filterActive.value == true) {
+    } else if(global.batchListFilterDevice == '*' && global.batchListFilterActive == true) {
       if(b.active == true)
         batchList.value.push(b)
-    } else if(filterDevice.value != '*' && filterActive.value == false) {
-      if(b.chipId == filterDevice.value)
+    } else if(global.batchListFilterDevice != '*' && global.batchListFilterActive == false) {
+      if(b.chipId == global.batchListFilterDevice)
         batchList.value.push(b)
-    } else if(filterDevice.value != '*' && filterActive.value == true) {
-      if(b.chipId == filterDevice.value && b.active == true)
+    } else if(global.batchListFilterDevice != '*' && global.batchListFilterActive == true) {
+      if(b.chipId == global.batchListFilterDevice && b.active == true)
         batchList.value.push(b)
     }
   })
 }
 
-watch(filterDevice, async (selected, previous) => {
+watch(batchListFilterDevice, async (selected, previous) => {
   logDebug("BatchListView.watch(filterDevice)", selected)
   filterBatchList()
 })
 
-watch(filterActive, async (selected, previous) => {
+watch(batchListFilterActive, async (selected, previous) => {
   logDebug("BatchListView.watch(filterActive)", selected)
   filterBatchList()
 })
 
 function updateBatchList() {
   logDebug("BatchListView.updateBatchList()")
+
+  global.batchListFilterDevice = "*"
+  global.batchListFilterActive = false
 
   batchStore.getBatchList((success, bl) => {
     if (success) {

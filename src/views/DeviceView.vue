@@ -174,7 +174,6 @@ function fetchConfigFromDevice() {
 }
 
 function detectDeviceType() {
-
   // TODO: add option to detect software based on config 
   logInfo("DeviceView.detectDeviceType()", "Not implemented!")
 }
