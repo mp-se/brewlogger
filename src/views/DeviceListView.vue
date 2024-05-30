@@ -1,7 +1,16 @@
 <template>
   <div class="container">
-    <p></p>
-    <p class="h3">Device List</p>
+    <div class="row">
+      <div class="col-md-6">
+        <p></p>
+        <p class="h3">Device List</p>
+      </div>
+      <div class="col-md-4">
+        <BsSelect v-model="filterSoftware" :options="softwareOptions" help="" :disabled="global.disabled">
+        </BsSelect>
+      </div>
+    </div>
+
     <hr>
     <table class="table table-striped">
       <thead>
@@ -71,7 +80,7 @@
 </template>
 
 <script setup>
-import { onMounted, ref } from "vue";
+import { onMounted, ref, watch } from "vue";
 import { Device } from "@/modules/deviceStore"
 import { global, deviceStore, batchStore } from "@/modules/pinia"
 import { logDebug, logError, logInfo } from '@/modules/logger'
@@ -80,6 +89,17 @@ const confirmDeleteMessage = ref(null)
 const confirmDeleteId = ref(null)
 
 const deviceList = ref(null)
+const filterSoftware = ref('*')
+
+const softwareOptions = ref([
+  { label: '(All)', value: '*' },
+  { label: '(Blank)', value: '' },
+  { label: 'Gravitymon', value: 'Gravitymon' },
+  { label: 'Kegmon', value: 'Kegmon' },
+  { label: 'Pressuremon', value: 'Pressuremon' },
+  { label: 'Brewpi', value: 'Brewpi' },
+  { label: 'iSpindel', value: 'iSpindel' },
+])
 
 const searchOptions = ref(null)
 const searchSelected = ref("")
@@ -87,6 +107,26 @@ const searchSelected = ref("")
 onMounted(() => {
   logDebug("DeviceListView.onMounted()")
   deviceList.value = deviceStore.deviceList
+})
+
+function filterDeviceList() {
+  logDebug("DeviceListView.filterDeviceList", filterSoftware.value)
+
+  deviceList.value = []
+  deviceStore.deviceList.forEach(d => {
+
+    if(filterSoftware.value == '*') {
+      deviceList.value.push(d)
+    } else {
+      if(d.software == filterSoftware.value)
+        deviceList.value.push(d)
+    }
+  })
+}
+
+watch(filterSoftware, async (selected, previous) => {
+  logDebug("DeviceListView.watch(filterSoftware)", selected)
+  filterDeviceList()
 })
 
 function updateDeviceList() {
