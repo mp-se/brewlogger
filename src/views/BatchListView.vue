@@ -1,13 +1,16 @@
 <template>
   <div class="container">
     <div class="row">
-      <div class="col-md-6">
+      <div class="col-md-5">
         <p></p>
         <p class="h3">Batch List</p>
       </div>
       <div class="col-md-4">
         <BsSelect v-model="filterDevice" :options="deviceList" help="" :disabled="global.disabled">
         </BsSelect>
+      </div>
+      <div class="col-md-1">
+        <BsInputSwitch v-model="filterActive" help="" :disabled="global.disabled"></BsInputSwitch>
       </div>
     </div>
 
@@ -69,7 +72,6 @@
       title="Delete batch" :disabled="global.disabled" />
 
   </div>
-
 </template>
 
 <script setup>
@@ -85,6 +87,7 @@ const confirmDeleteId = ref(null)
 const batchList = ref(null);
 const deviceList = ref([])
 const filterDevice = ref('*')
+const filterActive = ref(false)
 
 onMounted(() => {
   logDebug("BatchListView.onMounted()")
@@ -103,25 +106,35 @@ onMounted(() => {
   })
 })
 
-function filterBatchList(filter) {
-  logDebug("BatchListView.filterBatchList", filter)
+function filterBatchList() {
+  logDebug("BatchListView.filterBatchList", filterDevice.value, filterActive.value)
 
-  logDebug(this)
+  batchList.value = []
+  batchStore.batchList.forEach(b => {
 
-  if(filter == "*") {
-    batchList.value = batchStore.batchList
-  } else {
-    batchList.value = []
-    batchStore.batchList.forEach(b => {
-      if(b.chipId == filter)
+    if(filterDevice.value == '*' && filterActive.value == false) {
+      batchList.value.push(b)
+    } else if(filterDevice.value == '*' && filterActive.value == true) {
+      if(b.active == true)
         batchList.value.push(b)
-    })
-  }
+    } else if(filterDevice.value != '*' && filterActive.value == false) {
+      if(b.chipId == filterDevice.value)
+        batchList.value.push(b)
+    } else if(filterDevice.value != '*' && filterActive.value == true) {
+      if(b.chipId == filterDevice.value && b.active == true)
+        batchList.value.push(b)
+    }
+  })
 }
 
 watch(filterDevice, async (selected, previous) => {
   logDebug("BatchListView.watch(filterDevice)", selected)
-  filterBatchList(selected)
+  filterBatchList()
+})
+
+watch(filterActive, async (selected, previous) => {
+  logDebug("BatchListView.watch(filterActive)", selected)
+  filterBatchList()
 })
 
 function updateBatchList() {
