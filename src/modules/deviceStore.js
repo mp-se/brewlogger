@@ -39,7 +39,7 @@ export class Device {
     get mdns() { return this._mdns }
     get config() { return this._config }
     get bleColor() { return this._bleColor }
-    get url() { return this._url.endsWith("/") || this._url.length<7 ? this._url : this._url + "/" }
+    get url() { return this._url }
     get description() { return this._description }
 
     set id(id) { this._id = id }
@@ -234,7 +234,7 @@ export const useDeviceStore = defineStore('deviceStore', {
         proxyRequest(url, method, body, callback) {
             // callback => (success, json_response)
 
-            var body = { url: url, method: method, body: body }
+            var body = { url: url, method: method, body: body, header: "" }
             logDebug("deviceStore.proxyRequest()", url, body)
             fetch(global.baseURL + 'api/device/proxy_fetch/', {
                 method: "POST",

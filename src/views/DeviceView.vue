@@ -59,15 +59,12 @@
               </button>
             </router-link>&nbsp;
             <router-link :to="{ name: 'device-list' }">
-              <button type="button" class="btn btn-secondary w-2"> <i class="bi bi-list"></i>
+              <button type="button" class="btn btn-secondary w-2" :disabled="global.disabled"> <i class="bi bi-list"></i>
                 Device list
               </button>
             </router-link>&nbsp;
-            <button disabled type="button" class="btn btn-secondary" @click="fetchConfigFromDevice()"><i
+            <button type="button" class="btn btn-secondary" @click="fetchConfigFromDevice()" :disabled="global.disabled"><i
                 class="bi bi-box-arrow-down"></i> Fetch</button>&nbsp;
-            <button disabled type="button" class="btn btn-secondary" @click="detectDeviceType()"><i
-                class="bi bi-binoculars"></i>
-              Detect</button>
           </div>
         </div>
       </form>
@@ -168,19 +165,99 @@ function validateChipId() {
   return chipIdValid.value
 }
 
-function fetchConfigFromDevice() {
+async function fetchConfigFromDevice() {
   // TODO: add option to fetch config from device 
-  logInfo("DeviceView.fetchConfigFromDevice()", "Not implemented!")
+  logInfo("DeviceView.fetchConfigFromDevice()")
+
+  global.clearMessages()
+  global.disabled = true
+  validateUrl()
+  await fetchConfigV2() // Applies to Kegmon 2.x and Gravitymon 2.x
+  // TODO: Validate fetch from old Gravitymon 1.x and Kegmon 1.x
+  // TODO: Validate fetch from BrewPi
+  global.disabled = false
 }
 
-function detectDeviceType() {
-  // TODO: add option to detect software based on config 
-  logInfo("DeviceView.detectDeviceType()", "Not implemented!")
+async function proxyRequest(url, header) {
+  var body = { url: url, method: "GET", body: "", header: header }
+  logDebug("DeviceView.proxyRequest()", body)
+
+  const res = await fetch(global.baseURL + 'api/device/proxy_fetch/', {
+    method: "POST",
+    headers: { "Content-Type": "application/json", "Authorization": global.token },
+    body: JSON.stringify(body),
+    signal: AbortSignal.timeout(20000),
+  })
+    .catch(err => {
+      logError("DeviceView.proxyRequest()", err)
+      throw new Error("Fetch error " + err)
+    })
+
+  if (!res.ok) {
+    logError("BackupView.getBatchList()", res.status)
+    throw new Error("Failed to perform proxy request" + res.status)
+  }
+
+  const json = await res.json()
+  return json
+}
+
+/*
+ * Fetch config from a device with API V2.x that uses /api/auth and /api/config (with auth)
+ */
+async function fetchConfigV2() {
+  try {
+    var data = {}
+
+    const status = await proxyRequest(device.value.url + 'api/status', "")
+    logDebug("DeviceView.fetchConfigV2()", status)
+    data.status = status
+
+    // Gravitymon, Kegmon etc
+    if(status.platform !== undefined) {
+      device.value.chipFamily = status.platform 
+    }
+    if(status.mdns !== undefined) {
+      device.value.mdns = status.mdns 
+    }
+
+    // Gravitymon
+    if(status.gravity_format !== undefined) {
+      device.value.software = "Gravitymon"
+    }
+
+    const header = "Authorization: Basic " + btoa('username:password')
+    const auth = await proxyRequest(device.value.url + 'api/auth', header)
+    logDebug("DeviceView.fetchConfigV2()", auth)
+
+    const header2 = "Authorization: Bearer " + auth.token
+    const config = await proxyRequest(device.value.url + 'api/config', header2)
+    logDebug("DeviceView.fetchConfigV2()", config)
+    data.config = config
+
+    // Gravitymon
+    if(config.ble_tilt_color !== undefined) { 
+      device.value.bleColor = config.ble_tilt_color      
+    }
+
+    device.value.config = btoa(JSON.stringify(data))
+    return true
+  } catch (err) {
+    logError("DeviceView.fetchConfigV2()", err)
+    global.messageError = "Error when trying to retrive data from device"
+  }
+
+  return false
+}
+
+function validateUrl() {
+  device.value.url = device.value.url.endsWith("/") || device.value.url.length < 7 ? device.value.url : device.value.url + "/"
 }
 
 const save = () => {
   logDebug("DeviceView.save()")
 
+  validateUrl()
   if (!validateChipId()) return
   if (!validateCurrentForm()) return
 
