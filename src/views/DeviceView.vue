@@ -38,9 +38,15 @@
             <BsInputRadio v-model="device.bleColor" :options="bleColorOptions" label="BLE Color" help=""
               :disabled="global.disabled"></BsInputRadio>
           </div>
-          <div class="col-md-12">
-            <BsInputText v-model="device.config" label="Configuration" width="11" help="" :disabled="global.disabled">
+          <div class="col-md-11">
+            <BsInputText v-model="device.config" label="Configuration" width="11" help="" disabled>
             </BsInputText>
+          </div>
+          <div class="col-md-1">
+            <BsInputBase label="&nbsp;">
+              <button type="button" class="btn btn-secondary btn-sm" @click="copyToClipboard()" :disabled="global.disabled"><i
+                class="bi bi-clipboard"></i></button>&nbsp;
+            </BsInputBase>
           </div>
         </div>
 
@@ -95,11 +101,13 @@ import { validateCurrentForm } from '@/modules/utils'
 import { Device } from '@/modules/deviceStore'
 import { router } from '@/modules/router'
 import { logDebug, logError, logInfo } from '@/modules/logger'
+import BsInputBase from "@/components/BsInputBase.vue";
 
 const device = ref(null)
 const chipIdValid = ref(false)
 
 const chipFamilyOptions = ref([
+  { label: '- unknown -', value: '' },
   { label: 'ESP8266', value: 'esp8266' },
   { label: 'ESP32', value: 'esp32' },
   { label: 'ESP32-C3', value: 'esp32c3' },
@@ -108,6 +116,7 @@ const chipFamilyOptions = ref([
 ])
 
 const softwareOptions = ref([
+  { label: '- unknown -', value: '' },
   { label: 'Gravitymon', value: 'Gravitymon' },
   { label: 'Kegmon', value: 'Kegmon' },
   { label: 'Pressuremon', value: 'Pressuremon' },
@@ -165,14 +174,19 @@ function validateChipId() {
   return chipIdValid.value
 }
 
+async function copyToClipboard() {
+  logInfo("DeviceView.copyToClipboard()")
+  navigator.clipboard.writeText(atob(device.value.config));
+  global.messageSuccess = "Configuration is copied to clipboard"
+}
+
 async function fetchConfigFromDevice() {
-  // TODO: add option to fetch config from device 
   logInfo("DeviceView.fetchConfigFromDevice()")
 
   global.clearMessages()
   global.disabled = true
   validateUrl()
-  await fetchConfigV2() // Applies to Kegmon 2.x and Gravitymon 2.x
+  const v2 = await fetchConfigV2() // Applies to Kegmon 2.x and Gravitymon 2.x
   // TODO: Validate fetch from old Gravitymon 1.x and Kegmon 1.x
   // TODO: Validate fetch from BrewPi
   global.disabled = false
@@ -238,6 +252,12 @@ async function fetchConfigV2() {
     // Gravitymon
     if(config.ble_tilt_color !== undefined) { 
       device.value.bleColor = config.ble_tilt_color      
+    }
+
+    if(device.value.software == "Gravitymon") {
+      const format = await proxyRequest(device.value.url + 'api/format', header2)
+      logDebug("DeviceView.fetchConfigV2()", format)
+      data.format = format
     }
 
     device.value.config = btoa(JSON.stringify(data))
