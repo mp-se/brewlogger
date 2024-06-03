@@ -15,6 +15,7 @@ class ProxyRequest(BaseModel):
     url: str
     method: str
     body: Optional[str]
+    header: Optional[str]
 
 ################################################################################ 
 

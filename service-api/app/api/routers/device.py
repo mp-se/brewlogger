@@ -87,19 +87,26 @@ async def fetch_data_from_device(
     try:
         timeout = httpx.Timeout(10.0, connect=10.0, read=10.0)
 
+        headers = {}
+
+        if proxy_req.header != "":
+            s = proxy_req.header.split(":")
+            headers = { s[0]: s[1].strip(' ') }
+            logger.info("Header provided %s", headers)
+            
         async with httpx.AsyncClient(timeout=timeout) as client:
             if proxy_req.method == "post":
                 logger.info("Request using post %s", proxy_req.url)
-                res = await client.post(proxy_req.url, data=proxy_req.body)
+                res = await client.post(proxy_req.url, data=proxy_req.body, headers=headers)
             elif proxy_req.method == "put":
                 logger.info("Request using put %s", proxy_req.url)
-                res = await client.put(proxy_req.url, data=proxy_req.body)
+                res = await client.put(proxy_req.url, data=proxy_req.body, headers=headers)
             elif proxy_req.method == "delete":
                 logger.info("Request using delete %s", proxy_req.url)
-                res = await client.delete(proxy_req.url)
+                res = await client.delete(proxy_req.url, headers=headers)
             else:
                 logger.info("Request using get %s", proxy_req.url)
-                res = await client.get(proxy_req.url)
+                res = await client.get(proxy_req.url, headers=headers)
 
             logger.info("Response received %s", res)
 
