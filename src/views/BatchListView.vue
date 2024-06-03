@@ -1,16 +1,22 @@
 <template>
   <div class="container">
     <div class="row">
-      <div class="col-md-5">
+      <div class="col-md-6">
         <p></p>
         <p class="h3">Batch List</p>
       </div>
       <div class="col-md-4">
-        <BsSelect v-model="global.batchListFilterDevice" :options="deviceList" help="" :disabled="global.disabled">
+        <BsSelect v-model="global.batchListFilterDevice" :options="deviceList" label="Device filter" help=""
+          :disabled="global.disabled">
         </BsSelect>
       </div>
       <div class="col-md-1">
-        <BsInputSwitch v-model="global.batchListFilterActive" help="" :disabled="global.disabled"></BsInputSwitch>
+        <BsInputSwitch v-model="global.batchListFilterActive" label="Active" help="" :disabled="global.disabled">
+        </BsInputSwitch>
+      </div>
+      <div class="col-md-1">
+        <BsInputSwitch v-model="global.batchListFilterData" label="Data" help="" :disabled="global.disabled">
+        </BsInputSwitch>
       </div>
     </div>
 
@@ -18,13 +24,13 @@
     <table class="table table-striped">
       <thead>
         <tr>
-          <th scope="col-sm-1">ID</th>
-          <th scope="col-sm-2">Name</th>
-          <th scope="col-sm-1">Brewdate</th>
-          <th scope="col-sm-1">Device</th>
-          <th scope="col-sm-1">Active</th>
-          <th scope="col-sm-1">Gravity #</th>
-          <th scope="col-sm-2">Action</th>
+          <th scope="col" class="col-sm-1">ID</th>
+          <th scope="col" class="col-sm-2">Name</th>
+          <th scope="col" class="col-sm-1">Brewdate</th>
+          <th scope="col" class="col-sm-1">Device</th>
+          <th scope="col" class="col-sm-1">Active</th>
+          <th scope="col" class="col-sm-1">Gravity #</th>
+          <th scope="col" class="col-sm-2">Action</th>
         </tr>
       </thead>
       <tbody>
@@ -32,7 +38,9 @@
           <th scope="row">{{ b.id }}</th>
           <td>{{ b.name }}</td>
           <td>{{ b.brewDate }}</td>
-          <td><pre>{{ b.chipId }}</pre></td>
+          <td>
+            <pre>{{ b.chipId }}</pre>
+          </td>
           <td>{{ b.active }}</td>
           <td>{{ b.gravityCount }}</td>
           <td>
@@ -41,13 +49,16 @@
             </router-link>&nbsp;
             <button type="button" class="btn btn-danger btn-sm" @click.prevent="deleteBatch(b.id, b.name)"><i
                 class="bi bi-file-x"></i></button>&nbsp;
-            <template v-if="b.gravityCount>0">
+            <template v-if="b.gravityCount > 0">
               <router-link :to="{ name: 'batch-gravity', params: { id: b.id } }">
-              <button type="button" class="btn btn-success btn-sm"><i class="bi bi-graph-down"></i></button>
-            </router-link>&nbsp;
-
+                <button type="button" class="btn btn-success btn-sm"><i class="bi bi-graph-down"></i></button>
+              </router-link>&nbsp;
+              <button @click="exportBatchJSON(b.id)" type="button" class="btn btn-info btn-sm"><i
+                  class="bi bi-filetype-json"></i></button>&nbsp;
+              <button @click="exportBatchCSV(b.id)" type="button" class="btn btn-info btn-sm"><i
+                  class="bi bi-filetype-csv"></i></button>&nbsp;
             </template>
-            <button @click="exportBatch(b.id)" type="button" class="btn btn-info btn-sm"><i class="bi bi-box-arrow-down"></i></button>&nbsp;
+
 
             <!-- 
               <button type="button" class="btn btn-info btn-sm"><i class="bi bi-eye"></i></button>&nbsp;
@@ -63,7 +74,8 @@
         <router-link :to="{ name: 'batch', params: { id: 'new' } }">
           <button type="button" class="btn btn-secondary">Add Batch</button>
         </router-link>&nbsp;
-        <button @click="synchronizeBrewfather()" type="button" class="btn btn-secondary">Fetch from Brewfather</button>&nbsp;
+        <button @click="synchronizeBrewfather()" type="button" class="btn btn-secondary">Fetch from
+          Brewfather</button>&nbsp;
         <button @click="updateBatchList()" type="button" class="btn btn-secondary">Refresh</button>&nbsp;
       </div>
     </div>
@@ -87,14 +99,14 @@ const confirmDeleteId = ref(null)
 
 const batchList = ref(null);
 const deviceList = ref([])
-const { batchListFilterDevice, batchListFilterActive } = storeToRefs(global)
+const { batchListFilterDevice, batchListFilterActive, batchListFilterData } = storeToRefs(global)
 
 onMounted(() => {
   logDebug("BatchListView.onMounted()")
 
   var query = router.currentRoute.value.query
 
-  if(query.hasOwnProperty("chipId")) {
+  if (query.hasOwnProperty("chipId")) {
     logDebug("BatchListView.onMounted()", "Filter by chipId", query.chipId)
     global.batchListFilterDevice = query.chipId
   }
@@ -108,23 +120,23 @@ onMounted(() => {
 })
 
 function filterBatchList() {
-  logDebug("BatchListView.filterBatchList()", global.batchListFilterDevice, global.batchListFilterActive)
+  logDebug("BatchListView.filterBatchList()", global.batchListFilterDevice, global.batchListFilterActive, global.batchListFilterData)
 
   batchList.value = []
   batchStore.batchList.forEach(b => {
+    var include = true
 
-    if(global.batchListFilterDevice == '*' && global.batchListFilterActive == false) {
+    if(global.batchListFilterDevice != '*' && global.batchListFilterDevice != b.chipId)
+      include = false
+
+    if(global.batchListFilterActive && !b.active)
+      include = false
+
+    if(global.batchListFilterData && !b.gravityCount)
+      include = false
+
+    if(include)
       batchList.value.push(b)
-    } else if(global.batchListFilterDevice == '*' && global.batchListFilterActive == true) {
-      if(b.active == true)
-        batchList.value.push(b)
-    } else if(global.batchListFilterDevice != '*' && global.batchListFilterActive == false) {
-      if(b.chipId == global.batchListFilterDevice)
-        batchList.value.push(b)
-    } else if(global.batchListFilterDevice != '*' && global.batchListFilterActive == true) {
-      if(b.chipId == global.batchListFilterDevice && b.active == true)
-        batchList.value.push(b)
-    }
   })
 }
 
@@ -135,6 +147,11 @@ watch(batchListFilterDevice, async (selected, previous) => {
 
 watch(batchListFilterActive, async (selected, previous) => {
   logDebug("BatchListView.watch(filterActive)", selected)
+  filterBatchList()
+})
+
+watch(batchListFilterData, async (selected, previous) => {
+  logDebug("BatchListView.watch(filterData)", selected)
   filterBatchList()
 })
 
@@ -201,20 +218,40 @@ const deleteBatch = (id, name) => {
   document.getElementById('deleteBatch').click()
 }
 
-function exportBatch(id) {
-  logDebug("BatchListView.exportBatch()", id)
+function exportBatchJSON(id) {
+  logDebug("BatchListView.exportBatchJSON()", id)
 
   getBatch(id, (success, b) => {
     if (success) {
-      logDebug("BatchListView.exportBatch()", "Collected batch")
+      logDebug("BatchListView.exportBatchJSON()", "Collected batch")
       var s = JSON.stringify(b, null, 2)
-      download(s, "text/plain", "brewlogger_batch_" + id + ".txt")
+      download(s, "text/plain", "brewlogger_batch_" + id + ".json")
     } else {
       global.messageError = "Failed to fetch batch with id " + id
       global.disabled = false
     }
   })
 }
+
+function exportBatchCSV(id) {
+  logDebug("BatchListView.exportBatchCSV()", id)
+
+  getBatch(id, (success, b) => {
+    if (success) {
+      logDebug("BatchListView.exportBatchCSV()", "Collected batch")
+      var s = "Name,Created,Temperature,Gravity,Angle,Battery,RSSI,CorrGravity,RunTime\n"
+      b.gravity.forEach(g => {
+        s += b.name + "," + g.created + "," + g.temperature + "," + g.gravity + "," + g.angle + "," + g.battery + "," + g.rssi + "," + g.corrGravity + "," + g.runTime + "\n"
+      })
+
+      download(s, "text/plain", "brewlogger_batch_" + id + ".csv")
+    } else {
+      global.messageError = "Failed to fetch batch with id " + id
+      global.disabled = false
+    }
+  })
+}
+
 
 function getBatch(id, callback) {
   fetch(global.baseURL + 'api/batch/' + id, {

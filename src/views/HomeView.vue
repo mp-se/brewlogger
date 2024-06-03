@@ -9,7 +9,7 @@
     <p>
       <ul>
         <li>Gravitymon, Gravity logging</li>
-        <li>Kegmon (WIP, Pour loggin)</li>
+        <li>Kegmon (WIP, Pour logging)</li>
         <li>Pressuremon (WIP, pressure logging)</li>
         <li>BrewPI ESP, Temperature control, Display</li>
         <li>iSpindel, Gravity logging</li>

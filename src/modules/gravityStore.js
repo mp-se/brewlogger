@@ -22,7 +22,7 @@ export class Gravity {
 
     toJson() {
         return {
-            "name": this.name,
+            "id": this.id,
             "temperature": this.temperature,
             "gravity": this.gravity,
             "angle": this.angle,

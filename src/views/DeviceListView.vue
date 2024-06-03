@@ -1,12 +1,12 @@
 <template>
   <div class="container">
     <div class="row">
-      <div class="col-md-6">
+      <div class="col-md-8">
         <p></p>
         <p class="h3">Device List</p>
       </div>
       <div class="col-md-4">
-        <BsSelect v-model="global.deviceListFilterSoftware" :options="softwareOptions" help="" :disabled="global.disabled">
+        <BsSelect v-model="global.deviceListFilterSoftware" :options="softwareOptions" label="Software" help="" :disabled="global.disabled">
         </BsSelect>
       </div>
     </div>
@@ -15,12 +15,12 @@
     <table class="table table-striped">
       <thead>
         <tr>
-          <th scope="col-sm-1">ID</th>
-          <th scope="col-sm-3">mDNS</th>
-          <th scope="col-sm-1">Chip ID</th>
-          <th scope="col-sm-1">Chip Family</th>
-          <th scope="col-sm-2">Software</th>
-          <th scope="col-sm-2">Action</th>
+          <th scope="col" class="col-sm-1">ID</th>
+          <th scope="col" class="col-sm-3">mDNS</th>
+          <th scope="col" class="col-sm-1">Chip ID</th>
+          <th scope="col" class="col-sm-1">Chip Family</th>
+          <th scope="col" class="col-sm-2">Software</th>
+          <th scope="col" class="col-sm-2">Action</th>
         </tr>
       </thead>
       <tbody>

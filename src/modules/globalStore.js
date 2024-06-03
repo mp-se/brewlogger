@@ -18,6 +18,7 @@ export const useGlobalStore = defineStore('global', {
       // Global variables
       batchListFilterDevice: "*",
       batchListFilterActive: false,
+      batchListFilterData: false,
 
       deviceListFilterSoftware: "*",
     }
