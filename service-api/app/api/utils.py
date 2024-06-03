@@ -54,45 +54,46 @@ def migrate_database():
       logger.info("Running on sqlite so we skip trying to migrate")
       return
 
-    logger.info("Running postgres sql commands to migrate database from v0.2 to v0.3")
+    # logger.info("Running postgres sql commands to migrate database from v0.2 to v0.3")
 
-    with engine.connect() as con:
-        try:
-            con.execute(text('ALTER TABLE gravity DROP COLUMN name;'))
-            con.execute(text('ALTER TABLE gravity DROP COLUMN chip_id;'))
-            con.execute(text('ALTER TABLE gravity DROP COLUMN interval;'))
-            con.execute(text('ALTER TABLE gravity DROP COLUMN token;'))
-            con.execute(text('ALTER TABLE gravity DROP COLUMN temp_units;'))
-            con.execute(text('ALTER TABLE gravity DROP COLUMN gravity_units;'))
-            con.commit()
-        except (OperationalError, ProgrammingError, InternalError) as e:
-            logger.error(f"Failed to update database, Step 1, {e}")
+    # with engine.connect() as con:
+    #     try:
+    #         con.execute(text('ALTER TABLE gravity DROP COLUMN name;'))
+    #         con.execute(text('ALTER TABLE gravity DROP COLUMN chip_id;'))
+    #         con.execute(text('ALTER TABLE gravity DROP COLUMN interval;'))
+    #         con.execute(text('ALTER TABLE gravity DROP COLUMN token;'))
+    #         con.execute(text('ALTER TABLE gravity DROP COLUMN temp_units;'))
+    #         con.execute(text('ALTER TABLE gravity DROP COLUMN gravity_units;'))
+    #         con.commit()
+    #     except (OperationalError, ProgrammingError, InternalError) as e:
+    #         logger.error(f"Failed to update database, Step 1, {e}")
 
-    with engine.connect() as con:
-        try:
-            con.execute(text('ALTER TABLE device ADD COLUMN description VARCHAR(150)'))
-            con.execute(text('ALTER TABLE device ADD COLUMN ble_color VARCHAR(15)'))
-            con.commit()
-        except (OperationalError, ProgrammingError, InternalError) as e:
-            logger.error(f"Failed to update database, Step 2, {e}")
+    # with engine.connect() as con:
+    #     try:
+    #         con.execute(text('ALTER TABLE device ADD COLUMN description VARCHAR(150)'))
+    #         con.execute(text('ALTER TABLE device ADD COLUMN ble_color VARCHAR(15)'))
+    #         con.commit()
+    #     except (OperationalError, ProgrammingError, InternalError) as e:
+    #         logger.error(f"Failed to update database, Step 2, {e}")
 
-    with engine.connect() as con:
-        try:
-            con.execute(text("UPDATE device SET description = '' WHERE description IS NULL"))
-            con.execute(text("UPDATE device SET ble_color = '' WHERE ble_color IS NULL"))
-            con.commit()
-        except (OperationalError, ProgrammingError, InternalError) as e:
-            logger.error(f"Failed to update database, Step 3, {e}")
+    # with engine.connect() as con:
+    #     try:
+    #         con.execute(text("UPDATE device SET description = '' WHERE description IS NULL"))
+    #         con.execute(text("UPDATE device SET ble_color = '' WHERE ble_color IS NULL"))
+    #         con.commit()
+    #     except (OperationalError, ProgrammingError, InternalError) as e:
+    #         logger.error(f"Failed to update database, Step 3, {e}")
 
-    with engine.connect() as con:
-        try:
-            con.execute(text('ALTER TABLE device ALTER COLUMN description SET NOT NULL'))
-            con.execute(text('ALTER TABLE device ALTER COLUMN ble_color SET NOT NULL'))
-            con.commit()
-        except (OperationalError, ProgrammingError, InternalError) as e:
-            logger.error(f"Failed to update database, Step 4, {e}")
+    # with engine.connect() as con:
+    #     try:
+    #         con.execute(text('ALTER TABLE device ALTER COLUMN description SET NOT NULL'))
+    #         con.execute(text('ALTER TABLE device ALTER COLUMN ble_color SET NOT NULL'))
+    #         con.commit()
+    #     except (OperationalError, ProgrammingError, InternalError) as e:
+    #         logger.error(f"Failed to update database, Step 4, {e}")
           
     logger.info("Running postgres sql commands to migrate database from v0.3 to v0.4")
+    
     with engine.connect() as con:
         try:
             con.execute(text('ALTER TABLE brewlogger ADD COLUMN dark_mode BOOLEAN'))
