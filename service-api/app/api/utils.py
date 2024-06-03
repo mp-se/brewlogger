@@ -11,6 +11,8 @@ from sqlalchemy import text
 logger = logging.getLogger(__name__)
 
 def load_settings():
+  logger.info("Loading settings and checking migration")
+
   with engine.connect() as con:
     try:
       con.execute(text('SELECT * FROM device'))
@@ -38,6 +40,7 @@ def load_settings():
         migrate_database()
       else:
         cfg = list[0]
+        logger.info(f"Database version {cfg.version}")
         if cfg.version != get_settings().version:
           logger.info("Database does not match the application version, trying to do migration")
           migrate_database()
@@ -53,7 +56,40 @@ def migrate_database():
     if get_settings().database_url.startswith("sqlite:"):
       logger.info("Running on sqlite so we skip trying to migrate")
       return
+    
+    with engine.connect() as con:
+      try:
+        logger.info("Dumping database schema for brewlogger.")
 
+        res1 = con.execute(text("SELECT * FROM information_schema.columns WHERE table_schema = 'public' AND table_name = 'brewlogger' ORDER BY ordinal_position;")).fetchall()
+        res2 = con.execute(text("SELECT * FROM information_schema.columns WHERE table_schema = 'public' AND table_name = 'device' ORDER BY ordinal_position;")).fetchall()
+        res3 = con.execute(text("SELECT * FROM information_schema.columns WHERE table_schema = 'public' AND table_name = 'batch' ORDER BY ordinal_position;")).fetchall()
+        res4 = con.execute(text("SELECT * FROM information_schema.columns WHERE table_schema = 'public' AND table_name = 'gravity' ORDER BY ordinal_position;")).fetchall()
+        res5 = con.execute(text("SELECT * FROM information_schema.columns WHERE table_schema = 'public' AND table_name = 'pour' ORDER BY ordinal_position;")).fetchall()
+        res6 = con.execute(text("SELECT * FROM information_schema.columns WHERE table_schema = 'public' AND table_name = 'pressure' ORDER BY ordinal_position;")).fetchall()
+        con.commit()        
+
+        for r in res1:
+          print(f"Table: {r[2]:15} Column: {r[3]:20} Nullable: {r[6]:10} Type: {r[7]:30} MaxLength: {r[8]}")
+
+        for r in res2:
+          print(f"Table: {r[2]:15} Column: {r[3]:20} Nullable: {r[6]:10} Type: {r[7]:30} MaxLength: {r[8]}")
+
+        for r in res3:
+          print(f"Table: {r[2]:15} Column: {r[3]:20} Nullable: {r[6]:10} Type: {r[7]:30} MaxLength: {r[8]}")
+
+        for r in res4:
+          print(f"Table: {r[2]:15} Column: {r[3]:20} Nullable: {r[6]:10} Type: {r[7]:30} MaxLength: {r[8]}")
+
+        for r in res5:
+          print(f"Table: {r[2]:15} Column: {r[3]:20} Nullable: {r[6]:10} Type: {r[7]:30} MaxLength: {r[8]}")
+
+        for r in res6:
+          print(f"Table: {r[2]:15} Column: {r[3]:20} Nullable: {r[6]:10} Type: {r[7]:30} MaxLength: {r[8]}")
+
+      except (OperationalError, ProgrammingError, InternalError) as e:
+        logger.error(f"Failed to update database, Step 1, {e}")
+     
     # logger.info("Running postgres sql commands to migrate database from v0.2 to v0.3")
 
     # with engine.connect() as con:
