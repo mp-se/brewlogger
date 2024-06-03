@@ -92,20 +92,20 @@ def migrate_database():
     #     except (OperationalError, ProgrammingError, InternalError) as e:
     #         logger.error(f"Failed to update database, Step 4, {e}")
           
-    logger.info("Running postgres sql commands to migrate database from v0.3 to v0.4")
+    # logger.info("Running postgres sql commands to migrate database from v0.3 to v0.4")
 
-    with engine.connect() as con:
-      try:
-        con.execute(text('ALTER TABLE brewlogger ADD COLUMN dark_mode BOOLEAN'))
-        con.commit()
-      except (OperationalError, ProgrammingError, InternalError) as e:
-        logger.error(f"Failed to update database, Step 5, {e}")
+    # with engine.connect() as con:
+    #   try:
+    #     con.execute(text('ALTER TABLE brewlogger ADD COLUMN dark_mode BOOLEAN'))
+    #     con.commit()
+    #   except (OperationalError, ProgrammingError, InternalError) as e:
+    #     logger.error(f"Failed to update database, Step 5, {e}")
 
-    with engine.connect() as con:
-      try:
-        con.execute(text('ALTER TABLE brewlogger ALTER COLUMN dark_mode SET NOT NULL'))
-        con.commit()
-      except (OperationalError, ProgrammingError, InternalError) as e:
-        logger.error(f"Failed to update database, Step 6, {e}")
+    # with engine.connect() as con:
+    #   try:
+    #     con.execute(text('ALTER TABLE brewlogger ALTER COLUMN dark_mode SET NOT NULL'))
+    #     con.commit()
+    #   except (OperationalError, ProgrammingError, InternalError) as e:
+    #     logger.error(f"Failed to update database, Step 6, {e}")
 
     logger.info("Completed postgres migration")
