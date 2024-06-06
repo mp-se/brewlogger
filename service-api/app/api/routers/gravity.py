@@ -181,7 +181,8 @@ async def create_gravity_using_ispindel_format(
             corr_gravity = corr_gravity,
             run_time = run_time,
             batch_id = batchList[0].id,
-            created = datetime.now()
+            created = datetime.now(),
+            active = True
         )
 
         if json["temp_units"] == 'F':

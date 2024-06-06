@@ -63,6 +63,7 @@ class Gravity(Base):
     corr_gravity = Column(Float, nullable=False)
     run_time = Column(Float, nullable=False)
     created = Column(DateTime, nullable=False)
+    active = Column(Boolean, nullable=False)
 
     batch_id = Column(Integer, ForeignKey(Batch.__table__.c.id))
     batch = relationship("Batch", back_populates="gravity")
@@ -77,6 +78,7 @@ class Pressure(Base):
     rssi = Column(Float, nullable=False)
     run_time = Column(Float, nullable=False)
     created = Column(DateTime, nullable=False)
+    active = Column(Boolean, nullable=False)
 
     batch_id = Column(Integer, ForeignKey(Batch.__table__.c.id))
     batch = relationship("Batch", back_populates="pressure")
@@ -88,6 +90,7 @@ class Pour(Base):
     pour = Column(Float, nullable=False)
     volume = Column(Float, nullable=False)
     created = Column(DateTime, nullable=False)
+    active = Column(Boolean, nullable=False)
 
     batch_id = Column(Integer, ForeignKey(Batch.__table__.c.id))
     batch = relationship("Batch", back_populates="pour")

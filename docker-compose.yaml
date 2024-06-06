@@ -2,9 +2,12 @@ version: "3.8"
 
 services:
   brew_web:
-    build: service-web
+    #build: service-web
+    image: mpse2/brewlogger-web
     hostname: brew_web
     restart: always
+    environment:
+     - API_KEY=akljnv13bvi2vfo0b0bw789jlljsdf
     networks:
       - brew_net
     ports:
@@ -23,7 +26,7 @@ services:
     environment:
      - API_KEY=akljnv13bvi2vfo0b0bw789jlljsdf
      - DATABASE_URL=postgresql://postgres:password@brew_db:5432/app
-     - API_KEY_ENABLED=1
+     - API_KEY_ENABLED=0
      - BREWFATHER_API_KEY=
      - BREWFATHER_USER_KEY=
     depends_on:
@@ -75,18 +78,18 @@ services:
   #   volumes:
   #     - /var/run/docker.sock:/var/run/docker.sock
 
-  brew_ble:
-    build: service-ble
-    hostname: brew_ble
-    networks:
-      - brew_net
-    restart: always
-    privileged: true
-    environment:
-      MIN_INTERVAL: 300
-    volumes:
-      - /dev:/dev
-      - /var/run/dbus:/var/run/dbus
+  # brew_ble:
+  #   build: service-ble
+  #   hostname: brew_ble
+  #   networks:
+  #     - brew_net
+  #   restart: always
+  #   privileged: true
+  #   environment:
+  #     MIN_INTERVAL: 300
+  #   volumes:
+  #     - /dev:/dev
+  #     - /var/run/dbus:/var/run/dbus
 
 networks:
   brew_net:

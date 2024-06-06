@@ -12,7 +12,7 @@ def generate_api_key(key_length):
     return api_key
 
 class Settings(BaseSettings):
-    version: str = "0.4.0"
+    version: str = "0.5.0"
     app_name: str = "BrewLogger API"
     database_url: str = config("DATABASE_URL", cast=str, default="sqlite:///./brewlogger.sqlite")
     api_key: str = config("API_KEY", cast=str, default="")

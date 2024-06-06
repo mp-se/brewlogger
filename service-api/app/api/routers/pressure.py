@@ -170,7 +170,8 @@ async def create_pressure_using_json(
             rssi = json["rssi"],
             run_time = json["run-time"],
             batch_id = batchList[0].id,
-            created = datetime.now()
+            created = datetime.now(),
+            active = True
         )
 
         if json["temp_units"] == 'F':

@@ -76,6 +76,7 @@ class GravityBase(BaseModel):
     corr_gravity: float = Field(description="Temperature corrected gravity")
     run_time: float = Field(description="Number of seconds the execution took")
     created: Optional[datetime] | None = Field(default=None, description="If undefined the current time will be used")
+    active: bool = Field(description="If the gravity is active or not, active = shown in graphs")
 
 class GravityUpdate(GravityBase):
     pass
@@ -98,6 +99,7 @@ class PressureBase(BaseModel):
     rssi: float = Field(description="WIFI signal strenght")
     run_time: float = Field(description="Number of seconds the execution took")
     created: Optional[datetime] | None = Field(default=None, description="If undefined the current time will be used")
+    active: bool = Field(description="If the pressure is active or not, active = shown in graphs")
 
 class PressureUpdate(PressureBase):
     pass
@@ -116,6 +118,7 @@ class PourBase(BaseModel):
     pour: float = Field(description="How much was poured from the device")
     volume: float = Field(description="Total volume left in the device")
     created: Optional[datetime] | None = Field(default=None, description="If undefined the current time will be used")
+    active: bool = Field(description="If the pour is active or not, active = shown in graphs")
 
 class PourUpdate(PourBase):
     pass
