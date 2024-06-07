@@ -158,13 +158,13 @@ const infoOG = ref(null)
 const infoFG = ref(null)
 
 watch(infoFirstDay, async (selected, previous) => {
-  logDebug("BatchGravityView.watch(infoFirstDay)", selected)
+  logDebug("BatchGravityGraphView.watch(infoFirstDay)", selected)
   chart.options.scales.x.min = selected
   chart.update()
 })
 
 watch(infoLastDay, async (selected, previous) => {
-  logDebug("BatchGravityView.watch(infoLastDay)", selected)
+  logDebug("BatchGravityGraphView.watch(infoLastDay)", selected)
   chart.options.scales.x.max = selected
   chart.update()
 })
@@ -285,7 +285,7 @@ const chartOptions = ref({
 })
 
 onMounted(() => {
-  logDebug("BatchGravityView.onMounted()")
+  logDebug("BatchGravityGraphView.onMounted()")
 
   ChartJS.register(Legend, LinearScale, TimeScale, PointElement, LineController, LineElement, zoomPlugin)
 
@@ -294,7 +294,7 @@ onMounted(() => {
   gravityStore.getGravityListForBatch(router.currentRoute.value.params.id, (success, gl) => {
     if (success) {
       gravityList.value = gl
-      logDebug("BatchGravityView.onMounted()", gravityList.value)
+      logDebug("BatchGravityGraphView.onMounted()", gravityList.value)
 
       // Calculate statistics for the full dataset
       gravityStats.value = getGravityDataAnalytics(gravityList.value)
@@ -307,19 +307,19 @@ onMounted(() => {
       updateDataset()
 
       try {
-        logDebug("BatchGravityView.onMounted()", chartOptions.value)
+        logDebug("BatchGravityGraphView.onMounted()", chartOptions.value)
 
         if (document.getElementById('gravityChart') == null) {
-          logError("BatchGravityView.onMounted()", "Unable to find the chart canvas")
+          logError("BatchGravityGraphView.onMounted()", "Unable to find the chart canvas")
         } else {
           // Create the chart
           scaleOptions.value.x.min = infoFirstDay.value
           scaleOptions.value.x.max = infoLastDay.value
           chart = new ChartJS(document.getElementById('gravityChart'), chartOptions.value)
-          logDebug("BatchGravityView.onMounted()", chart)
+          logDebug("BatchGravityGraphView.onMounted()", chart)
         }
       } catch (err) {
-        logDebug("BatchGravityView.onMounted()", err)
+        logDebug("BatchGravityGraphView.onMounted()", err)
       }
     } else {
       // global.messageError = "Failed to load gravity " + id
@@ -328,7 +328,7 @@ onMounted(() => {
 })
 
 function apply() {
-  logDebug("BatchGravityView.apply()")
+  logDebug("BatchGravityGraphView.apply()")
 
   // Sort the gravity data so its in date order
   // gravityList.value.sort((a, b) => Date.parse(a.created) - Date.parse(b.created))
@@ -361,7 +361,7 @@ function apply() {
 }
 
 function updateDataset() {
-  logDebug("BatchGravityView.updateDataset()")
+  logDebug("BatchGravityGraphView.updateDataset()")
 
   if (gravityList.value == null)
     return
@@ -390,7 +390,7 @@ function updateDataset() {
 }
 
 function filter24h() {
-  logDebug("BatchGravityView.filter24h()")
+  logDebug("BatchGravityGraphView.filter24h()")
 
   var d = Date.parse(gravityStats.value.date.last.substring(0, 10)) - (86400000 * 1)
   infoFirstDay.value = new Date(d).toISOString().substring(0, 10)
@@ -399,7 +399,7 @@ function filter24h() {
 }
 
 function filter48h() {
-  logDebug("BatchGravityView.filter48h()")
+  logDebug("BatchGravityGraphView.filter48h()")
 
   var d = Date.parse(gravityStats.value.date.last.substring(0, 10)) - (86400000 * 2)
   infoFirstDay.value = new Date(d).toISOString().substring(0, 10)
@@ -408,7 +408,7 @@ function filter48h() {
 }
 
 function filter7d() {
-  logDebug("BatchGravityView.filter7d()")
+  logDebug("BatchGravityGraphView.filter7d()")
 
   var d = Date.parse(gravityStats.value.date.last.substring(0, 10)) - (86400000 * 7)
   infoFirstDay.value = new Date(d).toISOString().substring(0, 10)
@@ -417,7 +417,7 @@ function filter7d() {
 }
 
 function filterAll() {
-  logDebug("BatchGravityView.filterAll()")
+  logDebug("BatchGravityGraphView.filterAll()")
 
   infoFirstDay.value = gravityStats.value.date.first.substring(0, 10)
   infoLastDay.value = gravityStats.value.date.last.substring(0, 10)
@@ -429,7 +429,7 @@ function filterAll() {
 }
 
 function filterDownsampleLTTB() {
-  logDebug("BatchGravityView.filterDownsampleLTTB()")
+  logDebug("BatchGravityGraphView.filterDownsampleLTTB()")
 
   var count = chart.data.datasets[0].data.length / 2
   chart.data.datasets[0].data = applyLTTB(chart.data.datasets[0].data, count)
@@ -439,7 +439,7 @@ function filterDownsampleLTTB() {
 }
 
 function filterDownsampleLTD() {
-  logDebug("BatchGravityView.filterDownsampleLTD()")
+  logDebug("BatchGravityGraphView.filterDownsampleLTD()")
 
   var count = chart.data.datasets[0].data.length / 2
   chart.data.datasets[0].data = applyLTD(chart.data.datasets[0].data, count)
@@ -449,7 +449,7 @@ function filterDownsampleLTD() {
 }
 
 function filterKalman() {
-  logDebug("BatchGravityView.filterKalman()")
+  logDebug("BatchGravityGraphView.filterKalman()")
 
   chart.data.datasets[0].data = applyKalman(chart.data.datasets[0].data)
   chart.data.datasets[1].data = applyKalman(chart.data.datasets[1].data)
@@ -458,7 +458,7 @@ function filterKalman() {
 }
 
 function applyLTTB(input, points) {
-  logDebug("BatchGravityView.applyLTTB()")
+  logDebug("BatchGravityGraphView.applyLTTB()")
 
   var data = []
 
@@ -479,7 +479,7 @@ function applyLTTB(input, points) {
 }
 
 function applyLTD(input, points) {
-  logDebug("BatchGravityView.applyLTD()")
+  logDebug("BatchGravityGraphView.applyLTD()")
 
   var data = []
 
@@ -501,7 +501,7 @@ function applyLTD(input, points) {
 }
 
 function applyKalman(input) {
-  logDebug("BatchGravityView.applyKalman()")
+  logDebug("BatchGravityGraphView.applyKalman()")
 
   var data = []
 
