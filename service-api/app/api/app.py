@@ -5,8 +5,10 @@ from api.routers import pour as apiPour
 from api.routers import gravity as apiGravity
 from api.routers import pressure as apiPressure
 from api.routers import setting as apiSetting
-from fastapi import FastAPI
+from fastapi import FastAPI, Request, status
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
+from fastapi.exceptions import RequestValidationError
 from .config import get_settings
 from contextlib import asynccontextmanager
 from .utils import load_settings
@@ -57,4 +59,12 @@ def create_app() -> FastAPI:
     app.include_router(apiPour.router)
     app.include_router(apiSetting.router)
 
+    @app.exception_handler(RequestValidationError)
+    async def validation_exception_handler(request: Request, exc: RequestValidationError):
+        exc_str = f'{exc}'.replace('\n', ' ').replace('   ', ' ')
+        logging.error(f"{request}: {exc_str}")
+        content = {'status_code': 10422, 'message': exc_str, 'data': None}
+        return JSONResponse(content=content, status_code=status.HTTP_422_UNPROCESSABLE_ENTITY)
+
     return app
+
