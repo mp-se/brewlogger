@@ -39,10 +39,10 @@
 
       <div class="row gy-2">
         <div class="col-md-2">
-          <BsInputDate v-model="infoFirstDay" label="First date" :disabled="global.disabled"></BsInputDate>
+          <BsInputDate v-model="infoFirstDay" label="Filter first" :disabled="global.disabled"></BsInputDate>
         </div>
         <div class="col-md-2">
-          <BsInputDate v-model="infoLastDay" label="Last date" :disabled="global.disabled"></BsInputDate>
+          <BsInputDate v-model="infoLastDay" label="Filter last" :disabled="global.disabled"></BsInputDate>
         </div>
         <div class="col-md-2">
           <BsInputNumber v-model="infoOG" label="Filter OG" step="0.001" :disabled="global.disabled"></BsInputNumber>
@@ -50,14 +50,14 @@
         <div class="col-md-2">
           <BsInputNumber v-model="infoFG" label="Filter FG" step="0.001" :disabled="global.disabled"></BsInputNumber>
         </div>
-        <div class="col-md-1">
+        <div class="col-md-2">
           <BsInputBase label="&nbsp;"><button @click="apply()" type="button" class="btn btn-secondary btn-sm" :disabled="global.disabled">
-              Apply
-            </button></BsInputBase>
+              Apply Filter
+            </button></BsInputBase>&nbsp;
         </div>
-        <div class="col-md-1">
+        <div class="col-md-2">
           <BsInputBase label="&nbsp;"><button @click="activateAll()" type="button" class="btn btn-secondary btn-sm" :disabled="global.disabled">
-              Activate All
+              All active
             </button></BsInputBase>
         </div>
       </div>

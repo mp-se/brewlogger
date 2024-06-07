@@ -118,10 +118,10 @@ export function getGravityDataAnalytics(gravityList) {
   stats.temperature.max = config.isTempC ? stats.temperature.max : tempToF(stats.temperature.max)
 
   stats.abvString = new Number(stats.abv).toFixed(2) + " %"
-  stats.gravity.minString = new Number(stats.gravity.min).toFixed(3)
-  stats.gravity.maxString = new Number(stats.gravity.max).toFixed(3)
-  stats.temperature.minString = new Number(stats.temperature.min).toFixed(2)
-  stats.temperature.maxString = new Number(stats.temperature.max).toFixed(2)
+  stats.gravity.minString = new Number(stats.gravity.min).toFixed(3) + (config.isGravitySG ? ' SG' : ' P')
+  stats.gravity.maxString = new Number(stats.gravity.max).toFixed(3) + (config.isGravitySG ? ' SG' : ' P')
+  stats.temperature.minString = new Number(stats.temperature.min).toFixed(2) + (config.isTempC ? ' C' : ' F')
+  stats.temperature.maxString = new Number(stats.temperature.max).toFixed(2) + (config.isTempC ? ' C' : ' F')
 
   if (gList.length) {
     stats.date.first = gList[0].created
