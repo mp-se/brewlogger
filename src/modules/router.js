@@ -9,7 +9,8 @@ import DeviceListView from '@/views/DeviceListView.vue'
 import DeviceBatchView from '@/views/DeviceBatchView.vue'
 import BatchView from '@/views/BatchView.vue'
 import BatchListView from '@/views/BatchListView.vue'
-import BatchGravityView from '@/views/BatchGravityView.vue'
+import BatchGravityListView from '@/views/BatchGravityListView.vue'
+import BatchGravityGraphView from '@/views/BatchGravityGraphView.vue'
 import BatchPressureView from '@/views/BatchPressureView.vue'
 import AboutView from '@/views/AboutView.vue'
 import SettingsView from '@/views/SettingsView.vue'
@@ -56,9 +57,14 @@ const routes = [
     component: BatchView
   },
   {
+    path: '/batch/:id/gravity/graph',
+    name: 'batch-gravity-graph',
+    component: BatchGravityGraphView
+  },
+  {
     path: '/batch/:id/gravity',
-    name: 'batch-gravity',
-    component: BatchGravityView
+    name: 'batch-gravity-list',
+    component: BatchGravityListView
   },
   {
     path: '/batch/:id/pressure',

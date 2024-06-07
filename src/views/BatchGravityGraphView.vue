@@ -1,37 +1,48 @@
 <template>
   <div class="container">
     <p></p>
-    <p class="h3">Batch Gravity</p>
+    <p class="h3">Batch Gravity Graph</p>
     <hr>
 
     <div class="row">
 
-      <div class="col-md-12">
-        <div class="row">
-          <div class="col-md-1">
-            <BsInputReadonly v-model="infoOG" label="OG"></BsInputReadonly>
+      <template v-if="gravityStats != null">
+        <div class="col-md-12">
+          <div class="row">
+            <div class="col-md-1">
+              <BsInputReadonly v-model="gravityStats.gravity.maxString" label="OG"></BsInputReadonly>
+            </div>
+            <div class="col-md-1">
+              <BsInputReadonly v-model="gravityStats.gravity.minString" label="FG"></BsInputReadonly>
+            </div>
+            <div class="col-md-1">
+              <BsInputReadonly v-model="gravityStats.abvString" label="ABV"></BsInputReadonly>
+            </div>
+            <div class="col-md-1">
+              <BsInputReadonly v-model="gravityStats.temperature.maxString" label="Temp"></BsInputReadonly>
+            </div>
+            <div class="col-md-1">
+              <BsInputReadonly v-model="gravityStats.temperature.minString" label="Temp"></BsInputReadonly>
+            </div>
+            <div class="col-md-1">
+              <BsInputReadonly v-model="gravityStats.readings" label="#"></BsInputReadonly>
+            </div>
+            <div class="col-md-1">
+              <BsInputReadonly v-model="gravityStats.date.firstDate" label="First date"></BsInputReadonly>
+            </div>
+            <div class="col-md-1">
+              <BsInputReadonly v-model="gravityStats.date.lastDate" label="Last date"></BsInputReadonly>
+            </div>
           </div>
-          <div class="col-md-1">
-            <BsInputReadonly v-model="infoFG" label="FG"></BsInputReadonly>
-          </div>
-          <div class="col-md-1">
-            <BsInputReadonly v-model="infoABV" label="ABV"></BsInputReadonly>
-          </div>
-          <div class="col-md-1">
-            <BsInputReadonly v-model="infoHighTemp" label="Temp"></BsInputReadonly>
-          </div>
-          <div class="col-md-1">
-            <BsInputReadonly v-model="infoLowTemp" label="Temp"></BsInputReadonly>
-          </div>
-          <div class="col-md-1">
-            <BsInputReadonly v-model="infoReadings" label="#"></BsInputReadonly>
-          </div>
-          <div class="col-md-2">
-            <BsInputReadonly v-model="infoFirstDay" label="First date"></BsInputReadonly>
-          </div>
-          <div class="col-md-2">
-            <BsInputReadonly v-model="infoLastDay" label="Last date"></BsInputReadonly>
-          </div>
+        </div>
+      </template>
+
+      <div class="row">
+        <div class="col-md-2">
+          <BsInputDate v-model="infoFirstDay" label="First date"></BsInputDate>
+        </div>
+        <div class="col-md-2">
+          <BsInputDate v-model="infoLastDay" label="Last date"></BsInputDate>
         </div>
       </div>
 
@@ -83,7 +94,7 @@
       </div>
     </div>
 
-    <template v-if="gravity != null">
+    <template v-if="gravityList != null">
 
       <div class="row gy-2">
         <div class="col-md-12">
@@ -119,31 +130,38 @@
 </template>
 
 <script setup>
-import { onMounted, ref, computed } from "vue"
+import { onMounted, ref, computed, watch } from "vue"
 import { Chart as ChartJS, Tooltip, Legend, LinearScale, TimeScale, LineController, PointElement, LineElement } from 'chart.js'
 import 'date-fns'
 import 'chartjs-adapter-date-fns'
 import zoomPlugin from 'chartjs-plugin-zoom'
 import { config, gravityStore } from "@/modules/pinia"
 import { router } from '@/modules/router'
-import { gravityToPlato, tempToF, abv } from "@/modules/utils"
+import { gravityToPlato, tempToF, getGravityDataAnalytics } from "@/modules/utils"
 import { logDebug, logError, logInfo } from '@/modules/logger'
 import { ASAP, SMA, LTOB, LTTB, LTD } from 'downsample';
 import { KalmanFilter } from 'kalman-filter'
 
-var chart = null // Do not use ref for this points, will cause stack overflow...
+var chart = null // Do not use ref for this, will cause stack overflow...
 
-const infoFG = computed(() => { return new Number(statisticData.value.gravity.min).toFixed(3) })
-const infoOG = computed(() => { return new Number(statisticData.value.gravity.max).toFixed(3) })
-const infoABV = computed(() => { return new Number(statisticData.value.abv).toFixed(2) + '%' })
-const infoLowTemp = computed(() => { return new Number(statisticData.value.temperature.min).toFixed(2) + config.tempUnit })
-const infoHighTemp = computed(() => { return new Number(statisticData.value.temperature.max).toFixed(2) + config.tempUnit })
-const infoFirstDay = computed(() => { return statisticData.value.date.first.substring(0, 10) })
-const infoLastDay = computed(() => { return statisticData.value.date.last.substring(0, 10) })
-const infoReadings = computed(() => { return statisticData.value.readings })
+const infoFirstDay = ref(null)
+const infoLastDay = ref(null)
 
-const gravity = ref(null)
-const statisticData = ref({
+watch(infoFirstDay, async (selected, previous) => {
+  logDebug("BatchGravityView.watch(infoFirstDay)", selected)
+  chart.options.scales.x.min = selected
+  chart.update()
+})
+
+watch(infoLastDay, async (selected, previous) => {
+  logDebug("BatchGravityView.watch(infoLastDay)", selected)
+  chart.options.scales.x.max = selected
+  chart.update()
+})
+
+const gravityList = ref(null)
+const gravityStats = ref(null)
+/*const statisticData = ref({
   gravity: {
     min: 0, // FG
     max: 0, // OG
@@ -158,7 +176,8 @@ const statisticData = ref({
     last: "",
   },
   readings: 0,
-})
+})*/
+
 const gravityData = ref([])
 //const pressureData = ref([])
 const batteryData = ref([])
@@ -274,15 +293,18 @@ const chartOptions = ref({
 onMounted(() => {
   logDebug("BatchGravityView.onMounted()")
 
-  //ChartJS.register(Legend, Tooltip, LinearScale, TimeScale, PointElement, LineController, LineElement, zoomPlugin)
   ChartJS.register(Legend, LinearScale, TimeScale, PointElement, LineController, LineElement, zoomPlugin)
 
-  gravity.value = null
+  gravityList.value = null
 
   gravityStore.getGravityListForBatch(router.currentRoute.value.params.id, (success, gl) => {
     if (success) {
-      gravity.value = gl
-      logDebug(gravity.value)
+      gravityList.value = gl
+      logDebug(gravityList.value)
+      gravityStats.value = getGravityDataAnalytics(gravityList.value)
+
+      infoFirstDay.value = gravityStats.value.date.firstDate
+      infoLastDay.value = gravityStats.value.date.lastDate
       updateDataset()
 
       try {
@@ -292,8 +314,8 @@ onMounted(() => {
           logError("BatchGravityView.onMounted()", "Unable to find the chart canvas")
         } else {
           // Create the chart
-          scaleOptions.value.x.min = statisticData.value.date.first
-          scaleOptions.value.x.max = statisticData.value.date.last
+          scaleOptions.value.x.min = infoFirstDay.value
+          scaleOptions.value.x.max = infoLastDay.value
           chart = new ChartJS(document.getElementById('gravityChart'), chartOptions.value)
           logDebug("BatchGravityView.onMounted()", chart)
         }
@@ -309,19 +331,16 @@ onMounted(() => {
 function updateDataset() {
   logDebug("BatchGravityView.updateDataset()")
 
-  if (gravity.value == null)
+  // TODO: Move this to a shared function to analyse a data set
+
+  if (gravityList.value == null)
     return
 
-  var minGravity = 2.0
-  var maxGravity = 0.0
-  var minTemperature = 100.0
-  var maxTemperature = -100.0
-
   // Sort the gravity data so its in date order
-  gravity.value.sort((a, b) => Date.parse(a.created) - Date.parse(b.created))
+  gravityList.value.sort((a, b) => Date.parse(a.created) - Date.parse(b.created))
 
   // Process the gravity readings
-  gravity.value.forEach(g => {
+  gravityList.value.forEach(g => {
     // Validate the datapoints if they are withing reasonable 
     var valid = false
 
@@ -329,78 +348,52 @@ function updateDataset() {
       valid = true
 
     if (valid) {
-      // Calculate some statistics for gravity and temperature
-      if (g.gravity > maxGravity)
-        maxGravity = g.gravity
-      if (g.gravity < minGravity)
-        minGravity = g.gravity
-
-      if (g.temperature > maxTemperature)
-        maxTemperature = g.temperature
-      if (g.temperature < minTemperature)
-        minTemperature = g.temperature
-
       // Map the attributes into datasets
       var gravity = config.isGravitySG ? g.gravity : gravityToPlato(g.gravity)
       var temperature = config.isTempC ? g.temperature : tempToF(g.temperature)
-
-      //logDebug(g.created, g.gravity, g.battery, g.temperature)
 
       gravityData.value.push({ x: g.created, y: gravity })
       batteryData.value.push({ x: g.created, y: g.battery })
       temperatureData.value.push({ x: g.created, y: temperature })
     }
   })
-
-  statisticData.value.gravity.min = config.isGravitySG ? minGravity : gravityToPlato(minGravity)
-  statisticData.value.gravity.max = config.isGravitySG ? maxGravity : gravityToPlato(maxGravity)
-  statisticData.value.temperature.min = config.isTempC ? minTemperature : tempToF(minTemperature)
-  statisticData.value.temperature.max = config.isTempC ? maxTemperature : tempToF(maxTemperature)
-  statisticData.value.abv = abv(maxGravity, minGravity)
-  statisticData.value.readings = gravity.value.length
-
-  logDebug(statisticData.value.gravity.min, statisticData.value.gravity.max)
-
-  if (gravity.value.length) {
-    statisticData.value.date.first = gravity.value[0].created
-    statisticData.value.date.last = gravity.value[gravity.value.length - 1].created
-  }
-
-  logDebug("BatchGravityView.updateDataset()", statisticData.value)
 }
 
 function filter24h() {
   logDebug("BatchGravityView.filter24h()")
 
-  chart.options.scales.x.min = Date.parse(statisticData.value.date.last) - 86400000
-  chart.options.scales.x.max = Date.parse(statisticData.value.date.last)
+  var d = Date.parse(gravityStats.value.date.last.substring(0, 10)) - (86400000 * 1)
+  infoFirstDay.value = new Date(d).toISOString().substring(0, 10)
+  chart.options.scales.x.max = Date.parse(gravityStats.value.date.last)
   chart.update()
 }
 
 function filter48h() {
   logDebug("BatchGravityView.filter48h()")
 
-  chart.options.scales.x.min = Date.parse(statisticData.value.date.last) - (86400000 * 2)
-  chart.options.scales.x.max = Date.parse(statisticData.value.date.last)
+  var d = Date.parse(gravityStats.value.date.last.substring(0, 10)) - (86400000 * 2)
+  infoFirstDay.value = new Date(d).toISOString().substring(0, 10)
+  chart.options.scales.x.max = Date.parse(gravityStats.value.date.last)
   chart.update()
 }
 
 function filter7d() {
   logDebug("BatchGravityView.filter7d()")
 
-  chart.options.scales.x.min = Date.parse(statisticData.value.date.last) - (86400000 * 7)
-  chart.options.scales.x.max = Date.parse(statisticData.value.date.last)
+  var d = Date.parse(gravityStats.value.date.last.substring(0, 10)) - (86400000 * 7)
+  infoFirstDay.value = new Date(d).toISOString().substring(0, 10)
+  infoLastDay.value = gravityStats.value.date.last.substring(0, 10)
   chart.update()
 }
 
 function filterAll() {
   logDebug("BatchGravityView.filterAll()")
 
-  chart.options.scales.x.min = Date.parse(statisticData.value.date.first)
-  chart.options.scales.x.max = Date.parse(statisticData.value.date.last)
+  infoFirstDay.value = gravityStats.value.date.first.substring(0, 10)
+  infoLastDay.value = gravityStats.value.date.last.substring(0, 10)
 
   chart.data.datasets[0].data = gravityData.value
-  chart.data.datasets[1].data = temperatureData.value 
+  chart.data.datasets[1].data = temperatureData.value
   chart.data.datasets[2].data = batteryData.value
   chart.update()
 }
@@ -412,12 +405,6 @@ function filterDownsampleLTTB() {
   chart.data.datasets[0].data = applyLTTB(chart.data.datasets[0].data, count)
   chart.data.datasets[1].data = applyLTTB(chart.data.datasets[1].data, count)
   chart.data.datasets[2].data = applyLTTB(chart.data.datasets[2].data, count)
-  /*
-  var count = statisticData.value.readings / 2
-  chart.data.datasets[0].data = applyLTTB(gravityData.value, count)
-  chart.data.datasets[1].data = applyLTTB(temperatureData.value, count)
-  chart.data.datasets[2].data = applyLTTB(batteryData.value, count)
-  */
   chart.update()
 }
 
@@ -428,12 +415,6 @@ function filterDownsampleLTD() {
   chart.data.datasets[0].data = applyLTD(chart.data.datasets[0].data, count)
   chart.data.datasets[1].data = applyLTD(chart.data.datasets[1].data, count)
   chart.data.datasets[2].data = applyLTD(chart.data.datasets[2].data, count)
-  /*
-  var count = statisticData.value.readings / 4
-  chart.data.datasets[0].data = applyLTD(gravityData.value, count)
-  chart.data.datasets[1].data = applyLTD(temperatureData.value, count)
-  chart.data.datasets[2].data = applyLTD(batteryData.value, count)
-  */
   chart.update()
 }
 
@@ -441,13 +422,8 @@ function filterKalman() {
   logDebug("BatchGravityView.filterKalman()")
 
   chart.data.datasets[0].data = applyKalman(chart.data.datasets[0].data)
-  chart.data.datasets[1].data = applyKalman(chart.data.datasets[1].data) 
-  chart.data.datasets[2].data = applyKalman(chart.data.datasets[2].data) 
-  /*
-  chart.data.datasets[0].data = applyKalman(gravityData.value)
-  chart.data.datasets[1].data = applyKalman(temperatureData.value) 
-  chart.data.datasets[2].data = applyKalman(batteryData.value) 
-  */
+  chart.data.datasets[1].data = applyKalman(chart.data.datasets[1].data)
+  chart.data.datasets[2].data = applyKalman(chart.data.datasets[2].data)
   chart.update()
 }
 

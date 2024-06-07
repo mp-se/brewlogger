@@ -50,20 +50,17 @@
             <button type="button" class="btn btn-danger btn-sm" @click.prevent="deleteBatch(b.id, b.name)"><i
                 class="bi bi-file-x"></i></button>&nbsp;
             <template v-if="b.gravityCount > 0">
-              <router-link :to="{ name: 'batch-gravity', params: { id: b.id } }">
+              <router-link :to="{ name: 'batch-gravity-graph', params: { id: b.id } }">
                 <button type="button" class="btn btn-success btn-sm"><i class="bi bi-graph-down"></i></button>
+              </router-link>&nbsp;
+              <router-link :to="{ name: 'batch-gravity-list', params: { id: b.id } }">
+                <button type="button" class="btn btn-success btn-sm"><i class="bi bi-list"></i></button>
               </router-link>&nbsp;
               <button @click="exportBatchJSON(b.id)" type="button" class="btn btn-info btn-sm"><i
                   class="bi bi-filetype-json"></i></button>&nbsp;
               <button @click="exportBatchCSV(b.id)" type="button" class="btn btn-info btn-sm"><i
                   class="bi bi-filetype-csv"></i></button>&nbsp;
             </template>
-
-
-            <!-- 
-              <button type="button" class="btn btn-info btn-sm"><i class="bi bi-eye"></i></button>&nbsp;
-              <button type="button" class="btn btn-dark btn-sm"><i class="bi bi-boxes"></i></button>&nbsp;
-            -->
           </td>
         </tr>
       </tbody>
