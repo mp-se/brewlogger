@@ -28,10 +28,10 @@
               <BsInputReadonly v-model="gravityStats.readings" label="#"></BsInputReadonly>
             </div>
             <div class="col-md-2">
-              <BsInputDate v-model="infoFirstDay" label="First date"></BsInputDate>
+              <BsInputDate v-model="infoFirstDay" label="First date" :disabled="global.disabled"></BsInputDate>
             </div>
             <div class="col-md-2">
-              <BsInputDate v-model="infoLastDay" label="Last date"></BsInputDate>
+              <BsInputDate v-model="infoLastDay" label="Last date" :disabled="global.disabled"></BsInputDate>
             </div>
             <!-- 
             <div class="col-md-1">
@@ -46,13 +46,13 @@
 
       <div class="row">
         <div class="col-md-2">
-          <BsInputNumber v-model="infoOG" label="Filter OG" step="0.001"></BsInputNumber>
+          <BsInputNumber v-model="infoOG" label="Filter OG" step="0.001" :disabled="global.disabled"></BsInputNumber>
         </div>
         <div class="col-md-2">
-          <BsInputNumber v-model="infoFG" label="Filter FG" step="0.001"></BsInputNumber>
+          <BsInputNumber v-model="infoFG" label="Filter FG" step="0.001" :disabled="global.disabled"></BsInputNumber>
         </div>
         <div class="col-md-1">
-          <BsInputBase label="&nbsp;"><button @click="apply()" type="button" class="btn btn-secondary btn-sm">
+          <BsInputBase label="&nbsp;"><button @click="apply()" type="button" class="btn btn-secondary btn-sm" :disabled="global.disabled">
               Apply
             </button></BsInputBase>
         </div>
@@ -66,22 +66,22 @@
           Time
         </div>
         <div class="row p-2">
-          <button @click="filterAll()" type="button" class="btn btn-secondary btn-sm">
+          <button @click="filterAll()" type="button" class="btn btn-secondary btn-sm" :disabled="global.disabled">
             All
           </button>
         </div>
         <div class="row p-2">
-          <button @click="filter24h()" type="button" class="btn btn-secondary btn-sm">
+          <button @click="filter24h()" type="button" class="btn btn-secondary btn-sm" :disabled="global.disabled">
             24h
           </button>
         </div>
         <div class="row p-2">
-          <button @click="filter48h()" type="button" class="btn btn-secondary btn-sm">
+          <button @click="filter48h()" type="button" class="btn btn-secondary btn-sm" :disabled="global.disabled">
             48h
           </button>
         </div>
         <div class="row p-2">
-          <button @click="filter7d()" type="button" class="btn btn-secondary btn-sm">
+          <button @click="filter7d()" type="button" class="btn btn-secondary btn-sm" :disabled="global.disabled">
             7d
           </button>
         </div>
@@ -89,17 +89,17 @@
           Filters
         </div>
         <div class="row p-2">
-          <button @click="filterDownsampleLTTB()" type="button" class="btn btn-secondary btn-sm">
+          <button @click="filterDownsampleLTTB()" type="button" class="btn btn-secondary btn-sm" :disabled="global.disabled">
             LTTB
           </button>
         </div>
         <div class="row p-2">
-          <button @click="filterDownsampleLTD()" type="button" class="btn btn-secondary btn-sm">
+          <button @click="filterDownsampleLTD()" type="button" class="btn btn-secondary btn-sm" :disabled="global.disabled">
             LTD
           </button>
         </div>
         <div class="row p-2">
-          <button @click="filterKalman()" type="button" class="btn btn-secondary btn-sm">
+          <button @click="filterKalman()" type="button" class="btn btn-secondary btn-sm" :disabled="global.disabled">
             Kalman
           </button>
         </div>
@@ -143,7 +143,7 @@ import { Chart as ChartJS, Tooltip, Legend, LinearScale, TimeScale, LineControll
 import 'date-fns'
 import 'chartjs-adapter-date-fns'
 import zoomPlugin from 'chartjs-plugin-zoom'
-import { config, gravityStore } from "@/modules/pinia"
+import { config, gravityStore, global } from "@/modules/pinia"
 import { router } from '@/modules/router'
 import { gravityToPlato, tempToF, getGravityDataAnalytics } from "@/modules/utils"
 import { logDebug, logError, logInfo } from '@/modules/logger'
@@ -339,7 +339,7 @@ function apply() {
   var gList = []
 
   gravityList.value.forEach(g => {
-    if (g.gravity > infoFG.value && g.gravity < infoOG.value) {
+    if (g.active && g.gravity > infoFG.value && g.gravity < infoOG.value) {
       // Map the attributes into datasets
       var gravity = config.isGravitySG ? g.gravity : gravityToPlato(g.gravity)
       var temperature = config.isTempC ? g.temperature : tempToF(g.temperature)
@@ -371,13 +371,7 @@ function updateDataset() {
 
   // Process the gravity readings
   gravityList.value.forEach(g => {
-    // Validate the datapoints if they are withing reasonable 
-    var valid = false
-
-    if (g.gravity > 1.0 && g.gravity < 1.1)
-      valid = true
-
-    if (valid) {
+    if (g.active) {
       // Map the attributes into datasets
       var gravity = config.isGravitySG ? g.gravity : gravityToPlato(g.gravity)
       var temperature = config.isTempC ? g.temperature : tempToF(g.temperature)

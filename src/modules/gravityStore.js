@@ -23,7 +23,8 @@ export class Gravity {
 
     toJson() {
         return {
-            "id": this.id,
+            // "id": this.id,
+            //"batchId": this.batchId,
             "temperature": this.temperature,
             "gravity": this.gravity,
             "angle": this.angle,
@@ -32,7 +33,6 @@ export class Gravity {
             "corrGravity": this.corrGravity,
             "runTime": this.runTime,
             "created": this.created,
-            "batchId": this.batchId,
             "active": this.active,
         }
     }
@@ -97,6 +97,33 @@ export const useGravityStore = defineStore('gravityStore', {
                     global.disabled = false
                     logError("gravityStore.getGravityListForBatch()", err)
                     callback(false, [])
+                })
+        },
+        updateGravity(g, callback) {
+            // callback => (success)
+
+            logDebug("gravityStore.updateGravity()", JSON.stringify(g.toJson()))
+            global.disabled = true
+            fetch(global.baseURL + 'api/gravity/' + g.id, {
+                method: "PATCH",
+                headers: { "Content-Type": "application/json", "Authorization": global.token },
+                body: JSON.stringify(g.toJson()),
+                signal: AbortSignal.timeout(global.fetchTimout),
+            })
+                .then(res => {
+                    global.disabled = false
+                    logDebug("gravityStore.updateGravity()", res.status)
+                    if (res.status != 200) {
+                        callback(false)
+                    }
+                    else {
+                        callback(true)
+                    }
+                })
+                .catch(err => {
+                    logError("gravityStore.updateGravity()", err)
+                    callback(false)
+                    global.disabled = false
                 })
         },
     }

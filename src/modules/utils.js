@@ -62,6 +62,8 @@ export function download(content, mimeType, filename) {
 export function getGravityDataAnalytics(gravityList) {
   logDebug("utils.getGravityDataAnalytics()", gravityList)
 
+  var gList = []
+
   var stats = {
     gravity: {
       min: 2.0, // FG
@@ -85,7 +87,7 @@ export function getGravityDataAnalytics(gravityList) {
       firstTime: "",
       lastTime: "",
     },
-    readings: gravityList.length,
+    readings: 0,
   }
 
   // Sort the gravity data so its in date order
@@ -93,13 +95,9 @@ export function getGravityDataAnalytics(gravityList) {
 
   // Process the gravity readings
   gravityList.forEach(g => {
-    // Validate the datapoints if they are withing reasonable 
-    var valid = false
+    if (g.active) {
+      gList.push(g)
 
-    if (g.gravity > 1.0 && g.gravity < 1.1)
-      valid = true
-
-    if (valid) {
       // Calculate some statistics for gravity and temperature
       if (g.gravity > stats.gravity.max)
         stats.gravity.max = g.gravity
@@ -119,15 +117,15 @@ export function getGravityDataAnalytics(gravityList) {
   stats.temperature.min = config.isTempC ? stats.temperature.min : tempToF(stats.temperature.min)
   stats.temperature.max = config.isTempC ? stats.temperature.max : tempToF(stats.temperature.max)
 
+  stats.abvString = new Number(stats.abv).toFixed(2) + " %"
   stats.gravity.minString = new Number(stats.gravity.min).toFixed(3)
   stats.gravity.maxString = new Number(stats.gravity.max).toFixed(3)
   stats.temperature.minString = new Number(stats.temperature.min).toFixed(2)
   stats.temperature.maxString = new Number(stats.temperature.max).toFixed(2)
-  stats.abvString = new Number(stats.abv).toFixed(2) + " %"
 
-  if (gravityList.length) {
-    stats.date.first = gravityList[0].created
-    stats.date.last = gravityList[gravityList.length - 1].created
+  if (gList.length) {
+    stats.date.first = gList[0].created
+    stats.date.last = gList[gList.length - 1].created
 
     stats.date.firstDate = stats.date.first.substring(0, 10)
     stats.date.lastDate = stats.date.last.substring(0, 10)
@@ -135,6 +133,8 @@ export function getGravityDataAnalytics(gravityList) {
     stats.date.firstTime = stats.date.first.substring(11, 19)
     stats.date.lastTime = stats.date.last.substring(11, 19)
   }
+
+  stats.readings = gList.length
 
   logDebug("utils.getGravityDataAnalytics()", stats)
   return stats
