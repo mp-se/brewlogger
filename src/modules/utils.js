@@ -113,11 +113,11 @@ export function getGravityDataAnalytics(gravityList) {
     }
   })
 
+  stats.abv = abv(stats.gravity.max, stats.gravity.min)
   stats.gravity.min = config.isGravitySG ? stats.gravity.min : gravityToPlato(stats.gravity.min)
   stats.gravity.max = config.isGravitySG ? stats.gravity.max : gravityToPlato(stats.gravity.max)
   stats.temperature.min = config.isTempC ? stats.temperature.min : tempToF(stats.temperature.min)
   stats.temperature.max = config.isTempC ? stats.temperature.max : tempToF(stats.temperature.max)
-  stats.abv = abv(stats.gravity.max, stats.gravity.min)
 
   stats.gravity.minString = new Number(stats.gravity.min).toFixed(3)
   stats.gravity.maxString = new Number(stats.gravity.max).toFixed(3)

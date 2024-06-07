@@ -42,12 +42,12 @@
           <tr>
             <th scope="col" class="col-sm-1">ID</th>
             <th scope="col" class="col-sm-2">Date</th>
-            <th scope="col" class="col-sm-1">Gravity</th>
+            <th scope="col" class="col-sm-1">Gravity ({{ config.isGravitySG ? "SG" : "P" }})</th>
             <th scope="col" class="col-sm-1">Angle</th>
-            <th scope="col" class="col-sm-1">Temperature</th>
-            <th scope="col" class="col-sm-1">Battery</th>
+            <th scope="col" class="col-sm-1">Temp ({{ config.isTempC ? "C" : "F" }})</th>
+            <th scope="col" class="col-sm-1">Battery (V)</th>
             <th scope="col" class="col-sm-1">RSSI</th>
-            <th scope="col" class="col-sm-1">Run time</th>
+            <th scope="col" class="col-sm-1">Run time (s)</th>
             <th scope="col" class="col-sm-1">Active</th>
           </tr>
         </thead>
@@ -56,12 +56,12 @@
           <tr v-for="g in gravityList" :key="g.id">
             <th scope="row">{{ g.id }}</th>
             <td>{{ g.created.substring(0, 10) }} {{ g.created.substring(11, 19) }}</td>
-            <td>{{ g.gravity }}</td>
-            <td>{{ g.angle }}</td>
-            <td>{{ g.temperature }}</td>
-            <td>{{ g.battery }}</td>
+            <td>{{ config.isGravitySG ? new Number(g.gravity).toFixed(3) : new Number(gravityToPlato(g.gravity)).toFixed(2)  }}</td>
+            <td>{{ new Number(g.angle).toFixed(2) }}</td>
+            <td>{{ config.isTempC ? new Number(g.temperature).toFixed(2) : new Number(tempToF(g.temperature)).toFixed(2)  }}</td>
+            <td>{{ new Number(g.battery).toFixed(2) }}</td>
             <td>{{ g.rssi }}</td>
-            <td>{{ g.runTime }}</td>
+            <td>{{ new Number(g.runTime).toFixed(2) }}</td>
             <td>{{ g.active }}</td>
           </tr>
         </tbody>
@@ -84,7 +84,7 @@
 import { onMounted, ref, computed, watch } from "vue"
 import { config, gravityStore } from "@/modules/pinia"
 import { router } from '@/modules/router'
-import { getGravityDataAnalytics } from "@/modules/utils"
+import { gravityToPlato, tempToF, getGravityDataAnalytics } from "@/modules/utils"
 import { logDebug, logError, logInfo } from '@/modules/logger'
 
 const gravityList = ref(null)

@@ -27,22 +27,34 @@
             <div class="col-md-1">
               <BsInputReadonly v-model="gravityStats.readings" label="#"></BsInputReadonly>
             </div>
+            <div class="col-md-2">
+              <BsInputDate v-model="infoFirstDay" label="First date"></BsInputDate>
+            </div>
+            <div class="col-md-2">
+              <BsInputDate v-model="infoLastDay" label="Last date"></BsInputDate>
+            </div>
+            <!-- 
             <div class="col-md-1">
               <BsInputReadonly v-model="gravityStats.date.firstDate" label="First date"></BsInputReadonly>
             </div>
             <div class="col-md-1">
               <BsInputReadonly v-model="gravityStats.date.lastDate" label="Last date"></BsInputReadonly>
-            </div>
+            </div>-->
           </div>
         </div>
       </template>
 
       <div class="row">
         <div class="col-md-2">
-          <BsInputDate v-model="infoFirstDay" label="First date"></BsInputDate>
+          <BsInputNumber v-model="infoOG" label="Filter OG" step="0.001"></BsInputNumber>
         </div>
         <div class="col-md-2">
-          <BsInputDate v-model="infoLastDay" label="Last date"></BsInputDate>
+          <BsInputNumber v-model="infoFG" label="Filter FG" step="0.001"></BsInputNumber>
+        </div>
+        <div class="col-md-1">
+          <BsInputBase label="&nbsp;"><button @click="apply()" type="button" class="btn btn-secondary btn-sm">
+              Apply
+            </button></BsInputBase>
         </div>
       </div>
 
@@ -95,11 +107,9 @@
     </div>
 
     <template v-if="gravityList != null">
-
       <div class="row gy-2">
         <div class="col-md-12">
         </div>
-
         <router-link :to="{ name: 'batch-list' }">
           <button type="button" class="btn btn-secondary w-2"> <i class="bi bi-list"></i>
             Batch list
@@ -109,10 +119,8 @@
     </template>
 
     <template v-else>
-
       <BsMessage :dismissable="false" :message="'Unable to find gravity for batch with id ' + $route.params.id"
         alert="danger" />
-
       <div class="row gy-2">
         <div class="col-md-12">
         </div>
@@ -146,6 +154,8 @@ var chart = null // Do not use ref for this, will cause stack overflow...
 
 const infoFirstDay = ref(null)
 const infoLastDay = ref(null)
+const infoOG = ref(null)
+const infoFG = ref(null)
 
 watch(infoFirstDay, async (selected, previous) => {
   logDebug("BatchGravityView.watch(infoFirstDay)", selected)
@@ -161,22 +171,6 @@ watch(infoLastDay, async (selected, previous) => {
 
 const gravityList = ref(null)
 const gravityStats = ref(null)
-/*const statisticData = ref({
-  gravity: {
-    min: 0, // FG
-    max: 0, // OG
-  },
-  temperature: {
-    min: 0,
-    max: 0,
-  },
-  abv: 0,
-  date: {
-    first: "",
-    last: "",
-  },
-  readings: 0,
-})*/
 
 const gravityData = ref([])
 //const pressureData = ref([])
@@ -300,11 +294,16 @@ onMounted(() => {
   gravityStore.getGravityListForBatch(router.currentRoute.value.params.id, (success, gl) => {
     if (success) {
       gravityList.value = gl
-      logDebug(gravityList.value)
-      gravityStats.value = getGravityDataAnalytics(gravityList.value)
+      logDebug("BatchGravityView.onMounted()", gravityList.value)
 
+      // Calculate statistics for the full dataset
+      gravityStats.value = getGravityDataAnalytics(gravityList.value)
       infoFirstDay.value = gravityStats.value.date.firstDate
       infoLastDay.value = gravityStats.value.date.lastDate
+      infoOG.value = Number.parseFloat(new Number(gravityStats.value.gravity.max).toFixed(config.isGravitySG ? 3 : 2))
+      infoFG.value = Number.parseFloat(new Number(gravityStats.value.gravity.min).toFixed(config.isGravitySG ? 3 : 2))
+
+      // Map the data to chartJS format
       updateDataset()
 
       try {
@@ -320,7 +319,7 @@ onMounted(() => {
           logDebug("BatchGravityView.onMounted()", chart)
         }
       } catch (err) {
-        logDebug(err)
+        logDebug("BatchGravityView.onMounted()", err)
       }
     } else {
       // global.messageError = "Failed to load gravity " + id
@@ -328,10 +327,41 @@ onMounted(() => {
   })
 })
 
+function apply() {
+  logDebug("BatchGravityView.apply()")
+
+  // Sort the gravity data so its in date order
+  // gravityList.value.sort((a, b) => Date.parse(a.created) - Date.parse(b.created))
+
+  gravityData.value = []
+  batteryData.value = []
+  temperatureData.value = []
+  var gList = []
+
+  gravityList.value.forEach(g => {
+    if (g.gravity > infoFG.value && g.gravity < infoOG.value) {
+      // Map the attributes into datasets
+      var gravity = config.isGravitySG ? g.gravity : gravityToPlato(g.gravity)
+      var temperature = config.isTempC ? g.temperature : tempToF(g.temperature)
+
+      gravityData.value.push({ x: g.created, y: gravity })
+      batteryData.value.push({ x: g.created, y: g.battery })
+      temperatureData.value.push({ x: g.created, y: temperature })
+
+      gList.push(g)
+    }
+  })
+
+  gravityStats.value = getGravityDataAnalytics(gList)
+
+  chart.data.datasets[0].data = gravityData.value
+  chart.data.datasets[1].data = temperatureData.value
+  chart.data.datasets[2].data = batteryData.value
+  chart.update()
+}
+
 function updateDataset() {
   logDebug("BatchGravityView.updateDataset()")
-
-  // TODO: Move this to a shared function to analyse a data set
 
   if (gravityList.value == null)
     return
