@@ -28,6 +28,7 @@ import BsDropdown from '@/components/BsDropdown'
 import BsModal from '@/components2/BsModal'
 import BsModalConfirm from '@/components2/BsModalConfirm'
 import BsModalSelect from '@/components2/BsModalSelect'
+import BsInputDate from '@/components2/BsInputDate'
 
 app.component('BsIcon', BsIcon)
 app.component('BsMessage', BsMessage)
@@ -47,5 +48,6 @@ app.component('BsInputSwitch', BsInputSwitch)
 app.component('BsModal', BsModal)
 app.component('BsModalConfirm', BsModalConfirm)
 app.component('BsModalSelect', BsModalSelect)
+app.component('BsInputDate', BsInputDate)
 
 app.mount('#app')

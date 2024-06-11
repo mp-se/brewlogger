@@ -3,7 +3,7 @@ import { global } from '@/modules/pinia'
 import { logDebug, logError, logInfo } from '@/modules/logger'
 
 export class Gravity {
-    constructor(id, temperature, gravity, angle, battery, rssi, corrGravity, runTime, created, batchId) {
+    constructor(id, temperature, gravity, angle, battery, rssi, corrGravity, runTime, created, batchId, active) {
         this.id = id
         this.temperature = temperature
         this.gravity = gravity
@@ -14,15 +14,17 @@ export class Gravity {
         this.runTime = runTime
         this.created = created
         this.batchId = batchId
+        this.active = active
     }
 
     static fromJson(g) {
-        return new Gravity(g.id, g.temperature, g.gravity, g.angle, g.battery, g.rssi, g.corrGravity, g.runTime, g.created, g.batchId)
+        return new Gravity(g.id, g.temperature, g.gravity, g.angle, g.battery, g.rssi, g.corrGravity, g.runTime, g.created, g.batchId, g.active)
     }
 
     toJson() {
         return {
-            "id": this.id,
+            // "id": this.id,
+            //"batchId": this.batchId,
             "temperature": this.temperature,
             "gravity": this.gravity,
             "angle": this.angle,
@@ -31,7 +33,7 @@ export class Gravity {
             "corrGravity": this.corrGravity,
             "runTime": this.runTime,
             "created": this.created,
-            "batchId": this.batchId,
+            "active": this.active,
         }
     }
 
@@ -45,6 +47,7 @@ export class Gravity {
     get runTime() { return this._runTime }
     get created() { return this._created }
     get batchId() { return this._batchId }
+    get active() { return this._active }
 
     set id(id) { this._id = id }
     set temperature(temperature) { this._temperature = temperature }
@@ -56,6 +59,7 @@ export class Gravity {
     set runTime(runTime) { this._runTime = runTime }
     set created(created) { this._created = created }
     set batchId(batchId) { this._batchId = batchId }
+    set active(active) { this._active = active }
 }
 
 export const useGravityStore = defineStore('gravityStore', {
@@ -93,6 +97,33 @@ export const useGravityStore = defineStore('gravityStore', {
                     global.disabled = false
                     logError("gravityStore.getGravityListForBatch()", err)
                     callback(false, [])
+                })
+        },
+        updateGravity(g, callback) {
+            // callback => (success)
+
+            logDebug("gravityStore.updateGravity()", JSON.stringify(g.toJson()))
+            global.disabled = true
+            fetch(global.baseURL + 'api/gravity/' + g.id, {
+                method: "PATCH",
+                headers: { "Content-Type": "application/json", "Authorization": global.token },
+                body: JSON.stringify(g.toJson()),
+                signal: AbortSignal.timeout(global.fetchTimout),
+            })
+                .then(res => {
+                    global.disabled = false
+                    logDebug("gravityStore.updateGravity()", res.status)
+                    if (res.status != 200) {
+                        callback(false)
+                    }
+                    else {
+                        callback(true)
+                    }
+                })
+                .catch(err => {
+                    logError("gravityStore.updateGravity()", err)
+                    callback(false)
+                    global.disabled = false
                 })
         },
     }

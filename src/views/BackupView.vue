@@ -244,6 +244,9 @@ async function restoreBatches(bl) {
     b.id = json.id;
     b.gravity.forEach(g => {
       g.batchId = json.id;
+
+      if(!g.hasOwnProperty("active")) // New in v0.5
+        g.active = true
     })
 
     return b
