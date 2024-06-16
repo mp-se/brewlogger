@@ -27,6 +27,9 @@
             <div class="col-md-1">
               <BsInputReadonly v-model="gravityStats.readings" label="#"></BsInputReadonly>
             </div>
+            <div class="col-md-1">
+              <BsInputReadonly v-model="gravityStats.averageIntervalString" label="Ave Int"></BsInputReadonly>
+            </div>
             <div class="col-md-2">
               <BsInputDate v-model="infoFirstDay" label="First date" :disabled="global.disabled"></BsInputDate>
             </div>

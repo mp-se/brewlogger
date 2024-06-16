@@ -28,6 +28,9 @@
               <BsInputReadonly v-model="gravityStats.readings" label="#"></BsInputReadonly>
             </div>
             <div class="col-md-1">
+              <BsInputReadonly v-model="gravityStats.averageIntervalString" label="Ave Int"></BsInputReadonly>
+            </div>
+            <div class="col-md-1">
               <BsInputReadonly v-model="gravityStats.date.firstDate" label="First date"></BsInputReadonly>
             </div>
             <div class="col-md-1">
@@ -159,11 +162,7 @@ function apply() {
     if((date <= last && date >= first) && (g.gravity <= infoOG.value && g.gravity >= infoFG.value ))
       active = true
 
-    //logDebug("BatchGravityListView.apply()", date, last, first, (date <= last && date >= first))
-    //logDebug("BatchGravityListView.apply()", g.gravity, infoOG.value, infoFG.value, (g.gravity <= infoOG.value && g.gravity >= infoFG.value ))
-
     if(g.active != active) {
-      // logDebug("BatchGravityListView.apply()", g.active, active, date, g.gravity)
       g.active = active
 
       await gravityStore.updateGravity(g, (success) => {

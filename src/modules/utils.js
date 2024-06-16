@@ -88,6 +88,8 @@ export function getGravityDataAnalytics(gravityList) {
       lastTime: "",
     },
     readings: 0,
+    averageInterval: 0,
+    averageIntervalString: "",
   }
 
   // Sort the gravity data so its in date order
@@ -132,9 +134,16 @@ export function getGravityDataAnalytics(gravityList) {
 
     stats.date.firstTime = stats.date.first.substring(11, 19)
     stats.date.lastTime = stats.date.last.substring(11, 19)
+
+    stats.averageInterval = new Number(((Date.parse(stats.date.last) - Date.parse(stats.date.first)) / gList.length) / 1000).toFixed(0)
+
+    if(stats.averageInterval<60)
+      stats.averageIntervalString = stats.averageInterval + " s"
+    else // if(stats.averageInterval<60*60)
+      stats.averageIntervalString = new Number(stats.averageInterval/60).toFixed(0) + " m " +  new Number(stats.averageInterval%60).toFixed(0) + " s"   
   }
 
-  stats.readings = gList.length
+  stats.readings = gList.length 
 
   logDebug("utils.getGravityDataAnalytics()", stats)
   return stats
