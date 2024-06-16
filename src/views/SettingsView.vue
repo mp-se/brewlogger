@@ -17,7 +17,7 @@
         </div>
         <div class="col-md-4">
           <BsInputRadio v-model="config.pressureFormat" :options="pressureOptions" label="Pressure Format" width=""
-            :disabled="global.disabled"></BsInputRadio>
+            :disabled="global.disabled || true"></BsInputRadio>
         </div>
 
         <div class="col-md-12">

@@ -4,7 +4,7 @@
     <p class="h3">Home</p>
     <hr>
     <p>
-      Welcome to BrewLogger, an simple gravity logging tool and device management. Support the following projects:
+      Welcome to BrewLogger, a simple logging and device management tool. Support the following projects:
     </p>
     <p>
       <ul>
