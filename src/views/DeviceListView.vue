@@ -134,11 +134,10 @@ watch(deviceListFilterSoftware, async (selected, previous) => {
 function updateDeviceList() {
   logDebug("DeviceListView.updateDeviceList()")
 
-  global.deviceListFilterSoftware = "*"
-
   deviceStore.getDeviceList((success, dl) => {
     if (success) {
       deviceList.value = dl
+      filterDeviceList()
     } else {
       global.messageError = "Failed to load device list"
     }

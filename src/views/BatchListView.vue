@@ -155,12 +155,10 @@ watch(batchListFilterData, async (selected, previous) => {
 function updateBatchList() {
   logDebug("BatchListView.updateBatchList()")
 
-  global.batchListFilterDevice = "*"
-  global.batchListFilterActive = false
-
   batchStore.getBatchList((success, bl) => {
     if (success) {
       batchList.value = bl
+      filterBatchList()
     } else {
       global.messageError = "Failed to load batch list"
     }
