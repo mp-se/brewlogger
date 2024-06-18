@@ -37,12 +37,19 @@ const icon = defineModel('icon')
 /**
  * If set the header will be in red
  */
-const iserr = defineModel('iserr')
+ const iserr = defineModel('iserr')
+/**
+ * Color for the header (if not error)
+ */
+ const headerColor = defineModel('color')
 
 function headerStyle() {
   if(iserr.value!==undefined && iserr.value) 
     return 'card-header bg-danger-subtle' 
    
-  return 'card-header bg-primary-subtle' 
+  if(headerColor.value===undefined)
+    return 'card-header bg-primary-subtle' 
+
+  return 'card-header bg-' + headerColor.value + '-subtle' 
 }
 </script>
