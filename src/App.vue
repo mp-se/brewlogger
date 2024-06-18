@@ -46,7 +46,23 @@ import { storeToRefs } from 'pinia'
 import { logDebug, logError, logInfo } from '@/modules/logger'
 
 const props = defineProps(['App'])
-const { disabled } = storeToRefs(global)
+const { disabled, batchListFilterDevice, batchListFilterActive, batchListFilterData, deviceListFilterSoftware } = storeToRefs(global)
+
+watch(batchListFilterDevice, () => {
+  localStorage.setItem('batchListFilterDevice', global.batchListFilterDevice)
+})
+
+watch(batchListFilterActive, () => {
+  localStorage.setItem('batchListFilterActive', global.batchListFilterActive)
+})
+
+watch(batchListFilterData, () => {
+  localStorage.setItem('batchListFilterData', global.batchListFilterData)
+})
+
+watch(deviceListFilterSoftware, () => {
+  localStorage.setItem('deviceListFilterSoftware', global.deviceListFilterSoftware)
+})
 
 const close = (alert) => {
   logDebug("App.close()", alert)
@@ -73,6 +89,24 @@ watch(disabled, () => {
 onMounted(() => {
   logDebug("App.onMounted()")
 
+  // Load persistent settings from browser
+  global.batchListFilterDevice = localStorage.getItem('batchListFilterDevice')
+  global.batchListFilterActive = localStorage.getItem('batchListFilterActive')
+  global.batchListFilterData = localStorage.getItem('batchListFilterData')
+  global.deviceListFilterSoftware = localStorage.getItem('deviceListFilterSoftware')
+
+  if(global.batchListFilterDevice === null)
+      global.batchListFilterDevice = "*"
+  if(global.batchListFilterActive === null)
+      global.batchListFilterActive = false
+  if(global.batchListFilterData === null)
+      global.batchListFilterData = false
+  if(global.deviceListFilterSoftware === null)
+      global.deviceListFilterSoftware = "*"
+
+  logDebug("App.onMounted()", global.batchListFilterDevice, global.batchListFilterActive, global.batchListFilterData, global.deviceListFilterSoftware)
+
+  // Load from API's
   if (!global.initialized) {
     logDebug("App.onMounted()", "Initializing")
     showSpinner()
