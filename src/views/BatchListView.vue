@@ -101,6 +101,7 @@ const { batchListFilterDevice, batchListFilterActive, batchListFilterData } = st
 onMounted(() => {
   logDebug("BatchListView.onMounted()")
 
+  updateBatchList()
   var query = router.currentRoute.value.query
 
   if (query.hasOwnProperty("chipId")) {

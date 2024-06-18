@@ -107,6 +107,7 @@ const searchSelected = ref("")
 
 onMounted(() => {
   logDebug("DeviceListView.onMounted()")
+  updateDeviceList()
   deviceList.value = deviceStore.deviceList
   filterDeviceList()
 })
