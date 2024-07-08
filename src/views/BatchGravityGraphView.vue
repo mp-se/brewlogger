@@ -1,7 +1,7 @@
 <template>
   <div class="container">
     <p></p>
-    <p class="h3">Batch Gravity Graph</p>
+    <p class="h3">Batch Gravity Graph - '{{ batchName }}'</p>
     <hr>
 
     <div class="row">
@@ -146,7 +146,7 @@ import { Chart as ChartJS, Tooltip, Legend, LinearScale, TimeScale, LineControll
 import 'date-fns'
 import 'chartjs-adapter-date-fns'
 import zoomPlugin from 'chartjs-plugin-zoom'
-import { config, gravityStore, global } from "@/modules/pinia"
+import { config, gravityStore, batchStore, global } from "@/modules/pinia"
 import { router } from '@/modules/router'
 import { gravityToPlato, tempToF, getGravityDataAnalytics } from "@/modules/utils"
 import { logDebug, logError, logInfo } from '@/modules/logger'
@@ -159,6 +159,8 @@ const infoFirstDay = ref(null)
 const infoLastDay = ref(null)
 const infoOG = ref(null)
 const infoFG = ref(null)
+
+const batchName = ref("")
 
 watch(infoFirstDay, async (selected, previous) => {
   logDebug("BatchGravityGraphView.watch(infoFirstDay)", selected)
@@ -293,6 +295,11 @@ onMounted(() => {
   ChartJS.register(Legend, LinearScale, TimeScale, PointElement, LineController, LineElement, zoomPlugin)
 
   gravityList.value = null
+
+  batchStore.getBatch(router.currentRoute.value.params.id, (success, b) => {
+    if(success)
+      batchName.value = b.name
+  })
 
   gravityStore.getGravityListForBatch(router.currentRoute.value.params.id, (success, gl) => {
     if (success) {

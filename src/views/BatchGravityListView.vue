@@ -1,7 +1,7 @@
 <template>
   <div class="container">
     <p></p>
-    <p class="h3">Batch Gravity List</p>
+    <p class="h3">Batch Gravity List - '{{ batchName }}'</p>
     <hr>
 
     <div class="row gy-2">
@@ -114,7 +114,7 @@
 
 <script setup>
 import { onMounted, ref, computed, watch } from "vue"
-import { config, gravityStore, global } from "@/modules/pinia"
+import { config, gravityStore, batchStore, global } from "@/modules/pinia"
 import { router } from '@/modules/router'
 import { gravityToPlato, tempToF, getGravityDataAnalytics } from "@/modules/utils"
 import { logDebug, logError, logInfo } from '@/modules/logger'
@@ -127,6 +127,8 @@ const infoFirstDay = ref(null)
 const infoLastDay = ref(null)
 const infoOG = ref(null)
 const infoFG = ref(null)
+
+const batchName = ref("")
 
 async function updateGravity(id) {
   logDebug("BatchGravityListView.updateGravity()", id)
@@ -208,6 +210,11 @@ onMounted(() => {
   logDebug("BatchGravityListView.onMounted()")
 
   gravityList.value = null
+
+  batchStore.getBatch(router.currentRoute.value.params.id, (success, b) => {
+    if(success)
+      batchName.value = b.name
+  })
 
   gravityStore.getGravityListForBatch(router.currentRoute.value.params.id, (success, gl) => {
     if (success) {
