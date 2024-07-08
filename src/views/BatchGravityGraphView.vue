@@ -6,46 +6,7 @@
 
     <div class="row">
 
-      <template v-if="gravityStats != null">
-        <div class="col-md-12">
-          <div class="row">
-            <div class="col-md-1">
-              <BsInputReadonly v-model="gravityStats.gravity.maxString" label="OG"></BsInputReadonly>
-            </div>
-            <div class="col-md-1">
-              <BsInputReadonly v-model="gravityStats.gravity.minString" label="FG"></BsInputReadonly>
-            </div>
-            <div class="col-md-1">
-              <BsInputReadonly v-model="gravityStats.abvString" label="ABV"></BsInputReadonly>
-            </div>
-            <div class="col-md-1">
-              <BsInputReadonly v-model="gravityStats.temperature.maxString" label="Temp"></BsInputReadonly>
-            </div>
-            <div class="col-md-1">
-              <BsInputReadonly v-model="gravityStats.temperature.minString" label="Temp"></BsInputReadonly>
-            </div>
-            <div class="col-md-1">
-              <BsInputReadonly v-model="gravityStats.readings" label="#"></BsInputReadonly>
-            </div>
-            <div class="col-md-1">
-              <BsInputReadonly v-model="gravityStats.averageIntervalString" label="Ave Int"></BsInputReadonly>
-            </div>
-            <div class="col-md-2">
-              <BsInputDate v-model="infoFirstDay" label="First date" :disabled="global.disabled"></BsInputDate>
-            </div>
-            <div class="col-md-2">
-              <BsInputDate v-model="infoLastDay" label="Last date" :disabled="global.disabled"></BsInputDate>
-            </div>
-            <!-- 
-            <div class="col-md-1">
-              <BsInputReadonly v-model="gravityStats.date.firstDate" label="First date"></BsInputReadonly>
-            </div>
-            <div class="col-md-1">
-              <BsInputReadonly v-model="gravityStats.date.lastDate" label="Last date"></BsInputReadonly>
-            </div>-->
-          </div>
-        </div>
-      </template>
+      <GravityStats v-model="gravityStats"></GravityStats>
 
       <div class="row">
         <div class="col-md-2">
@@ -141,7 +102,7 @@
 </template>
 
 <script setup>
-import { onMounted, ref, computed, watch } from "vue"
+import { onMounted, ref, watch } from "vue"
 import { Chart as ChartJS, Tooltip, Legend, LinearScale, TimeScale, LineController, PointElement, LineElement } from 'chart.js'
 import 'date-fns'
 import 'chartjs-adapter-date-fns'

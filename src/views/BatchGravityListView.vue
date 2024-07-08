@@ -6,40 +6,8 @@
 
     <div class="row gy-2">
 
-      <template v-if="gravityStats != null">
-        <div class="col-md-12">
-          <div class="row">
-            <div class="col-md-1">
-              <BsInputReadonly v-model="gravityStats.gravity.maxString" label="OG"></BsInputReadonly>
-            </div>
-            <div class="col-md-1">
-              <BsInputReadonly v-model="gravityStats.gravity.minString" label="FG"></BsInputReadonly>
-            </div>
-            <div class="col-md-1">
-              <BsInputReadonly v-model="gravityStats.abvString" label="ABV"></BsInputReadonly>
-            </div>
-            <div class="col-md-1">
-              <BsInputReadonly v-model="gravityStats.temperature.maxString" label="Temp"></BsInputReadonly>
-            </div>
-            <div class="col-md-1">
-              <BsInputReadonly v-model="gravityStats.temperature.minString" label="Temp"></BsInputReadonly>
-            </div>
-            <div class="col-md-1">
-              <BsInputReadonly v-model="gravityStats.readings" label="#"></BsInputReadonly>
-            </div>
-            <div class="col-md-1">
-              <BsInputReadonly v-model="gravityStats.averageIntervalString" label="Ave Int"></BsInputReadonly>
-            </div>
-            <div class="col-md-1">
-              <BsInputReadonly v-model="gravityStats.date.firstDate" label="First date"></BsInputReadonly>
-            </div>
-            <div class="col-md-1">
-              <BsInputReadonly v-model="gravityStats.date.lastDate" label="Last date"></BsInputReadonly>
-            </div>
-          </div>
-        </div>
-      </template>
-
+      <GravityStats v-model="gravityStats"></GravityStats>
+      
       <div class="row gy-2">
         <div class="col-md-2">
           <BsInputDate v-model="infoFirstDay" label="Filter first" :disabled="global.disabled"></BsInputDate>
@@ -113,7 +81,7 @@
 </template>
 
 <script setup>
-import { onMounted, ref, computed, watch } from "vue"
+import { onMounted, ref } from "vue"
 import { config, gravityStore, batchStore, global } from "@/modules/pinia"
 import { router } from '@/modules/router'
 import { gravityToPlato, tempToF, getGravityDataAnalytics } from "@/modules/utils"

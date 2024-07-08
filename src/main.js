@@ -30,6 +30,8 @@ import BsModalConfirm from '@/components2/BsModalConfirm'
 import BsModalSelect from '@/components2/BsModalSelect'
 import BsInputDate from '@/components2/BsInputDate'
 
+import GravityStats from "@/views/GravityStats.vue"
+
 app.component('BsIcon', BsIcon)
 app.component('BsMessage', BsMessage)
 app.component('BsDropdown', BsDropdown)
@@ -49,5 +51,7 @@ app.component('BsModal', BsModal)
 app.component('BsModalConfirm', BsModalConfirm)
 app.component('BsModalSelect', BsModalSelect)
 app.component('BsInputDate', BsInputDate)
+
+app.component('GravityStats', GravityStats)
 
 app.mount('#app')
