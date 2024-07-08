@@ -5,7 +5,6 @@
     <hr>
 
     <div class="row gy-4">
-
       <div class="col-md-4" v-for="b in batchList" :key="b.id">
         <BsCard :header="'Batch: ' + b.name" color="info" title="">
           <p class="text-center">
@@ -24,6 +23,15 @@
           </p>
         </BsCard>
       </div>
+
+      <div class="col-md-4" v-if="batchList.length==0">
+        <BsCard header="No active batches" color="info" title="">
+          <p class="text-center">
+            No active batches in the system
+          </p>
+        </BsCard>
+      </div>
+
     </div>
 
   </div>
