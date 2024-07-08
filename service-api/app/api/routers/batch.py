@@ -56,17 +56,19 @@ async def get_batch_by_id(
     response_model=schemas.BatchDashboard,
     responses={404: {"description": "Batch not found"}},
     dependencies=[Depends(api_key_auth)])
-async def get_batch_by_id(
+async def get_batch_dashboard_by_id(
     batch_id: int,
     batch_service: BatchService = Depends(get_batch_service)
 ) -> Optional[models.Batch]:
     logger.info("Endpoint GET /api/batch/%d/dashboard", batch_id)
 
     b = batch_service.get(batch_id)
-    logger.info(b)
     if b.active == True:
         dash = schemas.BatchDashboard(id = b.id, name = b.name, chip_id = b.chip_id, active = b.active)
         dash.gravity = []
+        
+        b.gravity = list(filter(lambda x: x.active == True, b.gravity))
+        b.gravity.sort(key=lambda x: x.created, reverse=False)
 
         # Just return the first and last reading
         if len(b.gravity) > 1:
