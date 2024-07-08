@@ -159,4 +159,14 @@ class Batch(BatchCreate):
     pressure: List[Pressure] = None
     pour: List[Pour] = None
 
+class BatchDashboard(BaseModel):
+    model_config = ConfigDict(alias_generator = to_camel, populate_by_name = True)
+    id: int
+    name: str = Field(min_length=0, max_length=40, description="Short name of the batch")
+    chip_id: str = Field(min_length=6, max_length=6, description="Chip id, must be 6 characters")
+    active: bool = Field(description="If the batch is active or not, active = can recive new gravity data")
+    gravity: List[Gravity] = None
+    pressure: List[Pressure] = None
+    pour: List[Pour] = None
+
 ################################################################################

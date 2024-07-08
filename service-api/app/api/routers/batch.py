@@ -23,7 +23,6 @@ async def list_batches(
     batch_service: BatchService = Depends(get_batch_service)
 ) -> List[models.Batch]:
     logger.info("Endpoint GET /api/batch/?chipId=%s&active=%s", chipId, active)
-
     if chipId != "*": # ChipId + Active flas
         if active == "True" or active == "true":
             return batch_service.search_chipId_active(chipId, True)
@@ -35,7 +34,6 @@ async def list_batches(
             return batch_service.search_active(True)
         elif active == "False" or active == "false":
             return batch_service.search_active(False)
-
     # return all records
     return batch_service.list()
 
@@ -51,6 +49,36 @@ async def get_batch_by_id(
 ) -> Optional[models.Batch]:
     logger.info("Endpoint GET /api/batch/%d", batch_id)
     return batch_service.get(batch_id)
+
+
+@router.get(
+    "/{batch_id}/dashboard",
+    response_model=schemas.BatchDashboard,
+    responses={404: {"description": "Batch not found"}},
+    dependencies=[Depends(api_key_auth)])
+async def get_batch_by_id(
+    batch_id: int,
+    batch_service: BatchService = Depends(get_batch_service)
+) -> Optional[models.Batch]:
+    logger.info("Endpoint GET /api/batch/%d/dashboard", batch_id)
+
+    b = batch_service.get(batch_id)
+    logger.info(b)
+    if b.active == True:
+        dash = schemas.BatchDashboard(id = b.id, name = b.name, chip_id = b.chip_id, active = b.active)
+        dash.gravity = []
+
+        # Just return the first and last reading
+        if len(b.gravity) > 1:
+           dash.gravity.append(b.gravity[0])
+        if len(b.gravity) > 2:
+            dash.gravity.append(b.gravity[len(b.gravity)-1])
+        return dash
+
+    raise HTTPException(
+        status_code=404,
+        detail=f"Batch not found or not active batch.")
+    return None
 
 @router.post(
     "/",
@@ -88,6 +116,7 @@ async def delete_batch_by_id(
     batch_service: BatchService = Depends(get_batch_service)):
     logger.info("Endpoint DELETE /api/batch/%d", batch_id)
     batch_service.delete(batch_id)
+
 
 @router.get(
     "/brewfather/",
