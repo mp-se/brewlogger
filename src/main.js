@@ -31,6 +31,7 @@ import BsModalSelect from '@/components2/BsModalSelect'
 import BsInputDate from '@/components2/BsInputDate'
 
 import GravityStats from "@/views/GravityStats.vue"
+import LifeEstimates from "@/views/LifeEstimates.vue"
 
 app.component('BsIcon', BsIcon)
 app.component('BsMessage', BsMessage)
@@ -53,5 +54,6 @@ app.component('BsModalSelect', BsModalSelect)
 app.component('BsInputDate', BsInputDate)
 
 app.component('GravityStats', GravityStats)
+app.component('LifeEstimates', LifeEstimates)
 
 app.mount('#app')

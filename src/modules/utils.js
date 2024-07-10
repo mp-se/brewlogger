@@ -1,6 +1,7 @@
 import { ref } from 'vue'
 import { config } from "@/modules/pinia"
 import { logDebug, logError, logInfo } from '@/modules/logger'
+import { min } from 'date-fns'
 
 export function validateCurrentForm() {
   let valid = true
@@ -147,4 +148,50 @@ export function getGravityDataAnalytics(gravityList) {
 
   logDebug("utils.getGravityDataAnalytics()", stats)
   return stats
+}
+
+export function formatTime(t) {
+  var seconds = Math.floor(t % 60)
+  var minutes = Math.floor((t % (60*60)) / 60)
+  var hours = Math.floor((t % (24*60*60)) / (60*60))
+  var days = Math.floor((t % (7*24*60*60)) / (24*60*60))
+  var weeks = Math.floor((t % (4*7*24*60*60)) / (7*24*60*60))
+
+  var s = ""
+
+  if(weeks>0)
+    s += weeks + "w "
+  if(days>0)
+    s += days + "d "
+  if(hours>0)
+    s += hours + "h "
+  if(minutes>0)
+    s += minutes + "m "
+  if(seconds>0)
+    s += seconds + "s "
+  return s
+}
+
+export function formatTimeShort(t) {
+  var seconds = Math.floor(t % 60)
+  var minutes = Math.floor((t % (60*60)) / 60)
+  var hours = Math.floor((t % (24*60*60)) / (60*60))
+  var days = Math.floor((t % (7*24*60*60)) / (24*60*60))
+  var weeks = Math.floor((t % (365*24*60*60)) / (7*24*60*60))
+
+  logDebug("utils.formatTimeShort()", t, weeks, days, hours, minutes, seconds)
+
+  var s = ""
+
+  if(weeks>0)
+    s += weeks + "w "
+  if(days>0)
+    s += days + "d "
+  if(hours>0)
+    s += hours + "h "
+  //if(minutes>0)
+  //  s += minutes + "m "
+  //if(seconds>0)
+  //  s += seconds + "s "
+  return s
 }

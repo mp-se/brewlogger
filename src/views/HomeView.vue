@@ -56,7 +56,7 @@
 <script setup>
 import { onMounted, ref, computed } from "vue";
 import { global, config, batchStore, deviceStore } from "@/modules/pinia"
-import { gravityToPlato, tempToF } from "@/modules/utils"
+import { gravityToPlato, tempToF, formatTime } from "@/modules/utils"
 import { logDebug, logError, logInfo } from '@/modules/logger'
 
 const batchList = ref([]);
@@ -68,19 +68,6 @@ const deviceCount = computed(() => {
 const batchCount = computed(() => {
   return batchStore.batchList.length
 })
-
-function formatTime(t) {
-  if (t < 60) // less than 1 min
-    return new Number(t).toFixed(0) + "s"
-
-  if (t < (60 * 60)) // less than 1 hour
-    return new Number(t / 60).toFixed(0) + "m"
-
-  if (t < (60 * 60 * 24)) // less than 1 day
-    return new Number(t / (60 * 60)).toFixed(0) + "h"
-
-  return new Number(t / (60 * 60 * 24)).toFixed(0) + "d"
-}
 
 function getGravityReadingAge(batch) {
   logDebug("HomeView.getGravityReadingAge()")

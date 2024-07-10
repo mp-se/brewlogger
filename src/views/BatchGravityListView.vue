@@ -7,7 +7,9 @@
     <div class="row gy-2">
 
       <GravityStats v-model="gravityStats"></GravityStats>
-      
+
+      <LifeEstimates v-model="gravityStats"></LifeEstimates>
+
       <div class="row gy-2">
         <div class="col-md-2">
           <BsInputDate v-model="infoFirstDay" label="Filter first" :disabled="global.disabled"></BsInputDate>
