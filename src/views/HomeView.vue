@@ -24,10 +24,26 @@
         </BsCard>
       </div>
 
-      <div class="col-md-4" v-if="batchList.length==0">
-        <BsCard header="No active batches" color="info" title="">
+      <div class="col-md-4" v-if="batchList.length == 0">
+        <BsCard header="No active batches" color="warning" title="">
           <p class="text-center">
             No active batches in the system
+          </p>
+        </BsCard>
+      </div>
+
+      <div class="col-md-4">
+        <BsCard header="Metrics" color="info" title="Device">
+          <p class="text-center">
+            {{ deviceCount }} devices in database
+          </p>
+        </BsCard>
+      </div>
+
+      <div class="col-md-4">
+        <BsCard header="Metrics" color="info" title="Batch">
+          <p class="text-center">
+            {{ batchCount }} batches in database
           </p>
         </BsCard>
       </div>
@@ -38,12 +54,20 @@
 </template>
 
 <script setup>
-import { onMounted, ref } from "vue";
-import { global, config, batchStore } from "@/modules/pinia"
+import { onMounted, ref, computed } from "vue";
+import { global, config, batchStore, deviceStore } from "@/modules/pinia"
 import { gravityToPlato, tempToF } from "@/modules/utils"
 import { logDebug, logError, logInfo } from '@/modules/logger'
 
 const batchList = ref([]);
+
+const deviceCount = computed(() => {
+  return deviceStore.deviceList.length
+})
+
+const batchCount = computed(() => {
+  return batchStore.batchList.length
+})
 
 function formatTime(t) {
   if (t < 60) // less than 1 min
@@ -64,7 +88,6 @@ function getGravityReadingAge(batch) {
   if (batch.gravityCount == 2) {
     var last = Date.parse(batch.gravity[1].created)
     var now = new Date()
-
     return formatTime(Math.floor((now - last) / 1000))
   }
 
@@ -119,21 +142,14 @@ function getLastTemperature(batch) {
 onMounted(() => {
   logDebug("HomeView.onMounted()")
 
-  batchStore.getBatchList((success, bl) => {
-    if (success) {
+  batchList.value = []
 
-      batchList.value = []
-
-      bl.forEach(batch => {
-        if (batch.active) {
-          batchStore.getBatchDashboard(batch.id, (success, b) => {
-            console.log(success, b)
-            batchList.value.push(b)
-          })
-        }
+  batchStore.batchList.forEach(batch => {
+    if (batch.active) {
+      batchStore.getBatchDashboard(batch.id, (success, b) => {
+        console.log(success, b)
+        batchList.value.push(b)
       })
-    } else {
-      global.messageError = "Failed to load batch list"
     }
   })
 })
