@@ -61,7 +61,7 @@ export function download(content, mimeType, filename) {
 }
 
 export function getGravityDataAnalytics(gravityList) {
-  logDebug("utils.getGravityDataAnalytics()", gravityList)
+  logDebug("utils.getGravityDataAnalytics()")
 
   var gList = []
 

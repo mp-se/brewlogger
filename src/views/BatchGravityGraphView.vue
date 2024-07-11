@@ -109,7 +109,7 @@ import 'chartjs-adapter-date-fns'
 import zoomPlugin from 'chartjs-plugin-zoom'
 import { config, gravityStore, batchStore, global } from "@/modules/pinia"
 import { router } from '@/modules/router'
-import { gravityToPlato, tempToF, getGravityDataAnalytics } from "@/modules/utils"
+import { gravityToPlato, tempToF, getGravityDataAnalytics, abv } from "@/modules/utils"
 import { logDebug, logError, logInfo } from '@/modules/logger'
 import { ASAP, SMA, LTOB, LTTB, LTD } from 'downsample';
 import { KalmanFilter } from 'kalman-filter'
@@ -139,6 +139,7 @@ const gravityList = ref(null)
 const gravityStats = ref(null)
 
 const gravityData = ref([])
+const alcoholData = ref([])
 //const pressureData = ref([])
 const batteryData = ref([])
 const temperatureData = ref([])
@@ -164,12 +165,19 @@ const chartData = ref({
     backgroundColor: 'orange',
     yAxisID: 'y3',
     pointRadius: 0,
+  }, {
+    label: "Alcohol",
+    data: alcoholData.value,
+    borderColor: 'red',
+    backgroundColor: 'red',
+    yAxisID: 'y4',
+    pointRadius: 0,
   }/*{
     label: "Pressure",
     data: pressureData.value,
     borderColor: 'red',
     backgroundColor: 'red',
-    yAxisID: 'y4',
+    yAxisID: 'y5',
     pointRadius: 0,
   }, */]
 })
@@ -213,7 +221,15 @@ const scaleOptions = ref({
       text: 'Voltage',
     },
   },
-  /*y4: {
+  y4: {
+    type: 'linear',
+    position: 'left',
+    title: {
+      display: true,
+      text: 'Alcohol',
+    },
+  },
+  /*y5: {
     type: 'linear',
     position: 'left',
     title: {
@@ -288,6 +304,8 @@ onMounted(() => {
           scaleOptions.value.x.max = infoLastDay.value
           chart = new ChartJS(document.getElementById('gravityChart'), chartOptions.value)
           logDebug("BatchGravityGraphView.onMounted()", chart)
+          logDebug(chart.data)
+
         }
       } catch (err) {
         logDebug("BatchGravityGraphView.onMounted()", err)
@@ -307,6 +325,7 @@ function apply() {
   gravityData.value = []
   batteryData.value = []
   temperatureData.value = []
+  alcoholData.value = []
   var gList = []
 
   gravityList.value.forEach(g => {
@@ -325,9 +344,15 @@ function apply() {
 
   gravityStats.value = getGravityDataAnalytics(gList)
 
+  var og = gravityStats.value.gravity.max
+  gravityList.value.forEach(g => {
+    alcoholData.value.push( { x: g.created, y: abv(og, g.gravity) })
+  })
+
   chart.data.datasets[0].data = gravityData.value
   chart.data.datasets[1].data = temperatureData.value
   chart.data.datasets[2].data = batteryData.value
+  chart.data.datasets[3].data = alcoholData.value
   chart.update()
 }
 
@@ -339,6 +364,7 @@ function updateDataset() {
 
   // Sort the gravity data so its in date order
   gravityList.value.sort((a, b) => Date.parse(a.created) - Date.parse(b.created))
+  var og = gravityStats.value.gravity.max
 
   // Process the gravity readings
   gravityList.value.forEach(g => {
@@ -350,6 +376,7 @@ function updateDataset() {
       gravityData.value.push({ x: g.created, y: gravity })
       batteryData.value.push({ x: g.created, y: g.battery })
       temperatureData.value.push({ x: g.created, y: temperature })
+      alcoholData.value.push( { x: g.created, y: abv(og, g.gravity) })
     }
   })
 }
@@ -390,6 +417,7 @@ function filterAll() {
   chart.data.datasets[0].data = gravityData.value
   chart.data.datasets[1].data = temperatureData.value
   chart.data.datasets[2].data = batteryData.value
+  chart.data.datasets[3].data = alcoholData.value
   chart.update()
 }
 
@@ -400,6 +428,7 @@ function filterDownsampleLTTB() {
   chart.data.datasets[0].data = applyLTTB(chart.data.datasets[0].data, count)
   chart.data.datasets[1].data = applyLTTB(chart.data.datasets[1].data, count)
   chart.data.datasets[2].data = applyLTTB(chart.data.datasets[2].data, count)
+  chart.data.datasets[3].data = applyLTTB(chart.data.datasets[3].data, count)
   chart.update()
 }
 
@@ -410,6 +439,7 @@ function filterDownsampleLTD() {
   chart.data.datasets[0].data = applyLTD(chart.data.datasets[0].data, count)
   chart.data.datasets[1].data = applyLTD(chart.data.datasets[1].data, count)
   chart.data.datasets[2].data = applyLTD(chart.data.datasets[2].data, count)
+  chart.data.datasets[3].data = applyLTD(chart.data.datasets[3].data, count)
   chart.update()
 }
 
@@ -419,6 +449,7 @@ function filterKalman() {
   chart.data.datasets[0].data = applyKalman(chart.data.datasets[0].data)
   chart.data.datasets[1].data = applyKalman(chart.data.datasets[1].data)
   chart.data.datasets[2].data = applyKalman(chart.data.datasets[2].data)
+  chart.data.datasets[3].data = applyKalman(chart.data.datasets[3].data)
   chart.update()
 }
 
