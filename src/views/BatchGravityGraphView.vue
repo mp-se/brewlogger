@@ -67,6 +67,9 @@
             Kalman
           </button>
         </div>
+        <div class="row p-2">
+            <p>Points: {{ currentDataCount }}</p>
+        </div>
       </div>
     </div>
 
@@ -102,7 +105,7 @@
 </template>
 
 <script setup>
-import { onMounted, ref, watch } from "vue"
+import { onMounted, ref, watch, computed } from "vue"
 import { Chart as ChartJS, Tooltip, Legend, LinearScale, TimeScale, LineController, PointElement, LineElement } from 'chart.js'
 import 'date-fns'
 import 'chartjs-adapter-date-fns'
@@ -120,7 +123,7 @@ const infoFirstDay = ref(null)
 const infoLastDay = ref(null)
 const infoOG = ref(null)
 const infoFG = ref(null)
-
+const currentDataCount = ref(0)
 const batchName = ref("")
 
 watch(infoFirstDay, async (selected, previous) => {
@@ -151,6 +154,8 @@ const chartData = ref({
     backgroundColor: 'green',
     yAxisID: 'y1',
     pointRadius: 0,
+    cubicInterpolationMode: 'monotone',
+    tension: 0.4
   }, {
     label: "Temperature",
     data: temperatureData.value,
@@ -158,6 +163,8 @@ const chartData = ref({
     backgroundColor: 'blue',
     yAxisID: 'y2',
     pointRadius: 0,
+    cubicInterpolationMode: 'monotone',
+    tension: 0.4
   }, {
     label: "Battery",
     data: batteryData.value,
@@ -165,6 +172,8 @@ const chartData = ref({
     backgroundColor: 'orange',
     yAxisID: 'y3',
     pointRadius: 0,
+    cubicInterpolationMode: 'monotone',
+    tension: 0.4
   }, {
     label: "Alcohol",
     data: alcoholData.value,
@@ -172,6 +181,8 @@ const chartData = ref({
     backgroundColor: 'red',
     yAxisID: 'y4',
     pointRadius: 0,
+    cubicInterpolationMode: 'monotone',
+    tension: 0.4
   }/*{
     label: "Pressure",
     data: pressureData.value,
@@ -303,9 +314,7 @@ onMounted(() => {
           scaleOptions.value.x.min = infoFirstDay.value
           scaleOptions.value.x.max = infoLastDay.value
           chart = new ChartJS(document.getElementById('gravityChart'), chartOptions.value)
-          logDebug("BatchGravityGraphView.onMounted()", chart)
-          logDebug(chart.data)
-
+          currentDataCount.value = chart.data.datasets[0].data.length
         }
       } catch (err) {
         logDebug("BatchGravityGraphView.onMounted()", err)
@@ -353,6 +362,7 @@ function apply() {
   chart.data.datasets[1].data = temperatureData.value
   chart.data.datasets[2].data = batteryData.value
   chart.data.datasets[3].data = alcoholData.value
+  currentDataCount.value = chart.data.datasets[0].data.length
   chart.update()
 }
 
@@ -418,28 +428,31 @@ function filterAll() {
   chart.data.datasets[1].data = temperatureData.value
   chart.data.datasets[2].data = batteryData.value
   chart.data.datasets[3].data = alcoholData.value
+  currentDataCount.value = chart.data.datasets[0].data.length
   chart.update()
 }
 
 function filterDownsampleLTTB() {
   logDebug("BatchGravityGraphView.filterDownsampleLTTB()")
 
-  var count = chart.data.datasets[0].data.length / 2
+  var count = Math.round( chart.data.datasets[0].data.length * 0.7 )
   chart.data.datasets[0].data = applyLTTB(chart.data.datasets[0].data, count)
   chart.data.datasets[1].data = applyLTTB(chart.data.datasets[1].data, count)
   chart.data.datasets[2].data = applyLTTB(chart.data.datasets[2].data, count)
   chart.data.datasets[3].data = applyLTTB(chart.data.datasets[3].data, count)
+  currentDataCount.value = chart.data.datasets[0].data.length
   chart.update()
 }
 
 function filterDownsampleLTD() {
   logDebug("BatchGravityGraphView.filterDownsampleLTD()")
 
-  var count = chart.data.datasets[0].data.length / 2
+  var count = Math.round( chart.data.datasets[0].data.length * 0.7 )
   chart.data.datasets[0].data = applyLTD(chart.data.datasets[0].data, count)
   chart.data.datasets[1].data = applyLTD(chart.data.datasets[1].data, count)
   chart.data.datasets[2].data = applyLTD(chart.data.datasets[2].data, count)
   chart.data.datasets[3].data = applyLTD(chart.data.datasets[3].data, count)
+  currentDataCount.value = chart.data.datasets[0].data.length
   chart.update()
 }
 
@@ -450,6 +463,7 @@ function filterKalman() {
   chart.data.datasets[1].data = applyKalman(chart.data.datasets[1].data)
   chart.data.datasets[2].data = applyKalman(chart.data.datasets[2].data)
   chart.data.datasets[3].data = applyKalman(chart.data.datasets[3].data)
+  currentDataCount.value = chart.data.datasets[0].data.length
   chart.update()
 }
 
