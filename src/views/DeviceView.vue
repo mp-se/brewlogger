@@ -35,8 +35,8 @@
               :disabled="global.disabled"></BsInputRadio>
           </div>
           <div class="col-md-12">
-            <BsInputRadio v-model="device.bleColor" :options="bleColorOptions" label="BLE Color" help=""
-              :disabled="global.disabled"></BsInputRadio>
+            <BsInputRadio v-model="device.bleColor" :options="bleColorOptions" label="BLE Color" help="Used for receving gravity readings via Tilt"
+              :disabled="global.disabled || device.software!='Gravitymon'"></BsInputRadio>
           </div>
           <div class="col-md-11">
             <BsInputText v-model="device.config" label="Configuration" width="11" help="" disabled>

@@ -17,10 +17,17 @@ export class Batch {
         this.ibu = ibu
         this.brewfatherId = brewfatherId
         this.gravityCount = gravity.length
+        this.gravity = []
    }
 
     static fromJson(d) {
         return new Batch(d.id, d.name, d.description, d.chipId, d.active, d.brewDate, d.style, d.brewer, d.abv, d.ebc, d.ibu, d.brewfatherId, d.gravity)
+    }
+
+    static fromDashboardJson(d) {
+        var b = new Batch(d.id, d.name, "", d.chipId, d.active, "", "", "", 0, 0, 0, 0, d.gravity)
+        b.gravity = d.gravity
+        return b
     }
 
     toJson() {
@@ -52,6 +59,7 @@ export class Batch {
     get ibu() { return this._ibu }
     get brewfatherId() { return this._brewfatherId }
     get gravityCount() { return this._gravityCount }
+    get gravity() { return this._gravity }
 
     set id(id) { this._id = id }
     set name(name) { this._name = name }
@@ -66,6 +74,7 @@ export class Batch {
     set ibu(ibu) { this._ibu = ibu }
     set brewfatherId(brewfatherId) { this._brewfatherId = brewfatherId }
     set gravityCount(gravityCount) { this._gravityCount = gravityCount }
+    set gravity(gravity) { this._gravity = gravity }
 }
 
 export const useBatchStore = defineStore('batchStore', {
@@ -145,6 +154,33 @@ export const useBatchStore = defineStore('batchStore', {
                 .catch(err => {
                     global.disabled = false
                     logError("batchStore.getBatch()", err)
+                    callback(false, null)
+                })
+        },
+        getBatchDashboard(id, callback) {
+            // callback => (success, batch)
+
+            logDebug("batchStore.getBatchDashboard()", id)
+            global.disabled = true
+            fetch(global.baseURL + 'api/batch/' + id + "/dashboard", {
+                method: "GET",
+                headers: { "Authorization": global.token },
+                signal: AbortSignal.timeout(global.fetchTimout),
+            })
+                .then(res => {
+                    logDebug("batchStore.getBatchDashboard()", res.status)
+                    if (!res.ok) throw res
+                    return res.json()
+                })
+                .then(json => {
+                    logDebug("batchStore.getBatchDashboard()", json)
+                    var batch = Batch.fromDashboardJson(json)
+                    callback(true, batch)
+                    global.disabled = false
+                })
+                .catch(err => {
+                    global.disabled = false
+                    logError("batchStore.getBatchDashboard()", err)
                     callback(false, null)
                 })
         },

@@ -1,51 +1,12 @@
 <template>
   <div class="container">
     <p></p>
-    <p class="h3">Batch Gravity Graph</p>
+    <p class="h3">Batch Gravity Graph - '{{ batchName }}'</p>
     <hr>
 
     <div class="row">
 
-      <template v-if="gravityStats != null">
-        <div class="col-md-12">
-          <div class="row">
-            <div class="col-md-1">
-              <BsInputReadonly v-model="gravityStats.gravity.maxString" label="OG"></BsInputReadonly>
-            </div>
-            <div class="col-md-1">
-              <BsInputReadonly v-model="gravityStats.gravity.minString" label="FG"></BsInputReadonly>
-            </div>
-            <div class="col-md-1">
-              <BsInputReadonly v-model="gravityStats.abvString" label="ABV"></BsInputReadonly>
-            </div>
-            <div class="col-md-1">
-              <BsInputReadonly v-model="gravityStats.temperature.maxString" label="Temp"></BsInputReadonly>
-            </div>
-            <div class="col-md-1">
-              <BsInputReadonly v-model="gravityStats.temperature.minString" label="Temp"></BsInputReadonly>
-            </div>
-            <div class="col-md-1">
-              <BsInputReadonly v-model="gravityStats.readings" label="#"></BsInputReadonly>
-            </div>
-            <div class="col-md-1">
-              <BsInputReadonly v-model="gravityStats.averageIntervalString" label="Ave Int"></BsInputReadonly>
-            </div>
-            <div class="col-md-2">
-              <BsInputDate v-model="infoFirstDay" label="First date" :disabled="global.disabled"></BsInputDate>
-            </div>
-            <div class="col-md-2">
-              <BsInputDate v-model="infoLastDay" label="Last date" :disabled="global.disabled"></BsInputDate>
-            </div>
-            <!-- 
-            <div class="col-md-1">
-              <BsInputReadonly v-model="gravityStats.date.firstDate" label="First date"></BsInputReadonly>
-            </div>
-            <div class="col-md-1">
-              <BsInputReadonly v-model="gravityStats.date.lastDate" label="Last date"></BsInputReadonly>
-            </div>-->
-          </div>
-        </div>
-      </template>
+      <GravityStats v-model="gravityStats"></GravityStats>
 
       <div class="row">
         <div class="col-md-2">
@@ -106,6 +67,9 @@
             Kalman
           </button>
         </div>
+        <div class="row p-2">
+            <p>Points: {{ currentDataCount }}</p>
+        </div>
       </div>
     </div>
 
@@ -141,14 +105,14 @@
 </template>
 
 <script setup>
-import { onMounted, ref, computed, watch } from "vue"
+import { onMounted, ref, watch, computed } from "vue"
 import { Chart as ChartJS, Tooltip, Legend, LinearScale, TimeScale, LineController, PointElement, LineElement } from 'chart.js'
 import 'date-fns'
 import 'chartjs-adapter-date-fns'
 import zoomPlugin from 'chartjs-plugin-zoom'
-import { config, gravityStore, global } from "@/modules/pinia"
+import { config, gravityStore, batchStore, global } from "@/modules/pinia"
 import { router } from '@/modules/router'
-import { gravityToPlato, tempToF, getGravityDataAnalytics } from "@/modules/utils"
+import { gravityToPlato, tempToF, getGravityDataAnalytics, abv } from "@/modules/utils"
 import { logDebug, logError, logInfo } from '@/modules/logger'
 import { ASAP, SMA, LTOB, LTTB, LTD } from 'downsample';
 import { KalmanFilter } from 'kalman-filter'
@@ -159,6 +123,8 @@ const infoFirstDay = ref(null)
 const infoLastDay = ref(null)
 const infoOG = ref(null)
 const infoFG = ref(null)
+const currentDataCount = ref(0)
+const batchName = ref("")
 
 watch(infoFirstDay, async (selected, previous) => {
   logDebug("BatchGravityGraphView.watch(infoFirstDay)", selected)
@@ -176,6 +142,7 @@ const gravityList = ref(null)
 const gravityStats = ref(null)
 
 const gravityData = ref([])
+const alcoholData = ref([])
 //const pressureData = ref([])
 const batteryData = ref([])
 const temperatureData = ref([])
@@ -187,6 +154,8 @@ const chartData = ref({
     backgroundColor: 'green',
     yAxisID: 'y1',
     pointRadius: 0,
+    cubicInterpolationMode: 'monotone',
+    tension: 0.4
   }, {
     label: "Temperature",
     data: temperatureData.value,
@@ -194,6 +163,8 @@ const chartData = ref({
     backgroundColor: 'blue',
     yAxisID: 'y2',
     pointRadius: 0,
+    cubicInterpolationMode: 'monotone',
+    tension: 0.4
   }, {
     label: "Battery",
     data: batteryData.value,
@@ -201,12 +172,23 @@ const chartData = ref({
     backgroundColor: 'orange',
     yAxisID: 'y3',
     pointRadius: 0,
+    cubicInterpolationMode: 'monotone',
+    tension: 0.4
+  }, {
+    label: "Alcohol",
+    data: alcoholData.value,
+    borderColor: 'red',
+    backgroundColor: 'red',
+    yAxisID: 'y4',
+    pointRadius: 0,
+    cubicInterpolationMode: 'monotone',
+    tension: 0.4
   }/*{
     label: "Pressure",
     data: pressureData.value,
     borderColor: 'red',
     backgroundColor: 'red',
-    yAxisID: 'y4',
+    yAxisID: 'y5',
     pointRadius: 0,
   }, */]
 })
@@ -250,7 +232,15 @@ const scaleOptions = ref({
       text: 'Voltage',
     },
   },
-  /*y4: {
+  y4: {
+    type: 'linear',
+    position: 'left',
+    title: {
+      display: true,
+      text: 'Alcohol',
+    },
+  },
+  /*y5: {
     type: 'linear',
     position: 'left',
     title: {
@@ -294,6 +284,11 @@ onMounted(() => {
 
   gravityList.value = null
 
+  batchStore.getBatch(router.currentRoute.value.params.id, (success, b) => {
+    if(success)
+      batchName.value = b.name
+  })
+
   gravityStore.getGravityListForBatch(router.currentRoute.value.params.id, (success, gl) => {
     if (success) {
       gravityList.value = gl
@@ -319,7 +314,7 @@ onMounted(() => {
           scaleOptions.value.x.min = infoFirstDay.value
           scaleOptions.value.x.max = infoLastDay.value
           chart = new ChartJS(document.getElementById('gravityChart'), chartOptions.value)
-          logDebug("BatchGravityGraphView.onMounted()", chart)
+          currentDataCount.value = chart.data.datasets[0].data.length
         }
       } catch (err) {
         logDebug("BatchGravityGraphView.onMounted()", err)
@@ -339,6 +334,7 @@ function apply() {
   gravityData.value = []
   batteryData.value = []
   temperatureData.value = []
+  alcoholData.value = []
   var gList = []
 
   gravityList.value.forEach(g => {
@@ -357,9 +353,16 @@ function apply() {
 
   gravityStats.value = getGravityDataAnalytics(gList)
 
+  var og = gravityStats.value.gravity.max
+  gravityList.value.forEach(g => {
+    alcoholData.value.push( { x: g.created, y: abv(og, g.gravity) })
+  })
+
   chart.data.datasets[0].data = gravityData.value
   chart.data.datasets[1].data = temperatureData.value
   chart.data.datasets[2].data = batteryData.value
+  chart.data.datasets[3].data = alcoholData.value
+  currentDataCount.value = chart.data.datasets[0].data.length
   chart.update()
 }
 
@@ -371,6 +374,7 @@ function updateDataset() {
 
   // Sort the gravity data so its in date order
   gravityList.value.sort((a, b) => Date.parse(a.created) - Date.parse(b.created))
+  var og = gravityStats.value.gravity.max
 
   // Process the gravity readings
   gravityList.value.forEach(g => {
@@ -382,6 +386,7 @@ function updateDataset() {
       gravityData.value.push({ x: g.created, y: gravity })
       batteryData.value.push({ x: g.created, y: g.battery })
       temperatureData.value.push({ x: g.created, y: temperature })
+      alcoholData.value.push( { x: g.created, y: abv(og, g.gravity) })
     }
   })
 }
@@ -422,26 +427,32 @@ function filterAll() {
   chart.data.datasets[0].data = gravityData.value
   chart.data.datasets[1].data = temperatureData.value
   chart.data.datasets[2].data = batteryData.value
+  chart.data.datasets[3].data = alcoholData.value
+  currentDataCount.value = chart.data.datasets[0].data.length
   chart.update()
 }
 
 function filterDownsampleLTTB() {
   logDebug("BatchGravityGraphView.filterDownsampleLTTB()")
 
-  var count = chart.data.datasets[0].data.length / 2
+  var count = Math.round( chart.data.datasets[0].data.length * 0.7 )
   chart.data.datasets[0].data = applyLTTB(chart.data.datasets[0].data, count)
   chart.data.datasets[1].data = applyLTTB(chart.data.datasets[1].data, count)
   chart.data.datasets[2].data = applyLTTB(chart.data.datasets[2].data, count)
+  chart.data.datasets[3].data = applyLTTB(chart.data.datasets[3].data, count)
+  currentDataCount.value = chart.data.datasets[0].data.length
   chart.update()
 }
 
 function filterDownsampleLTD() {
   logDebug("BatchGravityGraphView.filterDownsampleLTD()")
 
-  var count = chart.data.datasets[0].data.length / 2
+  var count = Math.round( chart.data.datasets[0].data.length * 0.7 )
   chart.data.datasets[0].data = applyLTD(chart.data.datasets[0].data, count)
   chart.data.datasets[1].data = applyLTD(chart.data.datasets[1].data, count)
   chart.data.datasets[2].data = applyLTD(chart.data.datasets[2].data, count)
+  chart.data.datasets[3].data = applyLTD(chart.data.datasets[3].data, count)
+  currentDataCount.value = chart.data.datasets[0].data.length
   chart.update()
 }
 
@@ -451,6 +462,8 @@ function filterKalman() {
   chart.data.datasets[0].data = applyKalman(chart.data.datasets[0].data)
   chart.data.datasets[1].data = applyKalman(chart.data.datasets[1].data)
   chart.data.datasets[2].data = applyKalman(chart.data.datasets[2].data)
+  chart.data.datasets[3].data = applyKalman(chart.data.datasets[3].data)
+  currentDataCount.value = chart.data.datasets[0].data.length
   chart.update()
 }
 
