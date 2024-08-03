@@ -135,7 +135,8 @@ onMounted(() => {
     if (batch.active) {
       batchStore.getBatchDashboard(batch.id, (success, b) => {
         console.log(success, b)
-        batchList.value.push(b)
+        if(success)
+          batchList.value.push(b)
       })
     }
   })
