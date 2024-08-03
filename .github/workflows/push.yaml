@@ -29,14 +29,14 @@ jobs:
       - run: npm install
       - run: npm run build 
                 
-      - uses: EndBug/add-and-commit@v9 # You can change this to use a specific version. https://github.com/marketplace/actions/add-commit
-        with:
-          add: 'dist'
-          author_name: GitHub Action
-          author_email: mp-se@noreply.github.com
-          default_author: github_actor
-          message: 'GitHub Action Build'
-          pathspec_error_handling: ignore
+      #- uses: EndBug/add-and-commit@v9 # You can change this to use a specific version. https://github.com/marketplace/actions/add-commit
+      #  with:
+      #    add: 'dist'
+      #    author_name: GitHub Action
+      #    author_email: mp-se@noreply.github.com
+      #    default_author: github_actor
+      #    message: 'GitHub Action Build'
+      #    pathspec_error_handling: ignore
 
       - name: Prepare
         id: prep
