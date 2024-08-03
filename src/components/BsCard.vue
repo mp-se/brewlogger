@@ -2,7 +2,7 @@
   <div class="card">
     <div :class="headerStyle()">{{ header }}</div>   
     <div class="card-body">
-      <h5 class="card-title"><BsIcon v-if="icon!==undefined" :icon="icon" height="16" width="16"></BsIcon> {{ title }}</h5>
+      <h5 class="card-title text-center"><BsIcon v-if="icon!==undefined" :icon="icon" height="16" width="16"></BsIcon> {{ title }}</h5>
       <p class="card-text">
         <!-- @slot Content of the card is placed via the slot -->
         <slot></slot>
@@ -45,11 +45,11 @@ const icon = defineModel('icon')
 
 function headerStyle() {
   if(iserr.value!==undefined && iserr.value) 
-    return 'card-header bg-danger-subtle' 
+    return 'card-header bg-danger-subtle text-center' 
    
   if(headerColor.value===undefined)
-    return 'card-header bg-primary-subtle' 
+    return 'card-header bg-primary-subtle text-center' 
 
-  return 'card-header bg-' + headerColor.value + '-subtle' 
+  return 'card-header text-center bg-' + headerColor.value + '-subtle' 
 }
 </script>
