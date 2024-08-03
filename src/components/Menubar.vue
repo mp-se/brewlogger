@@ -1,10 +1,17 @@
 <template>
     <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
         <div class="container-fluid align-center">
+                        
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar"
                 aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
             </button>
+
+            <div class="navbar-brand">
+                {{ brand }}
+            </div>
+
+            <div class="vr d-none d-lg-flex h-200 mx-lg-2 text-white"></div>
 
             <div class="collapse navbar-collapse" id="navbar">
                 <ul class="navbar-nav">
@@ -17,7 +24,7 @@
                             <router-link
                                 :class="['nav-link', $router.currentRoute.value.path.split('/')[1] === item.path.split('/')[1] ? ' active fw-bold' : '']"
                                 :to="item.path" :disabled="disabled">
-                                <BsIcon v-if="item.icon !== undefined" :icon="item.icon" width="1rem" height="1rem"
+                                <BsIcon v-if="item.icon !== undefined" :icon="item.icon" width="20px" height="20px"
                                     style="color:white" /> {{ item.label }}
                             </router-link>
                         </li>
@@ -26,7 +33,7 @@
                                 :class="['nav-link', 'dropdown-toggle', $router.currentRoute.value.path.split('/')[1] === item.path.split('/')[1] ? ' active fw-bold' : '']"
                                 :id="'navbarDropdown' + item.label" role="button" data-bs-toggle="dropdown"
                                 aria-expanded="false" data-bs-auto-close="true" :disabled="disabled">
-                                <BsIcon v-if="item.icon !== undefined" :icon="item.icon" width="1rem" height="1rem"
+                                <BsIcon v-if="item.icon !== undefined" :icon="item.icon" width="20px" height="20px"
                                     style="color:white" /> {{ item.label }} <span
                                     v-if="item.badge !== undefined && item.badge() > 0"
                                     class="badge text-bg-danger rounded-circle">{{
@@ -45,9 +52,23 @@
                     </template>
                 </ul>
             </div>
-            <div class="">
-                <span v-if="global.configChanged" class="badge bg-danger fs-6">Save needed &nbsp;</span>
+
+            <!--
+            <div class="vr d-none d-lg-flex h-200 mx-lg-2 text-white"></div>
+
+            <div class="text-white">
+                {{ config.mdns }}
             </div>
+            -->
+
+            <div class="vr d-none d-lg-flex h-200 mx-lg-2 text-white"></div>
+
+            <div v-if="global.configChanged">
+                <span class="badge bg-danger fs-6">Save needed &nbsp;</span>
+            </div>
+
+            <div class="vr d-none d-lg-flex h-200 mx-lg-2 text-white" v-if="global.configChanged"></div>
+
             <div class="p-2">
                 <div class="spinner-border gx-4" role="status" style="color:white" :hidden="!disabled">
                     <span class="visually-hidden">Loading...</span>
@@ -81,6 +102,11 @@ import { items } from '@/modules/router'
  * Ref that steers if this component is enabled or not (required)
  */
 const disabled = defineModel('disabled')
+
+/**
+ * Ref that contains the brand name
+ */
+const brand = defineModel('brand')
 
 /**
  * Darkmode ref is imported from the config store (required).
