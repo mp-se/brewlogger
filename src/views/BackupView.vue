@@ -61,7 +61,7 @@ const progressMax = ref(0)
 const restoreErrors = ref(0)
 const backup = ref({
   "meta": {
-    "version": "0.4",
+    "version": "0.5",
     "software": "BrewLogger"
   },
   "batches": [],
@@ -143,7 +143,7 @@ function restore() {
 
       try {
         const data = JSON.parse(text);
-        if (data.meta.software === "BrewLogger" && (data.meta.version === "0.4" || data.meta.version === "0.3")) {
+        if (data.meta.software === "BrewLogger" && (data.meta.version === "0.5" || data.meta.version === "0.4")) {
           processRestore(data);
         } else {
           global.messageFailed = "Unknown format, unable to process"
