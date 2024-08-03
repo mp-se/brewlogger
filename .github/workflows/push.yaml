@@ -23,7 +23,7 @@ jobs:
 
       - run: |
           REV=`git rev-parse HEAD | rev | cut -c 1-6 | rev`
-          echo "VUE_APP_BUILD=..$REV" >> .env
+          echo "VUE_APP_BUILD=..$REV" >> .env.production
           cat .env.production
 
       - run: npm install
