@@ -1,7 +1,7 @@
 <template>
   <BsInputBase :width="width" :label="label" :help="help" :badge="badge">
     <div class="btn-group" role="group">
-      <input class="form-control" type="file" v-bind="$attrs" :disabled="disabled">
+      <input class="form-control" type="file" v-bind="$attrs" :disabled="disabled" />
     </div>
   </BsInputBase>
 </template>

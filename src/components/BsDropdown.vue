@@ -1,15 +1,23 @@
 <template>
   <BsInputBase :width="width" :label="label" :help="help" :badge="badge">
     <div class="dropdown">
-        <button class="btn btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" :disabled="disabled">
-          {{ button }}
-        </button>
-        <ul class="dropdown-menu">
-          <template v-for="o in options" >
-            <li><a class="dropdown-item" @click="callback(o.value)">{{ o.label }}</a></li>
-          </template>
-        </ul>
-      </div>
+      <button
+        class="btn btn-outline-secondary dropdown-toggle"
+        type="button"
+        data-bs-toggle="dropdown"
+        aria-expanded="false"
+        :disabled="disabled"
+      >
+        {{ button }}
+      </button>
+      <ul class="dropdown-menu">
+        <template v-for="o in options" :key="o.value">
+          <li>
+            <a class="dropdown-item" @click="callback(o.value)">{{ o.label }}</a>
+          </li>
+        </template>
+      </ul>
+    </div>
   </BsInputBase>
 </template>
 
@@ -18,7 +26,7 @@
  * 2024-05-28 Bootstrap VueJS wrapper, Magnus Persson
  */
 
- /**
+/**
  * Purpose: Show a drop down button with options
  */
 defineOptions({

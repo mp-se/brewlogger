@@ -1,7 +1,6 @@
 <template>
   <template v-if="gravityStats != null">
     <div class="col-md-12">
-  
       <div class="row">
         <div class="col-md-1">
           <label class="form-label fw-bold">30 sec</label>
@@ -63,9 +62,8 @@
 </template>
 
 <script setup>
-import { logDebug, logError, logInfo } from '@/modules/logger'
-import { formatTimeShort } from "@/modules/utils"
-import { format } from 'date-fns'
+import { formatTimeShort } from '@/modules/utils'
+import { logDebug } from '@/modules/logger'
 
 defineOptions({
   inheritAttrs: false
@@ -73,7 +71,7 @@ defineOptions({
 const gravityStats = defineModel()
 
 function estimateBattery(interval) {
-  logDebug("LifeEstimates.estimateBattery()", interval)
+  logDebug('LifeEstimates.estimateBattery()', interval)
   var estimate = gravityStats.value.readings * interval
   return formatTimeShort(estimate)
 }

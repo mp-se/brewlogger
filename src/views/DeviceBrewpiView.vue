@@ -2,35 +2,48 @@
   <div class="container">
     <p></p>
     <p class="h3">Device - Brewpi</p>
-    <hr>
+    <hr />
 
     <template v-if="device != null">
       <div class="row gy-2 align-items-end">
         <div class="col-md-4">
-          <pre v-if="lcd != null"
-            style="background-color: black; color: yellow; text-align: center;">{{ lcd[0] }}<br>{{ lcd[1] }}<br>{{ lcd[2] }}<br>{{ lcd[3] }}</pre>
+          <pre
+            v-if="lcd != null"
+            style="
+              background-color: black;
+              color: yellow;
+              text-align: center;
+            ">{{ lcd[0] }}<br>{{ lcd[1] }}<br>{{ lcd[2] }}<br>{{ lcd[3] }}</pre>
         </div>
 
         <div class="col-md-12">
-          <hr>
+          <hr />
         </div>
 
         <template v-if="tempControl">
           <div class="col-md-4">
-            <button @click="setFridgeTemp()" type="button" class="btn btn-success"> <i
-                class="bi bi-arrow-right-circle"></i>
+            <button @click="setFridgeTemp()" type="button" class="btn btn-success">
+              <i class="bi bi-arrow-right-circle"></i>
               Set fridge temperature
             </button>
           </div>
           <div class="col-md-8">
-            <BsInputNumber v-model="tempControl.fridgeSet" width="4" label="Fridge target temperature"
-              :unit="tempControl.tempUnit" :min="tempControl.tempMin" :max="tempControl.tempMax" step="1" help=""
-              :disabled="global.disabled">
+            <BsInputNumber
+              v-model="tempControl.fridgeSet"
+              width="4"
+              label="Fridge target temperature"
+              :unit="tempControl.tempUnit"
+              :min="tempControl.tempMin"
+              :max="tempControl.tempMax"
+              step="1"
+              help=""
+              :disabled="global.disabled"
+            >
             </BsInputNumber>
           </div>
 
           <div class="col-md-12">
-            <hr>
+            <hr />
           </div>
 
           <!--
@@ -55,40 +68,41 @@
 
         <div class="col-md-12">
           <router-link :to="{ name: 'device-list' }">
-            <button type="button" class="btn btn-secondary w-2"> <i class="bi bi-list"></i>
+            <button type="button" class="btn btn-secondary w-2">
+              <i class="bi bi-list"></i>
               Device list
-            </button>
-          </router-link>&nbsp;
+            </button> </router-link
+          >&nbsp;
         </div>
       </div>
     </template>
 
     <template v-else>
-      <BsMessage :dismissable="false"
-        :message="'Unable to find device with id ' + $route.params.id + ' or device is not a brewpi device'"
-        alert="danger" />
+      <BsMessage
+        :dismissable="false"
+        :message="
+          'Unable to find device with id ' + $route.params.id + ' or device is not a brewpi device'
+        "
+        alert="danger"
+      />
       <div class="row gy-2">
-        <div class="col-md-12">
-        </div>
+        <div class="col-md-12"></div>
         <div class="col-md-12">
           <router-link :to="{ name: 'device-list' }">
-            <button type="button" class="btn btn-secondary w-2">
-              Device list
-            </button>
-          </router-link>&nbsp;
+            <button type="button" class="btn btn-secondary w-2">Device list</button> </router-link
+          >&nbsp;
         </div>
       </div>
     </template>
-
   </div>
 </template>
 
 <script setup>
-import { onMounted, onUnmounted, ref } from "vue";
-import { global, deviceStore } from "@/modules/pinia"
-import { logDebug, logError, logInfo } from '@/modules/logger'
-import { router } from '@/modules/router'
-import { validateCurrentForm } from "@/modules/utils";
+import { onMounted, onUnmounted, ref } from 'vue'
+import { global, deviceStore } from '@/modules/pinia'
+import { logDebug } from '@/modules/logger'
+import router from '@/modules/router'
+import { validateCurrentForm } from '@/modules/utils'
 
 const device = ref(null)
 const lcd = ref(null)
@@ -96,14 +110,13 @@ const ticker = ref(null)
 const tempControl = ref(null)
 
 onUnmounted(() => {
-  logDebug("DeviceBrewpiView.onUnmounted()")
+  logDebug('DeviceBrewpiView.onUnmounted()')
 
-  if (ticker.value != null)
-    clearInterval(ticker.value)
+  if (ticker.value != null) clearInterval(ticker.value)
 })
 
 onMounted(() => {
-  logDebug("DeviceBrewpiView.onMounted()")
+  logDebug('DeviceBrewpiView.onMounted()')
 
   device.value = null
   tempControl.value = null
@@ -130,32 +143,40 @@ onMounted(() => {
 }*/
 
 function setFridgeTemp() {
-  logDebug("DeviceBrewpiView.setFridgeTemp()")
+  logDebug('DeviceBrewpiView.setFridgeTemp()')
 
-  if (!validateCurrentForm())
-    return
+  if (!validateCurrentForm()) return
 
   global.disabled = true
-  deviceStore.proxyRequest(device.value.url + 'api/mode/', "put", JSON.stringify({ mode: 'f', setPoint: tempControl.value.fridgeSet }), (success, res) => {
-    logDebug("DeviceBrewpiView.setFridgeTemp()", success, res)
-    if(success) {
-      global.messageSuccess = "Target temperature set"
-      tempControl.value = null
-      fetchTempConfig()
-    } else {
-      global.messageError = "Failed to set target temperature"
+  deviceStore.proxyRequest(
+    device.value.url + 'api/mode/',
+    'put',
+    JSON.stringify({ mode: 'f', setPoint: tempControl.value.fridgeSet }),
+    (success, res) => {
+      logDebug('DeviceBrewpiView.setFridgeTemp()', success, res)
+      if (success) {
+        global.messageSuccess = 'Target temperature set'
+        tempControl.value = null
+        fetchTempConfig()
+      } else {
+        global.messageError = 'Failed to set target temperature'
+      }
+      global.disabled = false
     }
-    global.disabled = false
-  })
+  )
 }
 
 function fetchTempConfig() {
-  logDebug("DeviceBrewpiView.fetchTempConfig()")
+  logDebug('DeviceBrewpiView.fetchTempConfig()')
 
-  deviceStore.proxyRequest(device.value.url + 'api/all_temp_control/', "get", "", (success, res) => {
-    logDebug("DeviceBrewpiView.fetchTempConfig()", success, res)
+  deviceStore.proxyRequest(
+    device.value.url + 'api/all_temp_control/',
+    'get',
+    '',
+    (success, res) => {
+      logDebug('DeviceBrewpiView.fetchTempConfig()', success, res)
 
-    /* { 
+      /* { 
       "cc": {
         "tempFormat": "C",
         "tempSetMin": 1,
@@ -205,24 +226,25 @@ function fetchTempConfig() {
         }
       }*/
 
-    tempControl.value = {
-      tempUnit: res.cc.tempFormat,
-      tempMin: res.cc.tempSetMin,
-      tempMax: res.cc.tempSetMax,
-      mode: res.cs.mode,
-      beerSet: res.cs.beerSet,
-      fridgeSet: res.cs.fridgeSet,
-    }
+      tempControl.value = {
+        tempUnit: res.cc.tempFormat,
+        tempMin: res.cc.tempSetMin,
+        tempMax: res.cc.tempSetMax,
+        mode: res.cs.mode,
+        beerSet: res.cs.beerSet,
+        fridgeSet: res.cs.fridgeSet
+      }
 
-    logDebug(tempControl.value)
-  })
+      logDebug(tempControl.value)
+    }
+  )
 }
 
 function fetchDisplay() {
-  logDebug("DeviceBrewpiView.fetchDisplay()")
+  logDebug('DeviceBrewpiView.fetchDisplay()')
 
-  deviceStore.proxyRequest(device.value.url + 'api/lcd/', "get", "", (success, res) => {
-    logDebug("DeviceBrewpiView.fetchDisplay()", success, res)
+  deviceStore.proxyRequest(device.value.url + 'api/lcd/', 'get', '', (success, res) => {
+    logDebug('DeviceBrewpiView.fetchDisplay()', success, res)
     lcd.value = JSON.parse(res)
   })
 }

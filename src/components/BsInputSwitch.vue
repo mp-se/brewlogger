@@ -1,8 +1,17 @@
 <template>
   <BsInputBase :width="width" :label="label" :help="help" :badge="badge">
-    <div class="form-check form-switch" style="height: 38px">  
-      <input v-model="model" class="form-check-input" type="checkbox" role="switch" v-bind="$attrs" :disabled="disabled" data-bs-toggle="tooltip"
-      data-bs-custom-class="custom-tooltip" :data-bs-title="help">
+    <div class="form-check form-switch" style="height: 38px">
+      <input
+        v-model="model"
+        class="form-check-input"
+        type="checkbox"
+        role="switch"
+        v-bind="$attrs"
+        :disabled="disabled"
+        data-bs-toggle="tooltip"
+        data-bs-custom-class="custom-tooltip"
+        :data-bs-title="help"
+      />
     </div>
   </BsInputBase>
 </template>
@@ -45,7 +54,7 @@ const badge = defineModel('badge')
 </script>
 
 <style>
-.form-check .form-check-input[type=checkbox] {
+.form-check .form-check-input[type='checkbox'] {
   width: 50px;
   height: 25px;
 }

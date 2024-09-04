@@ -14,12 +14,12 @@ import { computed } from 'vue'
  * Purpose: Show a progress bar
  */
 
- /**
-  * Ref that contains the value of the progress bar (0-100) (required).
-  */
-const progress = defineModel("progress")
+/**
+ * Ref that contains the value of the progress bar (0-100) (required).
+ */
+const progress = defineModel('progress')
 
 const progressStyle = computed(() => {
-  return "width: " + progress.value + "%"
+  return 'width: ' + progress.value + '%'
 })
 </script>

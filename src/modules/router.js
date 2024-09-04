@@ -1,6 +1,6 @@
 import { ref } from 'vue'
 import { createRouter, createWebHistory } from 'vue-router'
-import { validateCurrentForm } from "@/modules/utils"
+import { validateCurrentForm } from '@/modules/utils'
 import { global } from '@/modules/pinia'
 import HomeView from '@/views/HomeView.vue'
 import DeviceView from '@/views/DeviceView.vue'
@@ -18,7 +18,7 @@ import BackupView from '@/views/BackupView.vue'
 import SupportView from '@/views/SupportView.vue'
 import TestView from '@/views/TestView.vue'
 import NotFoundView from '@/views/NotFoundView.vue'
-import { logDebug, logError, logInfo } from '@/modules/logger'
+import { logDebug } from '@/modules/logger'
 
 const routes = [
   {
@@ -97,19 +97,21 @@ const routes = [
     component: TestView
   },
   {
-    path: "/:catchAll(.*)",
-    name: "404",
+    path: '/:catchAll(.*)',
+    name: '404',
     component: NotFoundView
   }
 ]
 
-export const router = createRouter({
-  history: createWebHistory(process.env.BASE_URL),
-  routes
+const router = createRouter({
+  history: createWebHistory(import.meta.env.BASE_URL),
+  routes: routes
 })
 
+export default router
+
 router.beforeEach((to, from) => {
-  logDebug("router.beforeEach()", to, from)
+  logDebug('router.beforeEach()', to, from)
 
   /*if (global.disabled) {
     logDebug("Route: abort due to global.disabled")
@@ -117,8 +119,8 @@ router.beforeEach((to, from) => {
   }*/
 
   if (!validateCurrentForm()) {
-    logDebug("router.beforeEach()", "Route: abort due to form not valid")
-    return false;
+    logDebug('router.beforeEach()', 'Route: abort due to form not valid')
+    return false
   }
 
   global.clearMessages()
@@ -128,36 +130,36 @@ router.beforeEach((to, from) => {
 const items = ref([
   {
     label: 'Home',
-    icon: 'bi-home',
+    icon: 'IconHome',
     path: '/',
     subs: []
   },
   {
     label: 'Device',
-    icon: 'bi-cpu',
+    icon: 'IconCpu',
     path: '/device',
     subs: []
   },
   {
     label: 'Batch',
-    icon: 'bi-graph-up-arrow',
+    icon: 'IconGraphUpArrow',
     path: '/batch',
     subs: []
   },
   {
     label: 'Settings',
-    icon: 'bi-tools',
+    icon: 'IconTools',
     path: '/settings',
     subs: []
   },
   {
     label: 'Other',
-    icon: 'bi-tools',
+    icon: 'IconTools',
     path: '/other',
     subs: [
       {
         label: 'Backup & Restore',
-        path: '/other/backup',
+        path: '/other/backup'
       },
       /*{
         label: 'Support',
@@ -165,10 +167,10 @@ const items = ref([
       },*/
       {
         label: 'About',
-        path: '/other/about',
-      },
+        path: '/other/about'
+      }
     ]
-  },
+  }
 ])
 
 export { items }

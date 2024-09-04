@@ -1,15 +1,12 @@
-import { ref } from 'vue'
-import { config } from "@/modules/pinia"
-import { logDebug, logError, logInfo } from '@/modules/logger'
-import { min } from 'date-fns'
+import { config } from '@/modules/pinia'
+import { logDebug } from '@/modules/logger'
 
 export function validateCurrentForm() {
   let valid = true
   const forms = document.querySelectorAll('.needs-validation')
 
-  Array.from(forms).forEach(form => {
-    if (!form.checkValidity())
-      valid = false
+  Array.from(forms).forEach((form) => {
+    if (!form.checkValidity()) valid = false
 
     form.classList.add('was-validated')
   })
@@ -18,15 +15,15 @@ export function validateCurrentForm() {
 }
 
 export const abv = (og, fg) => {
-  return Math.round((76.08 * (og - fg) / (1.775 - og)) * (fg / 0.794) * 100) / 100
+  return Math.round(((76.08 * (og - fg)) / (1.775 - og)) * (fg / 0.794) * 100) / 100
 }
 
 export const gravityToPlato = (sg) => {
-  return 259 - (259 / sg)
+  return 259 - 259 / sg
 }
 
 export function tempToF(c) {
-  return (c * 1.8) + 32.0
+  return c * 1.8 + 32.0
 }
 
 export function tempToC(f) {
@@ -38,16 +35,19 @@ export function isValidJson(s) {
     JSON.stringify(JSON.parse(s))
     return true
   } catch (e) {
+    logDebug('utils.isValidJson()')
   }
 
   return false
 }
 
 export function isValidMqttData(s) {
+  logDebug('utils.isValidMqttData()', s)
   return false // Used in common components so it needs to be defined
 }
 
 export function isValidFormData(s) {
+  logDebug('utils.isValidFormData()', s)
   return false // Used in common components so it needs to be defined
 }
 
@@ -61,7 +61,7 @@ export function download(content, mimeType, filename) {
 }
 
 export function getGravityDataAnalytics(gravityList) {
-  logDebug("utils.getGravityDataAnalytics()")
+  logDebug('utils.getGravityDataAnalytics()')
 
   var gList = []
 
@@ -69,48 +69,44 @@ export function getGravityDataAnalytics(gravityList) {
     gravity: {
       min: 2.0, // FG
       max: 0, // OG
-      minString: "",
-      minString: ""
+      minString: '',
+      maxString: ''
     },
     temperature: {
       min: 100,
       max: -100,
-      minString: "",
-      maxString: "",
+      minString: '',
+      maxString: ''
     },
     abv: 0,
-    abvString: "",
+    abvString: '',
     date: {
-      first: "",
-      last: "",
-      firstDate: "",
-      lastDate: "",
-      firstTime: "",
-      lastTime: "",
+      first: '',
+      last: '',
+      firstDate: '',
+      lastDate: '',
+      firstTime: '',
+      lastTime: ''
     },
     readings: 0,
     averageInterval: 0,
-    averageIntervalString: "",
+    averageIntervalString: ''
   }
 
   // Sort the gravity data so its in date order
   gravityList.sort((a, b) => Date.parse(a.created) - Date.parse(b.created))
 
   // Process the gravity readings
-  gravityList.forEach(g => {
+  gravityList.forEach((g) => {
     if (g.active) {
       gList.push(g)
 
       // Calculate some statistics for gravity and temperature
-      if (g.gravity > stats.gravity.max)
-        stats.gravity.max = g.gravity
-      if (g.gravity < stats.gravity.min)
-        stats.gravity.min = g.gravity
+      if (g.gravity > stats.gravity.max) stats.gravity.max = g.gravity
+      if (g.gravity < stats.gravity.min) stats.gravity.min = g.gravity
 
-      if (g.temperature > stats.temperature.max)
-        stats.temperature.max = g.temperature
-      if (g.temperature < stats.temperature.min)
-        stats.temperature.min = g.temperature
+      if (g.temperature > stats.temperature.max) stats.temperature.max = g.temperature
+      if (g.temperature < stats.temperature.min) stats.temperature.min = g.temperature
     }
   })
 
@@ -120,11 +116,15 @@ export function getGravityDataAnalytics(gravityList) {
   stats.temperature.min = config.isTempC ? stats.temperature.min : tempToF(stats.temperature.min)
   stats.temperature.max = config.isTempC ? stats.temperature.max : tempToF(stats.temperature.max)
 
-  stats.abvString = new Number(stats.abv).toFixed(2) + " %"
-  stats.gravity.minString = new Number(stats.gravity.min).toFixed(3) + (config.isGravitySG ? ' SG' : ' P')
-  stats.gravity.maxString = new Number(stats.gravity.max).toFixed(3) + (config.isGravitySG ? ' SG' : ' P')
-  stats.temperature.minString = new Number(stats.temperature.min).toFixed(2) + (config.isTempC ? ' C' : ' F')
-  stats.temperature.maxString = new Number(stats.temperature.max).toFixed(2) + (config.isTempC ? ' C' : ' F')
+  stats.abvString = new Number(stats.abv).toFixed(2) + ' %'
+  stats.gravity.minString =
+    new Number(stats.gravity.min).toFixed(3) + (config.isGravitySG ? ' SG' : ' P')
+  stats.gravity.maxString =
+    new Number(stats.gravity.max).toFixed(3) + (config.isGravitySG ? ' SG' : ' P')
+  stats.temperature.minString =
+    new Number(stats.temperature.min).toFixed(2) + (config.isTempC ? ' C' : ' F')
+  stats.temperature.maxString =
+    new Number(stats.temperature.max).toFixed(2) + (config.isTempC ? ' C' : ' F')
 
   if (gList.length) {
     stats.date.first = gList[0].created
@@ -136,59 +136,57 @@ export function getGravityDataAnalytics(gravityList) {
     stats.date.firstTime = stats.date.first.substring(11, 19)
     stats.date.lastTime = stats.date.last.substring(11, 19)
 
-    stats.averageInterval = new Number(((Date.parse(stats.date.last) - Date.parse(stats.date.first)) / gList.length) / 1000).toFixed(0)
+    stats.averageInterval = new Number(
+      (Date.parse(stats.date.last) - Date.parse(stats.date.first)) / gList.length / 1000
+    ).toFixed(0)
 
-    if(stats.averageInterval<60)
-      stats.averageIntervalString = stats.averageInterval + " s"
-    else // if(stats.averageInterval<60*60)
-      stats.averageIntervalString = new Number(stats.averageInterval/60).toFixed(0) + " m " +  new Number(stats.averageInterval%60).toFixed(0) + " s"   
+    if (stats.averageInterval < 60) stats.averageIntervalString = stats.averageInterval + ' s'
+    // if(stats.averageInterval<60*60)
+    else
+      stats.averageIntervalString =
+        new Number(stats.averageInterval / 60).toFixed(0) +
+        ' m ' +
+        new Number(stats.averageInterval % 60).toFixed(0) +
+        ' s'
   }
 
-  stats.readings = gList.length 
+  stats.readings = gList.length
 
-  logDebug("utils.getGravityDataAnalytics()", stats)
+  logDebug('utils.getGravityDataAnalytics()', stats)
   return stats
 }
 
 export function formatTime(t) {
   var seconds = Math.floor(t % 60)
-  var minutes = Math.floor((t % (60*60)) / 60)
-  var hours = Math.floor((t % (24*60*60)) / (60*60))
-  var days = Math.floor((t % (7*24*60*60)) / (24*60*60))
-  var weeks = Math.floor((t % (4*7*24*60*60)) / (7*24*60*60))
+  var minutes = Math.floor((t % (60 * 60)) / 60)
+  var hours = Math.floor((t % (24 * 60 * 60)) / (60 * 60))
+  var days = Math.floor((t % (7 * 24 * 60 * 60)) / (24 * 60 * 60))
+  var weeks = Math.floor((t % (4 * 7 * 24 * 60 * 60)) / (7 * 24 * 60 * 60))
 
-  var s = ""
+  var s = ''
 
-  if(weeks>0)
-    s += weeks + "w "
-  if(days>0)
-    s += days + "d "
-  if(hours>0)
-    s += hours + "h "
-  if(minutes>0)
-    s += minutes + "m "
-  if(seconds>0)
-    s += seconds + "s "
+  if (weeks > 0) s += weeks + 'w '
+  if (days > 0) s += days + 'd '
+  if (hours > 0) s += hours + 'h '
+  if (minutes > 0) s += minutes + 'm '
+  if (seconds > 0) s += seconds + 's '
   return s
 }
 
 export function formatTimeShort(t) {
   var seconds = Math.floor(t % 60)
-  var minutes = Math.floor((t % (60*60)) / 60)
-  var hours = Math.floor((t % (24*60*60)) / (60*60))
-  var days = Math.floor((t % (7*24*60*60)) / (24*60*60))
-  var weeks = Math.floor((t % (365*24*60*60)) / (7*24*60*60))
+  var minutes = Math.floor((t % (60 * 60)) / 60)
+  var hours = Math.floor((t % (24 * 60 * 60)) / (60 * 60))
+  var days = Math.floor((t % (7 * 24 * 60 * 60)) / (24 * 60 * 60))
+  var weeks = Math.floor((t % (365 * 24 * 60 * 60)) / (7 * 24 * 60 * 60))
 
-  logDebug("utils.formatTimeShort()", t, weeks, days, hours, minutes, seconds)
+  logDebug('utils.formatTimeShort()', t, weeks, days, hours, minutes, seconds)
 
-  var s = ""
+  var s = ''
 
-  if(weeks>0)
-    s += weeks + "w "
-  if(days>0)
-    s += days + "d "
-  if(hours>0)
-    s += hours + "h "
+  if (weeks > 0) s += weeks + 'w '
+  if (days > 0) s += days + 'd '
+  if (hours > 0) s += hours + 'h '
   //if(minutes>0)
   //  s += minutes + "m "
   //if(seconds>0)

@@ -1,7 +1,14 @@
 <template>
   <BsInputBase :width="width" :label="label" :help="help" :badge="badge">
-    <textarea v-model="model" class="form-control" type="text" v-bind="$attrs" data-bs-toggle="tooltip"
-      data-bs-custom-class="custom-tooltip" :data-bs-title="help"></textarea>
+    <textarea
+      v-model="model"
+      class="form-control"
+      type="text"
+      v-bind="$attrs"
+      data-bs-toggle="tooltip"
+      data-bs-custom-class="custom-tooltip"
+      :data-bs-title="help"
+    ></textarea>
   </BsInputBase>
 </template>
 

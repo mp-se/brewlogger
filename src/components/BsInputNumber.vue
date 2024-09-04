@@ -1,10 +1,18 @@
 <template>
   <BsInputBase :width="width" :label="label" :help="help" :badge="badge">
-      <div class="input-group">
-        <input v-model="model" class="form-control" type="number" v-bind="$attrs" data-bs-toggle="tooltip"
-          data-bs-custom-class="custom-tooltip" :data-bs-title="help" :disabled="disabled">
-        <span v-if="unit !== undefined" class="input-group-text">{{ unit }}</span>
-      </div>
+    <div class="input-group">
+      <input
+        v-model="model"
+        class="form-control"
+        type="number"
+        v-bind="$attrs"
+        data-bs-toggle="tooltip"
+        data-bs-custom-class="custom-tooltip"
+        :data-bs-title="help"
+        :disabled="disabled"
+      />
+      <span v-if="unit !== undefined" class="input-group-text">{{ unit }}</span>
+    </div>
   </BsInputBase>
 </template>
 

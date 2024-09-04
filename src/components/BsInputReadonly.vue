@@ -1,9 +1,17 @@
 <template>
   <BsInputBase :width="width" :label="label" :help="help">
     <div class="input-group">
-    <input v-model="model" class="form-control-plaintext" readonly type="text" v-bind="$attrs" data-bs-toggle="tooltip"
-      data-bs-custom-class="custom-tooltip" :data-bs-title="help">
-    </div>  
+      <input
+        v-model="model"
+        class="form-control-plaintext"
+        readonly
+        type="text"
+        v-bind="$attrs"
+        data-bs-toggle="tooltip"
+        data-bs-custom-class="custom-tooltip"
+        :data-bs-title="help"
+      />
+    </div>
   </BsInputBase>
 </template>
 

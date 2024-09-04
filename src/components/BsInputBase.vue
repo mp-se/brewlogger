@@ -1,6 +1,6 @@
 <template>
   <div class="has-validation pt-2">
-    <label v-if="label!==undefined" class="form-label fw-bold">{{ label }}</label>
+    <label v-if="label !== undefined" class="form-label fw-bold">{{ label }}</label>
     &nbsp;<span v-if="badge" class="badge text-bg-danger rounded-circle">1</span>
     <div :class="[width === undefined ? '' : 'col-' + width]">
       <!-- @slot this is where the main component is located -->
@@ -16,8 +16,8 @@
  */
 
 /**
- * Purpose: Basic layout of a form component with label on top and help text below. 
- * 
+ * Purpose: Basic layout of a form component with label on top and help text below.
+ *
  * Note! Should not be used directly, this is a base class for form components.
  */
 defineOptions({
@@ -34,9 +34,9 @@ const help = defineModel('help')
 /**
  * Specify the width to force a specific size (optional).
  */
- const width = defineModel('width')
+const width = defineModel('width')
 /**
  * Specify if an badge should be shown to guide the user (optional).
  */
- const badge = defineModel('badge')
+const badge = defineModel('badge')
 </script>

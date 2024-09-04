@@ -1,10 +1,19 @@
 <template>
   <BsInputBase :width="width" :label="label" :help="help" :badge="badge">
     <div class="btn-group" role="group">
-      <template v-for="o in options">
-        <input type="radio" class="btn-check" v-model="model" :value="o.value" :name="'radio' + $.uid"
-          :id="'radio' + $.uid + o.value" :disabled="disabled">
-        <label class="btn btn-outline-primary" :for="'radio' + $.uid + o.value">{{ o.label }}</label>
+      <template v-for="o in options" :key="o.value">
+        <input
+          type="radio"
+          class="btn-check"
+          v-model="model"
+          :value="o.value"
+          :name="'radio' + $.uid"
+          :id="'radio' + $.uid + o.value"
+          :disabled="disabled"
+        />
+        <label class="btn btn-outline-primary" :for="'radio' + $.uid + o.value">{{
+          o.label
+        }}</label>
       </template>
     </div>
   </BsInputBase>
@@ -29,7 +38,7 @@ const model = defineModel()
  * Options for the dropdown in the format [ { label: "label", value: "value" } ]
  * Label is displayed in the list and value is stored in the bound ref (required).
  */
- const options = defineModel('options')
+const options = defineModel('options')
 /**
  * This text is shown above the form component (optional).
  */

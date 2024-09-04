@@ -6,12 +6,18 @@
         <p class="h3">Device List</p>
       </div>
       <div class="col-md-4">
-        <BsSelect v-model="global.deviceListFilterSoftware" :options="softwareOptions" label="Software" help="" :disabled="global.disabled">
+        <BsSelect
+          v-model="global.deviceListFilterSoftware"
+          :options="softwareOptions"
+          label="Software"
+          help=""
+          :disabled="global.disabled"
+        >
         </BsSelect>
       </div>
     </div>
 
-    <hr>
+    <hr />
     <table class="table table-striped">
       <thead>
         <tr>
@@ -27,32 +33,46 @@
         <tr v-for="d in deviceList" :key="d.id">
           <th scope="row">{{ d.id }}</th>
           <td>{{ d.mdns }}</td>
-          <td><pre>{{ d.chipId }}</pre></td>
+          <td>
+            <pre>{{ d.chipId }}</pre>
+          </td>
           <td>{{ d.chipFamily }}</td>
           <td>{{ d.software }}</td>
           <td>
             <router-link :to="{ name: 'device', params: { id: d.id } }">
-              <button type="button" class="btn btn-primary btn-sm"><i class="bi bi-pencil-square"></i></button>
-            </router-link>&nbsp;
-            <button type="button" class="btn btn-danger btn-sm" @click.prevent="deleteDevice(d.id, d.mdns)"><i
-                class="bi bi-file-x"></i></button>&nbsp;
+              <button type="button" class="btn btn-primary btn-sm">
+                <i class="bi bi-pencil-square"></i>
+              </button> </router-link
+            >&nbsp;
+            <button
+              type="button"
+              class="btn btn-danger btn-sm"
+              @click.prevent="deleteDevice(d.id, d.mdns)"
+            >
+              <i class="bi bi-file-x"></i></button
+            >&nbsp;
 
             <template v-if="d.software == 'Brewpi'">
               <router-link :to="{ name: 'device-brewpi', params: { id: d.id } }">
-                <button type="button" class="btn btn-info btn-sm"><i class="bi bi-thermometer-snow"></i></button>
-              </router-link>&nbsp;
+                <button type="button" class="btn btn-info btn-sm">
+                  <i class="bi bi-thermometer-snow"></i>
+                </button> </router-link
+              >&nbsp;
             </template>
 
             <template v-if="batchStore.anyBatchesForDevice(d.chipId)">
-            <router-link  :to="{ name: 'batch-list', query: { chipId: d.chipId } }">
-              <button type="button" class="btn btn-success btn-sm"><i class="bi bi-boxes"></i></button>
-            </router-link>&nbsp;
-          </template>
+              <router-link :to="{ name: 'batch-list', query: { chipId: d.chipId } }">
+                <button type="button" class="btn btn-success btn-sm">
+                  <i class="bi bi-boxes"></i>
+                </button> </router-link
+              >&nbsp;
+            </template>
 
-          <template v-if="d.url.length > 7">
-            <button @click="openUrl(d.url)" type="button" class="btn btn-secondary btn-sm"><i class="bi bi-link"></i></button>&nbsp;
-          </template>
-
+            <template v-if="d.url.length > 7">
+              <button @click="openUrl(d.url)" type="button" class="btn btn-secondary btn-sm">
+                <i class="bi bi-link"></i></button
+              >&nbsp;
+            </template>
           </td>
         </tr>
       </tbody>
@@ -61,30 +81,42 @@
     <div class="row">
       <div class="col-md-12">
         <router-link :to="{ name: 'device', params: { id: 'new' } }">
-          <button type="button" class="btn btn-secondary">Add Device</button>
-        </router-link>&nbsp;
+          <button type="button" class="btn btn-secondary">Add Device</button> </router-link
+        >&nbsp;
 
-        <button @click="search()" type="button" class="btn btn-secondary">Search for Devices</button>&nbsp;
-        <button @click="updateDeviceList()" type="button" class="btn btn-secondary">Refresh</button>&nbsp;
+        <button @click="search()" type="button" class="btn btn-secondary">Search for Devices</button
+        >&nbsp;
+        <button @click="updateDeviceList()" type="button" class="btn btn-secondary">Refresh</button
+        >&nbsp;
       </div>
     </div>
 
-    <BsModalConfirm :callback="confirmDeleteCallback" :message="confirmDeleteMessage" id="deleteDevice"
-      title="Delete device" :disabled="global.disabled" />
+    <BsModalConfirm
+      :callback="confirmDeleteCallback"
+      :message="confirmDeleteMessage"
+      id="deleteDevice"
+      title="Delete device"
+      :disabled="global.disabled"
+    />
 
-    <BsModalSelect v-model="searchSelected" :disabled="searchOptions == null ? true : false"
-      :callback="confirmSearchCallback" message="Select a device to add" id="searchDevice" title="Select device"
-      :options="searchOptions" />
-
+    <BsModalSelect
+      v-model="searchSelected"
+      :disabled="searchOptions == null ? true : false"
+      :callback="confirmSearchCallback"
+      message="Select a device to add"
+      id="searchDevice"
+      title="Select device"
+      :options="searchOptions"
+    />
   </div>
 </template>
 
 <script setup>
-import { onMounted, ref, watch } from "vue";
+import { onMounted, ref, watch } from 'vue'
 import { storeToRefs } from 'pinia'
-import { Device } from "@/modules/deviceStore"
-import { global, deviceStore, batchStore } from "@/modules/pinia"
-import { logDebug, logError, logInfo } from '@/modules/logger'
+import { Device } from '@/modules/deviceStore'
+import { global, deviceStore, batchStore } from '@/modules/pinia'
+import { logDebug } from '@/modules/logger'
 
 const confirmDeleteMessage = ref(null)
 const confirmDeleteId = ref(null)
@@ -99,64 +131,60 @@ const softwareOptions = ref([
   { label: 'Kegmon', value: 'Kegmon' },
   { label: 'Pressuremon', value: 'Pressuremon' },
   { label: 'Brewpi', value: 'Brewpi' },
-  { label: 'iSpindel', value: 'iSpindel' },
+  { label: 'iSpindel', value: 'iSpindel' }
 ])
 
 const searchOptions = ref(null)
-const searchSelected = ref("")
+const searchSelected = ref('')
 
 onMounted(() => {
-  logDebug("DeviceListView.onMounted()")
+  logDebug('DeviceListView.onMounted()')
   updateDeviceList()
   deviceList.value = deviceStore.deviceList
   filterDeviceList()
 })
 
 function filterDeviceList() {
-  logDebug("DeviceListView.filterDeviceList", global.deviceListFilterSoftware)
+  logDebug('DeviceListView.filterDeviceList', global.deviceListFilterSoftware)
 
   deviceList.value = []
-  deviceStore.deviceList.forEach(d => {
-
-    if(global.deviceListFilterSoftware == '*') {
+  deviceStore.deviceList.forEach((d) => {
+    if (global.deviceListFilterSoftware == '*') {
       deviceList.value.push(d)
     } else {
-      if(d.software == global.deviceListFilterSoftware)
-        deviceList.value.push(d)
+      if (d.software == global.deviceListFilterSoftware) deviceList.value.push(d)
     }
   })
 }
 
-watch(deviceListFilterSoftware, async (selected, previous) => {
-  logDebug("DeviceListView.watch(filterSoftware)", selected)
+watch(deviceListFilterSoftware, async (selected) => {
+  logDebug('DeviceListView.watch(filterSoftware)', selected)
   filterDeviceList()
 })
 
 function updateDeviceList() {
-  logDebug("DeviceListView.updateDeviceList()")
+  logDebug('DeviceListView.updateDeviceList()')
 
   deviceStore.getDeviceList((success, dl) => {
     if (success) {
       deviceList.value = dl
       filterDeviceList()
     } else {
-      global.messageError = "Failed to load device list"
+      global.messageError = 'Failed to load device list'
     }
   })
 }
 
 const confirmDeleteCallback = (result) => {
-  logDebug("DeviceListView.confirmDeleteCallback()", result)
+  logDebug('DeviceListView.confirmDeleteCallback()', result)
 
   if (result) {
     global.disabled = true
     global.clearMessages()
 
     deviceStore.deleteDevice(confirmDeleteId.value, (success) => {
-      if (success)
-        global.messageSuccess = "Deleted device"
-      else
-        global.messageError = "Failed to delete device"
+      if (success) global.messageSuccess = 'Deleted device'
+      else global.messageError = 'Failed to delete device'
 
       updateDeviceList()
       global.disabled = false
@@ -165,24 +193,24 @@ const confirmDeleteCallback = (result) => {
 }
 
 const deleteDevice = (id, name) => {
-  logDebug("DeviceListView.deleteDevice()", id, name)
+  logDebug('DeviceListView.deleteDevice()', id, name)
 
   confirmDeleteMessage.value = "Do you really want to delete device ''" + name + "'"
   confirmDeleteId.value = id
   document.getElementById('deleteDevice').click()
 }
 function openUrl(url) {
-  logDebug("DeviceListView.openUrl()", url)
-  window.open(url, "_blank")
+  logDebug('DeviceListView.openUrl()', url)
+  window.open(url, '_blank')
 }
 
 function search() {
-  logDebug("DeviceListView.search()")
+  logDebug('DeviceListView.search()')
 
   global.disabled = true
   global.clearMessages()
   searchOptions.value = null
-  searchSelected.value = ""
+  searchSelected.value = ''
   document.getElementById('searchDevice').click()
 
   /*
@@ -193,28 +221,34 @@ function search() {
 
   deviceStore.searchNetwork((success, ml) => {
     if (success) {
-      searchOptions.value = [{ label: "- none -", value: "" }]
+      searchOptions.value = [{ label: '- none -', value: '' }]
 
-      ml.forEach(m => {
-        searchOptions.value.push({ label: m.name + "," + m.host + " (" + m.type + ")", value: m.host, host: m.host, type: m.type, name: m.name })
+      ml.forEach((m) => {
+        searchOptions.value.push({
+          label: m.name + ',' + m.host + ' (' + m.type + ')',
+          value: m.host,
+          host: m.host,
+          type: m.type,
+          name: m.name
+        })
       })
     } else {
-      global.messageError = "Failed to search for mDNS devices on the local network"
+      global.messageError = 'Failed to search for mDNS devices on the local network'
     }
   })
 }
 
 const confirmSearchCallback = (result, value) => {
-  logDebug("DeviceListView.confirmSearchCallback()", result, value)
+  logDebug('DeviceListView.confirmSearchCallback()', result, value)
 
   if (result) {
     global.clearMessages()
     global.disabled = true
-    if (value != "") {
-      searchOptions.value.forEach(e => {
+    if (value != '') {
+      searchOptions.value.forEach((e) => {
         if (e.value == value) {
-          logDebug("DeviceListView.confirmSearchCallback()", e)
-          detectDeviceType("http://" + e.name)
+          logDebug('DeviceListView.confirmSearchCallback()', e)
+          detectDeviceType('http://' + e.name)
         }
       })
     }
@@ -222,62 +256,61 @@ const confirmSearchCallback = (result, value) => {
 }
 
 async function detectDeviceType(url) {
-  logDebug("DeviceListView.detectDeviceType()", url)
+  logDebug('DeviceListView.detectDeviceType()', url)
 
   // This should detect the GravityMon, KegMon and PressureMon software
   await fetch(url + '/api/status', {
-    method: "GET",
-    signal: AbortSignal.timeout(global.fetchTimout),
+    method: 'GET',
+    signal: AbortSignal.timeout(global.fetchTimout)
   })
-    .then(res => {
-      logDebug("DeviceListView.detectDeviceType()", res.status)
+    .then((res) => {
+      logDebug('DeviceListView.detectDeviceType()', res.status)
       if (!res.ok) throw res
       return res.json()
     })
-    .then(json => {
-      logDebug("DeviceListView.detectDeviceType()", json)
+    .then((json) => {
+      logDebug('DeviceListView.detectDeviceType()', json)
 
-      var device = new Device(0, "", "", "", "", "", "", url, "")
+      var device = new Device(0, '', '', '', '', '', '', url, '')
 
-      if (json.hasOwnProperty("id")) {
-        logDebug("DeviceListView.detectDeviceType()", "ID found", json.id)
+      if (Object.prototype.hasOwnProperty.call(json, 'id')) {
+        logDebug('DeviceListView.detectDeviceType()', 'ID found', json.id)
         device.chipId = json.id
       }
 
-      if (json.hasOwnProperty("mdns")) {
-        logDebug("DeviceListView.detectDeviceType()", "mDNS found", json.mdns)
+      if (Object.prototype.hasOwnProperty.call(json, 'mdns')) {
+        logDebug('DeviceListView.detectDeviceType()', 'mDNS found', json.mdns)
         device.mdns = json.mdns
       }
 
-      if (json.hasOwnProperty("platform")) {
-        logDebug("DeviceListView.detectDeviceType()", "Platform found", json.platform.split(' ')[0])
+      if (Object.prototype.hasOwnProperty.call(json, 'platform')) {
+        logDebug('DeviceListView.detectDeviceType()', 'Platform found', json.platform.split(' ')[0])
         device.chipFamily = json.platform.split(' ')[0]
       }
 
-      if (json.hasOwnProperty("scale-raw1")) {
-        logDebug("DeviceListView.detectDeviceType()", "Software Kegmon")
-        device.software = "Kegmon"
+      if (Object.prototype.hasOwnProperty.call(json, 'scale-raw1')) {
+        logDebug('DeviceListView.detectDeviceType()', 'Software Kegmon')
+        device.software = 'Kegmon'
       }
 
       // TODO: Add detection of gravitymon
       // TODO: Add detection of pressuremon
 
-      if (device.chipId != "") {
+      if (device.chipId != '') {
         deviceStore.addDevice(device, (success) => {
           if (success) {
-            global.messageSuccess = "Saved device " + device.mdns
+            global.messageSuccess = 'Saved device ' + device.mdns
             updateDeviceList()
           } else {
-            global.messageError = "Failed to save device"
+            global.messageError = 'Failed to save device'
           }
         })
       } else {
-        global.messageError = "Unable to detect device type for " + device.mdns
+        global.messageError = 'Unable to detect device type for ' + device.mdns
       }
-
     })
-    .catch(err => {
-      logDebug("DeviceListView.detectDeviceType()", err)
+    .catch((err) => {
+      logDebug('DeviceListView.detectDeviceType()', err)
     })
 }
 </script>

@@ -15,13 +15,22 @@
           <BsInputReadonly v-model="gravityStats.readings" label="#"></BsInputReadonly>
         </div>
         <div class="col-md-1">
-          <BsInputReadonly v-model="gravityStats.averageIntervalString" label="Ave Int"></BsInputReadonly>
+          <BsInputReadonly
+            v-model="gravityStats.averageIntervalString"
+            label="Ave Int"
+          ></BsInputReadonly>
         </div>
         <div class="col-md-1">
-          <BsInputReadonly v-model="gravityStats.temperature.maxString" label="High"></BsInputReadonly>
+          <BsInputReadonly
+            v-model="gravityStats.temperature.maxString"
+            label="High"
+          ></BsInputReadonly>
         </div>
         <div class="col-md-1">
-          <BsInputReadonly v-model="gravityStats.temperature.minString" label="Low"></BsInputReadonly>
+          <BsInputReadonly
+            v-model="gravityStats.temperature.minString"
+            label="Low"
+          ></BsInputReadonly>
         </div>
         <div class="col-md-2">
           <BsInputReadonly v-model="gravityStats.date.firstDate" label="First"></BsInputReadonly>
