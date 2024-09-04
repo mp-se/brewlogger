@@ -15,6 +15,13 @@ from .utils import load_settings
 
 logger = logging.getLogger(__name__)
 
+# TODO: Feature1: Add option to collect data from brewpi controller
+# Collect data when gravity readings are received, a brewpi controller can be connected to one or more batches. 
+
+# TODO: Feature2: 
+# 
+
+
 @asynccontextmanager
 async def lifespan_handler(app: FastAPI):
     # Running on startup
@@ -36,6 +43,7 @@ def create_app() -> FastAPI:
     )
 
     origins = [
+        "http://localhost:5173",
         "http://localhost:8080",
         "http://localhost:8081",
     ]
