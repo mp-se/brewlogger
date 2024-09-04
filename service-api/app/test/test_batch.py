@@ -1,14 +1,12 @@
 import json
 
-from sqlalchemy import text
-
-from api.db.session import engine
 from api.config import get_settings
 
 headers = {
     "Authorization": "Bearer " + get_settings().api_key,
     "Content-Type": "application/json",
 }
+
 
 def test_add(app_client):
     data = {
@@ -52,11 +50,13 @@ def test_add(app_client):
     r2 = app_client.get("/api/batch/hello", headers=headers)
     assert r2.status_code == 422
 
+
 def test_list(app_client):
     r = app_client.get("/api/batch/", headers=headers)
     assert r.status_code == 200
     data = json.loads(r.text)
     assert len(data) == 1
+
 
 def test_update(app_client):
     data = {
@@ -97,6 +97,7 @@ def test_update(app_client):
     r = app_client.patch("/api/batch/10", json=data, headers=headers)
     assert r.status_code == 404
 
+
 def test_delete(app_client):
     # Delete
     r = app_client.delete("/api/batch/1", headers=headers)
@@ -107,6 +108,7 @@ def test_delete(app_client):
     assert r.status_code == 200
     data = json.loads(r.text)
     assert len(data) == 0
+
 
 def test_query(app_client):
     data = {
@@ -141,6 +143,7 @@ def test_query(app_client):
     assert r.status_code == 200
     data = json.loads(r.text)
     assert len(data) == 1
+
 
 def test_validation(app_client):
     data = {

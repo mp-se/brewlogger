@@ -16,10 +16,10 @@ from .utils import load_settings
 logger = logging.getLogger(__name__)
 
 # TODO: Feature1: Add option to collect data from brewpi controller
-# Collect data when gravity readings are received, a brewpi controller can be connected to one or more batches. 
+# Collect data when gravity readings are received, a brewpi controller can be connected to one or more batches.
 
-# TODO: Feature2: 
-# 
+# TODO: Feature2:
+#
 
 
 @asynccontextmanager
@@ -30,6 +30,7 @@ async def lifespan_handler(app: FastAPI):
     yield
     # Running on closedown
     logger.info("Running shutdown handler")
+
 
 def create_app() -> FastAPI:
     logger.info("Creating FastAPI application and registering routers.")
@@ -58,8 +59,8 @@ def create_app() -> FastAPI:
 
     @app.get("/health")
     async def health():
-        return { "status": "ok" }
-    
+        return {"status": "ok"}
+
     app.include_router(apiDevice.router)
     app.include_router(apiBatch.router)
     app.include_router(apiGravity.router)
@@ -68,11 +69,14 @@ def create_app() -> FastAPI:
     app.include_router(apiSetting.router)
 
     @app.exception_handler(RequestValidationError)
-    async def validation_exception_handler(request: Request, exc: RequestValidationError):
-        exc_str = f'{exc}'.replace('\n', ' ').replace('   ', ' ')
+    async def validation_exception_handler(
+        request: Request, exc: RequestValidationError
+    ):
+        exc_str = f"{exc}".replace("\n", " ").replace("   ", " ")
         logging.error(f"{request}: {exc_str}")
-        content = {'status_code': 10422, 'message': exc_str, 'data': None}
-        return JSONResponse(content=content, status_code=status.HTTP_422_UNPROCESSABLE_ENTITY)
+        content = {"status_code": 10422, "message": exc_str, "data": None}
+        return JSONResponse(
+            content=content, status_code=status.HTTP_422_UNPROCESSABLE_ENTITY
+        )
 
     return app
-

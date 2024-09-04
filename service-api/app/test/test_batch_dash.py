@@ -1,8 +1,5 @@
 import json
 
-from sqlalchemy import text
-
-from api.db.session import engine
 from api.config import get_settings
 
 headers = {
@@ -10,8 +7,8 @@ headers = {
     "Content-Type": "application/json",
 }
 
+
 def test_add(app_client):
-    
     data = {
         "name": "name",
         "ID": "AAAAAA",
@@ -25,7 +22,7 @@ def test_add(app_client):
         "RSSI": -76.2,
     }
 
-    # Add new    
+    # Add new
     r = app_client.post("/api/gravity/public", json=data, headers=headers)
     assert r.status_code == 200
     r = app_client.post("/api/gravity/public", json=data, headers=headers)
@@ -38,6 +35,7 @@ def test_add(app_client):
     assert r.status_code == 200
     r = app_client.post("/api/gravity/public", json=data, headers=headers)
     assert r.status_code == 200
+
 
 def test_list(app_client):
     return
@@ -54,4 +52,3 @@ def test_list(app_client):
     assert len(data) == 1
     print(data)
     assert False
-

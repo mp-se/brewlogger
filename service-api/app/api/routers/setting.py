@@ -8,12 +8,12 @@ from ..security import api_key_auth, get_settings
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/api/config")
 
+
 @router.get(
-    "/",
-    response_model=schemas.BrewLogger,
-    dependencies=[Depends(api_key_auth)])
+    "/", response_model=schemas.BrewLogger, dependencies=[Depends(api_key_auth)]
+)
 async def get_configuration(
-    brewlogger_service: BrewLoggerService = Depends(get_brewlogger_service)
+    brewlogger_service: BrewLoggerService = Depends(get_brewlogger_service),
 ):
     logger.info("Endpoint GET /api/config/")
     list = brewlogger_service.list()
@@ -25,10 +25,10 @@ async def get_configuration(
 
     return None
 
+
 @router.patch(
-    "/{id}",
-    response_model=schemas.BrewLogger,
-    dependencies=[Depends(api_key_auth)])
+    "/{id}", response_model=schemas.BrewLogger, dependencies=[Depends(api_key_auth)]
+)
 async def update_configuration(
     id: int,
     brewLogger: schemas.BrewLoggerUpdate,

@@ -8,7 +8,10 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-class GravityService(BaseService[models.Gravity, schemas.GravityCreate, schemas.GravityUpdate]):
+
+class GravityService(
+    BaseService[models.Gravity, schemas.GravityCreate, schemas.GravityUpdate]
+):
     def __init__(self, db_session: Session):
         super(GravityService, self).__init__(models.Gravity, db_session)
 
@@ -27,7 +30,7 @@ class GravityService(BaseService[models.Gravity, schemas.GravityCreate, schemas.
         if len(lst) == 0:
             raise HTTPException(
                 status_code=400,
-                detail=f"No gravity readings in request.",
+                detail="No gravity readings in request.",
             )
 
         batch = self.db_session.get(models.Batch, lst[0].batch_id)
@@ -40,8 +43,11 @@ class GravityService(BaseService[models.Gravity, schemas.GravityCreate, schemas.
         return super(GravityService, self).createList(lst)
 
     def search_by_batchId(self, batchId: int) -> List[models.Gravity]:
-        filters = { "batch_id": batchId }
-        objs: List[self.model] = self.db_session.scalars(select(self.model).filter_by(**filters)).all()
-        logger.info("Fetched gravity based on batchId=%d, records found %d", batchId, len(objs))
+        filters = {"batch_id": batchId}
+        objs: List[self.model] = self.db_session.scalars(
+            select(self.model).filter_by(**filters)
+        ).all()
+        logger.info(
+            "Fetched gravity based on batchId=%d, records found %d", batchId, len(objs)
+        )
         return objs
-

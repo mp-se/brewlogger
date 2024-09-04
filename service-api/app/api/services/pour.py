@@ -6,6 +6,7 @@ import logging
 
 logger = logging.getLogger(__name__)
 
+
 class PourService(BaseService[models.Pour, schemas.PourCreate, schemas.PourUpdate]):
     def __init__(self, db_session: Session):
         super(PourService, self).__init__(models.Pour, db_session)

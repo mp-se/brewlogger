@@ -8,7 +8,10 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-class PressureService(BaseService[models.Pressure, schemas.PressureCreate, schemas.PressureUpdate]):
+
+class PressureService(
+    BaseService[models.Pressure, schemas.PressureCreate, schemas.PressureUpdate]
+):
     def __init__(self, db_session: Session):
         super(PressureService, self).__init__(models.Pressure, db_session)
 
@@ -33,7 +36,11 @@ class PressureService(BaseService[models.Pressure, schemas.PressureCreate, schem
         return super(PressureService, self).createList(lst)
 
     def search(self, chipId: str) -> List[models.Pressure]:
-        filters = { "chip_id": chipId }
-        objs: List[self.model] = self.db_session.scalars(select(self.model).filter_by(**filters)).all()
-        logger.info("Fetched pressure based on chipId=%s, records found %d", chipId, len(objs))
+        filters = {"chip_id": chipId}
+        objs: List[self.model] = self.db_session.scalars(
+            select(self.model).filter_by(**filters)
+        ).all()
+        logger.info(
+            "Fetched pressure based on chipId=%s, records found %d", chipId, len(objs)
+        )
         return objs

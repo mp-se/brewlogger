@@ -1,12 +1,11 @@
 import json
-from api.db.session import engine
-from sqlalchemy import text
 from api.config import get_settings
 
 headers = {
     "Authorization": "Bearer " + get_settings().api_key,
     "Content-Type": "application/json",
 }
+
 
 def test_init(app_client):
     data = {
@@ -29,11 +28,7 @@ def test_init(app_client):
 
 
 def test_add(app_client):
-    data = {
-        "pour": 0.1,
-        "volume": 0.2,
-        "batchId": 1
-    }
+    data = {"pour": 0.1, "volume": 0.2, "batchId": 1}
 
     # Add new
     r = app_client.post("/api/pour/", json=data, headers=headers)
@@ -52,22 +47,21 @@ def test_add(app_client):
     r2 = app_client.get("/api/pour/hello", headers=headers)
     assert r2.status_code == 422
 
+
 def test_list(app_client):
     r = app_client.get("/api/pour/", headers=headers)
     assert r.status_code == 200
     data = json.loads(r.text)
     assert len(data) == 1
 
+
 def test_update(app_client):
-    data = {
-        "pour": 1.1,
-        "volume": 1.2,
-        "batchId": 1
-    }
+    data = {"pour": 1.1, "volume": 1.2, "batchId": 1}
 
     # Update existing entity
     r = app_client.patch("/api/pour/1", json=data, headers=headers)
     assert r.status_code == 200
+
 
 def test_delete(app_client):
     # Delete

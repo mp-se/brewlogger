@@ -1,5 +1,5 @@
 import os
 
-file = 'brewlogger.sqlite'
+file = "brewlogger.sqlite"
 if os.path.exists(file):
     os.remove(file)

@@ -1,15 +1,12 @@
 import json
-from api.db.session import engine
-from sqlalchemy import text
 from api.config import get_settings
-import asyncio
-import httpx
 
 
 headers = {
     "Authorization": "Bearer " + get_settings().api_key,
     "Content-Type": "application/json",
 }
+
 
 def test_add(app_client):
     data = {
@@ -46,11 +43,13 @@ def test_add(app_client):
     r2 = app_client.get("/api/device/hello", headers=headers)
     assert r2.status_code == 422
 
+
 def test_list(app_client):
     r = app_client.get("/api/device/", headers=headers)
     assert r.status_code == 200
     data = json.loads(r.text)
     assert len(data) == 1
+
 
 def test_update(app_client):
     data = {
@@ -72,7 +71,9 @@ def test_update(app_client):
     r2 = app_client.get("/api/device/1", headers=headers)
     assert r2.status_code == 200
     data2 = json.loads(r.text)
-    assert data["chipId"] != data2["chipId"] # This should not be updated, can only be set at create
+    assert (
+        data["chipId"] != data2["chipId"]
+    )  # This should not be updated, can only be set at create
     assert data["chipFamily"] == data2["chipFamily"]
     assert data["software"] == data2["software"]
     assert data["mdns"] == data2["mdns"]
@@ -85,6 +86,7 @@ def test_update(app_client):
     r = app_client.patch("/api/device/10", json=data, headers=headers)
     assert r.status_code == 404
 
+
 def test_delete(app_client):
     # Delete
     r = app_client.delete("/api/device/1", headers=headers)
@@ -96,6 +98,7 @@ def test_delete(app_client):
     data = json.loads(r.text)
     assert len(data) == 0
 
+
 """ async def test_proxy(app_client):
     data = {
         "url": "http://localhost:8000/test/get",
@@ -105,6 +108,7 @@ def test_delete(app_client):
     async with httpx.AsyncClient() as client:
         res = await client.post("/api/device/proxy_fetch", json=data, headers=headers)
         assert res.status_code == 200 """
+
 
 def test_validation(app_client):
     data = {

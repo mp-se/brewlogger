@@ -1,6 +1,3 @@
-import json
-from api.db.session import engine
-from sqlalchemy import text
 from api.config import get_settings
 
 headers = {
@@ -8,8 +5,10 @@ headers = {
     "Content-Type": "application/json",
 }
 
+
 def test_read(app_client):
     pass
+
 
 def test_write(app_client):
     pass

@@ -1,8 +1,18 @@
 from typing import Any
-from sqlalchemy import Column, Integer, String, Float, DateTime, ForeignKey, Text, Boolean
+from sqlalchemy import (
+    Column,
+    Integer,
+    String,
+    Float,
+    DateTime,
+    ForeignKey,
+    Text,
+    Boolean,
+)
 from sqlalchemy.orm import declarative_base, relationship
 
 Base: Any = declarative_base()
+
 
 class BrewLogger(Base):
     __tablename__ = "brewlogger"
@@ -14,6 +24,7 @@ class BrewLogger(Base):
     pressure_format = Column(String(3), nullable=False)
     gravity_format = Column(String(3), nullable=False)
     dark_mode = Column(Boolean, nullable=False)
+
 
 class Device(Base):
     __tablename__ = "device"
@@ -27,6 +38,7 @@ class Device(Base):
     ble_color = Column(String(15), nullable=False)
     url = Column(String(80), nullable=False)
     description = Column(String(150), nullable=False)
+
 
 class Batch(Base):
     __tablename__ = "batch"
@@ -51,6 +63,7 @@ class Batch(Base):
     pressure = relationship("Pressure", back_populates="batch", cascade="all,delete")
     pour = relationship("Pour", back_populates="batch", cascade="all,delete")
 
+
 class Gravity(Base):
     __tablename__ = "gravity"
 
@@ -68,6 +81,7 @@ class Gravity(Base):
     batch_id = Column(Integer, ForeignKey(Batch.__table__.c.id))
     batch = relationship("Batch", back_populates="gravity")
 
+
 class Pressure(Base):
     __tablename__ = "pressure"
 
@@ -82,6 +96,7 @@ class Pressure(Base):
 
     batch_id = Column(Integer, ForeignKey(Batch.__table__.c.id))
     batch = relationship("Batch", back_populates="pressure")
+
 
 class Pour(Base):
     __tablename__ = "pour"

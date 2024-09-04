@@ -1,6 +1,6 @@
 # docker-mdns-repeater
 
-This image uses Darell Tan's mdns-repeater to bridge/repeat mDNS requests between two network interfaces. 
+This image uses Darell Tan's mdns-repeater to bridge/repeat mDNS requests between two network interfaces.
 
 The intended use of this container is to allow a docker-compose stack running in `net=bridge` mode to be able to communicate with the Docker host's external network.
 
@@ -59,9 +59,6 @@ networks:
 
 mdns-repeater.c was obtained from [kennylevinsen's fork](https://github.com/kennylevinsen/mdns-repeater) of [Darell Tan's](https://bitbucket.org/geekman/mdns-repeater) mdns-repeater.c
 
-The original dockerization of mdns-repeater was done by [angelnu](https://github.com/angelnu/docker-mdns_repeater) 
+The original dockerization of mdns-repeater was done by [angelnu](https://github.com/angelnu/docker-mdns_repeater)
 
 Licensing is GPLv2 as inherited from Darell Tan's mdns-repeater.c.
-
-
-

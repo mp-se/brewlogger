@@ -1,4 +1,9 @@
-import asyncio, logging, json, requests, time, os
+import asyncio
+import logging
+import json
+import requests
+import time
+import os
 from uuid import UUID
 
 from construct import Array, Byte, Const, Int8sl, Int16ub, Int32ub, Struct
@@ -34,26 +39,78 @@ eddystone_format = Struct(
     "chipid" / Int32ub,
 )
 
+
 class tilt:
     def __init__(self, color, uuid, time):
         self.color = color
         self.uuid = uuid
         self.time = time
 
+
 # List of tilts (class tilt)
-tilts = []  
+tilts = []
 # Dict of gravitymon devices (ID: time)
-gravitymons = {} 
+gravitymons = {}
+
 
 def init():
-    tilts.append(tilt("red", UUID("A495BB10-C5B1-4B44-B512-1370F02D74DE"), time.time()-minium_interval))
-    tilts.append(tilt("green", UUID("A495BB20-C5B1-4B44-B512-1370F02D74DE"), time.time()-minium_interval))
-    tilts.append(tilt("black", UUID("A495BB30-C5B1-4B44-B512-1370F02D74DE"), time.time()-minium_interval))
-    tilts.append(tilt("purple", UUID("A495BB40-C5B1-4B44-B512-1370F02D74DE"), time.time()-minium_interval))
-    tilts.append(tilt("orange", UUID("A495BB50-C5B1-4B44-B512-1370F02D74DE"), time.time()-minium_interval))
-    tilts.append(tilt("blue", UUID("A495BB60-C5B1-4B44-B512-1370F02D74DE"), time.time()-minium_interval))
-    tilts.append(tilt("yellow", UUID("A495BB70-C5B1-4B44-B512-1370F02D74DE"), time.time()-minium_interval))
-    tilts.append(tilt("pink", UUID("A495BB80-C5B1-4B44-B512-1370F02D74DE"), time.time()-minium_interval))
+    tilts.append(
+        tilt(
+            "red",
+            UUID("A495BB10-C5B1-4B44-B512-1370F02D74DE"),
+            time.time() - minium_interval,
+        )
+    )
+    tilts.append(
+        tilt(
+            "green",
+            UUID("A495BB20-C5B1-4B44-B512-1370F02D74DE"),
+            time.time() - minium_interval,
+        )
+    )
+    tilts.append(
+        tilt(
+            "black",
+            UUID("A495BB30-C5B1-4B44-B512-1370F02D74DE"),
+            time.time() - minium_interval,
+        )
+    )
+    tilts.append(
+        tilt(
+            "purple",
+            UUID("A495BB40-C5B1-4B44-B512-1370F02D74DE"),
+            time.time() - minium_interval,
+        )
+    )
+    tilts.append(
+        tilt(
+            "orange",
+            UUID("A495BB50-C5B1-4B44-B512-1370F02D74DE"),
+            time.time() - minium_interval,
+        )
+    )
+    tilts.append(
+        tilt(
+            "blue",
+            UUID("A495BB60-C5B1-4B44-B512-1370F02D74DE"),
+            time.time() - minium_interval,
+        )
+    )
+    tilts.append(
+        tilt(
+            "yellow",
+            UUID("A495BB70-C5B1-4B44-B512-1370F02D74DE"),
+            time.time() - minium_interval,
+        )
+    )
+    tilts.append(
+        tilt(
+            "pink",
+            UUID("A495BB80-C5B1-4B44-B512-1370F02D74DE"),
+            time.time() - minium_interval,
+        )
+    )
+
 
 def contains(list, filter):
     for x in list:
@@ -61,48 +118,67 @@ def contains(list, filter):
             return True
     return False
 
+
 def first(iterable, default=None):
-  for item in iterable:
-    return item
-  return default
+    for item in iterable:
+        return item
+    return default
+
 
 async def parse_gravitymon(device: BLEDevice):
     global gravitymons
 
-    try:      
+    try:
         async with BleakClient(device) as client:
             for service in client.services:
                 if service.uuid.startswith("0000180a-"):
                     for char in service.characteristics:
-                        if "read" in char.properties and char.uuid.startswith("00002ac4-"):
+                        if "read" in char.properties and char.uuid.startswith(
+                            "00002ac4-"
+                        ):
                             try:
                                 value = await client.read_gatt_char(char.uuid)
-                                data = json.loads( value.decode() )
-                                logger.info( "Data received: %s", json.dumps(data) )
+                                data = json.loads(value.decode())
+                                logger.info("Data received: %s", json.dumps(data))
                                 await client.disconnect()
 
                                 now = time.time()
-                                logger.debug(f"Found gravitymon device, checking if time has expired, min={minium_interval}s")
+                                logger.debug(
+                                    f"Found gravitymon device, checking if time has expired, min={minium_interval}s"
+                                )
 
-                                if abs(gravitymons.get(data["ID"], now-minium_interval*2) - now) > minium_interval:
+                                if (
+                                    abs(
+                                        gravitymons.get(
+                                            data["ID"], now - minium_interval * 2
+                                        )
+                                        - now
+                                    )
+                                    > minium_interval
+                                ):
                                     gravitymons[data["ID"]] = now
                                     try:
-                                        logger.info( "Posting data.")
-                                        r = requests.post(endpoint, json=data, headers=headers)
-                                        logger.info( f"Response {r}.")
+                                        logger.info("Posting data.")
+                                        r = requests.post(
+                                            endpoint, json=data, headers=headers
+                                        )
+                                        logger.info(f"Response {r}.")
                                     except Exception as e:
-                                        logger.error( "Failed to post data, Error: %s", e)
+                                        logger.error(
+                                            "Failed to post data, Error: %s", e
+                                        )
 
                             except Exception as e:
-                                logger.error( "Failed to read data, Error: %s", e)          
-            await client.disconnect()           
-    except Exception as e:
+                                logger.error("Failed to read data, Error: %s", e)
+            await client.disconnect()
+    except Exception:
         pass
+
 
 def parse_eddystone(device: BLEDevice, advertisement_data: AdvertisementData):
     global gravitymons
 
-    try:      
+    try:
         uuid = advertisement_data.service_uuids[0]
         data = advertisement_data.service_data.get(uuid)
         eddy = eddystone_format.parse(data)
@@ -112,29 +188,35 @@ def parse_eddystone(device: BLEDevice, advertisement_data: AdvertisementData):
             "ID": hex(eddy.chipid)[2:],
             "token": "",
             "interval": 0,
-            "battery": eddy.battery/1000,
-            "gravity": eddy.gravity/10000,
-            "angle": eddy.angle/100,
-            "temperature": eddy.temp/1000, 
+            "battery": eddy.battery / 1000,
+            "gravity": eddy.gravity / 10000,
+            "angle": eddy.angle / 100,
+            "temperature": eddy.temp / 1000,
             "temp_units": "C",
             "RSSI": 0,
         }
-        logger.info( "Data received: %s %s", json.dumps(data), device.address )
+        logger.info("Data received: %s %s", json.dumps(data), device.address)
 
         now = time.time()
-        logger.debug(f"Found gravitymon device, checking if time has expired, min={minium_interval}s")
+        logger.debug(
+            f"Found gravitymon device, checking if time has expired, min={minium_interval}s"
+        )
 
-        if abs(gravitymons.get(data["ID"], now-minium_interval*2) - now) > minium_interval:
+        if (
+            abs(gravitymons.get(data["ID"], now - minium_interval * 2) - now)
+            > minium_interval
+        ):
             gravitymons[data["ID"]] = now
             try:
-                logger.info( "Posting data.")
+                logger.info("Posting data.")
                 r = requests.post(endpoint, json=data, headers=headers)
-                logger.info( f"Response {r}.")
+                logger.info(f"Response {r}.")
             except Exception as e:
-                logger.error( "Failed to post data, Error: %s", e)
+                logger.error("Failed to post data, Error: %s", e)
 
-    except ConstError as e:
+    except ConstError:
         pass
+
 
 def parse_tilt(advertisement_data: AdvertisementData):
     try:
@@ -144,14 +226,16 @@ def parse_tilt(advertisement_data: AdvertisementData):
         tilt = first(x for x in tilts if x.uuid == uuid)
 
         if tilt is not None:
-            logger.debug(f"Found tilt device, checking if time has expired, min={minium_interval}s")
+            logger.debug(
+                f"Found tilt device, checking if time has expired, min={minium_interval}s"
+            )
 
             now = time.time()
 
             if abs(tilt.time - now) > minium_interval:
                 tilt.time = now
                 tempF = ibeacon.major
-                gravitySG = ibeacon.minor/1000
+                gravitySG = ibeacon.minor / 1000
 
                 data = {
                     "color": tilt.color,
@@ -160,27 +244,31 @@ def parse_tilt(advertisement_data: AdvertisementData):
                     "RSSI": advertisement_data.rssi,
                 }
 
-                logger.info( "Data received: %s", json.dumps(data) )
+                logger.info("Data received: %s", json.dumps(data))
 
                 try:
-                    logger.info( "Posting data.")
+                    logger.info("Posting data.")
                     r = requests.post(endpoint, json=data, headers=headers)
-                    logger.info( f"Response {r}.")
+                    logger.info(f"Response {r}.")
                 except Exception as e:
-                    logger.error( "Failed to post data, Error: %s", e)
+                    logger.error("Failed to post data, Error: %s", e)
 
-    except KeyError as e:
+    except KeyError:
         pass
-    except ConstError as e:
+    except ConstError:
         pass
+
 
 async def device_found(device: BLEDevice, advertisement_data: AdvertisementData):
-    if device.name == "gravitymon" and any("0000feaa-" in s for s in advertisement_data.service_uuids):
-        parse_eddystone(device=device,advertisement_data=advertisement_data)
+    if device.name == "gravitymon" and any(
+        "0000feaa-" in s for s in advertisement_data.service_uuids
+    ):
+        parse_eddystone(device=device, advertisement_data=advertisement_data)
     elif device.name == "gravitymon":
         await parse_gravitymon(device=device)
     else:
         parse_tilt(advertisement_data=advertisement_data)
+
 
 async def main():
     global minium_interval
@@ -190,20 +278,21 @@ async def main():
         format="%(asctime)-15s %(name)-8s %(levelname)s: %(message)s",
     )
 
-    t = os.getenv('MIN_INTERVAL') 
-    minium_interval = 5*60 # seconds
-    if t != None:
+    t = os.getenv("MIN_INTERVAL")
+    minium_interval = 5 * 60  # seconds
+    if t is not None:
         minium_interval = int(t)
     logger.info("Minium interval = %d", minium_interval)
 
     init()
-    scanner = BleakScanner(detection_callback=device_found,scanning_mode="active")
+    scanner = BleakScanner(detection_callback=device_found, scanning_mode="active")
 
     logger.info("Scanning for tilt/gravitymon BLE devices...")
     while True:
         await scanner.start()
         await asyncio.sleep(0.1)
         await scanner.stop()
+
 
 asyncio.run(main())
 logger.info("Exit from tilt scanner")

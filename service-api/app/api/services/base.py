@@ -14,6 +14,7 @@ ModelType = TypeVar("ModelType", bound=Base)
 CreateSchemaType = TypeVar("CreateSchemaType", bound=BaseModel)
 UpdateSchemaType = TypeVar("UpdateSchemaType", bound=BaseModel)
 
+
 class BaseService(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
     def __init__(self, model: Type[ModelType], db_session: Session):
         self.model = model
@@ -67,7 +68,7 @@ class BaseService(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
 
     def delete(self, id: Any):
         obj = self.db_session.get(self.model, id)
-        if obj == None:
+        if obj is None:
             raise HTTPException(status_code=404, detail="Not Found")
 
         self.db_session.delete(obj)

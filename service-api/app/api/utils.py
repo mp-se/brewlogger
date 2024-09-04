@@ -6,108 +6,147 @@ from api.db.session import create_session
 from api.services.brewlogger import BrewLoggerService
 from .config import get_settings
 from sqlalchemy.exc import OperationalError, ProgrammingError, InternalError
-from sqlalchemy import text
 
 logger = logging.getLogger(__name__)
 
+
 def load_settings():
-  logger.info("Loading settings and checking migration")
+    logger.info("Loading settings and checking migration")
 
-  with engine.connect() as con:
-    try:
-      con.execute(text('SELECT * FROM device'))
-      con.commit()
-      logger.info("Database connected.")
-    except Exception as e:
-      logger.error(f"Failed to connect to database, {e}")
-
-    brewlogger_service = BrewLoggerService(create_session())
-    try:
-      list = brewlogger_service.list()
-
-      if len(list) == 0:
-        logger.info("Missing configuration data, creating default settings")
-
-        cfg = schemas.BrewLoggerCreate(
-          version = get_settings().version,
-          mdns_timeout = 10,
-          temperature_format = "C",
-          pressure_format = "PSI",
-          gravity_format = "SG",
-          dark_mode = False
-        )
-        brewlogger_service.create(cfg)
-        migrate_database()
-      else:
-        cfg = list[0]
-        logger.info(f"Database version {cfg.version}")
-        if cfg.version != get_settings().version:
-        #if cfg.version != "0.0.0":
-          logger.info("Database does not match the application version, trying to do migration")
-          migrate_database()
-          cfg2 = schemas.BrewLoggerUpdate(**cfg.__dict__)
-          cfg2.version = get_settings().version
-          logger.info(cfg2)
-          brewlogger_service.update(cfg.id, cfg2)
-    except Exception as e:
-      logger.error(f"Failed to query database, {e}")
-      migrate_database()
-
-def migrate_database():  
-    if get_settings().database_url.startswith("sqlite:"):
-      logger.info("Running on sqlite so we skip trying to migrate")
-      return
-    
     with engine.connect() as con:
-      try:
-        logger.info("Dumping database schema for brewlogger.")
+        try:
+            con.execute(text("SELECT * FROM device"))
+            con.commit()
+            logger.info("Database connected.")
+        except Exception as e:
+            logger.error(f"Failed to connect to database, {e}")
 
-        res1 = con.execute(text("SELECT * FROM information_schema.columns WHERE table_schema = 'public' AND table_name = 'brewlogger' ORDER BY ordinal_position;")).fetchall()
-        res2 = con.execute(text("SELECT * FROM information_schema.columns WHERE table_schema = 'public' AND table_name = 'device' ORDER BY ordinal_position;")).fetchall()
-        res3 = con.execute(text("SELECT * FROM information_schema.columns WHERE table_schema = 'public' AND table_name = 'batch' ORDER BY ordinal_position;")).fetchall()
-        res4 = con.execute(text("SELECT * FROM information_schema.columns WHERE table_schema = 'public' AND table_name = 'gravity' ORDER BY ordinal_position;")).fetchall()
-        res5 = con.execute(text("SELECT * FROM information_schema.columns WHERE table_schema = 'public' AND table_name = 'pour' ORDER BY ordinal_position;")).fetchall()
-        res6 = con.execute(text("SELECT * FROM information_schema.columns WHERE table_schema = 'public' AND table_name = 'pressure' ORDER BY ordinal_position;")).fetchall()
-        con.commit()        
+        brewlogger_service = BrewLoggerService(create_session())
+        try:
+            list = brewlogger_service.list()
 
-        for r in res1:
-          print(f"Table: {r[2]:15} Column: {r[3]:20} Nullable: {r[6]:10} Type: {r[7]:30} MaxLength: {r[8]}")
+            if len(list) == 0:
+                logger.info("Missing configuration data, creating default settings")
 
-        for r in res2:
-          print(f"Table: {r[2]:15} Column: {r[3]:20} Nullable: {r[6]:10} Type: {r[7]:30} MaxLength: {r[8]}")
+                cfg = schemas.BrewLoggerCreate(
+                    version=get_settings().version,
+                    mdns_timeout=10,
+                    temperature_format="C",
+                    pressure_format="PSI",
+                    gravity_format="SG",
+                    dark_mode=False,
+                )
+                brewlogger_service.create(cfg)
+                migrate_database()
+            else:
+                cfg = list[0]
+                logger.info(f"Database version {cfg.version}")
+                if cfg.version != get_settings().version:
+                    # if cfg.version != "0.0.0":
+                    logger.info(
+                        "Database does not match the application version, trying to do migration"
+                    )
+                    migrate_database()
+                    cfg2 = schemas.BrewLoggerUpdate(**cfg.__dict__)
+                    cfg2.version = get_settings().version
+                    logger.info(cfg2)
+                    brewlogger_service.update(cfg.id, cfg2)
+        except Exception as e:
+            logger.error(f"Failed to query database, {e}")
+            migrate_database()
 
-        for r in res3:
-          print(f"Table: {r[2]:15} Column: {r[3]:20} Nullable: {r[6]:10} Type: {r[7]:30} MaxLength: {r[8]}")
 
-        for r in res4:
-          print(f"Table: {r[2]:15} Column: {r[3]:20} Nullable: {r[6]:10} Type: {r[7]:30} MaxLength: {r[8]}")
+def migrate_database():
+    if get_settings().database_url.startswith("sqlite:"):
+        logger.info("Running on sqlite so we skip trying to migrate")
+        return
 
-        for r in res5:
-          print(f"Table: {r[2]:15} Column: {r[3]:20} Nullable: {r[6]:10} Type: {r[7]:30} MaxLength: {r[8]}")
+    with engine.connect() as con:
+        try:
+            logger.info("Dumping database schema for brewlogger.")
 
-        for r in res6:
-          print(f"Table: {r[2]:15} Column: {r[3]:20} Nullable: {r[6]:10} Type: {r[7]:30} MaxLength: {r[8]}")
+            res1 = con.execute(
+                text(
+                    "SELECT * FROM information_schema.columns WHERE table_schema = 'public' AND table_name = 'brewlogger' ORDER BY ordinal_position;"
+                )
+            ).fetchall()
+            res2 = con.execute(
+                text(
+                    "SELECT * FROM information_schema.columns WHERE table_schema = 'public' AND table_name = 'device' ORDER BY ordinal_position;"
+                )
+            ).fetchall()
+            res3 = con.execute(
+                text(
+                    "SELECT * FROM information_schema.columns WHERE table_schema = 'public' AND table_name = 'batch' ORDER BY ordinal_position;"
+                )
+            ).fetchall()
+            res4 = con.execute(
+                text(
+                    "SELECT * FROM information_schema.columns WHERE table_schema = 'public' AND table_name = 'gravity' ORDER BY ordinal_position;"
+                )
+            ).fetchall()
+            res5 = con.execute(
+                text(
+                    "SELECT * FROM information_schema.columns WHERE table_schema = 'public' AND table_name = 'pour' ORDER BY ordinal_position;"
+                )
+            ).fetchall()
+            res6 = con.execute(
+                text(
+                    "SELECT * FROM information_schema.columns WHERE table_schema = 'public' AND table_name = 'pressure' ORDER BY ordinal_position;"
+                )
+            ).fetchall()
+            con.commit()
 
-      except (OperationalError, ProgrammingError, InternalError) as e:
-        logger.error(f"Failed to update database, Step 1, {e}")
+            for r in res1:
+                print(
+                    f"Table: {r[2]:15} Column: {r[3]:20} Nullable: {r[6]:10} Type: {r[7]:30} MaxLength: {r[8]}"
+                )
+
+            for r in res2:
+                print(
+                    f"Table: {r[2]:15} Column: {r[3]:20} Nullable: {r[6]:10} Type: {r[7]:30} MaxLength: {r[8]}"
+                )
+
+            for r in res3:
+                print(
+                    f"Table: {r[2]:15} Column: {r[3]:20} Nullable: {r[6]:10} Type: {r[7]:30} MaxLength: {r[8]}"
+                )
+
+            for r in res4:
+                print(
+                    f"Table: {r[2]:15} Column: {r[3]:20} Nullable: {r[6]:10} Type: {r[7]:30} MaxLength: {r[8]}"
+                )
+
+            for r in res5:
+                print(
+                    f"Table: {r[2]:15} Column: {r[3]:20} Nullable: {r[6]:10} Type: {r[7]:30} MaxLength: {r[8]}"
+                )
+
+            for r in res6:
+                print(
+                    f"Table: {r[2]:15} Column: {r[3]:20} Nullable: {r[6]:10} Type: {r[7]:30} MaxLength: {r[8]}"
+                )
+
+        except (OperationalError, ProgrammingError, InternalError) as e:
+            logger.error(f"Failed to update database, Step 1, {e}")
 
     logger.info("Running postgres sql commands to migrate database from v0.4 to v0.5")
     with engine.connect() as con:
-      try:
-        con.execute(text('ALTER TABLE gravity ADD COLUMN active BOOLEAN'))
-        con.execute(text('ALTER TABLE pressure ADD COLUMN active BOOLEAN'))
-        con.execute(text('ALTER TABLE pour ADD COLUMN active BOOLEAN'))
-        con.commit()
-        con.execute(text("UPDATE gravity SET active = true WHERE active IS NULL"))
-        con.execute(text("UPDATE pressure SET active = true WHERE active IS NULL"))
-        con.execute(text("UPDATE pour SET active = true WHERE active IS NULL"))
-        con.commit()
-        con.execute(text('ALTER TABLE gravity ALTER COLUMN active SET NOT NULL'))
-        con.execute(text('ALTER TABLE pressure ALTER COLUMN active SET NOT NULL'))
-        con.execute(text('ALTER TABLE pour ALTER COLUMN active SET NOT NULL'))
-        con.commit()
-      except (OperationalError, ProgrammingError, InternalError) as e:
-        logger.error(f"Failed to update database v0.5, {e}")
+        try:
+            con.execute(text("ALTER TABLE gravity ADD COLUMN active BOOLEAN"))
+            con.execute(text("ALTER TABLE pressure ADD COLUMN active BOOLEAN"))
+            con.execute(text("ALTER TABLE pour ADD COLUMN active BOOLEAN"))
+            con.commit()
+            con.execute(text("UPDATE gravity SET active = true WHERE active IS NULL"))
+            con.execute(text("UPDATE pressure SET active = true WHERE active IS NULL"))
+            con.execute(text("UPDATE pour SET active = true WHERE active IS NULL"))
+            con.commit()
+            con.execute(text("ALTER TABLE gravity ALTER COLUMN active SET NOT NULL"))
+            con.execute(text("ALTER TABLE pressure ALTER COLUMN active SET NOT NULL"))
+            con.execute(text("ALTER TABLE pour ALTER COLUMN active SET NOT NULL"))
+            con.commit()
+        except (OperationalError, ProgrammingError, InternalError) as e:
+            logger.error(f"Failed to update database v0.5, {e}")
 
     # logger.info("Running postgres sql commands to migrate database from v0.2 to v0.3")
     # with engine.connect() as con:
@@ -142,7 +181,7 @@ def migrate_database():
     #         con.commit()
     #     except (OperationalError, ProgrammingError, InternalError) as e:
     #         logger.error(f"Failed to update database, Step 4, {e}")
-          
+
     # logger.info("Running postgres sql commands to migrate database from v0.3 to v0.4")
     # with engine.connect() as con:
     #   try:

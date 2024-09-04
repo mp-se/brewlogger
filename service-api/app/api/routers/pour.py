@@ -10,10 +10,10 @@ from ..security import api_key_auth
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/api/pour")
 
+
 @router.get(
-    "/",
-    response_model=List[schemas.Pour],
-    dependencies=[Depends(api_key_auth)])
+    "/", response_model=List[schemas.Pour], dependencies=[Depends(api_key_auth)]
+)
 async def list_pours(
     chipId: str = "*",
     pour_service: PourService = Depends(get_pour_service),
@@ -28,10 +28,10 @@ async def list_pours(
     "/{pour_id}",
     response_model=schemas.Pour,
     responses={404: {"description": "Gravity not found"}},
-    dependencies=[Depends(api_key_auth)])
+    dependencies=[Depends(api_key_auth)],
+)
 async def get_pour_by_id(
-    pour_id: int,
-    pour_service: PourService = Depends(get_pour_service)
+    pour_id: int, pour_service: PourService = Depends(get_pour_service)
 ) -> Optional[models.Pour]:
     logger.info("Endpoint GET /api/pour/%d", pour_id)
     return pour_service.get(pour_id)
@@ -42,10 +42,10 @@ async def get_pour_by_id(
     response_model=schemas.Pour,
     status_code=201,
     responses={409: {"description": "Conflict Error"}},
-    dependencies=[Depends(api_key_auth)])
+    dependencies=[Depends(api_key_auth)],
+)
 async def create_pour(
-    pour: schemas.PourCreate,
-    pour_service: PourService = Depends(get_pour_service)
+    pour: schemas.PourCreate, pour_service: PourService = Depends(get_pour_service)
 ) -> models.Pour:
     logger.info("Endpoint POST /api/pour/")
     if pour.created is None:
@@ -55,9 +55,8 @@ async def create_pour(
 
 
 @router.patch(
-    "/{pour_id}",
-    response_model=schemas.Pour,
-    dependencies=[Depends(api_key_auth)])
+    "/{pour_id}", response_model=schemas.Pour, dependencies=[Depends(api_key_auth)]
+)
 async def update_pour_by_id(
     pour_id: int,
     gravity: schemas.PourUpdate,
@@ -67,13 +66,9 @@ async def update_pour_by_id(
     return pour_service.update(pour_id, gravity)
 
 
-@router.delete(
-    "/{pour_id}",
-    status_code=204,
-    dependencies=[Depends(api_key_auth)])
+@router.delete("/{pour_id}", status_code=204, dependencies=[Depends(api_key_auth)])
 async def delete_pour_by_id(
-    pour_id: int,
-    pour_service: PourService = Depends(get_pour_service)
+    pour_id: int, pour_service: PourService = Depends(get_pour_service)
 ):
     logger.info("Endpoint DELETE /api/pour/%d", pour_id)
     pour_service.delete(pour_id)
