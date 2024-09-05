@@ -8,16 +8,16 @@ https://www.patrick-muehlbauer.com/articles/python-docker-compose-vscode
 
 To create the requirements use these options to determine the correct versions.
 
-from repository root:
+Postgres needs to be on the to PATH for the scripts to work. On MacOS use this command.
+```
+export PATH="$PATH:/Applications/Postgres.app/Contents/Versions/latest/bin"
+```
+
+From repository root:
 ```
 pip install pip-tools
 pip-compile -U -o service-api/requirements/requirements.txt
 pip-compile --output-file=service-api/requirements/test-requirements.txt service-api/requirements/test-requirements.in
-```
-
-Add postgres to PATH on MacOS for above install script
-```
-export PATH="$PATH:/Applications/Postgres.app/Contents/Versions/latest/bin"
 ```
 
 # Setting up a development environment
@@ -37,12 +37,14 @@ python -m pip install -e . --no-deps
 This command will run all the API tests.
 
 ```
+cd service-api/app
 pytest
 ```
 
 Use this option if only specific tests should be run.
 
 ```
+cd service-api/app
 pytest -k device
 ```
 
@@ -52,7 +54,13 @@ This will run the server locally listening on port 8000
 
 ```
 cd service-api/app
-uvicorn --reload --port 8000 api.main:app --env-file ../.development_env --log-config ./log_conf.yaml
+fastapi dev api/app.py
+```
+
+or
+
+```
+uvicorn --reload --port 8000 api.main:app --env-file ../.development_env --log-config ./log_conf.yaml --lifespan on
 ```
 
 ## Validating code standards

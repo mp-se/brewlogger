@@ -131,6 +131,7 @@ async def create_pressure_using_json(
                 abv=0.0,
                 ebc=0.0,
                 ibu=0.0,
+                #fermentation_chamber=0, # This is optional
             )
             batch_service.create(batch)
             batchList = batch_service.search_chipId_active(chipId, True)

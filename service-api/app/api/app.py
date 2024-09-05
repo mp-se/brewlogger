@@ -10,8 +10,9 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from fastapi.exceptions import RequestValidationError
 from .config import get_settings
-from contextlib import asynccontextmanager
+from .scheduler import scheduler_shutdown, scheduler_setup
 from .utils import load_settings
+from contextlib import asynccontextmanager
 
 logger = logging.getLogger(__name__)
 
@@ -21,28 +22,18 @@ logger = logging.getLogger(__name__)
 # TODO: Feature2:
 #
 
-
 @asynccontextmanager
-async def lifespan_handler(app: FastAPI):
+async def lifespan(app: FastAPI):
     # Running on startup
     logger.info("Running startup handler")
     load_settings()
     yield
     # Running on closedown
     logger.info("Running shutdown handler")
+    scheduler_shutdown()
 
 
-def create_app() -> FastAPI:
-    logger.info("Creating FastAPI application and registering routers.")
-    settings = get_settings()
-
-    app = FastAPI(
-        title="BrewLogger API",
-        description="Application for managing brews and brew devices.",
-        version=settings.version,
-        lifespan=lifespan_handler,
-    )
-
+def register_handlers(app):
     origins = [
         "http://localhost:5173",
         "http://localhost:8080",
@@ -79,4 +70,15 @@ def create_app() -> FastAPI:
             content=content, status_code=status.HTTP_422_UNPROCESSABLE_ENTITY
         )
 
-    return app
+
+logger.info("Creating FastAPI application and registering routers.")
+settings = get_settings()
+app = FastAPI(
+    debug=True,
+    title="BrewLogger API",
+    description="Application for managing brews and brew devices.",
+    version=settings.version,
+    lifespan=lifespan,
+)
+register_handlers(app)
+scheduler_setup()

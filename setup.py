@@ -11,6 +11,7 @@ install_requires = [
     "jinja2",
     "psycopg2",
     "zeroconf",
+    "apscheduler",
 ]
 
 setup(

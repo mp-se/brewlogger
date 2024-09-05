@@ -58,6 +58,7 @@ class Batch(Base):
     ibu = Column(Float, default=0.0, nullable=False)
 
     brewfather_id = Column(String(30), nullable=False)
+    fermentation_chamber = Column(Integer, nullable=True) # Device ID for connected brewpi
 
     gravity = relationship("Gravity", back_populates="batch", cascade="all,delete")
     pressure = relationship("Pressure", back_populates="batch", cascade="all,delete")
@@ -67,6 +68,7 @@ class Batch(Base):
 class Gravity(Base):
     __tablename__ = "gravity"
 
+    # Data from Gravitymon
     id = Column(Integer, primary_key=True, index=True, nullable=False)
     temperature = Column(Float, nullable=False)
     gravity = Column(Float, nullable=False)
@@ -75,6 +77,12 @@ class Gravity(Base):
     rssi = Column(Float, nullable=False)
     corr_gravity = Column(Float, nullable=False)
     run_time = Column(Float, nullable=False)
+
+    # Data from brewpi
+    beer_temperature = Column(Float, nullable=True) 
+    chamber_temperature = Column(Float, nullable=True) # Temperature from brewpi
+
+    # Internal
     created = Column(DateTime, nullable=False)
     active = Column(Boolean, nullable=False)
 

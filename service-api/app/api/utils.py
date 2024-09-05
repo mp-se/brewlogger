@@ -61,6 +61,11 @@ def migrate_database():
         logger.info("Running on sqlite so we skip trying to migrate")
         return
 
+    # TODO UPDATE DATABASE WITH NEW FIELDS
+    # Batch: fermentation_chamber INT
+    # Gravity: beer_temperature, FLOAT
+    # Gravity: chamber_temperature, FLOAT
+
     with engine.connect() as con:
         try:
             logger.info("Dumping database schema for brewlogger.")

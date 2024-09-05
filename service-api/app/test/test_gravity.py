@@ -1,5 +1,6 @@
 import json
 from api.config import get_settings
+from .conftest import truncate_database
 
 headers = {
     "Authorization": "Bearer " + get_settings().api_key,
@@ -8,6 +9,8 @@ headers = {
 
 
 def test_init(app_client):
+    truncate_database()
+
     data = {
         "name": "f1",
         "chipId": "AAAAAA",
@@ -20,6 +23,7 @@ def test_init(app_client):
         "abv": 0.1,
         "ebc": 0.2,
         "ibu": 0.3,
+        "fermentationChamber": 0,
     }
 
     # Add new
@@ -37,6 +41,9 @@ def test_add(app_client):
         "rssi": 0.6,
         "corrGravity": 0.7,
         "runTime": 0.8,
+        "active": True,
+        "chamberTemperature": 0,
+        "beerTemperature": 0,
     }
 
     # Add new
@@ -56,6 +63,9 @@ def test_add(app_client):
     assert data["rssi"] == data2["rssi"]
     assert data["corrGravity"] == data2["corrGravity"]
     assert data["runTime"] == data2["runTime"]
+    assert data["active"] == data2["active"]
+    assert data["chamberTemperature"] == data2["chamberTemperature"]
+    assert data["beerTemperature"] == data2["beerTemperature"]
 
     # Not using a number for index
     r2 = app_client.get("/api/gravity/hello", headers=headers)
@@ -78,6 +88,9 @@ def test_update(app_client):
         "rssi": 1.6,
         "corrGravity": 1.7,
         "runTime": 1.8,
+        "active": True,
+        "chamberTemperature": 0,
+        "beerTemperature": 0,
     }
 
     # Update existing entity
@@ -95,6 +108,9 @@ def test_update(app_client):
     assert data["rssi"] == data2["rssi"]
     assert data["corrGravity"] == data2["corrGravity"]
     assert data["runTime"] == data2["runTime"]
+    assert data["active"] == data2["active"]
+    assert data["chamberTemperature"] == data2["chamberTemperature"]
+    assert data["beerTemperature"] == data2["beerTemperature"]
 
     # Update missing entity
     r = app_client.patch("/api/gravity/10", json=data, headers=headers)
@@ -123,6 +139,9 @@ def test_gravity_batch(app_client):
         "rssi": 0.6,
         "corrGravity": 0.7,
         "runTime": 0.8,
+        "active": True,
+        "chamberTemperature": 0,
+        "beerTemperature": 0,
     }
 
     # Add new
@@ -136,6 +155,22 @@ def test_gravity_batch(app_client):
     assert r.status_code == 200
     data2 = json.loads(r.text)
     assert len(data2["gravity"]) == 2
+
+    data = {
+        "batchId": 1,
+        "temperature": 0.2,
+        "gravity": 0.3,
+        "angle": 0.4,
+        "battery": 0.5,
+        "rssi": 0.6,
+        "corrGravity": 0.7,
+        "runTime": 0.8,
+        "active": True,
+    }
+
+    # Add new without optional params
+    r = app_client.post("/api/gravity/", json=data, headers=headers)
+    assert r.status_code == 201
 
 
 def test_public(app_client):

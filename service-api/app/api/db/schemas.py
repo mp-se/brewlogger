@@ -120,6 +120,8 @@ class GravityBase(BaseModel):
     active: bool = Field(
         description="If the gravity is active or not, active = shown in graphs"
     )
+    chamber_temperature: Optional[float] = Field(None, description="Chamber Temperature from Brewpi, value in C")
+    beer_temperature: Optional[float] = Field(None, description="Beer Temperature from Brewpi, value in C")
 
 
 class GravityUpdate(GravityBase):
@@ -223,6 +225,7 @@ class BatchBase(BaseModel):
     brewfather_id: str = Field(
         min_length=0, max_length=30, description="ID used in brewfather"
     )
+    fermentation_chamber: Optional[int] = Field(None, description="Device Index of the fermentation chamber")
 
 
 class BatchUpdate(BatchBase):

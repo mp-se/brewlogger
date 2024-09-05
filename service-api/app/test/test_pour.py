@@ -20,6 +20,7 @@ def test_init(app_client):
         "abv": 0.1,
         "ebc": 0.2,
         "ibu": 0.3,
+        "fermentationChamber": 0,
     }
 
     # Add new
@@ -28,8 +29,13 @@ def test_init(app_client):
 
 
 def test_add(app_client):
-    data = {"pour": 0.1, "volume": 0.2, "batchId": 1}
-
+    data = {
+        "pour": 0.1, 
+        "volume": 0.2, 
+        "batchId": 1, 
+        "active": True 
+    }
+    
     # Add new
     r = app_client.post("/api/pour/", json=data, headers=headers)
     assert r.status_code == 201
@@ -42,6 +48,7 @@ def test_add(app_client):
     data2 = json.loads(r.text)
     assert data["pour"] == data2["pour"]
     assert data["volume"] == data2["volume"]
+    assert data["active"] == data2["active"]
 
     # Not using a number for index
     r2 = app_client.get("/api/pour/hello", headers=headers)
@@ -56,7 +63,12 @@ def test_list(app_client):
 
 
 def test_update(app_client):
-    data = {"pour": 1.1, "volume": 1.2, "batchId": 1}
+    data = {
+        "pour": 1.1, 
+        "volume": 1.2,
+        "batchId": 1,
+        "active": True,
+    }
 
     # Update existing entity
     r = app_client.patch("/api/pour/1", json=data, headers=headers)

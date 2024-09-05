@@ -1,12 +1,15 @@
 import json
 
 from api.config import get_settings
+from .conftest import truncate_database
 
 headers = {
     "Authorization": "Bearer " + get_settings().api_key,
     "Content-Type": "application/json",
 }
 
+def test_init(app_client):
+    truncate_database()
 
 def test_add(app_client):
     data = {
@@ -21,6 +24,7 @@ def test_add(app_client):
         "abv": 0.1,
         "ebc": 0.2,
         "ibu": 0.3,
+        "fermentationChamber": 0
     }
 
     # Add new
@@ -39,6 +43,7 @@ def test_add(app_client):
     assert data1["ebc"] == data["ebc"]
     assert data1["ibu"] == data["ibu"]
     assert data1["brewfatherId"] == data["brewfatherId"]
+    assert data1["fermentationChamber"] == data["fermentationChamber"]
 
     # Read data and check values
     r2 = app_client.get("/api/batch/1", headers=headers)
@@ -50,12 +55,30 @@ def test_add(app_client):
     r2 = app_client.get("/api/batch/hello", headers=headers)
     assert r2.status_code == 422
 
+    data = {
+        "name": "f1",
+        "chipId": "BBBBBB",
+        "description": "f3",
+        "brewDate": "f4",
+        "style": "f5",
+        "brewer": "f6",
+        "brewfatherId": "1",
+        "active": True,
+        "abv": 0.1,
+        "ebc": 0.2,
+        "ibu": 0.3,
+    }
+
+    # Add new without optional parameters
+    r = app_client.post("/api/batch/", json=data, headers=headers)
+    assert r.status_code == 201
+
 
 def test_list(app_client):
     r = app_client.get("/api/batch/", headers=headers)
     assert r.status_code == 200
     data = json.loads(r.text)
-    assert len(data) == 1
+    assert len(data) == 2
 
 
 def test_update(app_client):
@@ -71,6 +94,7 @@ def test_update(app_client):
         "abv": 1.1,
         "ebc": 1.2,
         "ibu": 1.3,
+        "fermentationChamber": 0
     }
 
     # Update existing entity
@@ -92,6 +116,7 @@ def test_update(app_client):
     assert data["ebc"] == data2["ebc"]
     assert data["ibu"] == data2["ibu"]
     assert data["brewfatherId"] == data2["brewfatherId"]
+    assert data["fermentationChamber"] == data2["fermentationChamber"]
 
     # Update missing entity
     r = app_client.patch("/api/batch/10", json=data, headers=headers)
@@ -107,7 +132,7 @@ def test_delete(app_client):
     r = app_client.get("/api/batch/", headers=headers)
     assert r.status_code == 200
     data = json.loads(r.text)
-    assert len(data) == 0
+    assert len(data) == 1
 
 
 def test_query(app_client):
@@ -123,6 +148,7 @@ def test_query(app_client):
         "abv": 0.1,
         "ebc": 0.2,
         "ibu": 0.3,
+        "fermentationChamber": 0
     }
 
     # Update existing entity
@@ -158,6 +184,7 @@ def test_validation(app_client):
         "abv": 0.1,
         "ebc": 0.2,
         "ibu": 0.3,
+        "fermentationChamber": 0
     }
 
     # Add new
@@ -176,6 +203,7 @@ def test_validation(app_client):
         "abv": 0.1,
         "ebc": 0.2,
         "ibu": 0.3,
+        "fermentationChamber": 0
     }
 
     # Add new
@@ -194,6 +222,7 @@ def test_validation(app_client):
         "abv": 0.1,
         "ebc": 0.2,
         "ibu": 0.3,
+        "fermentationChamber": 0
     }
 
     # Add new
@@ -212,6 +241,7 @@ def test_validation(app_client):
         "abv": 0.1,
         "ebc": 0.2,
         "ibu": 0.3,
+        "fermentationChamber": 0
     }
 
     # Add new
@@ -230,6 +260,7 @@ def test_validation(app_client):
         "abv": 0.1,
         "ebc": 0.2,
         "ibu": 0.3,
+        "fermentationChamber": 0
     }
 
     # Add new
@@ -248,6 +279,7 @@ def test_validation(app_client):
         "abv": 0.1,
         "ebc": 0.2,
         "ibu": 0.3,
+        "fermentationChamber": 0
     }
 
     # Add new

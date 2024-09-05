@@ -1,5 +1,6 @@
 import json
 from api.config import get_settings
+from .conftest import truncate_database
 
 headers = {
     "Authorization": "Bearer " + get_settings().api_key,
@@ -8,6 +9,8 @@ headers = {
 
 
 def test_init(app_client):
+    truncate_database()
+
     data = {
         "name": "f1",
         "chipId": "EEEEEE",
@@ -20,6 +23,7 @@ def test_init(app_client):
         "abv": 0.1,
         "ebc": 0.2,
         "ibu": 0.3,
+        "fermentationChamber": 0,
     }
 
     # Add new
@@ -35,6 +39,7 @@ def test_add(app_client):
         "battery": 0.5,
         "rssi": 0.6,
         "runTime": 0.8,
+        "active": True,
     }
 
     # Add new
@@ -52,6 +57,7 @@ def test_add(app_client):
     assert data["battery"] == data2["battery"]
     assert data["rssi"] == data2["rssi"]
     assert data["runTime"] == data2["runTime"]
+    assert data["active"] == data2["active"]
 
     # Not using a number for index
     r2 = app_client.get("/api/pressure/hello", headers=headers)
@@ -72,6 +78,7 @@ def test_update(app_client):
         "battery": 1.5,
         "rssi": 1.6,
         "runTime": 1.8,
+        "active": True,
     }
 
     # Update existing entity
@@ -87,6 +94,7 @@ def test_update(app_client):
     assert data["battery"] == data2["battery"]
     assert data["rssi"] == data2["rssi"]
     assert data["runTime"] == data2["runTime"]
+    assert data["active"] == data2["active"]
 
     # Update missing entity
     r = app_client.patch("/api/pressure/10", json=data, headers=headers)
@@ -113,6 +121,7 @@ def test_pressure_batch(app_client):
         "battery": 0.5,
         "rssi": 0.6,
         "runTime": 0.8,
+        "active": True,
     }
 
     # Add new
