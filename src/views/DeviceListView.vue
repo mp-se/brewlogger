@@ -32,7 +32,7 @@
       <tbody>
         <tr v-for="d in deviceList" :key="d.id">
           <th scope="row">{{ d.id }}</th>
-          <td>{{ d.mdns != '' ? d.mdns : (d.url != '' ? d.url : d.description) }}</td>
+          <td>{{ d.mdns != '' ? d.mdns : d.url != '' ? d.url : d.description }}</td>
           <td>
             <pre>{{ d.chipId }}</pre>
           </td>
@@ -130,7 +130,7 @@ const softwareOptions = ref([
   { label: 'Gravitymon', value: 'Gravitymon' },
   { label: 'Kegmon', value: 'Kegmon' },
   // { label: 'Pressuremon', value: 'Pressuremon' },
-  { label: 'Brewpi', value: 'Brewpi' },
+  { label: 'Brewpi', value: 'Brewpi' }
   // { label: 'iSpindel', value: 'iSpindel' }
 ])
 

@@ -116,15 +116,14 @@ async function getDeviceList(callback) {
 }
 
 function cleanupJson(list) {
-  list.forEach(l => {
-    Object.keys(l).forEach(key => {
-      if(l[key] == null) {
+  list.forEach((l) => {
+    Object.keys(l).forEach((key) => {
+      if (l[key] == null) {
         // logDebug("BackupView.cleanupJson()", key)
         delete l[key]
       }
-    })    
+    })
   })
-
 }
 
 function createBackup() {
@@ -138,7 +137,7 @@ function createBackup() {
       // Remove optional params from payload
       cleanupJson(backup.value.batches)
 
-      backup.value.batches.forEach(b => {
+      backup.value.batches.forEach((b) => {
         cleanupJson(b.gravity)
       })
 

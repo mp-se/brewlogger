@@ -52,7 +52,7 @@ export class Gravity {
   }
 
   toJson() {
-    var j =  {
+    var j = {
       // "id": this.id,
       //"batchId": this.batchId,
       temperature: this.temperature,
@@ -63,15 +63,13 @@ export class Gravity {
       corrGravity: this.corrGravity,
       runTime: this.runTime,
       created: this.created,
-      active: this.active,
+      active: this.active
     }
 
     // Optional: Can be undefined or null
-    if(this.chamberTemperature !== undefined)
-      j.chamberTemperature = this.chamberTemperature 
+    if (this.chamberTemperature !== undefined) j.chamberTemperature = this.chamberTemperature
 
-    if(this.beerTemperature !== undefined)
-      j.beerTemperature = this.beerTemperature 
+    if (this.beerTemperature !== undefined) j.beerTemperature = this.beerTemperature
 
     return j
   }

@@ -130,13 +130,13 @@
               <i class="bi bi-box-arrow-down"></i> Fetch</button
             >&nbsp;
             <BsModal
-            @click="viewConfig()"
-            v-model="render"
-            :code="true"
-            title="Vire configuration"
-            button="View config"
-            :disabled="global.disabled || device.config == ''"
-          />
+              @click="viewConfig()"
+              v-model="render"
+              :code="true"
+              title="Vire configuration"
+              button="View config"
+              :disabled="global.disabled || device.config == ''"
+            />
           </div>
         </div>
       </form>
@@ -186,7 +186,7 @@ const softwareOptions = ref([
   { label: 'Gravitymon', value: 'Gravitymon' },
   { label: 'Kegmon', value: 'Kegmon' },
   // { label: 'Pressuremon', value: 'Pressuremon' },
-  { label: 'Brewpi', value: 'Brewpi' },
+  { label: 'Brewpi', value: 'Brewpi' }
   // { label: 'iSpindel', value: 'iSpindel' }
 ])
 
@@ -207,10 +207,13 @@ const viewConfig = () => {
 }
 
 const disableTilt = computed(() => {
-  if(device.value.software != 'Gravitymon')
-    return true
+  if (device.value.software != 'Gravitymon') return true
 
-  if(device.value.chipFamily != 'esp32' && device.value.chipFamily != 'esp32c3' && device.value.chipFamily != 'esp32s3')
+  if (
+    device.value.chipFamily != 'esp32' &&
+    device.value.chipFamily != 'esp32c3' &&
+    device.value.chipFamily != 'esp32s3'
+  )
     return true
 
   return global.disabled
@@ -243,10 +246,10 @@ onMounted(() => {
 function validateChipId() {
   logDebug('DeviceView.validateChipId()')
 
-  if(device.value.software == "Brewpi") {
-    device.value.chipId = "000000"
+  if (device.value.software == 'Brewpi') {
+    device.value.chipId = '000000'
     return true
-  } 
+  }
 
   const regex = new RegExp(/^([0-9,a-f]){6}$/)
 
@@ -373,7 +376,7 @@ const save = () => {
   if (isNew()) {
     // Check if a device with the current chipId already exist
     for (var i = 0; i < deviceStore.devices.length; i++) {
-      if (deviceStore.devices[i].chipId == device.value.chipId && device.value.chipId != "000000") {
+      if (deviceStore.devices[i].chipId == device.value.chipId && device.value.chipId != '000000') {
         global.messageWarning = 'A device with this chip ID already exists'
         return
       }

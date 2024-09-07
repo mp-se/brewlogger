@@ -35,10 +35,8 @@ export class Batch {
     this.gravityCount = gravity.length
     this.gravity = []
 
-    if(this.fermentationChamber === undefined)
-      this.fermentationChamber = 0
-    if(this.fermentationChamber === null)
-      this.fermentationChamber = 0
+    if (this.fermentationChamber === undefined) this.fermentationChamber = 0
+    if (this.fermentationChamber === null) this.fermentationChamber = 0
   }
 
   static fromJson(d) {
@@ -98,8 +96,8 @@ export class Batch {
     }
 
     // Optional: Can be undefined
-    if(this.fermentationChamber !== undefined && this.fermentationChamber > 0)
-      j.fermentationChamber = this.fermentationChamber 
+    if (this.fermentationChamber !== undefined && this.fermentationChamber > 0)
+      j.fermentationChamber = this.fermentationChamber
 
     return j
   }

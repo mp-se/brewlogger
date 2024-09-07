@@ -279,31 +279,37 @@ function updateDeviceOptions() {
 
   //chipIdOptions.value = []
   gravityDeviceOptions.value = []
-  tempControlDeviceOptions.value = [ { value: 0, label: '-- Disabled --'}] 
+  tempControlDeviceOptions.value = [{ value: 0, label: '-- Disabled --' }]
 
   deviceStore.getDeviceList((success, dl) => {
     if (success) {
       for (var i = 0; i < dl.length; i++) {
         const d = dl[i]
 
-        if(d.software != 'Brewpi' && d.software != 'Kegmon') {
-          var s = d.mdns != '' ? d.mdns : (d.url != '' ? d.url : (d.description != '' ? d.description : d.software))
-  
+        if (d.software != 'Brewpi' && d.software != 'Kegmon') {
+          var s =
+            d.mdns != ''
+              ? d.mdns
+              : d.url != ''
+                ? d.url
+                : d.description != ''
+                  ? d.description
+                  : d.software
+
           gravityDeviceOptions.value.push({
             value: dl[i].chipId,
             label: dl[i].chipId + ' (' + s + ')'
           })
         }
 
-        if(d.software == 'Brewpi' || d.chipId == '000000') {
-          s = d.mdns != '' ? d.mdns : (d.url != '' ? d.url : d.description)
+        if (d.software == 'Brewpi' || d.chipId == '000000') {
+          s = d.mdns != '' ? d.mdns : d.url != '' ? d.url : d.description
 
           tempControlDeviceOptions.value.push({
             value: dl[i].id,
             label: 'Brewpi (' + s + ')'
           })
         }
-
       }
 
       logDebug('BatchView.updateDeviceOptions()', gravityDeviceOptions.value)

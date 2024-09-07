@@ -169,9 +169,9 @@ function setFridgeTemp() {
 function fetchTempConfig() {
   logDebug('DeviceBrewpiView.fetchTempConfig()')
 
-  if(device.value.url == "") {
-    global.messageError = "Missing URL for device."
-    return;
+  if (device.value.url == '') {
+    global.messageError = 'Missing URL for device.'
+    return
   }
 
   deviceStore.proxyRequest(

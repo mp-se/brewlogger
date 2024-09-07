@@ -13,10 +13,8 @@ export class Device {
     this.bleColor = bleColor
     this.description = description
 
-    if(url == "http://" || url == "https://")
-      this. url = ""
-    else
-      this.url = url
+    if (url == 'http://' || url == 'https://') this.url = ''
+    else this.url = url
   }
 
   static fromJson(d) {
