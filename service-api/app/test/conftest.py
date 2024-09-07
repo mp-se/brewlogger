@@ -5,11 +5,13 @@ from fastapi.testclient import TestClient
 from api.db.session import engine
 from sqlalchemy import text
 
+
 @pytest.fixture()
 def app_client():
     app = FastAPI()
     register_handlers(app)
     yield TestClient(app)
+
 
 def truncate_database():
     print("Truncate all tables")

@@ -1,11 +1,12 @@
 import logging
 from datetime import datetime
 from apscheduler.schedulers.background import BackgroundScheduler
-from apscheduler.triggers.cron import CronTrigger
+# from apscheduler.triggers.cron import CronTrigger
 
 logger = logging.getLogger(__name__)
 
 scheduler = BackgroundScheduler()
+
 
 def scheduler_shutdown():
     logger.info("Shutting down scheduler")
@@ -17,8 +18,10 @@ def task_example():
 
 
 def scheduler_setup():
-    trigger = CronTrigger(second=0)
-    scheduler.add_job(task_example, trigger)
-    scheduler.start()
+    pass
+    # trigger = CronTrigger(second=0)
+    # scheduler.add_job(task_example, trigger)
+    # scheduler.start()
+
 
 # EOF

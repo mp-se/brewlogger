@@ -16,9 +16,7 @@ def generate_api_key(key_length):
 
 
 class Settings(BaseSettings):
-    # TODO: Update to database v0.6
-    
-    version: str = "0.5.0"
+    version: str = "0.6.0"
     app_name: str = "BrewLogger API"
     database_url: str = config(
         "DATABASE_URL", cast=str, default="sqlite:///./brewlogger.sqlite"

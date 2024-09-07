@@ -29,13 +29,8 @@ def test_init(app_client):
 
 
 def test_add(app_client):
-    data = {
-        "pour": 0.1, 
-        "volume": 0.2, 
-        "batchId": 1, 
-        "active": True 
-    }
-    
+    data = {"pour": 0.1, "volume": 0.2, "batchId": 1, "active": True}
+
     # Add new
     r = app_client.post("/api/pour/", json=data, headers=headers)
     assert r.status_code == 201
@@ -64,7 +59,7 @@ def test_list(app_client):
 
 def test_update(app_client):
     data = {
-        "pour": 1.1, 
+        "pour": 1.1,
         "volume": 1.2,
         "batchId": 1,
         "active": True,

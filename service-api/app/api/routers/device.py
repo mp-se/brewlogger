@@ -51,9 +51,10 @@ async def create_device(
     devices_service: DeviceService = Depends(get_device_service),
 ) -> models.Device:
     logger.info("Endpoint POST /api/device/")
-    device_list = devices_service.search_chipId(device.chip_id)
-    if len(device_list) > 0:
-        raise HTTPException(status_code=409, detail="Conflict Error")
+    if device.chip_id != "000000":
+        device_list = devices_service.search_chipId(device.chip_id)
+        if len(device_list) > 0:
+            raise HTTPException(status_code=409, detail="Conflict Error")
     logger.info("Creating device: %s", device)
     return devices_service.create(device)
 

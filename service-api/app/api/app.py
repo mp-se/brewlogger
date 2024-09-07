@@ -22,6 +22,7 @@ logger = logging.getLogger(__name__)
 # TODO: Feature2:
 #
 
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # Running on startup

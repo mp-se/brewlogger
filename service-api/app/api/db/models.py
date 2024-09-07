@@ -30,7 +30,7 @@ class Device(Base):
     __tablename__ = "device"
 
     id = Column(Integer, primary_key=True, index=True)
-    chip_id = Column(String(6), unique=True, index=True)
+    chip_id = Column(String(6), index=True)
     chip_family = Column(String(10), nullable=False)
     software = Column(String(40), nullable=False)
     mdns = Column(String(40), nullable=False)
@@ -58,7 +58,9 @@ class Batch(Base):
     ibu = Column(Float, default=0.0, nullable=False)
 
     brewfather_id = Column(String(30), nullable=False)
-    fermentation_chamber = Column(Integer, nullable=True) # Device ID for connected brewpi
+    fermentation_chamber = Column(
+        Integer, nullable=True
+    )  # Device ID for connected brewpi
 
     gravity = relationship("Gravity", back_populates="batch", cascade="all,delete")
     pressure = relationship("Pressure", back_populates="batch", cascade="all,delete")
@@ -79,8 +81,8 @@ class Gravity(Base):
     run_time = Column(Float, nullable=False)
 
     # Data from brewpi
-    beer_temperature = Column(Float, nullable=True) 
-    chamber_temperature = Column(Float, nullable=True) # Temperature from brewpi
+    beer_temperature = Column(Float, nullable=True)
+    chamber_temperature = Column(Float, nullable=True)  # Temperature from brewpi
 
     # Internal
     created = Column(DateTime, nullable=False)

@@ -11,9 +11,10 @@ headers = {
 def test_init(app_client):
     truncate_database()
 
+
 def test_add(app_client):
     data = {
-        "chipId": "CCCCCC",
+        "chipId": "000000",
         "chipFamily": "f2",
         "software": "f3",
         "mdns": "f4",
@@ -28,6 +29,12 @@ def test_add(app_client):
     assert r.status_code == 201
     data1 = json.loads(r.text)
     assert data1["id"] == 1
+
+    # Add new with duplicated chipId (duplicates of 000000 chipId is allowed)
+    r = app_client.post("/api/device/", json=data, headers=headers)
+    assert r.status_code == 201
+    data1 = json.loads(r.text)
+    assert data1["id"] == 2
 
     # Read data and check values
     r2 = app_client.get("/api/device/1", headers=headers)
@@ -51,7 +58,7 @@ def test_list(app_client):
     r = app_client.get("/api/device/", headers=headers)
     assert r.status_code == 200
     data = json.loads(r.text)
-    assert len(data) == 1
+    assert len(data) == 2
 
 
 def test_update(app_client):
@@ -99,7 +106,7 @@ def test_delete(app_client):
     r = app_client.get("/api/device", headers=headers)
     assert r.status_code == 200
     data = json.loads(r.text)
-    assert len(data) == 0
+    assert len(data) == 1
 
 
 def test_validation(app_client):

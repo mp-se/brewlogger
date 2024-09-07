@@ -8,8 +8,10 @@ headers = {
     "Content-Type": "application/json",
 }
 
+
 def test_init(app_client):
     truncate_database()
+
 
 def test_add(app_client):
     data = {
@@ -24,7 +26,7 @@ def test_add(app_client):
         "abv": 0.1,
         "ebc": 0.2,
         "ibu": 0.3,
-        "fermentationChamber": 0
+        "fermentationChamber": 0,
     }
 
     # Add new
@@ -94,7 +96,7 @@ def test_update(app_client):
         "abv": 1.1,
         "ebc": 1.2,
         "ibu": 1.3,
-        "fermentationChamber": 0
+        "fermentationChamber": 0,
     }
 
     # Update existing entity
@@ -148,7 +150,7 @@ def test_query(app_client):
         "abv": 0.1,
         "ebc": 0.2,
         "ibu": 0.3,
-        "fermentationChamber": 0
+        "fermentationChamber": 0,
     }
 
     # Update existing entity
@@ -184,7 +186,7 @@ def test_validation(app_client):
         "abv": 0.1,
         "ebc": 0.2,
         "ibu": 0.3,
-        "fermentationChamber": 0
+        "fermentationChamber": 0,
     }
 
     # Add new
@@ -203,7 +205,7 @@ def test_validation(app_client):
         "abv": 0.1,
         "ebc": 0.2,
         "ibu": 0.3,
-        "fermentationChamber": 0
+        "fermentationChamber": 0,
     }
 
     # Add new
@@ -222,7 +224,7 @@ def test_validation(app_client):
         "abv": 0.1,
         "ebc": 0.2,
         "ibu": 0.3,
-        "fermentationChamber": 0
+        "fermentationChamber": 0,
     }
 
     # Add new
@@ -241,7 +243,7 @@ def test_validation(app_client):
         "abv": 0.1,
         "ebc": 0.2,
         "ibu": 0.3,
-        "fermentationChamber": 0
+        "fermentationChamber": 0,
     }
 
     # Add new
@@ -260,7 +262,7 @@ def test_validation(app_client):
         "abv": 0.1,
         "ebc": 0.2,
         "ibu": 0.3,
-        "fermentationChamber": 0
+        "fermentationChamber": 0,
     }
 
     # Add new
@@ -279,7 +281,7 @@ def test_validation(app_client):
         "abv": 0.1,
         "ebc": 0.2,
         "ibu": 0.3,
-        "fermentationChamber": 0
+        "fermentationChamber": 0,
     }
 
     # Add new

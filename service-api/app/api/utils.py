@@ -61,11 +61,6 @@ def migrate_database():
         logger.info("Running on sqlite so we skip trying to migrate")
         return
 
-    # TODO UPDATE DATABASE WITH NEW FIELDS
-    # Batch: fermentation_chamber INT
-    # Gravity: beer_temperature, FLOAT
-    # Gravity: chamber_temperature, FLOAT
-
     with engine.connect() as con:
         try:
             logger.info("Dumping database schema for brewlogger.")
@@ -100,6 +95,12 @@ def migrate_database():
                     "SELECT * FROM information_schema.columns WHERE table_schema = 'public' AND table_name = 'pressure' ORDER BY ordinal_position;"
                 )
             ).fetchall()
+
+            idx = con.execute(
+                text(
+                    "SELECT tablename, indexname, indexdef FROM pg_indexes WHERE schemaname = 'public' ORDER BY tablename, indexname;"
+                )
+            ).fetchall()
             con.commit()
 
             for r in res1:
@@ -132,8 +133,29 @@ def migrate_database():
                     f"Table: {r[2]:15} Column: {r[3]:20} Nullable: {r[6]:10} Type: {r[7]:30} MaxLength: {r[8]}"
                 )
 
+            for i in idx:
+                print(f"Table: {i[0]:15} Index: {i[1]:20}")
+
         except (OperationalError, ProgrammingError, InternalError) as e:
             logger.error(f"Failed to update database, Step 1, {e}")
+
+    # TODO: Drop the index for the chipId column
+
+    logger.info("Running postgres sql commands to migrate database from v0.5 to v0.6")
+    with engine.connect() as con:
+        try:
+            con.execute(
+                text("ALTER TABLE batch ADD COLUMN fermentation_chamber INTEGER")
+            )
+            con.execute(text("ALTER TABLE gravity ADD COLUMN beer_temperature FLOAT"))
+            con.execute(
+                text("ALTER TABLE gravity ADD COLUMN chamber_temperature FLOAT")
+            )
+            con.commit()
+            con.execute(text("DROP INDEX ix_device_chip_id"))
+            con.commit()
+        except (OperationalError, ProgrammingError, InternalError) as e:
+            logger.error(f"Failed to update database v0.6, {e}")
 
     logger.info("Running postgres sql commands to migrate database from v0.4 to v0.5")
     with engine.connect() as con:

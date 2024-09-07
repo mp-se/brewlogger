@@ -159,7 +159,7 @@ async def create_gravity_using_ispindel_format(
                 abv=0.0,
                 ebc=0.0,
                 ibu=0.0,
-                #fermentation_chamber=0, # This is optional
+                # fermentation_chamber=0, # This is optional
             )
             batch_service.create(batch)
             batchList = batch_service.search_chipId_active(json["ID"], True)
@@ -184,8 +184,6 @@ async def create_gravity_using_ispindel_format(
             device_service.create(device)
 
         # TODO: Get temperature from brewpi devices. Let the background task handle that.
-        chamberTemp = -273
-        beerTemp = -273
 
         gravity = schemas.GravityCreate(
             temperature=json["temperature"],
@@ -198,8 +196,8 @@ async def create_gravity_using_ispindel_format(
             batch_id=batchList[0].id,
             created=datetime.now(),
             active=True,
-            #chamberTemperature=chamberTemp, # TODO
-            #beerTemperature=beerTemp, # TODO
+            # chamberTemperature=chamberTemp, # TODO
+            # beerTemperature=beerTemp, # TODO
         )
 
         if json["temp_units"] == "F":
