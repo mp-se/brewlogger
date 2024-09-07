@@ -66,7 +66,7 @@
               :options="softwareOptions"
               label="Software"
               help=""
-              :disabled="global.disabled"
+              :disabled="global.disabled || device.chipId == '000000'"
             ></BsInputRadio>
           </div>
           <div class="col-md-12">
@@ -75,7 +75,7 @@
               :options="bleColorOptions"
               label="BLE Color"
               help="Used for receving gravity readings via Tilt"
-              :disabled="global.disabled || device.software != 'Gravitymon'"
+              :disabled="disableTilt"
             ></BsInputRadio>
           </div>
           <div class="col-md-11">
@@ -125,10 +125,18 @@
               type="button"
               class="btn btn-secondary"
               @click="fetchConfigFromDevice()"
-              :disabled="global.disabled"
+              :disabled="global.disabled || device.software == 'Brewpi'"
             >
               <i class="bi bi-box-arrow-down"></i> Fetch</button
             >&nbsp;
+            <BsModal
+            @click="viewConfig()"
+            v-model="render"
+            :code="true"
+            title="Vire configuration"
+            button="View config"
+            :disabled="global.disabled || device.config == ''"
+          />
           </div>
         </div>
       </form>
@@ -152,7 +160,7 @@
 </template>
 
 <script setup>
-import { onMounted, ref } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import { global, deviceStore } from '@/modules/pinia'
 import { validateCurrentForm } from '@/modules/utils'
 import { Device } from '@/modules/deviceStore'
@@ -160,6 +168,7 @@ import router from '@/modules/router'
 import { logDebug, logError, logInfo } from '@/modules/logger'
 import BsInputBase from '@/components/BsInputBase.vue'
 
+const render = ref('')
 const device = ref(null)
 const chipIdValid = ref(false)
 
@@ -176,9 +185,9 @@ const softwareOptions = ref([
   { label: '- unknown -', value: '' },
   { label: 'Gravitymon', value: 'Gravitymon' },
   { label: 'Kegmon', value: 'Kegmon' },
-  { label: 'Pressuremon', value: 'Pressuremon' },
+  // { label: 'Pressuremon', value: 'Pressuremon' },
   { label: 'Brewpi', value: 'Brewpi' },
-  { label: 'iSpindel', value: 'iSpindel' }
+  // { label: 'iSpindel', value: 'iSpindel' }
 ])
 
 const bleColorOptions = ref([
@@ -192,6 +201,20 @@ const bleColorOptions = ref([
   { label: 'Yellow', value: 'yellow' },
   { label: 'Pink', value: 'pink' }
 ])
+
+const viewConfig = () => {
+  render.value = atob(device.value.config)
+}
+
+const disableTilt = computed(() => {
+  if(device.value.software != 'Gravitymon')
+    return true
+
+  if(device.value.chipFamily != 'esp32' && device.value.chipFamily != 'esp32c3' && device.value.chipFamily != 'esp32s3')
+    return true
+
+  return global.disabled
+})
 
 function isNew() {
   return router.currentRoute.value.params.id == 'new' ? true : false
@@ -220,6 +243,11 @@ onMounted(() => {
 function validateChipId() {
   logDebug('DeviceView.validateChipId()')
 
+  if(device.value.software == "Brewpi") {
+    device.value.chipId = "000000"
+    return true
+  } 
+
   const regex = new RegExp(/^([0-9,a-f]){6}$/)
 
   if (regex.test(device.value.chipId)) {
@@ -243,7 +271,7 @@ async function fetchConfigFromDevice() {
   global.clearMessages()
   global.disabled = true
   validateUrl()
-  await fetchConfigV2() // Applies to Kegmon 2.x and Gravitymon 2.x
+  await fetchConfigEspFwkV1() // Applies to Kegmon 1.x and Gravitymon 2.x
   // TODO: Validate fetch from old Gravitymon 1.x and Kegmon 1.x
   // TODO: Validate fetch from BrewPi
   global.disabled = false
@@ -273,9 +301,9 @@ async function proxyRequest(url, header) {
 }
 
 /*
- * Fetch config from a device with API V2.x that uses /api/auth and /api/config (with auth)
+ * Fetch config from a device with API V1.x that uses /api/auth and /api/config (with auth)
  */
-async function fetchConfigV2() {
+async function fetchConfigEspFwkV1() {
   try {
     var data = {}
 
@@ -345,7 +373,7 @@ const save = () => {
   if (isNew()) {
     // Check if a device with the current chipId already exist
     for (var i = 0; i < deviceStore.devices.length; i++) {
-      if (deviceStore.devices[i].chipId == device.value.chipId) {
+      if (deviceStore.devices[i].chipId == device.value.chipId && device.value.chipId != "000000") {
         global.messageWarning = 'A device with this chip ID already exists'
         return
       }

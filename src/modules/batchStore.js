@@ -16,7 +16,8 @@ export class Batch {
     ebc,
     ibu,
     brewfatherId,
-    gravity
+    gravity,
+    fermentationChamber
   ) {
     this.id = id
     this.name = name
@@ -30,8 +31,14 @@ export class Batch {
     this.ebc = ebc
     this.ibu = ibu
     this.brewfatherId = brewfatherId
+    this.fermentationChamber = fermentationChamber
     this.gravityCount = gravity.length
     this.gravity = []
+
+    if(this.fermentationChamber === undefined)
+      this.fermentationChamber = 0
+    if(this.fermentationChamber === null)
+      this.fermentationChamber = 0
   }
 
   static fromJson(d) {
@@ -48,18 +55,34 @@ export class Batch {
       d.ebc,
       d.ibu,
       d.brewfatherId,
-      d.gravity
+      d.gravity,
+      d.fermentationChamber
     )
   }
 
   static fromDashboardJson(d) {
-    var b = new Batch(d.id, d.name, '', d.chipId, d.active, '', '', '', 0, 0, 0, 0, d.gravity)
+    var b = new Batch(
+      d.id,
+      d.name,
+      '',
+      d.chipId,
+      d.active,
+      '',
+      '',
+      '',
+      0,
+      0,
+      0,
+      0,
+      d.gravity,
+      d.fermentationChamber
+    )
     b.gravity = d.gravity
     return b
   }
 
   toJson() {
-    return {
+    var j = {
       name: this.name,
       description: this.description,
       chipId: this.chipId,
@@ -70,8 +93,15 @@ export class Batch {
       abv: this.abv,
       ebc: this.ebc,
       ibu: this.ibu,
-      brewfatherId: this.brewfatherId
+      brewfatherId: this.brewfatherId,
+      fermentationChamber: this.fermentationChamber // Optional: Can be undefined (=0)
     }
+
+    // Optional: Can be undefined
+    if(this.fermentationChamber !== undefined && this.fermentationChamber > 0)
+      j.fermentationChamber = this.fermentationChamber 
+
+    return j
   }
 
   get id() {
@@ -116,6 +146,9 @@ export class Batch {
   get gravity() {
     return this._gravity
   }
+  get fermentationChamber() {
+    return this._fermentationChamber
+  }
 
   set id(id) {
     this._id = id
@@ -152,6 +185,9 @@ export class Batch {
   }
   set brewfatherId(brewfatherId) {
     this._brewfatherId = brewfatherId
+  }
+  set fermentationChamber(fermentationChamber) {
+    this._fermentationChamber = fermentationChamber
   }
   set gravityCount(gravityCount) {
     this._gravityCount = gravityCount

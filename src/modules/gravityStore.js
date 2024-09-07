@@ -14,7 +14,9 @@ export class Gravity {
     runTime,
     created,
     batchId,
-    active
+    active,
+    chamberTemperature,
+    beerTemperature
   ) {
     this.id = id
     this.temperature = temperature
@@ -27,6 +29,8 @@ export class Gravity {
     this.created = created
     this.batchId = batchId
     this.active = active
+    this.chamberTemperature = chamberTemperature
+    this.beerTemperature = beerTemperature
   }
 
   static fromJson(g) {
@@ -41,12 +45,14 @@ export class Gravity {
       g.runTime,
       g.created,
       g.batchId,
-      g.active
+      g.active,
+      g.chamberTemperature,
+      g.beerTemperature
     )
   }
 
   toJson() {
-    return {
+    var j =  {
       // "id": this.id,
       //"batchId": this.batchId,
       temperature: this.temperature,
@@ -57,8 +63,17 @@ export class Gravity {
       corrGravity: this.corrGravity,
       runTime: this.runTime,
       created: this.created,
-      active: this.active
+      active: this.active,
     }
+
+    // Optional: Can be undefined or null
+    if(this.chamberTemperature !== undefined)
+      j.chamberTemperature = this.chamberTemperature 
+
+    if(this.beerTemperature !== undefined)
+      j.beerTemperature = this.beerTemperature 
+
+    return j
   }
 
   get id() {
@@ -94,6 +109,12 @@ export class Gravity {
   get active() {
     return this._active
   }
+  get chamberTemperature() {
+    return this._chamberTemperature
+  }
+  get beerTemperature() {
+    return this._beerTemperature
+  }
 
   set id(id) {
     this._id = id
@@ -127,6 +148,12 @@ export class Gravity {
   }
   set active(active) {
     this._active = active
+  }
+  set chamberTemperature(chamberTemperature) {
+    this._chamberTemperature = chamberTemperature
+  }
+  set beerTemperature(beerTemperature) {
+    this._beerTemperature = beerTemperature
   }
 }
 

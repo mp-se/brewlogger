@@ -11,11 +11,20 @@
             <BsInputText v-model="batch.name" label="Name" help="" :disabled="global.disabled">
             </BsInputText>
           </div>
-          <div class="col-md-6">
+          <div class="col-md-3">
             <BsSelect
               v-model="batch.chipId"
               label="Device"
-              :options="chipIdOptions"
+              :options="gravityDeviceOptions"
+              help=""
+              :disabled="global.disabled"
+            ></BsSelect>
+          </div>
+          <div class="col-md-3">
+            <BsSelect
+              v-model="batch.fermentationChamber"
+              label="Fermentation chamber"
+              :options="tempControlDeviceOptions"
               help=""
               :disabled="global.disabled"
             ></BsSelect>
@@ -179,7 +188,8 @@ import { logDebug } from '@/modules/logger'
 // TODO: Add date selector
 
 const batch = ref(null)
-const chipIdOptions = ref([])
+const gravityDeviceOptions = ref([])
+const tempControlDeviceOptions = ref([])
 const toggleOptions = ref([
   { label: 'Active', value: true },
   { label: 'Closed', value: false }
@@ -248,7 +258,7 @@ onMounted(() => {
 
   batch.value = null
 
-  updateChipIdOptions()
+  updateDeviceOptions()
 
   if (isNew()) {
     batch.value = new Batch(0, '', '', '', true, '', '', '', 0.0, 0, 0, '')
@@ -264,21 +274,40 @@ onMounted(() => {
   }
 })
 
-function updateChipIdOptions() {
-  logDebug('BatchView.updateChipIdOptions()')
+function updateDeviceOptions() {
+  logDebug('BatchView.updateDeviceOptions()')
 
-  chipIdOptions.value = []
+  //chipIdOptions.value = []
+  gravityDeviceOptions.value = []
+  tempControlDeviceOptions.value = [ { value: 0, label: '-- Disabled --'}] 
 
   deviceStore.getDeviceList((success, dl) => {
     if (success) {
       for (var i = 0; i < dl.length; i++) {
-        chipIdOptions.value.push({
-          value: dl[i].chipId,
-          label: dl[i].chipId + ' (' + dl[i].mdns + ')'
-        })
+        const d = dl[i]
+
+        if(d.software != 'Brewpi' && d.software != 'Kegmon') {
+          var s = d.mdns != '' ? d.mdns : (d.url != '' ? d.url : (d.description != '' ? d.description : d.software))
+  
+          gravityDeviceOptions.value.push({
+            value: dl[i].chipId,
+            label: dl[i].chipId + ' (' + s + ')'
+          })
+        }
+
+        if(d.software == 'Brewpi' || d.chipId == '000000') {
+          s = d.mdns != '' ? d.mdns : (d.url != '' ? d.url : d.description)
+
+          tempControlDeviceOptions.value.push({
+            value: dl[i].id,
+            label: 'Brewpi (' + s + ')'
+          })
+        }
+
       }
 
-      logDebug('BatchView.updateChipIdOptions()', chipIdOptions.value)
+      logDebug('BatchView.updateDeviceOptions()', gravityDeviceOptions.value)
+      logDebug('BatchView.updateDeviceOptions()', tempControlDeviceOptions.value)
     } else {
       global.messageError = 'Failed to load device list'
     }

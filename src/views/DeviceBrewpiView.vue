@@ -6,7 +6,7 @@
 
     <template v-if="device != null">
       <div class="row gy-2 align-items-end">
-        <div class="col-md-4">
+        <div class="col-md-3">
           <pre
             v-if="lcd != null"
             style="
@@ -168,6 +168,11 @@ function setFridgeTemp() {
 
 function fetchTempConfig() {
   logDebug('DeviceBrewpiView.fetchTempConfig()')
+
+  if(device.value.url == "") {
+    global.messageError = "Missing URL for device."
+    return;
+  }
 
   deviceStore.proxyRequest(
     device.value.url + 'api/all_temp_control/',

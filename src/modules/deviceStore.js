@@ -11,8 +11,12 @@ export class Device {
     this.mdns = mdns
     this.config = config
     this.bleColor = bleColor
-    this.url = url
     this.description = description
+
+    if(url == "http://" || url == "https://")
+      this. url = ""
+    else
+      this.url = url
   }
 
   static fromJson(d) {

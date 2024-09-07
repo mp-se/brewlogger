@@ -115,6 +115,18 @@ async function getDeviceList(callback) {
   callback(true, json)
 }
 
+function cleanupJson(list) {
+  list.forEach(l => {
+    Object.keys(l).forEach(key => {
+      if(l[key] == null) {
+        // logDebug("BackupView.cleanupJson()", key)
+        delete l[key]
+      }
+    })    
+  })
+
+}
+
 function createBackup() {
   logDebug('BackupView.createBackup()')
 
@@ -122,6 +134,16 @@ function createBackup() {
     if (success) {
       logDebug('BackupView.createBackup()', 'Collected batches')
       backup.value.batches = bl
+
+      // Remove optional params from payload
+      cleanupJson(backup.value.batches)
+
+      backup.value.batches.forEach(b => {
+        cleanupJson(b.gravity)
+      })
+
+      console.log(backup.value.batches)
+      // backup.value.batches = bl
 
       getDeviceList((success, dl) => {
         if (success) {
