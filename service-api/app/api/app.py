@@ -17,12 +17,6 @@ from .cache import writeKey
 
 logger = logging.getLogger(__name__)
 
-# TODO: Feature1: Add option to collect data from brewpi controller
-# Collect data when gravity readings are received, a brewpi controller can be connected to one or more batches.
-
-# TODO: Feature2:
-#
-
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):

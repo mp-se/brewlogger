@@ -184,8 +184,6 @@ async def create_gravity_using_ispindel_format(
             )
             device_service.create(device)
 
-        # TODO: Get temperature from brewpi devices. Let the background task handle that so that we dont delay the response to the device.
-
         chamberId = batchList[0].fermentation_chamber
         logger.info(
             "Saving gravity request for batch %d and chamber %d",
@@ -204,8 +202,6 @@ async def create_gravity_using_ispindel_format(
             batch_id=batchList[0].id,
             created=datetime.now(),
             active=True,
-            # chamberTemperature=chamberTemp, # TODO
-            # beerTemperature=beerTemp, # TODO
         )
 
         # If there is a tagged brewpi device lets use the value from that

@@ -139,8 +139,6 @@ def migrate_database():
         except (OperationalError, ProgrammingError, InternalError) as e:
             logger.error(f"Failed to update database, Step 1, {e}")
 
-    # TODO: Drop the index for the chipId column
-
     logger.info("Running postgres sql commands to migrate database from v0.5 to v0.6")
     with engine.connect() as con:
         try:
