@@ -60,7 +60,7 @@ fastapi dev api/app.py
 or
 
 ```
-uvicorn --reload --port 8000 api.main:app --env-file ../.development_env --log-config ./log_conf.yaml --lifespan on
+uvicorn --reload --port 8000 api.app:app --env-file ../.development_env --log-config ./log_conf.yaml --lifespan on
 ```
 
 ## Validating code standards

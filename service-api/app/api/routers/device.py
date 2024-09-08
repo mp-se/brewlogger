@@ -20,9 +20,12 @@ router = APIRouter(prefix="/api/device")
     "/", response_model=List[schemas.Device], dependencies=[Depends(api_key_auth)]
 )
 async def list_devices(
+    software: str = "*",
     devices_service: DeviceService = Depends(get_device_service),
 ) -> List[models.Device]:
-    logger.info("Endpoint GET /api/device/")
+    logger.info(f"Endpoint GET /api/device/?software={software}")
+    if software != "*":
+        return devices_service.search_software(software=software)
     return devices_service.list()
 
 

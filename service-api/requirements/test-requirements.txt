@@ -33,7 +33,7 @@ coverage[toml]==7.2.7
     # via pytest-cov
 distlib==0.3.7
     # via virtualenv
-fastapi==0.112.2
+fastapi==0.114.0
     # via -r service-api/requirements/requirements.txt
 filelock==3.12.4
     # via virtualenv
@@ -80,12 +80,12 @@ pre-commit==3.4.0
     # via -r service-api/requirements/test-requirements.in
 psycopg2==2.9.9
     # via -r service-api/requirements/requirements.txt
-pydantic==2.8.2
+pydantic==2.9.0
     # via
     #   -r service-api/requirements/requirements.txt
     #   fastapi
     #   pydantic-settings
-pydantic-core==2.20.1
+pydantic-core==2.23.2
     # via
     #   -r service-api/requirements/requirements.txt
     #   pydantic
@@ -109,6 +109,8 @@ pyyaml==6.0.2
     # via
     #   -r service-api/requirements/requirements.txt
     #   pre-commit
+redis==5.0.8
+    # via -r service-api/requirements/requirements.txt
 requests==2.32.0
     # via -r service-api/requirements/test-requirements.in
 six==1.16.0
@@ -133,6 +135,10 @@ typing-extensions==4.12.2
     #   pydantic
     #   pydantic-core
     #   sqlalchemy
+tzdata==2024.1
+    # via
+    #   -r service-api/requirements/requirements.txt
+    #   pydantic
 tzlocal==5.2
     # via
     #   -r service-api/requirements/requirements.txt

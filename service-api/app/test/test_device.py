@@ -61,6 +61,27 @@ def test_list(app_client):
     assert len(data) == 2
 
 
+def test_brewpi(app_client):
+    data = {
+        "chipId": "000000",
+        "chipFamily": "",
+        "software": "Brewpi",
+        "mdns": "",
+        "config": "",
+        "url": "http://localhost",
+        "bleColor": "",
+        "description": "",
+    }
+
+    # Add new
+    r = app_client.post("/api/device/", json=data, headers=headers)
+    assert r.status_code == 201
+
+    # Add new
+    r = app_client.get("/api/device/brewpi/", headers=headers)
+    assert r.status_code == 200
+
+
 def test_update(app_client):
     data = {
         "chipId": "01234568",
@@ -106,7 +127,7 @@ def test_delete(app_client):
     r = app_client.get("/api/device", headers=headers)
     assert r.status_code == 200
     data = json.loads(r.text)
-    assert len(data) == 1
+    assert len(data) == 2
 
 
 def test_validation(app_client):

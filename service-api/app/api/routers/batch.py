@@ -23,7 +23,7 @@ async def list_batches(
     active: str = "*",
     batch_service: BatchService = Depends(get_batch_service),
 ) -> List[models.Batch]:
-    logger.info("Endpoint GET /api/batch/?chipId=%s&active=%s", chipId, active)
+    logger.info(f"Endpoint GET /api/batch/?chipId={chipId}&active={active}")
     if chipId != "*":  # ChipId + Active flas
         if active == "True" or active == "true":
             return batch_service.search_chipId_active(chipId, True)

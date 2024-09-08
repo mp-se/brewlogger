@@ -12,6 +12,7 @@ install_requires = [
     "psycopg2",
     "zeroconf",
     "apscheduler",
+    "redis",
 ]
 
 setup(

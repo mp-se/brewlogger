@@ -13,6 +13,7 @@ from .config import get_settings
 from .scheduler import scheduler_shutdown, scheduler_setup
 from .utils import load_settings
 from contextlib import asynccontextmanager
+from .cache import writeKey
 
 logger = logging.getLogger(__name__)
 
@@ -81,5 +82,7 @@ app = FastAPI(
     version=settings.version,
     lifespan=lifespan,
 )
+
 register_handlers(app)
-scheduler_setup()
+scheduler_setup(app)
+writeKey("brewlogger", get_settings().version)

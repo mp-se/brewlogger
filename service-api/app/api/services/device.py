@@ -24,6 +24,16 @@ class DeviceService(
         )
         return objs
 
+    def search_software(self, software: str) -> List[models.Device]:
+        filters = {"software": software}
+        objs: List[self.model] = self.db_session.scalars(
+            select(self.model).filter_by(**filters)
+        ).all()
+        logger.info(
+            "Fetched device based on software=%s, records found %d", software, len(objs)
+        )
+        return objs
+
     def search_ble_color(self, ble_color: str) -> List[models.Device]:
         filters = {"ble_color": ble_color}
         objs: List[self.model] = self.db_session.scalars(

@@ -1,6 +1,0 @@
-API_KEY="akljnv13bvi2vfo0b0bw789jlljsdf"
-DATABASE_URL="sqlite:///./brewlogger.sqlite"
-API_KEY_ENABLED=false
-TEST_ENDPOINTS_ENABLED=true
-BREWFATHER_API_KEY=NipLfyjSwcZmguYM4bvuFRqcDSSDDtAMW23hsRbQkyYMFin7cIGybf4htng61oA5
-BREWFATHER_USER_KEY=Urz3aokmzBQ5Wul6IXWZlUoHpG42

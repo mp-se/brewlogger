@@ -15,6 +15,7 @@ from api.services import (
     get_device_service,
 )
 from ..security import api_key_auth
+from ..cache import existKey, readKey
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/api/gravity")
@@ -159,7 +160,7 @@ async def create_gravity_using_ispindel_format(
                 abv=0.0,
                 ebc=0.0,
                 ibu=0.0,
-                # fermentation_chamber=0, # This is optional
+                # fermentation_chamber=0, # This is optional and should be assigned in UI
             )
             batch_service.create(batch)
             batchList = batch_service.search_chipId_active(json["ID"], True)
@@ -183,7 +184,14 @@ async def create_gravity_using_ispindel_format(
             )
             device_service.create(device)
 
-        # TODO: Get temperature from brewpi devices. Let the background task handle that.
+        # TODO: Get temperature from brewpi devices. Let the background task handle that so that we dont delay the response to the device.
+
+        chamberId = batchList[0].fermentation_chamber
+        logger.info(
+            "Saving gravity request for batch %d and chamber %d",
+            batchList[0].id,
+            chamberId,
+        )
 
         gravity = schemas.GravityCreate(
             temperature=json["temperature"],
@@ -199,6 +207,17 @@ async def create_gravity_using_ispindel_format(
             # chamberTemperature=chamberTemp, # TODO
             # beerTemperature=beerTemp, # TODO
         )
+
+        # If there is a tagged brewpi device lets use the value from that
+        if chamberId > 0:
+            key = "brewpi_" + str(chamberId) + "_beer_temp"
+            if existKey(key):
+                beerTemp = readKey(key)
+                gravity.beer_temperature = float(beerTemp)
+            key = "brewpi_" + str(chamberId) + "_fridge_temp"
+            if existKey(key):
+                chamberTemp = readKey(key)
+                gravity.chamber_temperature = float(chamberTemp)
 
         if json["temp_units"] == "F":
             gravity.temperature = (
