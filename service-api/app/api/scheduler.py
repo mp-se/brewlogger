@@ -9,6 +9,7 @@ from .cache import writeKey
 
 logger = logging.getLogger(__name__)
 scheduler = AsyncIOScheduler()
+schedulerRunning = False
 headers = {
     "Authorization": "Bearer " + get_settings().api_key,
     "Content-Type": "application/json",
@@ -70,7 +71,14 @@ async def fetch_brewpi_temps(device):
 
 
 async def task_fetch_brewpi_temps():
-    logger.info(f"Task: fetch_brewpi_temps is running at {datetime.now()}")
+    logger.info(f"Task: fetch_brewpi_temps is running at {datetime.now()} running={schedulerRunning}")
+
+    # Avoid having multple paralell executions
+    if schedulerRunning:
+        return
+
+    schedulerRunning = True
+
     try:
         timeout = httpx.Timeout(10.0, connect=10.0, read=10.0)
         url = get_settings().self_url + "/api/device/?software=Brewpi"
@@ -80,7 +88,6 @@ async def task_fetch_brewpi_temps():
             logger.info(f"Reqeust to {url} returned code {res.status_code}")
 
             for d in res.json():
-                print(d)
                 await fetch_brewpi_temps(d)
 
     except httpx.ReadTimeout:
@@ -89,6 +96,10 @@ async def task_fetch_brewpi_temps():
         logger.error(f"Unable to read from device {url}")
     except httpx.ConnectTimeout:
         logger.error(f"Unable to connect to device {url}")
+    except Exception as e:
+        logger.error(f"Unknown error {e}")
+
+    schedulerRunning = False
 
 
 def scheduler_setup(app):
