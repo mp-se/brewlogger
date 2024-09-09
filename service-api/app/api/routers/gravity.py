@@ -195,7 +195,7 @@ async def create_gravity_using_ispindel_format(
             temperature=json["temperature"],
             gravity=json["gravity"],
             angle=json["angle"],
-            battery=json["battery"],
+            battery=json["battery"],                
             rssi=json["RSSI"],
             corr_gravity=corr_gravity,
             run_time=run_time,
@@ -205,7 +205,7 @@ async def create_gravity_using_ispindel_format(
         )
 
         # If there is a tagged brewpi device lets use the value from that
-        if chamberId > 0:
+        if chamberId is not None and chamberId > 1:
             key = "brewpi_" + str(chamberId) + "_beer_temp"
             if existKey(key):
                 beerTemp = readKey(key)
