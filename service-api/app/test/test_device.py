@@ -77,10 +77,6 @@ def test_brewpi(app_client):
     r = app_client.post("/api/device/", json=data, headers=headers)
     assert r.status_code == 201
 
-    # Add new
-    r = app_client.get("/api/device/brewpi/", headers=headers)
-    assert r.status_code == 200
-
 
 def test_update(app_client):
     data = {
@@ -116,6 +112,13 @@ def test_update(app_client):
     # Update missing entity
     r = app_client.patch("/api/device/10", json=data, headers=headers)
     assert r.status_code == 404
+
+def test_search(app_client):
+    # Do a search for devices with software
+    r = app_client.get("/api/device/?software=Brewpi", headers=headers)
+    assert r.status_code == 200
+    data = json.loads(r.text)
+    assert len(data) == 1
 
 
 def test_delete(app_client):
