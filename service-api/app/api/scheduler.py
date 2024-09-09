@@ -98,5 +98,5 @@ def scheduler_setup(app):
 
     # Setting up task to fetch brewpi temperatures and store these in redis cache
     trigger = CronTrigger(second=0)
-    scheduler.add_job(task_fetch_brewpi_temps, trigger)
+    scheduler.add_job(func=task_fetch_brewpi_temps, trigger=trigger, max_instances=1)
     scheduler.start()
