@@ -8,6 +8,7 @@ from sqlalchemy import (
     ForeignKey,
     Text,
     Boolean,
+    JSON,
 )
 from sqlalchemy.orm import declarative_base, relationship
 
@@ -34,10 +35,14 @@ class Device(Base):
     chip_family = Column(String(10), nullable=False)
     software = Column(String(40), nullable=False)
     mdns = Column(String(40), nullable=False)
-    config = Column(Text, nullable=False)
-    ble_color = Column(String(15), nullable=False)
+    config = Column(JSON, nullable=False)
     url = Column(String(80), nullable=False)
     description = Column(String(150), nullable=False)
+
+    # Gravitymon specific
+    ble_color = Column(String(15), nullable=False)
+    gravity_formula = Column(String(100), nullable=False)
+    poly = Column(JSON, nullable=False)
 
 
 class Batch(Base):
@@ -81,8 +86,8 @@ class Gravity(Base):
     run_time = Column(Float, nullable=False)
 
     # Data from brewpi
-    beer_temperature = Column(Float, nullable=True)
-    chamber_temperature = Column(Float, nullable=True)  # Temperature from brewpi
+    beer_temperature = Column(Float, nullable=True) # Temperature from brewpi
+    chamber_temperature = Column(Float, nullable=True) # Temperature from brewpi
 
     # Internal
     created = Column(DateTime, nullable=False)

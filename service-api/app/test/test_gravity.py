@@ -254,3 +254,21 @@ def test_public2(app_client):
 
 def test_validation(app_client):
     pass
+
+
+def test_formula(app_client):
+    data = [ 
+            { "angle": 25.0, "gravity": 1.000 },
+        ]
+    r = app_client.post("/api/gravity/calculate/", json=data, headers=headers)
+    assert r.status_code == 400
+
+    data = [ 
+            { "angle": 25.0, "gravity": 1.000 },
+            { "angle": 35.0, "gravity": 1.010 },
+            { "angle": 45.0, "gravity": 1.020 },
+        ]
+    r = app_client.post("/api/gravity/calculate/", json=data, headers=headers)
+    assert r.status_code == 200
+    data2 = json.loads(r.text)
+    print(data2)

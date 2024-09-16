@@ -16,6 +16,7 @@ from api.services import (
 )
 from ..security import api_key_auth
 from ..cache import existKey, readKey
+from ..poly import create_formula
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/api/gravity")
@@ -234,3 +235,23 @@ async def create_gravity_using_ispindel_format(
     except JSONDecodeError as e:
         logging.error(e)
         raise HTTPException(status_code=422, detail="Unable to parse request")
+
+@router.post(
+    "/calculate/",
+    response_model=schemas.Formula,
+    status_code=200,
+    dependencies=[Depends(api_key_auth)],
+)
+async def create_gravity_formula(
+    point_list: List[schemas.FormulaPoint],
+):
+    logger.info("Endpoint GET /api/gravity/calculate/")
+
+    if(len(point_list)<2):
+        raise HTTPException(status_code=400, detail="Too few values to calculate formula")
+
+    poly1 = create_formula(1, point_list)
+    poly2 = create_formula(2, point_list)
+    poly3 = create_formula(3, point_list)
+    poly4 = create_formula(4, point_list)
+    return schemas.Formula(poly1=poly1, poly2=poly2, poly3=poly3, poly4=poly4)

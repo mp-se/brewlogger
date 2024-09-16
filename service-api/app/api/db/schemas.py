@@ -1,6 +1,6 @@
 from datetime import datetime
 from typing import List, Optional
-from pydantic import BaseModel, Field, ConfigDict
+from pydantic import BaseModel, Field, ConfigDict, Json
 
 
 def to_camel(string: str) -> str:
@@ -20,6 +20,15 @@ class ProxyRequest(BaseModel):
     body: Optional[str]
     header: Optional[str]
 
+class Formula(BaseModel):
+    poly1: str
+    poly2: str
+    poly3: str
+    poly4: str
+
+class FormulaPoint(BaseModel):
+    angle: float
+    gravity: float
 
 ################################################################################
 
@@ -72,18 +81,22 @@ class DeviceBase(BaseModel):
     mdns: str = Field(
         min_length=0, max_length=40, description="Network name of the device"
     )
-    config: str = Field(
-        default="", description="JSON document containing the device configuration"
+    config: Json = Field(
+        default={}, description="JSON document containing the device configuration"
     )
     url: str = Field(
         min_length=0,
         max_length=80,
         description="URL to the device, will be used to communicate with it",
     )
-    ble_color: str = Field(min_length=0, max_length=15, description="Bluetooth color")
     description: str = Field(
         min_length=0, max_length=150, description="Longer description of the device"
     )
+    ble_color: str = Field(min_length=0, max_length=15, description="Bluetooth color (Only Gravitymon)")
+    gravity_formula: str = Field(
+        min_length=0, max_length=100, description="Gravity formula (Only Gravitymon)"
+    )
+    poly: Json = Field(default={}, description="Json with poly information (Only Gravitymon)")
 
 
 class DeviceUpdate(DeviceBase):

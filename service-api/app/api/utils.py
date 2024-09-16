@@ -42,7 +42,6 @@ def load_settings():
                 cfg = list[0]
                 logger.info(f"Database version {cfg.version}")
                 if cfg.version != get_settings().version:
-                    # if cfg.version != "0.0.0":
                     logger.info(
                         "Database does not match the application version, trying to do migration"
                     )
@@ -149,7 +148,20 @@ def migrate_database():
             con.execute(
                 text("ALTER TABLE gravity ADD COLUMN chamber_temperature FLOAT")
             )
+            con.execute(
+                text("ALTER TABLE device ADD COLUMN poly JSON")
+            )
+            con.execute(text('ALTER TABLE device ADD COLUMN gravity_formula VARCHAR(100)'))
             con.commit()
+
+            con.execute(text("UPDATE device SET poly = {} WHERE poly IS NULL"))
+            con.execute(text("UPDATE device SET gravity_formula = '' WHERE gravity_formula IS NULL"))
+            con.commit()
+
+            con.execute(text("ALTER TABLE device ALTER COLUMN poly SET NOT NULL"))
+            con.execute(text("ALTER TABLE gravity_formula ALTER COLUMN gravity_formula SET NOT NULL"))
+            con.commit()
+
             con.execute(text("DROP INDEX ix_device_chip_id"))
             con.commit()
         except (OperationalError, ProgrammingError, InternalError) as e:
