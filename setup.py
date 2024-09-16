@@ -8,11 +8,11 @@ install_requires = [
     "pydantic-settings",
     "pyyaml",
     "httpx",
-    "jinja2",
     "psycopg2",
     "zeroconf",
     "apscheduler",
     "redis",
+    "scipy",
 ]
 
 setup(
