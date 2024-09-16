@@ -18,7 +18,7 @@ certifi==2024.8.30
     #   httpx
 click==8.1.7
     # via uvicorn
-fastapi==0.114.0
+fastapi==0.114.1
     # via brewlogger_api (setup.py)
 h11==0.14.0
     # via
@@ -34,28 +34,28 @@ idna==3.8
     #   httpx
 ifaddr==0.2.0
     # via zeroconf
-jinja2==3.1.4
-    # via brewlogger_api (setup.py)
-markupsafe==2.1.5
-    # via jinja2
+numpy==2.1.1
+    # via scipy
 psycopg2==2.9.9
     # via brewlogger_api (setup.py)
-pydantic==2.9.0
+pydantic==2.9.1
     # via
     #   brewlogger_api (setup.py)
     #   fastapi
     #   pydantic-settings
-pydantic-core==2.23.2
+pydantic-core==2.23.3
     # via pydantic
-pydantic-settings==2.4.0
+pydantic-settings==2.5.2
     # via brewlogger_api (setup.py)
 python-dotenv==1.0.1
     # via pydantic-settings
-pytz==2024.1
+pytz==2024.2
     # via apscheduler
 pyyaml==6.0.2
     # via brewlogger_api (setup.py)
 redis==5.0.8
+    # via brewlogger_api (setup.py)
+scipy==1.14.1
     # via brewlogger_api (setup.py)
 six==1.16.0
     # via apscheduler
@@ -65,7 +65,7 @@ sniffio==1.3.1
     #   httpx
 sqlalchemy==2.0.34
     # via brewlogger_api (setup.py)
-starlette==0.38.4
+starlette==0.38.5
     # via fastapi
 typing-extensions==4.12.2
     # via
@@ -73,11 +73,9 @@ typing-extensions==4.12.2
     #   pydantic
     #   pydantic-core
     #   sqlalchemy
-tzdata==2024.1
-    # via pydantic
 tzlocal==5.2
     # via apscheduler
 uvicorn==0.30.6
     # via brewlogger_api (setup.py)
-zeroconf==0.133.0
+zeroconf==0.134.0
     # via brewlogger_api (setup.py)
