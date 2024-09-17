@@ -79,4 +79,4 @@ app = FastAPI(
 
 register_handlers(app)
 scheduler_setup(app)
-writeKey("brewlogger", get_settings().version)
+writeKey("brewlogger", get_settings().version, ttl=None)

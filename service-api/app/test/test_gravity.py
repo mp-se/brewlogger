@@ -237,6 +237,8 @@ def test_public2(app_client):
         "config": "",
         "url": "",
         "bleColor": "red",
+        "gravityFormula": "",
+        "gravityPoly": "",
     }
 
     r = app_client.post("/api/device/", json=data, headers=headers)

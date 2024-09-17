@@ -14,8 +14,13 @@ def create_formula(order, points = List[schemas.FormulaPoint]):
     y = []
 
     for p in points:
-        x.append(p.angle)
-        y.append(p.gravity)
+        if p.a > 0: # Ignore angles of Zero
+            x.append(float(p.a))
+            y.append(float(p.g))
+
+    if len(x) == 0:
+        logger.error("Too few values supplied for poly")
+        return ""
 
     try:
         poly = numpy.polyfit(x, y, order, full = False)
@@ -23,12 +28,17 @@ def create_formula(order, points = List[schemas.FormulaPoint]):
         logger.error("Failed to create poly for supplied values")
         return ""
 
+    result = ""
+
     if order == 4:
-        return f"{poly[0]:.8f}*tilt^4+{poly[1]:.8f}*tilt^3+{poly[2]:.8f}*tilt^2+{poly[3]:.8f}*tilt+{poly[4]:.8f}"
+        result = f"{poly[0]:.8f}*tilt^4+{poly[1]:.8f}*tilt^3+{poly[2]:.8f}*tilt^2+{poly[3]:.8f}*tilt+{poly[4]:.8f}"
     elif order == 3:
-        return f"{poly[0]:.8f}*tilt^3+{poly[1]:.8f}*tilt^2+{poly[2]:.8f}*tilt+{poly[3]:.8f}"
+        result = f"{poly[0]:.8f}*tilt^3+{poly[1]:.8f}*tilt^2+{poly[2]:.8f}*tilt+{poly[3]:.8f}"
     elif order == 2:
-        return f"{poly[0]:.8f}*tilt^2+{poly[1]:.8f}*tilt+{poly[2]:.8f}"
+        result = f"{poly[0]:.8f}*tilt^2+{poly[1]:.8f}*tilt+{poly[2]:.8f}"
     else:
-        return f"{poly[0]:.8f}*tilt+{poly[1]:.8f}"
+        result = f"{poly[0]:.8f}*tilt+{poly[1]:.8f}"
+
+    return result.replace('+-', '-')
+
 

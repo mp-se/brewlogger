@@ -27,8 +27,8 @@ class Formula(BaseModel):
     poly4: str
 
 class FormulaPoint(BaseModel):
-    angle: float
-    gravity: float
+    a: float # Angle
+    g: float # Gravity
 
 ################################################################################
 
@@ -48,6 +48,9 @@ class BrewLoggerBase(BaseModel):
     )
     version: str = Field(
         min_length=0, max_length=10, description="Database software version"
+    )
+    gravity_forward_url: str = Field(
+        min_length=0, max_length=100, description="URL to forward gravity data to"
     )
     dark_mode: bool = Field(description="Enable dark mode in UI")
 
@@ -81,8 +84,8 @@ class DeviceBase(BaseModel):
     mdns: str = Field(
         min_length=0, max_length=40, description="Network name of the device"
     )
-    config: Json = Field(
-        default={}, description="JSON document containing the device configuration"
+    config: str = Field(
+        default="", description="JSON document containing the device configuration"
     )
     url: str = Field(
         min_length=0,
@@ -92,11 +95,11 @@ class DeviceBase(BaseModel):
     description: str = Field(
         min_length=0, max_length=150, description="Longer description of the device"
     )
-    ble_color: str = Field(min_length=0, max_length=15, description="Bluetooth color (Only Gravitymon)")
+    ble_color: str = Field(min_length=0, max_length=15, description="Bluetooth color (Gravitymon)")
     gravity_formula: str = Field(
-        min_length=0, max_length=100, description="Gravity formula (Only Gravitymon)"
+        min_length=0, max_length=100, description="Gravity formula (Gravitymon)"
     )
-    poly: Json = Field(default={}, description="Json with poly information (Only Gravitymon)")
+    gravity_poly: str = Field(default="", description="JSON document with gravity poly information (Gravitymon)")
 
 
 class DeviceUpdate(DeviceBase):

@@ -1,5 +1,3 @@
-version: "3.8"
-
 services:
   brew_web:
     #build: service-web
@@ -14,23 +12,33 @@ services:
       - 8080:8080
     depends_on:
       - brew_api
-      
+
   brew_api:
     build: service-api
     hostname: brew_api
     restart: always
-    #ports:
-    #  - 8000:80
+    ports:
+      - 8000:80
     networks:
       - brew_net
     environment:
      - API_KEY=akljnv13bvi2vfo0b0bw789jlljsdf
      - DATABASE_URL=postgresql://postgres:password@brew_db:5432/app
      - API_KEY_ENABLED=0
+     - REDIS_URL=brew_cache
+     - SELF_URL=http://brew_api:80
      - BREWFATHER_API_KEY=
      - BREWFATHER_USER_KEY=
     depends_on:
      - brew_db
+     - brew_cache
+
+  brew_cache:
+    image: redis:7
+    hostname: brew_cache
+    restart: always
+    networks:
+      - brew_net
 
   brew_db:
     image: postgres:14
@@ -41,7 +49,7 @@ services:
     networks:
       - brew_net
     volumes:
-      - pg-data:/var/lib/postgresql/data/pgdata
+      - pg-data2:/var/lib/postgresql/data/pgdata
     environment:
       - PGDATA=/var/lib/postgresql/data/pgdata
       - POSTGRES_SERVER=brew_db
@@ -95,5 +103,6 @@ networks:
   brew_net:
 
 volumes:
-  pg-data:      
+  pg-data:
+  pg-data2:
   pgadmin-data:

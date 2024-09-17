@@ -3,12 +3,29 @@ import redis
 from .config import get_settings
 
 logger = logging.getLogger(__name__)
-ttl = 60 * 5 # 5 minutes
 
 logger.info(f"Creating connection pool to redis using redis://{get_settings().redis_url}:6379.")
 pool = redis.ConnectionPool(host=get_settings().redis_url, port=6379, db=0)
 
-def writeKey(key, value):
+def deleteKey(key):
+    logger.info(f"Removing {key}.")
+    try:
+        r = redis.Redis(connection_pool=pool)
+        r.delete(key)
+    except redis.exceptions.ConnectionError as e:
+        logger.error(f"Failed to connect with redis {e}.")
+    return
+
+def findKey(key):
+    logger.info(f"Searching key {key}.")
+    try:
+        r = redis.Redis(connection_pool=pool)
+        return r.keys(key + "*")
+    except redis.exceptions.ConnectionError as e:
+        logger.error(f"Failed to connect with redis {e}.")
+    return []
+
+def writeKey(key, value, ttl):
     logger.info(f"Writing key {key} = {value} ttl:{ttl}s.")
     try:
         r = redis.Redis(connection_pool=pool)

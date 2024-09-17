@@ -6,9 +6,8 @@ from sqlalchemy import (
     Float,
     DateTime,
     ForeignKey,
-    Text,
     Boolean,
-    JSON,
+    Text,
 )
 from sqlalchemy.orm import declarative_base, relationship
 
@@ -24,8 +23,8 @@ class BrewLogger(Base):
     temperature_format = Column(String(3), nullable=False)
     pressure_format = Column(String(3), nullable=False)
     gravity_format = Column(String(3), nullable=False)
+    gravity_forward_url = Column(String(100), nullable=False)
     dark_mode = Column(Boolean, nullable=False)
-
 
 class Device(Base):
     __tablename__ = "device"
@@ -35,14 +34,14 @@ class Device(Base):
     chip_family = Column(String(10), nullable=False)
     software = Column(String(40), nullable=False)
     mdns = Column(String(40), nullable=False)
-    config = Column(JSON, nullable=False)
+    config = Column(Text, nullable=False)
     url = Column(String(80), nullable=False)
     description = Column(String(150), nullable=False)
 
     # Gravitymon specific
     ble_color = Column(String(15), nullable=False)
     gravity_formula = Column(String(100), nullable=False)
-    poly = Column(JSON, nullable=False)
+    gravity_poly = Column(Text, nullable=False)
 
 
 class Batch(Base):

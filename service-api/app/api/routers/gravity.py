@@ -15,7 +15,7 @@ from api.services import (
     get_device_service,
 )
 from ..security import api_key_auth
-from ..cache import existKey, readKey
+from ..cache import existKey, readKey, writeKey
 from ..poly import create_formula
 
 logger = logging.getLogger(__name__)
@@ -180,16 +180,17 @@ async def create_gravity_using_ispindel_format(
                 mdns="",
                 config="",
                 bleColor="",
-                url="http://",
+                url="",
                 description="",
+                gravityFormula="",
+                gravityPoly="",
             )
             device_service.create(device)
 
         chamberId = batchList[0].fermentation_chamber
+
         logger.info(
-            "Saving gravity request for batch %d and chamber %d",
-            batchList[0].id,
-            chamberId,
+            f"Saving gravity request for batch {batchList[0].id}",
         )
 
         gravity = schemas.GravityCreate(
@@ -226,7 +227,13 @@ async def create_gravity_using_ispindel_format(
                 gravity.gravity / (258.6 - ((gravity.gravity / 258.2) * 227.1))
             )  # SG = 1+ (plato / (258.6 – ((plato/258.2) *227.1)))
 
-        return gravity_service.create(gravity)
+        g = gravity_service.create(gravity)
+
+        # Save the record in redis for background job to forward
+        key = "gravity_" + deviceList[0].chip_id
+        writeKey(key, json, ttl=None)
+
+        return g
 
     except KeyError as e:
         logging.error(e)

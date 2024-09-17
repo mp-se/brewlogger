@@ -2,6 +2,8 @@ import json
 from api.config import get_settings
 from .conftest import truncate_database
 
+from api.db import models, schemas
+
 headers = {
     "Authorization": "Bearer " + get_settings().api_key,
     "Content-Type": "application/json",
@@ -18,10 +20,12 @@ def test_add(app_client):
         "chipFamily": "f2",
         "software": "f3",
         "mdns": "f4",
-        "config": "f5",
+        "config": "",
         "url": "f6",
         "bleColor": "f7",
         "description": "f8",
+        "gravityFormula": "",
+        "gravityPoly": "",
     }
 
     # Add new
@@ -48,6 +52,8 @@ def test_add(app_client):
     assert data["url"] == data2["url"]
     assert data["bleColor"] == data2["bleColor"]
     assert data["description"] == data2["description"]
+    assert data["gravityFormula"] == data2["gravityFormula"]
+    assert data["gravityPoly"] == data2["gravityPoly"]
 
     # Not using a number for index
     r2 = app_client.get("/api/device/hello", headers=headers)
@@ -71,6 +77,8 @@ def test_brewpi(app_client):
         "url": "http://localhost",
         "bleColor": "",
         "description": "",
+        "gravityFormula": "",
+        "gravityPoly": ""
     }
 
     # Add new
@@ -84,10 +92,12 @@ def test_update(app_client):
         "chipFamily": "ff2",
         "software": "ff3",
         "mdns": "ff4",
-        "config": "ff5",
+        "config": "{ 'key': 'value' }",
         "url": "ff6",
         "bleColor": "ff7",
         "description": "ff8",
+        "gravityFormula": "ff9",
+        "gravityPoly": "{ 'key': 'value' }",
     }
 
     # Update existing
@@ -108,6 +118,8 @@ def test_update(app_client):
     assert data["url"] == data2["url"]
     assert data["bleColor"] == data2["bleColor"]
     assert data["description"] == data2["description"]
+    assert data["gravityFormula"] == data2["gravityFormula"]
+    assert data["gravityPoly"] == data2["gravityPoly"]
 
     # Update missing entity
     r = app_client.patch("/api/device/10", json=data, headers=headers)
@@ -143,6 +155,8 @@ def test_validation(app_client):
         "url": "",
         "bleColor": "",
         "description": "",
+        "gravityFormula": "",
+        "gravityPoly": "",
     }
     r = app_client.post("/api/device/", json=data, headers=headers)
     assert r.status_code == 422
@@ -156,6 +170,8 @@ def test_validation(app_client):
         "url": "",
         "bleColor": "",
         "description": "",
+        "gravityFormula": "",
+        "gravityPoly": "",
     }
     r = app_client.post("/api/device/", json=data, headers=headers)
     assert r.status_code == 422
@@ -169,6 +185,8 @@ def test_validation(app_client):
         "url": "",
         "bleColor": "",
         "description": "",
+        "gravityFormula": "",
+        "gravityPoly": "",
     }
     r = app_client.post("/api/device/", json=data, headers=headers)
     assert r.status_code == 422
@@ -182,6 +200,8 @@ def test_validation(app_client):
         "url": "",
         "bleColor": "",
         "description": "",
+        "gravityFormula": "",
+        "gravityPoly": "",
     }
     r = app_client.post("/api/device/", json=data, headers=headers)
     assert r.status_code == 422
@@ -195,6 +215,8 @@ def test_validation(app_client):
         "url": "012345678901234567890012345678901234567890123456789012345678901234567890123456789012345678901",
         "bleColor": "",
         "description": "",
+        "gravityFormula": "",
+        "gravityPoly": "",
     }
     r = app_client.post("/api/device/", json=data, headers=headers)
     assert r.status_code == 422

@@ -150,8 +150,10 @@ async def create_pressure_using_json(
                 mdns="",
                 config="",
                 bleColor="",
-                url="http://",
+                url="",
                 description="",
+                gravityFormula="",
+                gravityPoly=""
             )
             device_service.create(device)
 
