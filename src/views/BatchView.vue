@@ -261,7 +261,7 @@ onMounted(() => {
   updateDeviceOptions()
 
   if (isNew()) {
-    batch.value = new Batch(0, '', '', '', true, '', '', '', 0.0, 0, 0, '')
+    batch.value = new Batch()
   } else {
     batchStore.getBatch(router.currentRoute.value.params.id, (success, b) => {
       if (success) {

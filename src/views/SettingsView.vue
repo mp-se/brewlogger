@@ -30,8 +30,24 @@
             :options="pressureOptions"
             label="Pressure Format"
             width=""
-            :disabled="global.disabled || true"
+            :disabled="global.disabled"
           ></BsInputRadio>
+        </div>
+
+        <div class="col-md-12">
+          <hr />
+        </div>
+
+        <div class="col-md-12">
+          <BsInputText
+            v-model="config.gravityForwardUrl"
+            :options="pressureOptions"
+            label="Gravity Forward URL"
+            type="url"
+            help="Enter URL to forward received gravity readings to in iSpindle format"
+            width=""
+            :disabled="global.disabled"
+          ></BsInputText>
         </div>
 
         <div class="col-md-12">

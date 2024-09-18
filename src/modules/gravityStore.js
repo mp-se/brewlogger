@@ -18,19 +18,21 @@ export class Gravity {
     chamberTemperature,
     beerTemperature
   ) {
-    this.id = id
-    this.temperature = temperature
-    this.gravity = gravity
-    this.angle = angle
-    this.battery = battery
-    this.rssi = rssi
-    this.corrGravity = corrGravity
-    this.runTime = runTime
-    this.created = created
-    this.batchId = batchId
-    this.active = active
-    this.chamberTemperature = chamberTemperature
-    this.beerTemperature = beerTemperature
+    this.id = id === undefined ? 0 : id
+    this.temperature = temperature === undefined ? 0.0 : temperature
+    this.gravity = gravity === undefined ? 0.0 : gravity
+    this.angle = angle === undefined ? 0.0 : angle
+    this.battery = battery === undefined ? 0.0 : battery
+    this.rssi = rssi === undefined ? 0 : rssi
+    this.corrGravity = corrGravity === undefined ? 0.0 : corrGravity
+    this.runTime = runTime === undefined ? 0 : runTime
+    this.created = created === undefined ? '' : created
+    this.batchId = batchId === undefined ? 0 : batchId
+    this.active = active === undefined ? true : active
+    this.chamberTemperature =
+      chamberTemperature === undefined || chamberTemperature === null ? 0 : chamberTemperature
+    this.beerTemperature =
+      beerTemperature === undefined || beerTemperature === null ? 0 : beerTemperature
   }
 
   static fromJson(g) {

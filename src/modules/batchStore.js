@@ -19,24 +19,22 @@ export class Batch {
     gravity,
     fermentationChamber
   ) {
-    this.id = id
-    this.name = name
-    this.description = description
-    this.chipId = chipId
-    this.active = active
-    this.brewDate = brewDate
-    this.style = style
-    this.brewer = brewer
-    this.abv = abv
-    this.ebc = ebc
-    this.ibu = ibu
-    this.brewfatherId = brewfatherId
-    this.fermentationChamber = fermentationChamber
-    this.gravityCount = gravity.length
+    this.id = id === undefined ? 0 : id
+    this.name = name === undefined ? '' : name
+    this.description = description === undefined ? '' : description
+    this.chipId = chipId === undefined ? '' : chipId
+    this.active = active === undefined ? true : active
+    this.brewDate = brewDate === undefined ? '' : brewDate
+    this.style = style === undefined ? '' : style
+    this.brewer = brewer === undefined ? '' : brewer
+    this.abv = abv === undefined ? 0 : abv
+    this.ebc = ebc === undefined ? 0 : ebc
+    this.ibu = ibu === undefined ? 0 : ibu
+    this.brewfatherId = brewfatherId === undefined ? '' : brewfatherId
+    this.fermentationChamber =
+      fermentationChamber === undefined || fermentationChamber === null ? 0 : fermentationChamber
+    this.gravityCount = gravity === undefined || gravity === null ? 0 : gravity.length
     this.gravity = []
-
-    if (this.fermentationChamber === undefined) this.fermentationChamber = 0
-    if (this.fermentationChamber === null) this.fermentationChamber = 0
   }
 
   static fromJson(d) {

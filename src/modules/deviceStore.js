@@ -3,18 +3,32 @@ import { global } from '@/modules/pinia'
 import { logDebug, logError } from '@/modules/logger'
 
 export class Device {
-  constructor(id, chipId, chipFamily, software, mdns, config, bleColor, url, description) {
-    this.id = id
-    this.chipId = chipId
-    this.chipFamily = chipFamily
-    this.software = software
-    this.mdns = mdns
-    this.config = config
-    this.bleColor = bleColor
-    this.description = description
+  constructor(
+    id,
+    chipId,
+    chipFamily,
+    software,
+    mdns,
+    config,
+    bleColor,
+    url,
+    description,
+    gravityFormula,
+    gravityPoly
+  ) {
+    this.id = id === undefined ? 0 : id
+    this.chipId = chipId === undefined ? '' : chipId
+    this.chipFamily = chipFamily === undefined ? '' : chipFamily
+    this.software = software === undefined ? '' : software
+    this.mdns = mdns === undefined ? '' : mdns
+    this.config = config === undefined ? '' : config
+    this.bleColor = bleColor === undefined ? '' : bleColor
+    this.description = description === undefined ? '' : description
+    this.url = url === undefined ? '' : url
+    this.gravityFormula = gravityFormula === undefined ? {} : gravityFormula
+    this.gravityPoly = gravityPoly === undefined ? {} : gravityPoly
 
-    if (url == 'http://' || url == 'https://') this.url = ''
-    else this.url = url
+    if (this.url === 'http://' || this.url === 'https://') this.url = ''
   }
 
   static fromJson(d) {
@@ -27,7 +41,9 @@ export class Device {
       d.config,
       d.bleColor,
       d.url,
-      d.description
+      d.description,
+      d.gravityFormula,
+      d.gravityPoly
     )
   }
 
@@ -40,7 +56,9 @@ export class Device {
       config: this.config,
       bleColor: this.bleColor,
       url: this.url,
-      description: this.description
+      description: this.description,
+      gravityFormula: this.gravityFormula,
+      gravityPoly: this.gravityPoly
     }
   }
 
@@ -71,6 +89,12 @@ export class Device {
   get description() {
     return this._description
   }
+  get gravityFormula() {
+    return this._gravityFormula
+  }
+  get gravityPoly() {
+    return this._gravityPoly
+  }
 
   set id(id) {
     this._id = id
@@ -98,6 +122,12 @@ export class Device {
   }
   set description(description) {
     this._description = description
+  }
+  set gravityFormula(gravityFormula) {
+    this._gravityFormula = gravityFormula
+  }
+  set gravityPoly(gravityPoly) {
+    this._gravityPoly = gravityPoly
   }
 }
 

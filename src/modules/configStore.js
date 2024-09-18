@@ -11,6 +11,7 @@ export const useConfigStore = defineStore('config', {
       gravityFormat: '',
       mdnsTimeout: 0,
       appVersion: 0,
+      gravityForwardUrl: '',
       dark_mode: false // TODO: Name used in components
     }
   },
@@ -50,6 +51,7 @@ export const useConfigStore = defineStore('config', {
           this.gravityFormat = json.gravityFormat
           this.appVersion = json.appVersion
           this.mdnsTimeout = json.mdnsTimeout
+          this.gravityForwardUrl = json.gravityForwardUrl
           this.dark_mode = json.darkMode
           callback(true)
         })
@@ -69,6 +71,7 @@ export const useConfigStore = defineStore('config', {
         temperatureFormat: this.temperatureFormat,
         mdnsTimeout: this.mdnsTimeout,
         darkMode: this.dark_mode,
+        gravityForwardUrl: this.gravityForwardUrl,
         version: ''
       }
 

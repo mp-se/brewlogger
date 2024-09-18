@@ -69,7 +69,7 @@
               :disabled="global.disabled || device.chipId == '000000'"
             ></BsInputRadio>
           </div>
-          <div class="col-md-12">
+          <div class="col-md-12" v-if="device.software == 'Gravitymon'">
             <BsInputRadio
               v-model="device.bleColor"
               :options="bleColorOptions"
@@ -127,7 +127,7 @@
               @click="fetchConfigFromDevice()"
               :disabled="global.disabled || device.software == 'Brewpi'"
             >
-              <i class="bi bi-box-arrow-down"></i> Fetch</button
+              <i class="bi bi-box-arrow-down"></i> Fetch config</button
             >&nbsp;
             <BsModal
               @click="viewConfig()"
@@ -136,7 +136,12 @@
               title="Vire configuration"
               button="View config"
               :disabled="global.disabled || device.config == ''"
-            />
+            />&nbsp;
+            <router-link :to="{ name: 'device-gravity' }" v-if="device.software == 'Gravitymon'">
+              <button type="button" class="btn btn-secondary w-2" :disabled="global.disabled">
+                Gravity formula
+              </button> </router-link
+            >&nbsp;
           </div>
         </div>
       </form>
@@ -203,7 +208,7 @@ const bleColorOptions = ref([
 ])
 
 const viewConfig = () => {
-  render.value = atob(device.value.config)
+  render.value = device.value.config
 }
 
 const disableTilt = computed(() => {
@@ -230,7 +235,7 @@ onMounted(() => {
   chipIdValid.value = true
 
   if (isNew()) {
-    device.value = new Device(0, '', '', '', '', '', '', '', '')
+    device.value = new Device()
   } else {
     deviceStore.getDevice(router.currentRoute.value.params.id, (success, d) => {
       if (success) {
@@ -264,7 +269,7 @@ function validateChipId() {
 
 async function copyToClipboard() {
   logInfo('DeviceView.copyToClipboard()')
-  navigator.clipboard.writeText(atob(device.value.config))
+  navigator.clipboard.writeText(device.value.config)
   global.messageSuccess = 'Configuration is copied to clipboard'
 }
 
@@ -347,7 +352,7 @@ async function fetchConfigEspFwkV1() {
       data.format = format
     }
 
-    device.value.config = btoa(JSON.stringify(data))
+    device.value.config = JSON.stringify(data)
     return true
   } catch (err) {
     logError('DeviceView.fetchConfigV2()', err)

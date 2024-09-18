@@ -256,6 +256,9 @@ async function restoreDevices(dl) {
     dl.map(async (d) => {
       logDebug('BackupView.restoreDevice()', 'Restore device', d.id)
 
+      if (d.gravityFormula === undefined) d.gravityFormula = ''
+      if (d.gravityPoly === undefined) d.gravityPoly = ''
+
       const res = await fetch(global.baseURL + 'api/device/', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: global.token },
