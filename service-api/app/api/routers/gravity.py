@@ -1,4 +1,5 @@
 import logging
+import json
 from datetime import datetime
 from json.decoder import JSONDecodeError
 from typing import List, Optional
@@ -114,44 +115,44 @@ async def create_gravity_using_ispindel_format(
     logger.info("Endpoint POST /api/gravity/public")
 
     try:
-        json = await request.json()
+        req_json = await request.json()
 
         # This means the post is in TILT format so we need to look up the correct device and add the missing data.
-        if "color" in json:
+        if "color" in req_json:
             logger.info(
-                "Detected tilt post, searching for device id for %s", json["color"]
+                "Detected tilt post, searching for device id for %s", req_json["color"]
             )
 
-            deviceList = device_service.search_ble_color(json["color"])
+            deviceList = device_service.search_ble_color(req_json["color"])
             if len(deviceList) == 0:
                 raise HTTPException(
                     status_code=404, detail="Device with color not found"
                 )
 
-            json["ID"] = deviceList[0].chip_id
-            json["temp_units"] = "F"
-            json["angle"] = 0
-            json["battery"] = 0
+            req_json["ID"] = deviceList[0].chip_id
+            req_json["temp_units"] = "F"
+            req_json["angle"] = 0
+            req_json["battery"] = 0
 
         # Extensions from Gravitymon
         corr_gravity = 0
         gravity_units = "SG"
         run_time = 0
 
-        if "corr-gravity" in json:
-            corr_gravity = json["corr-gravity"]
-        if "gravity-unit" in json:
-            gravity_units = json["gravity-unit"]
-        if "run-time" in json:
-            run_time = json["run-time"]
+        if "corr-gravity" in req_json:
+            corr_gravity = req_json["corr-gravity"]
+        if "gravity-unit" in req_json:
+            gravity_units = req_json["gravity-unit"]
+        if "run-time" in req_json:
+            run_time = req_json["run-time"]
 
         # Check if there is an active batch
-        batchList = batch_service.search_chipId_active(json["ID"], True)
+        batchList = batch_service.search_chipId_active(req_json["ID"], True)
 
         if len(batchList) == 0:
             batch = schemas.BatchCreate(
-                name="Batch for " + json["ID"],
-                chipId=json["ID"],
+                name="Batch for " + req_json["ID"],
+                chipId=req_json["ID"],
                 description="Automatically created",
                 brewDate=datetime.today().strftime("%Y-%m-%d"),
                 style="",
@@ -164,17 +165,17 @@ async def create_gravity_using_ispindel_format(
                 # fermentation_chamber=0, # This is optional and should be assigned in UI
             )
             batch_service.create(batch)
-            batchList = batch_service.search_chipId_active(json["ID"], True)
+            batchList = batch_service.search_chipId_active(req_json["ID"], True)
 
         if len(batchList) == 0:
             raise HTTPException(status_code=409, detail="No batch found")
 
         # Check if there is an device
-        deviceList = device_service.search_chipId(json["ID"])
+        deviceList = device_service.search_chipId(req_json["ID"])
 
         if len(deviceList) == 0:
             device = schemas.DeviceCreate(
-                chipId=json["ID"],
+                chipId=req_json["ID"],
                 chipFamily="",
                 software="",
                 mdns="",
@@ -194,11 +195,11 @@ async def create_gravity_using_ispindel_format(
         )
 
         gravity = schemas.GravityCreate(
-            temperature=json["temperature"],
-            gravity=json["gravity"],
-            angle=json["angle"],
-            battery=json["battery"],                
-            rssi=json["RSSI"],
+            temperature=req_json["temperature"],
+            gravity=req_json["gravity"],
+            angle=req_json["angle"],
+            battery=req_json["battery"],                
+            rssi=req_json["RSSI"],
             corr_gravity=corr_gravity,
             run_time=run_time,
             batch_id=batchList[0].id,
@@ -217,7 +218,7 @@ async def create_gravity_using_ispindel_format(
                 chamberTemp = readKey(key)
                 gravity.chamber_temperature = float(chamberTemp)
 
-        if json["temp_units"] == "F":
+        if req_json["temp_units"] == "F":
             gravity.temperature = (
                 (gravity.temperature - 32) * 5 / 9
             )  # °C = (°F − 32) x 5/9
@@ -231,7 +232,7 @@ async def create_gravity_using_ispindel_format(
 
         # Save the record in redis for background job to forward
         key = "gravity_" + deviceList[0].chip_id
-        writeKey(key, json, ttl=None)
+        writeKey(key, json.dumps(req_json), ttl=None)
 
         return g
 

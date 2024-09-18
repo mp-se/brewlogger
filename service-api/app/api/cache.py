@@ -26,7 +26,7 @@ def findKey(key):
     return []
 
 def writeKey(key, value, ttl):
-    logger.info(f"Writing key {key} = {value} ttl:{ttl}s.")
+    logger.info(f"Writing key {key} = {value} ttl:{ttl}.")
     try:
         r = redis.Redis(connection_pool=pool)
         r.set(name=key, value=str(value), ex=ttl)

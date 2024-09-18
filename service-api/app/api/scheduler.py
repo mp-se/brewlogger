@@ -1,5 +1,6 @@
 import logging
 import httpx
+import json
 from json import JSONDecodeError
 from datetime import datetime
 from api.db.session import create_session
@@ -105,14 +106,21 @@ async def task_forward_gravity():
     url = settings.gravity_forward_url
     keys = findKey("gravity_")
     for k in keys:
-        value = readKey(k)
-        logger.info(f"Task: Processing {k} with value {value} forward to {url}")
+        value = readKey(k).decode()
 
         try:
+            value = json.loads(value)
+
+            # If we are using brewfather it requires [SG] in the name if that is the gravity unit used.
+            if settings.gravity_format == "SG" and value["name"].find("[SG]") == -1 and url.find(".brewfather.") >= 0:
+                value["name"] = value["name"] + "[SG]"
+
+            logger.info(f"Task: Processing {k} with value {value} forwarding to {url}")
+
             timeout = httpx.Timeout(10.0, connect=10.0, read=10.0)            
             async with httpx.AsyncClient(timeout=timeout) as client:
                 logger.info("Request using get %s", url)
-                res = await client.post(url, headers=headers, data=value)
+                res = await client.post(url, headers=headers, data=json.dumps(value))
                 logger.info(f"Reqeust to {url} returned code {res.status_code}")
                 deleteKey(k)
                 
@@ -122,7 +130,8 @@ async def task_forward_gravity():
             logger.error(f"Unable to read from device {url}")
         except httpx.ConnectTimeout:
             logger.error(f"Unable to connect to device {url}")
-
+        except Exception as e:
+            logger.error(f"Unknown exception {e}")
 
 
 def scheduler_setup(app):
