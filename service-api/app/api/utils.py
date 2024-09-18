@@ -140,35 +140,33 @@ def migrate_database():
 
     logger.info("Running postgres sql commands to migrate database from v0.5 to v0.6")
 
-    # TODO: Figure out how to do conversion of config to JSON data... 
-
-    # with engine.connect() as con:
-    #     try:
-    #         con.execute(
-    #             text("ALTER TABLE batch ADD COLUMN fermentation_chamber INTEGER")
-    #         )
-    #         con.execute(text("ALTER TABLE gravity ADD COLUMN beer_temperature FLOAT"))
-    #         con.execute(
-    #             text("ALTER TABLE gravity ADD COLUMN chamber_temperature FLOAT")
-    #         )
-    #         con.execute(
-    #             text("ALTER TABLE device ADD COLUMN poly TEXT")
-    #         )
-    #         con.execute(text('ALTER TABLE device ADD COLUMN gravity_formula VARCHAR(100)'))
-    #         con.execute(text('ALTER TABLE brewlogger ADD COLUMN gravity_forward_url VARCHAR(100)'))
-    #         con.commit()
-    #         con.execute(text("UPDATE brewlogger SET gravity_forward_url = '' WHERE gravity_forward_url IS NULL"))
-    #         con.execute(text("UPDATE device SET gravity_poly = '' WHERE gravity_poly IS NULL"))
-    #         con.execute(text("UPDATE device SET gravity_formula = '' WHERE gravity_formula IS NULL"))
-    #         con.commit()
-    #         con.execute(text("ALTER TABLE brewlogger ALTER COLUMN gravity_forward_url SET NOT NULL"))
-    #         con.execute(text("ALTER TABLE device ALTER COLUMN gravity_poly SET NOT NULL"))
-    #         con.execute(text("ALTER TABLE device ALTER COLUMN gravity_formula SET NOT NULL"))
-    #         con.commit()
-    #         con.execute(text("DROP INDEX ix_device_chip_id"))
-    #         con.commit()
-    #     except (OperationalError, ProgrammingError, InternalError) as e:
-    #         logger.error(f"Failed to update database v0.6, {e}")
+    with engine.connect() as con:
+        try:
+            con.execute(
+                text("ALTER TABLE batch ADD COLUMN fermentation_chamber INTEGER")
+            )
+            con.execute(text("ALTER TABLE gravity ADD COLUMN beer_temperature FLOAT"))
+            con.execute(
+                text("ALTER TABLE gravity ADD COLUMN chamber_temperature FLOAT")
+            )
+            con.execute(
+                text("ALTER TABLE device ADD COLUMN poly TEXT")
+            )
+            con.execute(text('ALTER TABLE device ADD COLUMN gravity_formula VARCHAR(100)'))
+            con.execute(text('ALTER TABLE brewlogger ADD COLUMN gravity_forward_url VARCHAR(100)'))
+            con.commit()
+            con.execute(text("UPDATE brewlogger SET gravity_forward_url = '' WHERE gravity_forward_url IS NULL"))
+            con.execute(text("UPDATE device SET gravity_poly = '' WHERE gravity_poly IS NULL"))
+            con.execute(text("UPDATE device SET gravity_formula = '' WHERE gravity_formula IS NULL"))
+            con.commit()
+            con.execute(text("ALTER TABLE brewlogger ALTER COLUMN gravity_forward_url SET NOT NULL"))
+            con.execute(text("ALTER TABLE device ALTER COLUMN gravity_poly SET NOT NULL"))
+            con.execute(text("ALTER TABLE device ALTER COLUMN gravity_formula SET NOT NULL"))
+            con.commit()
+            con.execute(text("DROP INDEX ix_device_chip_id"))
+            con.commit()
+        except (OperationalError, ProgrammingError, InternalError) as e:
+            logger.error(f"Failed to update database v0.6, {e}")
 
     # logger.info("Running postgres sql commands to migrate database from v0.4 to v0.5")
     # with engine.connect() as con:
