@@ -69,8 +69,7 @@
         </template>
 
         <div class="form-text">
-          Enter the data that is used to create a new formula. The most optimal formula will be
-          selected and also validated towards these values.
+          Enter the data that is used to create a new formula. Formulas of different complexities will be created and you can visually see which seams to match your data in the best way.
         </div>
       </div>
 
@@ -101,14 +100,24 @@
               aria-hidden="true"
               :hidden="!global.disabled"
             ></span>
-            &nbsp;Update graph</button
+            &nbsp;Create formulas / graph</button
           >&nbsp;
+
+          <!-- 
+          <button
+            @click.prevent=""
+            type="button"
+            class="btn btn-secondary w-2"
+            :disabled="true"
+          >
+            Send to device</button
+          >&nbsp;-->
 
           <router-link
             :to="{ name: 'device', params: { id: router.currentRoute.value.params.id } }"
           >
             <button type="button" class="btn btn-secondary w-2" :disabled="global.disabled">
-              Back to device
+              Device page
             </button> </router-link
           >&nbsp;
         </div>
@@ -117,6 +126,10 @@
 
     <div class="col-md-12">
       <hr />
+    </div>
+
+    <div class="col-md-12 form-text" :hidden="polyResult == null">
+      You can select/deselect the data sets by selecting the color in the top of the graph. The more data points the better the curve fit will be.
     </div>
 
     <canvas id="gravityChart" :hidden="polyResult == null"></canvas>
@@ -138,6 +151,8 @@ import {
   PointElement,
   LineElement
 } from 'chart.js'
+
+// TODO: Send new formula to device
 
 const device = ref(null)
 const devicePoly = ref(null)
@@ -245,8 +260,6 @@ onMounted(() => {
 
       devicePoly.value = []
 
-      // device.value.gravityPoly = "" // TODO: REMOVE
-
       try {
         devicePoly.value = JSON.parse(device.value.gravityPoly)
       } catch (e) {
@@ -299,9 +312,6 @@ const calcFormula = () => {
   global.clearMessages()
 
   console.log(devicePoly.value)
-
-  // TODO: Remove test data
-  //devicePoly.value = [ { a: 25, g: 1.000}, { a: 30, g: 1.010}, { a: 36, g: 1.021}, { a: 42, g: 1.034}, { a: 49, g: 1.039}, { a: 0, g: 1.000}, { a: 0, g: 1.000}, { a: 0, g: 1.000}, { a: 0, g: 1.000}, { a: 0, g: 1.000} ]
 
   global.disabled = true
   fetch(global.baseURL + 'api/gravity/calculate/', {
@@ -364,6 +374,8 @@ const updateDataSets = () => {
       })
   })
 
+  chartData.value.sort((a,b) => a.x - b.x)
+
   // Entered values
   chartOrder1.value = evalPoly(polyResult.value.poly1)
   chartOrder2.value = evalPoly(polyResult.value.poly2)
@@ -376,7 +388,7 @@ const evalPoly = (formula) => {
 
   var result = []
 
-  for (let a = 25.0; a < 80.0; a += 5.0) {
+  for (let a = 15.0; a < 90; a += 5.0) {
     let angle = a.toFixed(3)
     let f = formula
 
