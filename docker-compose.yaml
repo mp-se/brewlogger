@@ -1,6 +1,5 @@
 services:
   brew_web:
-    #build: service-web
     image: mpse2/brewlogger-web
     hostname: brew_web
     restart: always
@@ -26,7 +25,6 @@ services:
      - DATABASE_URL=postgresql://postgres:password@brew_db:5432/app
      - API_KEY_ENABLED=0
      - REDIS_URL=brew_cache
-     - SELF_URL=http://brew_api:80
      - BREWFATHER_API_KEY=
      - BREWFATHER_USER_KEY=
     depends_on:
@@ -44,8 +42,6 @@ services:
     image: postgres:14
     hostname: brew_db
     restart: always
-    #ports:
-    #  - "5433"
     networks:
       - brew_net
     volumes:

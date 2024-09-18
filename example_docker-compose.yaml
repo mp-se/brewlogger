@@ -1,10 +1,11 @@
-version: "3.8"
-
 services:
   brew_web:
+    # This is hosted in its own repository
     image: mpse2/brewlogger-web
     hostname: brew_web
     restart: always
+    environment:
+     - API_KEY=akljnv13bvi2vfo0b0bw789jlljsdf
     networks:
       - brew_net
     ports:
@@ -16,14 +17,15 @@ services:
     build: service-api
     hostname: brew_api
     restart: always
+    #ports:
+    #  - 8000:80
     networks:
       - brew_net
     environment:
      - API_KEY=akljnv13bvi2vfo0b0bw789jlljsdf
      - DATABASE_URL=postgresql://postgres:password@brew_db:5432/app
-     - API_KEY_ENABLED=1
+     - API_KEY_ENABLED=0
      - REDIS_URL=brew_cache
-     - SELF_URL=http://brew_api:80
      - BREWFATHER_API_KEY=
      - BREWFATHER_USER_KEY=
     depends_on:
@@ -69,13 +71,14 @@ services:
   brew_mdns:
     build: service-mdns
     hostname: brew_mdns
+    container_name: mdns
     restart: always
     network_mode: "host"
     privileged: true
     environment:
       USE_MDNS_REPEATER: 1
-      EXTERNAL_INTERFACE: eth0
-      DOCKER_NETWORK_NAME: brew_net
+      EXTERNAL_INTERFACE: en0
+      DOCKER_NETWORK_NAME: brewnet
       OPTIONS: ""
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock

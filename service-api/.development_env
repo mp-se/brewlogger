@@ -1,7 +1,6 @@
 API_KEY_1="akljnv13bvi2vfo0b0bw789jlljsdf"
 DATABASE_URL="sqlite:///./brewlogger.sqlite"
 REDIS_URL="localhost"
-SELF_URL="http://localhost:8000"
 API_KEY_ENABLED=0
 BREWFATHER_API_KEY=
 BREWFATHER_USER_KEY=

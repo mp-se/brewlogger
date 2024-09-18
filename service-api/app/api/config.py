@@ -22,7 +22,6 @@ class Settings(BaseSettings):
         "DATABASE_URL", cast=str, default="sqlite:///./brewlogger.sqlite"
     )
     redis_url: str = config("REDIS_URL", cast=str, default="redis://localhost")
-    self_url: str = config("SELF_URL", cast=str, default="http://localhost:80")
     api_key: str = config("API_KEY", cast=str, default="")
     api_key_enabled: bool = config("API_KEY_ENABLED", cast=bool, default=True)
     brewfather_api_key: str = config("BREWFATHER_API_KEY", cast=str, default="")
@@ -33,7 +32,6 @@ class Settings(BaseSettings):
 
     logger.info(f"db_url: {database_url}")
     logger.info(f"redis_url: {redis_url}")
-    logger.info(f"self_url: {self_url}")
     logger.info(f"api_key: {api_key}")
     logger.info(f"api_key_enabled: {api_key_enabled}")
     logger.info(f"brewfather_api_key: {brewfather_api_key}")
