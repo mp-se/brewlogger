@@ -1,1 +1,1 @@
-window.VUE_APP_TOKEN="__TOKEN__"
+window.VITE_APP_TOKEN="__TOKEN__"
