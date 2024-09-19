@@ -36,6 +36,8 @@ services:
     image: redis:7
     hostname: brew_cache
     restart: always
+    #ports:
+    #  - 6379:6379
     networks:
       - brew_net
 
@@ -64,7 +66,7 @@ services:
       PGADMIN_DEFAULT_EMAIL: admin@admin.com
       PGADMIN_DEFAULT_PASSWORD: root
     ports:
-      - "5050:80"
+      - 5050:80
     volumes:
       - pgadmin-data:/var/lib/pgadmin
 

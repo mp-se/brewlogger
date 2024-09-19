@@ -30,6 +30,11 @@ class FormulaPoint(BaseModel):
     a: float # Angle
     g: float # Gravity
 
+class SelfTestResult(BaseModel):
+    database_connection: bool
+    redis_connection: bool
+    background_jobs: List[str]
+
 ################################################################################
 
 

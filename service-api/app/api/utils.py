@@ -35,6 +35,7 @@ def load_settings():
                     pressure_format="PSI",
                     gravity_format="SG",
                     dark_mode=False,
+                    gravityForwardUrl="",
                 )
                 brewlogger_service.create(cfg)
                 migrate_database()

@@ -5,6 +5,7 @@ from api.routers import pour as apiPour
 from api.routers import gravity as apiGravity
 from api.routers import pressure as apiPressure
 from api.routers import setting as apiSetting
+from api.routers import system as apiSystem
 from fastapi import FastAPI, Request, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
@@ -54,6 +55,7 @@ def register_handlers(app):
     app.include_router(apiPressure.router)
     app.include_router(apiPour.router)
     app.include_router(apiSetting.router)
+    app.include_router(apiSystem.router)
 
     @app.exception_handler(RequestValidationError)
     async def validation_exception_handler(
