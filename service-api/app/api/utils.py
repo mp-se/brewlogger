@@ -151,10 +151,9 @@ def migrate_database():
                 text("ALTER TABLE gravity ADD COLUMN chamber_temperature FLOAT")
             )
             con.execute(
-                text("ALTER TABLE device ADD COLUMN poly TEXT")
+                text("ALTER TABLE device ADD COLUMN gravity_poly TEXT")
             )
             con.execute(text('ALTER TABLE device ADD COLUMN gravity_formula VARCHAR(100)'))
-            con.execute(text('ALTER TABLE device ADD COLUMN gravity_poly VARCHAR(200)'))
             con.execute(text('ALTER TABLE brewlogger ADD COLUMN gravity_forward_url VARCHAR(100)'))
             con.commit()
 
