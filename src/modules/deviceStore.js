@@ -25,8 +25,8 @@ export class Device {
     this.bleColor = bleColor === undefined ? '' : bleColor
     this.description = description === undefined ? '' : description
     this.url = url === undefined ? '' : url
-    this.gravityFormula = gravityFormula === undefined ? {} : gravityFormula
-    this.gravityPoly = gravityPoly === undefined ? {} : gravityPoly
+    this.gravityFormula = gravityFormula === undefined ? "" : gravityFormula
+    this.gravityPoly = gravityPoly === undefined ? "" : gravityPoly
 
     if (this.url === 'http://' || this.url === 'https://') this.url = ''
   }

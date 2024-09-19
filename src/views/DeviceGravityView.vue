@@ -103,15 +103,14 @@
             &nbsp;Create formulas / graph</button
           >&nbsp;
 
-          <!-- 
           <button
-            @click.prevent=""
+            @click.prevent="sendFormula()"
             type="button"
             class="btn btn-secondary w-2"
-            :disabled="true"
+            :disabled="global.disabled"
           >
             Send to device</button
-          >&nbsp;-->
+          >&nbsp;
 
           <router-link
             :to="{ name: 'device', params: { id: router.currentRoute.value.params.id } }"
@@ -311,8 +310,6 @@ const calcFormula = () => {
 
   global.clearMessages()
 
-  console.log(devicePoly.value)
-
   global.disabled = true
   fetch(global.baseURL + 'api/gravity/calculate/', {
     method: 'POST',
@@ -357,6 +354,35 @@ const calcFormula = () => {
     })
     .catch((err) => {
       logError('DeviceGravityView.calcFormula()', err)
+      global.disabled = false
+    })
+}
+
+const sendFormula = () => {
+   global.clearMessages()
+
+  global.disabled = true
+
+  var cfg = {
+    gravity_formula: device.value.gravityFormula
+  }
+
+  fetch(device.value.url + 'api/config/', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', Authorization: device.value.chip_id },
+    body: JSON.stringify(cfg),
+    signal: AbortSignal.timeout(global.fetchTimout)
+  })
+    .then((res) => {
+      logDebug('DeviceGravityView.sendFormula()', res.status)
+      if(res.ok)
+        global.messageSuccess = 'Formula saved to device'
+      else
+        global.messageError = 'Unable to send formula to device, is it online ?'
+      global.disabled = false
+      })
+    .catch((err) => {
+      logError('DeviceGravityView.sendFormula()', err)
       global.disabled = false
     })
 }
