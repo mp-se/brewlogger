@@ -154,12 +154,15 @@ def migrate_database():
                 text("ALTER TABLE device ADD COLUMN poly TEXT")
             )
             con.execute(text('ALTER TABLE device ADD COLUMN gravity_formula VARCHAR(100)'))
+            con.execute(text('ALTER TABLE device ADD COLUMN gravity_poly VARCHAR(200)'))
             con.execute(text('ALTER TABLE brewlogger ADD COLUMN gravity_forward_url VARCHAR(100)'))
             con.commit()
+
             con.execute(text("UPDATE brewlogger SET gravity_forward_url = '' WHERE gravity_forward_url IS NULL"))
             con.execute(text("UPDATE device SET gravity_poly = '' WHERE gravity_poly IS NULL"))
             con.execute(text("UPDATE device SET gravity_formula = '' WHERE gravity_formula IS NULL"))
             con.commit()
+
             con.execute(text("ALTER TABLE brewlogger ALTER COLUMN gravity_forward_url SET NOT NULL"))
             con.execute(text("ALTER TABLE device ALTER COLUMN gravity_poly SET NOT NULL"))
             con.execute(text("ALTER TABLE device ALTER COLUMN gravity_formula SET NOT NULL"))
@@ -236,3 +239,4 @@ def migrate_database():
     #     logger.error(f"Failed to update database, Step 6, {e}")
 
     logger.info("Completed postgres migration")
+
