@@ -77,7 +77,8 @@ const restoreErrors = ref(0)
 const backup = ref({
   meta: {
     version: '0.5',
-    software: 'BrewLogger'
+    software: 'BrewLogger',
+    created: ''
   },
   batches: [],
   devices: []
@@ -128,6 +129,8 @@ function cleanupJson(list) {
 
 function createBackup() {
   logDebug('BackupView.createBackup()')
+
+  backup.value.meta.created = new Date().toISOString().slice(0, 10)
 
   getBatchList((success, bl) => {
     if (success) {
