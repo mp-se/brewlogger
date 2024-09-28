@@ -283,7 +283,7 @@ async function fetchConfigFromDevice() {
   global.disabled = true
   validateUrl()
   await fetchConfigEspFwkV1() // Applies to Kegmon 1.x and Gravitymon 2.x
-  // TODO: Validate fetch from old Gravitymon 1.x and Kegmon 1.x
+  // TODO: Validate fetch from old Gravitymon 1.x and Kegmon 0.x
   // TODO: Validate fetch from BrewPi
   global.disabled = false
 }
