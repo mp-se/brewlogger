@@ -1,6 +1,6 @@
 <template>
   <BsInputBase :width="width" :label="label" :help="help" :badge="badge">
-    <select v-model="model" class="form-select" :disabled="disabled">
+    <select v-model="model" class="form-select" :disabled="disabled" v-bind="$attrs">
       <template v-for="o in options" :key="o.value">
         <option v-if="o.value === model" selected :value="o.value">
           <IconWifi />{{ o.label }}

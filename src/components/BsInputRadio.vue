@@ -7,6 +7,7 @@
           class="btn-check"
           v-model="model"
           :value="o.value"
+          v-bind="$attrs"
           :name="'radio' + $.uid"
           :id="'radio' + $.uid + o.value"
           :disabled="disabled"

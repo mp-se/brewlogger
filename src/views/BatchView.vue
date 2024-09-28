@@ -60,11 +60,6 @@
               :disabled="global.disabled"
             >
             </BsSelect>
-
-            <!--
-            <BsInputText v-model="batch.style" label="Style" help="" :disabled="global.disabled">
-            </BsInputText>
-            -->
           </div>
           <div class="col-md-4">
             <BsInputRadio
@@ -74,6 +69,17 @@
               help=""
               :disabled="global.disabled"
             ></BsInputRadio>
+          </div>
+          <div class="col-md-8">
+            <BsSelect
+              @change="brewfatherChanged(batch.brewfatherId)"
+              v-model="batch.brewfatherId"
+              label="Brewfather ID"
+              :options="brewfatherOptions"
+              help=""
+              :disabled="global.disabled"
+            >
+            </BsSelect>
           </div>
           <div class="col-md-4">
             <BsInputNumber
@@ -97,7 +103,7 @@
               unit="EBC"
               min="0"
               max="100"
-              step="1"
+              step="0.1"
               help=""
               :disabled="global.disabled"
             >
@@ -116,15 +122,6 @@
               :disabled="global.disabled"
             >
             </BsInputNumber>
-          </div>
-          <div class="col-md-12">
-            <BsInputText
-              v-model="batch.brewfatherId"
-              label="Brewfather ID"
-              help=""
-              :disabled="global.disabled"
-            >
-            </BsInputText>
           </div>
         </div>
 
@@ -159,11 +156,9 @@
     </template>
 
     <template v-else>
-      <BsMessage
-        :dismissable="false"
-        :message="'Unable to find batch with id ' + $route.params.id"
-        alert="danger"
-      />
+      <!--
+      <BsMessage :dismissable="false" :message="'Unable to find batch with id ' + $route.params.id" alert="danger" />
+      -->
 
       <div class="row gy-2">
         <div class="col-md-12"></div>
@@ -174,12 +169,14 @@
         </div>
       </div>
     </template>
+
+    {{ batch }}
   </div>
 </template>
 
 <script setup>
 import { onMounted, ref } from 'vue'
-import { global, deviceStore, batchStore } from '@/modules/pinia'
+import { global, deviceStore, batchStore, brewfatherStore } from '@/modules/pinia'
 import { validateCurrentForm } from '@/modules/utils'
 import { Batch } from '@/modules/batchStore'
 import router from '@/modules/router'
@@ -188,12 +185,16 @@ import { logDebug } from '@/modules/logger'
 // TODO: Add date selector
 
 const batch = ref(null)
+
 const gravityDeviceOptions = ref([])
 const tempControlDeviceOptions = ref([])
+
 const toggleOptions = ref([
   { label: 'Active', value: true },
   { label: 'Closed', value: false }
 ])
+
+const brewfatherOptions = ref([{ label: '- not connected -', value: '' }])
 
 const styleOptions = ref([
   { label: '- undefined -', value: '' },
@@ -253,31 +254,58 @@ function isNew() {
   return router.currentRoute.value.params.id == 'new' ? true : false
 }
 
+function brewfatherChanged(id) {
+  logDebug('BatchView.brewfatherChanged()', id)
+
+  brewfatherStore.batches.forEach((b) => {
+    if (id == b.brewfatherId) {
+      batch.value.name = b.name
+      batch.value.brewDate = b.brewDate
+      batch.value.brewer = b.brewer
+      batch.value.style = b.style
+      batch.value.ebc = b.ebc
+      batch.value.abv = b.abv
+      batch.value.ibu = b.ibu
+      return
+    }
+  })
+}
+
 onMounted(() => {
   logDebug('BatchView.onMounted()')
 
   batch.value = null
 
-  updateDeviceOptions()
+  brewfatherStore.getBatchList((success) => {
+    logDebug(success)
 
-  if (isNew()) {
-    batch.value = new Batch()
-  } else {
-    batchStore.getBatch(router.currentRoute.value.params.id, (success, b) => {
-      if (success) {
-        batch.value = b
-        logDebug(batch.value)
-      } else {
-        // global.messageError = "Failed to load batch " + id
-      }
+    brewfatherStore.batches.forEach((b) => {
+      brewfatherOptions.value.push({
+        label: b.name + ', ' + b.brewDate + ', ' + b.brewer + ', ' + b.style,
+        value: b.brewfatherId
+      })
     })
-  }
+
+    updateDeviceOptions()
+
+    if (isNew()) {
+      batch.value = new Batch()
+    } else {
+      batchStore.getBatch(router.currentRoute.value.params.id, (success, b) => {
+        if (success) {
+          batch.value = b
+          logDebug(batch.value)
+        } else {
+          global.messageError = 'Failed to load batch ' + router.currentRoute.value.params.id
+        }
+      })
+    }
+  })
 })
 
 function updateDeviceOptions() {
   logDebug('BatchView.updateDeviceOptions()')
 
-  //chipIdOptions.value = []
   gravityDeviceOptions.value = []
   tempControlDeviceOptions.value = [{ value: 0, label: '-- Disabled --' }]
 

@@ -137,8 +137,11 @@
               button="View config"
               :disabled="global.disabled || device.config == ''"
             />&nbsp;
-            <router-link :to="{ name: 'device-gravity' }" v-if="device.software == 'Gravitymon' && !isNew()">
-              <button type="button" class="btn btn-secondary w-2" :disabled="global.disabled ">
+            <router-link
+              :to="{ name: 'device-gravity' }"
+              v-if="device.software == 'Gravitymon' && !isNew()"
+            >
+              <button type="button" class="btn btn-secondary w-2" :disabled="global.disabled">
                 Gravity formula
               </button> </router-link
             >&nbsp;

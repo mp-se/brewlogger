@@ -99,9 +99,10 @@
         <router-link :to="{ name: 'batch', params: { id: 'new' } }">
           <button type="button" class="btn btn-secondary">Add Batch</button> </router-link
         >&nbsp;
+        <!-- 
         <button @click="synchronizeBrewfather()" type="button" class="btn btn-secondary">
           Fetch from Brewfather</button
-        >&nbsp;
+        >&nbsp;-->
         <button @click="updateBatchList()" type="button" class="btn btn-secondary">Refresh</button
         >&nbsp;
       </div>
@@ -202,7 +203,7 @@ function updateBatchList() {
   })
 }
 
-function synchronizeBrewfather() {
+/*function synchronizeBrewfather() {
   logDebug('BatchListView.synchronizeBrewfather()')
 
   fetch(global.baseURL + 'api/batch/brewfather/', {
@@ -221,7 +222,7 @@ function synchronizeBrewfather() {
     .catch((err) => {
       logError('BatchListView.synchronizeBrewfather()', err)
     })
-}
+}*/
 
 const confirmDeleteCallback = (result) => {
   logDebug('BatchListView.confirmDeleteCallback()', result)

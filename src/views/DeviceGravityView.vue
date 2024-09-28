@@ -69,7 +69,8 @@
         </template>
 
         <div class="form-text">
-          Enter the data that is used to create a new formula. Formulas of different complexities will be created and you can visually see which seams to match your data in the best way.
+          Enter the data that is used to create a new formula. Formulas of different complexities
+          will be created and you can visually see which seams to match your data in the best way.
         </div>
       </div>
 
@@ -128,11 +129,11 @@
     </div>
 
     <div class="col-md-12 form-text" :hidden="polyResult == null">
-      You can select/deselect the data sets by selecting the color in the top of the graph. The more data points the better the curve fit will be.
+      You can select/deselect the data sets by selecting the color in the top of the graph. The more
+      data points the better the curve fit will be.
     </div>
 
     <canvas id="gravityChart" :hidden="polyResult == null"></canvas>
-
   </div>
 </template>
 
@@ -169,7 +170,7 @@ var chart = null
 
 const dataSetChart = ref({
   datasets: [
-  {
+    {
       label: 'Current formula',
       borderColor: 'red',
       backgroundColor: 'red',
@@ -243,7 +244,7 @@ const chartOptions = ref({
 })
 
 const formulaCallback = (opt) => {
-  device.value.gravityFormula =  opt
+  device.value.gravityFormula = opt
 }
 
 onMounted(() => {
@@ -333,14 +334,10 @@ const calcFormula = () => {
         polyResult.value = json
         formulas.value = []
 
-        if(json.poly1 != "")
-          formulas.value.push( { value: json.poly1, label: "Formula Order 1"})
-        if(json.poly2 != "")
-          formulas.value.push( { value: json.poly2, label: "Formula Order 2"})
-        if(json.poly3 != "")
-          formulas.value.push( { value: json.poly3, label: "Formula Order 3"})
-        if(json.poly4 != "")
-          formulas.value.push( { value: json.poly4, label: "Formula Order 4"})
+        if (json.poly1 != '') formulas.value.push({ value: json.poly1, label: 'Formula Order 1' })
+        if (json.poly2 != '') formulas.value.push({ value: json.poly2, label: 'Formula Order 2' })
+        if (json.poly3 != '') formulas.value.push({ value: json.poly3, label: 'Formula Order 3' })
+        if (json.poly4 != '') formulas.value.push({ value: json.poly4, label: 'Formula Order 4' })
 
         updateDataSets()
         chart.data.datasets[0].data = chartFormula.value
@@ -359,7 +356,7 @@ const calcFormula = () => {
 }
 
 const sendFormula = () => {
-   global.clearMessages()
+  global.clearMessages()
 
   global.disabled = true
 
@@ -375,12 +372,10 @@ const sendFormula = () => {
   })
     .then((res) => {
       logDebug('DeviceGravityView.sendFormula()', res.status)
-      if(res.ok)
-        global.messageSuccess = 'Formula saved to device'
-      else
-        global.messageError = 'Unable to send formula to device, is it online ?'
+      if (res.ok) global.messageSuccess = 'Formula saved to device'
+      else global.messageError = 'Unable to send formula to device, is it online ?'
       global.disabled = false
-      })
+    })
     .catch((err) => {
       logError('DeviceGravityView.sendFormula()', err)
       global.disabled = false
@@ -400,7 +395,7 @@ const updateDataSets = () => {
       })
   })
 
-  chartData.value.sort((a,b) => a.x - b.x)
+  chartData.value.sort((a, b) => a.x - b.x)
 
   // Entered values
   chartOrder1.value = evalPoly(polyResult.value.poly1)
