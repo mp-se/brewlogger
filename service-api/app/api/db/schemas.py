@@ -31,9 +31,20 @@ class FormulaPoint(BaseModel):
     g: float # Gravity
 
 class SelfTestResult(BaseModel):
-    database_connection: bool
-    redis_connection: bool
-    background_jobs: List[str]
+    databaseConnection: bool
+    redisConnection: bool
+    backgroundJobs: List[str]
+
+class BrewfatherBatch(BaseModel):
+    name: str 
+    brewDate: str
+    style: str
+    brewer: str
+    abv: float
+    ebc: float
+    ibu: float
+    brewfatherId: str     
+
 
 ################################################################################
 

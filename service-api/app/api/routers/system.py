@@ -6,6 +6,7 @@ from ..cache import writeKey, readKey
 from api.services import BrewLoggerService
 from api.db import schemas
 from ..scheduler import scheduler
+from ..utils import migrate_database
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/api/system")
@@ -43,5 +44,11 @@ async def run_self_test():
     for job in jobs:
         background_jobs.append(job.name)
 
-    return schemas.SelfTestResult(database_connection=database_connection, redis_connection=redis_connection, background_jobs=background_jobs)
+    return schemas.SelfTestResult(databaseConnection=database_connection, redisConnection=redis_connection, backgroundJobs=background_jobs)
 
+@router.get(
+    "/db_migration/"
+)
+async def run_db_migration():
+    logger.info("Endpoint GET /api/system/db_migration/")
+    migrate_database()
