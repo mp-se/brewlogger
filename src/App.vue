@@ -118,8 +118,8 @@ onMounted(() => {
 
   // Load persistent settings from browser
   global.batchListFilterDevice = localStorage.getItem('batchListFilterDevice')
-  global.batchListFilterActive = localStorage.getItem('batchListFilterActive')
-  global.batchListFilterData = localStorage.getItem('batchListFilterData')
+  global.batchListFilterActive = localStorage.getItem('batchListFilterActive') == 'true' ? true : false
+  global.batchListFilterData = localStorage.getItem('batchListFilterData')  == 'true' ? true : false
   global.deviceListFilterSoftware = localStorage.getItem('deviceListFilterSoftware')
 
   if (global.batchListFilterDevice === null) global.batchListFilterDevice = '*'
