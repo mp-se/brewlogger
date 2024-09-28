@@ -161,7 +161,9 @@
       -->
 
       <div class="row gy-2">
-        <div class="col-md-12"></div>
+        <div class="col-md-12">
+          <p class="h4">Loading...</p>
+        </div>
         <div class="col-md-12">
           <router-link :to="{ name: 'batch-list' }">
             <button type="button" class="btn btn-secondary w-2">Batch list</button> </router-link
@@ -170,7 +172,6 @@
       </div>
     </template>
 
-    {{ batch }}
   </div>
 </template>
 
