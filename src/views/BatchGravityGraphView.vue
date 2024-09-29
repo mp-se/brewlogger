@@ -200,6 +200,8 @@ const alcoholData = ref([])
 //const pressureData = ref([])
 const batteryData = ref([])
 const temperatureData = ref([])
+const chamberData = ref([])
+
 const chartData = ref({
   datasets: [
     {
@@ -213,7 +215,7 @@ const chartData = ref({
       tension: 0.4
     },
     {
-      label: 'Temperature',
+      label: 'Device Temp',
       data: temperatureData.value,
       borderColor: 'blue',
       backgroundColor: 'blue',
@@ -241,7 +243,18 @@ const chartData = ref({
       pointRadius: 0,
       cubicInterpolationMode: 'monotone',
       tension: 0.4
-    } /*{
+    },
+    {
+      label: 'Chamber Temp',
+      data: chamberData.value,
+      borderColor: 'pink',
+      backgroundColor: 'pink',
+      yAxisID: 'y2',
+      pointRadius: 0,
+      cubicInterpolationMode: 'monotone',
+      tension: 0.4
+    },
+    /*{
     label: "Pressure",
     data: pressureData.value,
     borderColor: 'red',
@@ -405,17 +418,19 @@ function apply() {
   batteryData.value = []
   temperatureData.value = []
   alcoholData.value = []
+  chamberData.value = []
   var gList = []
 
   gravityList.value.forEach((g) => {
     if (g.active && g.gravity > infoFG.value && g.gravity < infoOG.value) {
       // Map the attributes into datasets
-      var gravity = config.isGravitySG ? g.gravity : gravityToPlato(g.gravity)
-      var temperature = config.isTempC ? g.temperature : tempToF(g.temperature)
-
-      gravityData.value.push({ x: g.created, y: gravity })
+      gravityData.value.push({ x: g.created, y: config.isGravitySG ? g.gravity : gravityToPlato(g.gravity) })
       batteryData.value.push({ x: g.created, y: g.battery })
-      temperatureData.value.push({ x: g.created, y: temperature })
+      temperatureData.value.push({ x: g.created, y: config.isTempC ? g.temperature : tempToF(g.temperature) })
+
+      if(g.chamberTemperature !== undefined) {
+        chamberData.value.push({ x: g.created, y: config.isTempC ? g.chamberTemperature : tempToF(g.chamberTemperature) })
+      }
 
       gList.push(g)
     }
@@ -432,6 +447,7 @@ function apply() {
   chart.data.datasets[1].data = temperatureData.value
   chart.data.datasets[2].data = batteryData.value
   chart.data.datasets[3].data = alcoholData.value
+  chart.data.datasets[4].data = chamberData.value
   currentDataCount.value = chart.data.datasets[0].data.length
   chart.update()
 }
@@ -449,13 +465,14 @@ function updateDataset() {
   gravityList.value.forEach((g) => {
     if (g.active) {
       // Map the attributes into datasets
-      var gravity = config.isGravitySG ? g.gravity : gravityToPlato(g.gravity)
-      var temperature = config.isTempC ? g.temperature : tempToF(g.temperature)
-
-      gravityData.value.push({ x: g.created, y: gravity })
+      gravityData.value.push({ x: g.created, y: config.isGravitySG ? g.gravity : gravityToPlato(g.gravity) })
       batteryData.value.push({ x: g.created, y: g.battery })
-      temperatureData.value.push({ x: g.created, y: temperature })
+      temperatureData.value.push({ x: g.created, y: config.isTempC ? g.temperature : tempToF(g.temperature) })
       alcoholData.value.push({ x: g.created, y: abv(og, g.gravity) })
+
+      if(g.chamberTemperature !== undefined) {
+        chamberData.value.push({ x: g.created, y: config.isTempC ? g.chamberTemperature : tempToF(g.chamberTemperature) })
+      }
     }
   })
 }
@@ -497,6 +514,7 @@ function filterAll() {
   chart.data.datasets[1].data = temperatureData.value
   chart.data.datasets[2].data = batteryData.value
   chart.data.datasets[3].data = alcoholData.value
+  chart.data.datasets[4].data = chamberData.value
   currentDataCount.value = chart.data.datasets[0].data.length
   chart.update()
 }
@@ -509,6 +527,7 @@ function filterDownsampleLTTB() {
   chart.data.datasets[1].data = applyLTTB(chart.data.datasets[1].data, count)
   chart.data.datasets[2].data = applyLTTB(chart.data.datasets[2].data, count)
   chart.data.datasets[3].data = applyLTTB(chart.data.datasets[3].data, count)
+  chart.data.datasets[4].data = applyLTTB(chart.data.datasets[4].data, count)
   currentDataCount.value = chart.data.datasets[0].data.length
   chart.update()
 }
@@ -521,6 +540,7 @@ function filterDownsampleLTD() {
   chart.data.datasets[1].data = applyLTD(chart.data.datasets[1].data, count)
   chart.data.datasets[2].data = applyLTD(chart.data.datasets[2].data, count)
   chart.data.datasets[3].data = applyLTD(chart.data.datasets[3].data, count)
+  chart.data.datasets[4].data = applyLTD(chart.data.datasets[4].data, count)
   currentDataCount.value = chart.data.datasets[0].data.length
   chart.update()
 }
@@ -532,6 +552,7 @@ function filterKalman() {
   chart.data.datasets[1].data = applyKalman(chart.data.datasets[1].data)
   chart.data.datasets[2].data = applyKalman(chart.data.datasets[2].data)
   chart.data.datasets[3].data = applyKalman(chart.data.datasets[3].data)
+  chart.data.datasets[4].data = applyKalman(chart.data.datasets[4].data)
   currentDataCount.value = chart.data.datasets[0].data.length
   chart.update()
 }
