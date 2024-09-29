@@ -9,4 +9,3 @@ src/kegmon_api.egg-info/
 production/*
 docker-compose.yaml
 .DS_Store
-#service-web/ui
