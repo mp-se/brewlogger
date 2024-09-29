@@ -130,6 +130,7 @@ function cleanupJson(list) {
 function createBackup() {
   logDebug('BackupView.createBackup()')
 
+  global.disabled = true
   backup.value.meta.created = new Date().toISOString().slice(0, 10)
 
   getBatchList((success, bl) => {
