@@ -30,9 +30,9 @@ export class Gravity {
     this.batchId = batchId === undefined ? 0 : batchId
     this.active = active === undefined ? true : active
     this.chamberTemperature =
-      chamberTemperature === undefined || chamberTemperature === null ? 0 : chamberTemperature
+      chamberTemperature === undefined || chamberTemperature === null ? undefined : chamberTemperature
     this.beerTemperature =
-      beerTemperature === undefined || beerTemperature === null ? 0 : beerTemperature
+      beerTemperature === undefined || beerTemperature === null ? undefined : beerTemperature
   }
 
   static fromJson(g) {
