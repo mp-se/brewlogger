@@ -99,8 +99,6 @@
         <router-link :to="{ name: 'batch', params: { id: 'new' } }">
           <button type="button" class="btn btn-secondary">Add Batch</button> </router-link
         >&nbsp;
-        <button @click="updateBatchList()" type="button" class="btn btn-secondary">Refresh</button
-        >&nbsp;
       </div>
     </div>
 
@@ -128,6 +126,14 @@ const confirmDeleteId = ref(null)
 const batchList = ref(null)
 const deviceList = ref([])
 const { batchListFilterDevice, batchListFilterActive, batchListFilterData } = storeToRefs(global)
+
+const {
+  updatedBatchData
+} = storeToRefs(global)
+
+watch(updatedBatchData, () => {
+  updateBatchList()
+})
 
 onMounted(() => {
   logDebug('BatchListView.onMounted()')
@@ -224,7 +230,6 @@ const confirmDeleteCallback = (result) => {
       if (success) global.messageSuccess = 'Deleted batch'
       else global.messageError = 'Failed to batch device'
 
-      updateBatchList()
       global.disabled = false
     })
   }

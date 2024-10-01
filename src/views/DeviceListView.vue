@@ -86,8 +86,6 @@
 
         <button @click="search()" type="button" class="btn btn-secondary">Search for Devices</button
         >&nbsp;
-        <button @click="updateDeviceList()" type="button" class="btn btn-secondary">Refresh</button
-        >&nbsp;
       </div>
     </div>
 
@@ -122,7 +120,11 @@ const confirmDeleteMessage = ref(null)
 const confirmDeleteId = ref(null)
 
 const deviceList = ref(null)
-const { deviceListFilterSoftware } = storeToRefs(global)
+const { updatedDeviceData, deviceListFilterSoftware } = storeToRefs(global)
+
+watch(updatedDeviceData, () => {
+  updateDeviceList()
+})
 
 const softwareOptions = ref([
   { label: '(All)', value: '*' },
@@ -186,7 +188,6 @@ const confirmDeleteCallback = (result) => {
       if (success) global.messageSuccess = 'Deleted device'
       else global.messageError = 'Failed to delete device'
 
-      updateDeviceList()
       global.disabled = false
     })
   }
@@ -300,7 +301,6 @@ async function detectDeviceType(url) {
         deviceStore.addDevice(device, (success) => {
           if (success) {
             global.messageSuccess = 'Saved device ' + device.mdns
-            updateDeviceList()
           } else {
             global.messageError = 'Failed to save device'
           }

@@ -68,10 +68,12 @@
 <script setup>
 import BsMenuBar from '@/components/BsMenuBar.vue'
 import BsFooter from '@/components/BsFooter.vue'
-import { onMounted, watch } from 'vue'
+import { onMounted, onUnmounted, watch, ref } from 'vue'
 import { global, config, batchStore, deviceStore, saveConfigState } from '@/modules/pinia'
 import { storeToRefs } from 'pinia'
-import { logDebug } from '@/modules/logger'
+import { logDebug, logInfo } from '@/modules/logger'
+
+const socket = ref(null)
 
 const {
   disabled,
@@ -111,6 +113,42 @@ watch(disabled, () => {
 
   if (global.disabled) document.body.style.cursor = 'wait'
   else document.body.style.cursor = 'default'
+})
+
+function connect() {
+  var host = global.baseURL.replaceAll('http://', 'ws://')
+  socket.value = new WebSocket(host + 'api/system/notify')
+
+  socket.value.onopen = function () {
+    logInfo("App.connect()", "Established webocket with server for notifications.")
+  }
+
+  socket.value.onmessage = function (event) {
+    var ev = JSON.parse(event.data)
+
+    logDebug("App.connect()", ev)
+
+    if(ev.table == "device") {
+      global.updatedDeviceData += 1
+    } else if(ev.table == "batch") {
+      global.updatedBatchData += 1
+    } else if(ev.table == "gravity") {
+      global.updatedGravityData += 1
+    } else if(ev.table == "pour") {
+      global.updatedPourData += 1
+    } 
+  }
+
+  socket.value.onclose = function () {
+    logInfo("App.connect()", "Disconnected webocket from server, retry connection.")
+    socket.value = null
+    setTimeout( () => { connect() }, 100 )
+  }
+}
+
+onUnmounted(() => {
+  if (socket.value) socket.value.close()
+    socket.value = null
 })
 
 onMounted(() => {
@@ -169,6 +207,8 @@ onMounted(() => {
       }
     })
   }
+
+  setTimeout( () => { connect() }, 100 )
 })
 
 function showSpinner() {
