@@ -253,7 +253,7 @@ const chartData = ref({
       pointRadius: 0,
       cubicInterpolationMode: 'monotone',
       tension: 0.4
-    },
+    }
     /*{
     label: "Pressure",
     data: pressureData.value,
@@ -424,12 +424,21 @@ function apply() {
   gravityList.value.forEach((g) => {
     if (g.active && g.gravity > infoFG.value && g.gravity < infoOG.value) {
       // Map the attributes into datasets
-      gravityData.value.push({ x: g.created, y: config.isGravitySG ? g.gravity : gravityToPlato(g.gravity) })
+      gravityData.value.push({
+        x: g.created,
+        y: config.isGravitySG ? g.gravity : gravityToPlato(g.gravity)
+      })
       batteryData.value.push({ x: g.created, y: g.battery })
-      temperatureData.value.push({ x: g.created, y: config.isTempC ? g.temperature : tempToF(g.temperature) })
+      temperatureData.value.push({
+        x: g.created,
+        y: config.isTempC ? g.temperature : tempToF(g.temperature)
+      })
 
-      if(g.chamberTemperature !== undefined) {
-        chamberData.value.push({ x: g.created, y: config.isTempC ? g.chamberTemperature : tempToF(g.chamberTemperature) })
+      if (g.chamberTemperature !== undefined) {
+        chamberData.value.push({
+          x: g.created,
+          y: config.isTempC ? g.chamberTemperature : tempToF(g.chamberTemperature)
+        })
       }
 
       gList.push(g)
@@ -465,13 +474,22 @@ function updateDataset() {
   gravityList.value.forEach((g) => {
     if (g.active) {
       // Map the attributes into datasets
-      gravityData.value.push({ x: g.created, y: config.isGravitySG ? g.gravity : gravityToPlato(g.gravity) })
+      gravityData.value.push({
+        x: g.created,
+        y: config.isGravitySG ? g.gravity : gravityToPlato(g.gravity)
+      })
       batteryData.value.push({ x: g.created, y: g.battery })
-      temperatureData.value.push({ x: g.created, y: config.isTempC ? g.temperature : tempToF(g.temperature) })
+      temperatureData.value.push({
+        x: g.created,
+        y: config.isTempC ? g.temperature : tempToF(g.temperature)
+      })
       alcoholData.value.push({ x: g.created, y: abv(og, g.gravity) })
 
-      if(g.chamberTemperature !== undefined) {
-        chamberData.value.push({ x: g.created, y: config.isTempC ? g.chamberTemperature : tempToF(g.chamberTemperature) })
+      if (g.chamberTemperature !== undefined) {
+        chamberData.value.push({
+          x: g.created,
+          y: config.isTempC ? g.chamberTemperature : tempToF(g.chamberTemperature)
+        })
       }
     }
   })
