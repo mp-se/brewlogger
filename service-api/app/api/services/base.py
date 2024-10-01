@@ -1,12 +1,11 @@
 import sqlalchemy
-
+import logging
 from typing import Any, Generic, List, Optional, Type, TypeVar
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
 from sqlalchemy import select
 from starlette.exceptions import HTTPException
 from api.db.models import Base
-import logging
 
 logger = logging.getLogger(__name__)
 
@@ -41,6 +40,7 @@ class BaseService(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
                 raise HTTPException(status_code=409, detail="Conflict Error")
             else:
                 raise e
+
         return db_obj
 
     def createList(self, lst: List[CreateSchemaType]) -> List[ModelType]:
@@ -57,6 +57,7 @@ class BaseService(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
                 raise HTTPException(status_code=409, detail="Conflict Error")
             else:
                 raise e
+
         return db_obj_lst
 
     def update(self, id: Any, obj: UpdateSchemaType) -> Optional[ModelType]:
@@ -67,9 +68,9 @@ class BaseService(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
         return db_obj
 
     def delete(self, id: Any):
-        obj = self.db_session.get(self.model, id)
-        if obj is None:
+        db_obj = self.db_session.get(self.model, id)
+        if db_obj is None:
             raise HTTPException(status_code=404, detail="Not Found")
 
-        self.db_session.delete(obj)
+        self.db_session.delete(db_obj)
         self.db_session.commit()
