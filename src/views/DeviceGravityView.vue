@@ -79,7 +79,7 @@
           <hr />
         </div>
         <div class="col-md-12">
-          <button type="submit" class="btn btn-primary w-2" :disabled="global.disabled">
+          <button type="submit" class="btn btn-primary w-2" :disabled="global.disabled || !deviceChanged()">
             <span
               class="spinner-border spinner-border-sm"
               role="status"
@@ -87,6 +87,14 @@
               :hidden="!global.disabled"
             ></span>
             &nbsp;Save</button
+          >&nbsp;
+
+          <router-link
+            :to="{ name: 'device', params: { id: router.currentRoute.value.params.id } }"
+          >
+            <button type="button" class="btn btn-secondary w-2" :disabled="global.disabled">
+              Back
+            </button> </router-link
           >&nbsp;
 
           <button
@@ -115,13 +123,6 @@
             Send to device</button
           >&nbsp;
 
-          <router-link
-            :to="{ name: 'device', params: { id: router.currentRoute.value.params.id } }"
-          >
-            <button type="button" class="btn btn-secondary w-2" :disabled="global.disabled">
-              Device page
-            </button> </router-link
-          >&nbsp;
         </div>
       </div>
     </form>
@@ -144,6 +145,7 @@ import { onMounted, ref } from 'vue'
 import { validateCurrentForm } from '@/modules/utils'
 import { global, config, deviceStore } from '@/modules/pinia'
 import { logDebug, logError } from '@/modules/logger'
+import { Device } from '@/modules/deviceStore'
 import router from '@/modules/router'
 import {
   Chart as ChartJS,
@@ -157,6 +159,7 @@ import {
 // TODO: Send new formula to device
 
 const device = ref(null)
+const deviceSaved = ref(null)
 const devicePoly = ref(null)
 const polyResult = ref(null)
 const formulas = ref(null)
@@ -249,6 +252,16 @@ const formulaCallback = (opt) => {
   device.value.gravityFormula = opt
 }
 
+function deviceChanged() {
+  logDebug('DeviceGravityView.deviceChanged()')
+
+  if (device.value == null) return false
+
+  device.value.gravityPoly = JSON.stringify(devicePoly.value)
+
+  return !Device.compare(device.value, deviceSaved.value)
+}
+
 onMounted(() => {
   logDebug('DeviceGravityView.onMounted()')
 
@@ -257,6 +270,7 @@ onMounted(() => {
   // Fetch data on the current device
   deviceStore.getDevice(router.currentRoute.value.params.id, (success, d) => {
     if (success && d.software == 'Gravitymon') {
+      deviceSaved.value = Device.fromJson(d.toJson())
       device.value = d
       logDebug('DeviceGravityView.onMounted()', d)
 
@@ -442,7 +456,6 @@ const save = () => {
   if (!validateCurrentForm()) return
 
   device.value.gravityPoly = JSON.stringify(devicePoly.value)
-  console.log(device.value)
 
   deviceStore.updateDevice(device.value, (success) => {
     if (success) global.messageSuccess = 'Device saved'
