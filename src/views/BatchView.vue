@@ -303,6 +303,7 @@ onMounted(() => {
     updateDeviceOptions()
 
     if (isNew()) {
+      batchSaved.value = new Batch()
       batch.value = new Batch()
     } else {
       batchStore.getBatch(router.currentRoute.value.params.id, (success, b) => {

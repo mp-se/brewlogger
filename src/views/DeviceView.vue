@@ -252,6 +252,7 @@ onMounted(() => {
   chipIdValid.value = true
 
   if (isNew()) {
+    deviceSaved.value = new Device()
     device.value = new Device()
   } else {
     deviceStore.getDevice(router.currentRoute.value.params.id, (success, d) => {
