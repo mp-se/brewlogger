@@ -6,16 +6,31 @@
         <p class="h3">Batch List</p>
       </div>
       <div class="col-md-4">
-        <BsSelect v-model="global.batchListFilterDevice" :options="deviceList" label="Device filter" help=""
-          :disabled="global.disabled">
+        <BsSelect
+          v-model="global.batchListFilterDevice"
+          :options="deviceList"
+          label="Device filter"
+          help=""
+          :disabled="global.disabled"
+        >
         </BsSelect>
       </div>
       <div class="col-md-1">
-        <BsInputSwitch v-model="global.batchListFilterActive" label="Active" help="" :disabled="global.disabled">
+        <BsInputSwitch
+          v-model="global.batchListFilterActive"
+          label="Active"
+          help=""
+          :disabled="global.disabled"
+        >
         </BsInputSwitch>
       </div>
       <div class="col-md-1">
-        <BsInputSwitch v-model="global.batchListFilterData" label="Data" help="" :disabled="global.disabled">
+        <BsInputSwitch
+          v-model="global.batchListFilterData"
+          label="Data"
+          help=""
+          :disabled="global.disabled"
+        >
         </BsInputSwitch>
       </div>
     </div>
@@ -47,22 +62,32 @@
             <router-link :to="{ name: 'batch', params: { id: b.id } }">
               <button type="button" class="btn btn-primary btn-sm">
                 <i class="bi bi-pencil-square"></i>
-              </button> </router-link>&nbsp;
-            <button type="button" class="btn btn-danger btn-sm" @click.prevent="deleteBatch(b.id, b.name)">
-              <i class="bi bi-file-x"></i></button>&nbsp;
+              </button> </router-link
+            >&nbsp;
+            <button
+              type="button"
+              class="btn btn-danger btn-sm"
+              @click.prevent="deleteBatch(b.id, b.name)"
+            >
+              <i class="bi bi-file-x"></i></button
+            >&nbsp;
             <template v-if="b.gravityCount > 0">
               <router-link :to="{ name: 'batch-gravity-graph', params: { id: b.id } }">
                 <button type="button" class="btn btn-success btn-sm">
                   <i class="bi bi-graph-down"></i>
-                </button> </router-link>&nbsp;
+                </button> </router-link
+              >&nbsp;
               <router-link :to="{ name: 'batch-gravity-list', params: { id: b.id } }">
                 <button type="button" class="btn btn-success btn-sm">
                   <i class="bi bi-list"></i>
-                </button> </router-link>&nbsp;
+                </button> </router-link
+              >&nbsp;
               <button @click="exportBatchJSON(b.id)" type="button" class="btn btn-info btn-sm">
-                <i class="bi bi-filetype-json"></i></button>&nbsp;
+                <i class="bi bi-filetype-json"></i></button
+              >&nbsp;
               <button @click="exportBatchCSV(b.id)" type="button" class="btn btn-info btn-sm">
-                <i class="bi bi-filetype-csv"></i></button>&nbsp;
+                <i class="bi bi-filetype-csv"></i></button
+              >&nbsp;
             </template>
           </td>
         </tr>
@@ -72,13 +97,20 @@
     <div class="row">
       <div class="col-md-12">
         <router-link :to="{ name: 'batch', params: { id: 'new' } }">
-          <button type="button" class="btn btn-secondary">Add Batch</button> </router-link>&nbsp;
-        <button @click="updateBatchList()" type="button" class="btn btn-secondary">Refresh</button>&nbsp;
+          <button type="button" class="btn btn-secondary">Add Batch</button> </router-link
+        >&nbsp;
+        <button @click="updateBatchList()" type="button" class="btn btn-secondary">Refresh</button
+        >&nbsp;
       </div>
     </div>
 
-    <BsModalConfirm :callback="confirmDeleteCallback" :message="confirmDeleteMessage" id="deleteBatch"
-      title="Delete batch" :disabled="global.disabled" />
+    <BsModalConfirm
+      :callback="confirmDeleteCallback"
+      :message="confirmDeleteMessage"
+      id="deleteBatch"
+      title="Delete batch"
+      :disabled="global.disabled"
+    />
   </div>
 </template>
 
@@ -129,7 +161,7 @@ function filterBatchList() {
     var include = true
 
     if (global.batchListFilterDevice != '*' && global.batchListFilterDevice != b.chipId) {
-      logDebug('BatchListView.filterBatchList()', "exclude device: ", b.id, b.chipId)
+      logDebug('BatchListView.filterBatchList()', 'exclude device: ', b.id, b.chipId)
       include = false
     }
 
@@ -137,14 +169,14 @@ function filterBatchList() {
 
     if (global.batchListFilterActive) {
       if (!b.active) {
-        logDebug('BatchListView.filterBatchList()', "exclude active: ", b.id, b.active)
+        logDebug('BatchListView.filterBatchList()', 'exclude active: ', b.id, b.active)
         include = false
       }
     }
 
     if (global.batchListFilterData) {
       if (!b.gravityCount) {
-        logDebug('BatchListView.filterBatchList()', "exclude data: ", b.id, b.gravityCount)
+        logDebug('BatchListView.filterBatchList()', 'exclude data: ', b.id, b.gravityCount)
         include = false
       }
     }
