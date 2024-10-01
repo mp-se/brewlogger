@@ -99,7 +99,7 @@
         <div class="row gy-2">
           <div class="col-md-12"></div>
           <div class="col-md-12">
-            <button type="submit" class="btn btn-primary w-2" :disabled="global.disabled">
+            <button type="submit" class="btn btn-primary w-2" :disabled="global.disabled || !deviceChanged()">
               <span
                 class="spinner-border spinner-border-sm"
                 role="status"
@@ -115,17 +115,18 @@
                 Cancel
               </button> </router-link
             >&nbsp;
+            <!-- 
             <router-link :to="{ name: 'device-list' }">
               <button type="button" class="btn btn-secondary w-2" :disabled="global.disabled">
                 <i class="bi bi-list"></i>
                 Device list
               </button> </router-link
-            >&nbsp;
+            >&nbsp;-->
             <button
               type="button"
               class="btn btn-secondary"
               @click="fetchConfigFromDevice()"
-              :disabled="global.disabled || device.software == 'Brewpi'"
+              :disabled="global.disabled || device.software == 'Brewpi' || device.url == ''"
             >
               <i class="bi bi-box-arrow-down"></i> Fetch config</button
             >&nbsp;
@@ -168,7 +169,7 @@
 </template>
 
 <script setup>
-import { computed, onMounted, ref } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
 import { global, deviceStore } from '@/modules/pinia'
 import { validateCurrentForm } from '@/modules/utils'
 import { Device } from '@/modules/deviceStore'
@@ -178,6 +179,7 @@ import BsInputBase from '@/components/BsInputBase.vue'
 
 const render = ref('')
 const device = ref(null)
+const deviceSaved = ref(null)
 const chipIdValid = ref(false)
 
 const chipFamilyOptions = ref([
@@ -209,6 +211,15 @@ const bleColorOptions = ref([
   { label: 'Yellow', value: 'yellow' },
   { label: 'Pink', value: 'pink' }
 ])
+
+function deviceChanged() {
+  logDebug("DeviceView.deviceChanged()")
+
+  if(device.value == null)
+    return false
+
+  return !Device.compare(device.value, deviceSaved.value)
+}
 
 const viewConfig = () => {
   render.value = device.value.config
@@ -242,6 +253,7 @@ onMounted(() => {
   } else {
     deviceStore.getDevice(router.currentRoute.value.params.id, (success, d) => {
       if (success) {
+        deviceSaved.value = Device.fromJson(d.toJson())
         device.value = d
         logDebug(device.value)
       } else {

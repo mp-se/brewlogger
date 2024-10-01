@@ -108,7 +108,7 @@
             @click.prevent="sendFormula()"
             type="button"
             class="btn btn-secondary w-2"
-            :disabled="global.disabled"
+            :disabled="global.disabled || device == null || device.url == '' || device.formula == ''"
           >
             Send to device</button
           >&nbsp;

@@ -31,6 +31,21 @@ export class Device {
     if (this.url === 'http://' || this.url === 'https://') this.url = ''
   }
 
+  static compare(d1, d2) {
+    return (
+      d1.chipId == d2.chipId &&
+      d1.chipFamily == d2.chipFamily &&
+      d1.software == d2.software &&
+      d1.mdns == d2.mdns &&
+      d1.config == d2.config &&
+      d1.bleColor == d2.bleColor &&
+      d1.url == d2.url &&
+      d1.description == d2.description &&
+      d1.gravityFormula == d2.gravityFormula &&
+      d1.gravityPoly == d2.gravityPoly
+    )
+  }
+
   static fromJson(d) {
     return new Device(
       d.id,
