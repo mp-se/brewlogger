@@ -6,6 +6,7 @@ from starlette.exceptions import HTTPException
 from api.db import models, schemas
 from api.services import BatchService, get_batch_service
 from ..security import api_key_auth
+from ..ws import notifyClients
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/api/batch")
@@ -91,7 +92,9 @@ async def create_batch(
     batch: schemas.BatchCreate, batch_service: BatchService = Depends(get_batch_service)
 ) -> models.Batch:
     logger.info("Endpoint POST /api/batch/")
-    return batch_service.create(batch)
+    batch = batch_service.create(batch)
+    await notifyClients("batch", "create", batch.id)
+    return batch
 
 
 @router.patch(
@@ -103,6 +106,7 @@ async def update_batch_by_id(
     batch_service: BatchService = Depends(get_batch_service),
 ) -> Optional[models.Batch]:
     logger.info("Endpoint PATCH /api/batch/%d", batch_id)
+    await notifyClients("batch", "update", batch_id)
     return batch_service.update(batch_id, batch)
 
 
@@ -112,3 +116,4 @@ async def delete_batch_by_id(
 ):
     logger.info("Endpoint DELETE /api/batch/%d", batch_id)
     batch_service.delete(batch_id)
+    await notifyClients("batch", "delete", batch_id)

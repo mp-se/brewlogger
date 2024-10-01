@@ -11,6 +11,7 @@ from api.db import models, schemas
 from api.services import DeviceService, get_device_service
 from ..security import api_key_auth
 from ..mdns import scan_for_mdns
+from ..ws import notifyClients
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/api/device")
@@ -59,7 +60,9 @@ async def create_device(
         if len(device_list) > 0:
             raise HTTPException(status_code=409, detail="Conflict Error")
     logger.info("Creating device: %s", device)
-    return devices_service.create(device)
+    device = devices_service.create(device)
+    await notifyClients("device", "create", device.id)
+    return device
 
 
 @router.patch(
@@ -71,6 +74,7 @@ async def update_device_by_id(
     devices_service: DeviceService = Depends(get_device_service),
 ) -> Optional[models.Device]:
     logger.info("Endpoint PATCH /api/device/%d", device_id)
+    await notifyClients("device", "update", device_id)
     return devices_service.update(device_id, device)
 
 
@@ -80,6 +84,7 @@ async def delete_device_by_id(
 ):
     logger.info("Endpoint DELETE /api/device/%d", device_id)
     devices_service.delete(device_id)
+    await notifyClients("device", "delete", device_id)
 
 
 @router.post("/proxy_fetch/", status_code=200, dependencies=[Depends(api_key_auth)])

@@ -1,16 +1,18 @@
 import logging
+import asyncio
+from fastapi import WebSocket, WebSocketDisconnect
 from fastapi.routing import APIRouter
 from api.db import schemas
 from api.db.session import create_session
-from ..cache import writeKey, readKey
 from api.services import BrewLoggerService
 from api.db import schemas
+from ..cache import writeKey, readKey
 from ..scheduler import scheduler
 from ..utils import migrate_database
+from ..ws import ws_manager
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/api/system")
-
 
 @router.get(
     "/self_test/", response_model=schemas.SelfTestResult
@@ -52,3 +54,15 @@ async def run_self_test():
 async def run_db_migration():
     logger.info("Endpoint GET /api/system/db_migration/")
     migrate_database()
+
+
+@router.websocket("/notify")
+async def websocket_endpoint(websocket: WebSocket):
+   await ws_manager.connect(websocket)
+   try:
+        while True:
+            await websocket.receive_text()
+   except WebSocketDisconnect:
+       ws_manager.disconnect(websocket)
+       logger.info(f"Client disconnected")
+    
