@@ -73,28 +73,6 @@ async def task_fetch_brewpi_temps():
                 f"brewpi device {device['id']} has no defined url, unable to find temperatures."
             )
 
-        
-            
-        
-        #await fetch_brewpi_temps(d)
-
-    # try:
-    #     timeout = httpx.Timeout(10.0, connect=10.0, read=10.0)
-    #     url = get_settings().self_url + "/api/device/?software=Brewpi"
-    #     async with httpx.AsyncClient(timeout=timeout) as client:
-    #         logger.info("Request using get %s", url)
-    #         res = await client.get(url, headers=headers)
-    #         logger.info(f"Reqeust to {url} returned code {res.status_code}")
-    #         for d in res.json():
-    #             await fetch_brewpi_temps(d)
-    # except httpx.ReadTimeout:
-    #     logger.error(f"Unable to connect to device {url}")
-    # except httpx.ConnectError:
-    #     logger.error(f"Unable to read from device {url}")
-    # except httpx.ConnectTimeout:
-    #     logger.error(f"Unable to connect to device {url}")
-
-
 
 async def task_forward_gravity():
     logger.info(f"Task: task_forward_gravity is running at {datetime.now()}")
