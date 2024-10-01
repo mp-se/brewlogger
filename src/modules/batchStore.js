@@ -37,32 +37,48 @@ export class Batch {
     this.gravity = []
   }
 
-  static fromJson(d) {
+  static compare(b1, b2) {
+    return (
+      b1.name == b2.name &&
+      b1.description == b2.description &&
+      b1.chipId == b2.chipId &&
+      b1.active == b2.active &&
+      b1.brewDate == b2.brewDate &&
+      b1.style == b2.style &&
+      b1.brewer == b2.brewer &&
+      b1.abv == b2.abv &&
+      b1.ebc == b2.ebc &&
+      b1.ibu == b2.ibu &&
+      b1.brewfatherId == b2.brewfatherId &&
+      b1.fermentationChamber == b2.fermentationChamber
+    )
+  }  
+  static fromJson(b) {
     return new Batch(
-      d.id,
-      d.name,
-      d.description,
-      d.chipId,
-      d.active,
-      d.brewDate,
-      d.style,
-      d.brewer,
-      d.abv,
-      d.ebc,
-      d.ibu,
-      d.brewfatherId,
-      d.gravity,
-      d.fermentationChamber
+      b.id,
+      b.name,
+      b.description,
+      b.chipId,
+      b.active,
+      b.brewDate,
+      b.style,
+      b.brewer,
+      b.abv,
+      b.ebc,
+      b.ibu,
+      b.brewfatherId,
+      b.gravity,
+      b.fermentationChamber
     )
   }
 
-  static fromDashboardJson(d) {
+  static fromDashboardJson(bd) {
     var b = new Batch(
-      d.id,
-      d.name,
+      bd.id,
+      bd.name,
       '',
-      d.chipId,
-      d.active,
+      bd.chipId,
+      bd.active,
       '',
       '',
       '',
@@ -70,10 +86,10 @@ export class Batch {
       0,
       0,
       0,
-      d.gravity,
-      d.fermentationChamber
+      bd.gravity,
+      bd.fermentationChamber
     )
-    b.gravity = d.gravity
+    b.gravity = bd.gravity
     return b
   }
 

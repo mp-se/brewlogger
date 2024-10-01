@@ -128,7 +128,7 @@
         <div class="row gy-2">
           <div class="col-md-12"></div>
           <div class="col-md-12">
-            <button type="submit" class="btn btn-primary w-2" :disabled="global.disabled">
+            <button type="submit" class="btn btn-primary w-2" :disabled="global.disabled || !batchChanged()">
               <span
                 class="spinner-border spinner-border-sm"
                 role="status"
@@ -144,12 +144,13 @@
                 Cancel
               </button> </router-link
             >&nbsp;
+            <!-- 
             <router-link :to="{ name: 'batch-list' }">
               <button type="button" class="btn btn-secondary w-2">
                 <i class="bi bi-list"></i>
                 Batch list
               </button> </router-link
-            >&nbsp;
+            >&nbsp;-->
           </div>
         </div>
       </form>
@@ -171,7 +172,6 @@
         </div>
       </div>
     </template>
-
   </div>
 </template>
 
@@ -186,6 +186,7 @@ import { logDebug } from '@/modules/logger'
 // TODO: Add date selector
 
 const batch = ref(null)
+const batchSaved = ref(null)
 
 const gravityDeviceOptions = ref([])
 const tempControlDeviceOptions = ref([])
@@ -251,6 +252,15 @@ const styleOptions = ref([
   { label: 'Witbier', value: 'Witbier' }
 ])
 
+function batchChanged() {
+  logDebug("BatchView.batchChanged()")
+
+  if(batch.value == null)
+    return false
+
+  return !Batch.compare(batch.value, batchSaved.value)
+}
+
 function isNew() {
   return router.currentRoute.value.params.id == 'new' ? true : false
 }
@@ -294,6 +304,7 @@ onMounted(() => {
     } else {
       batchStore.getBatch(router.currentRoute.value.params.id, (success, b) => {
         if (success) {
+          batchSaved.value = Batch.fromJson(b.toJson())
           batch.value = b
           logDebug(batch.value)
         } else {
