@@ -52,7 +52,7 @@ export class Batch {
       b1.brewfatherId == b2.brewfatherId &&
       b1.fermentationChamber == b2.fermentationChamber
     )
-  }  
+  }
   static fromJson(b) {
     return new Batch(
       b.id,

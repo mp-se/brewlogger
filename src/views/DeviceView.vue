@@ -99,7 +99,11 @@
         <div class="row gy-2">
           <div class="col-md-12"></div>
           <div class="col-md-12">
-            <button type="submit" class="btn btn-primary w-2" :disabled="global.disabled || !deviceChanged()">
+            <button
+              type="submit"
+              class="btn btn-primary w-2"
+              :disabled="global.disabled || !deviceChanged()"
+            >
               <span
                 class="spinner-border spinner-border-sm"
                 role="status"
@@ -169,7 +173,7 @@
 </template>
 
 <script setup>
-import { computed, onMounted, ref, watch } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import { global, deviceStore } from '@/modules/pinia'
 import { validateCurrentForm } from '@/modules/utils'
 import { Device } from '@/modules/deviceStore'
@@ -213,10 +217,9 @@ const bleColorOptions = ref([
 ])
 
 function deviceChanged() {
-  logDebug("DeviceView.deviceChanged()")
+  logDebug('DeviceView.deviceChanged()')
 
-  if(device.value == null)
-    return false
+  if (device.value == null) return false
 
   return !Device.compare(device.value, deviceSaved.value)
 }

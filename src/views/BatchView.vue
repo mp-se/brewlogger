@@ -128,7 +128,11 @@
         <div class="row gy-2">
           <div class="col-md-12"></div>
           <div class="col-md-12">
-            <button type="submit" class="btn btn-primary w-2" :disabled="global.disabled || !batchChanged()">
+            <button
+              type="submit"
+              class="btn btn-primary w-2"
+              :disabled="global.disabled || !batchChanged()"
+            >
               <span
                 class="spinner-border spinner-border-sm"
                 role="status"
@@ -253,10 +257,9 @@ const styleOptions = ref([
 ])
 
 function batchChanged() {
-  logDebug("BatchView.batchChanged()")
+  logDebug('BatchView.batchChanged()')
 
-  if(batch.value == null)
-    return false
+  if (batch.value == null) return false
 
   return !Batch.compare(batch.value, batchSaved.value)
 }
