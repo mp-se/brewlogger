@@ -7,5 +7,5 @@ src/kegmon_api.egg-info/
 *__pycache__
 *.pyc
 production/*
-docker-compose.yaml
+docker-compose*.yaml
 .DS_Store
