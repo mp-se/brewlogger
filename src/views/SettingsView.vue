@@ -63,6 +63,7 @@
             :disabled="global.disabled"
           ></BsInputRadio>
         </div>
+        <!-- 
         <div class="col-md-6">
           <BsInputNumber
             v-model="config.mdnsTimeout"
@@ -74,7 +75,7 @@
             :disabled="global.disabled"
           >
           </BsInputNumber>
-        </div>
+        </div>-->
       </div>
 
       <div class="row gy-2">
