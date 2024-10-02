@@ -9,9 +9,11 @@ from zeroconf.asyncio import AsyncServiceBrowser, AsyncServiceInfo, AsyncZerocon
 ALL_SERVICES = [
     "_pressuremon._tcp.local.",
     "_gravitymon._tcp.local.",
+    "_gravitymon-gateway._tcp.local.",
     "_kegmon._tcp.local.",
     "_http._tcp.local.",
-    # "_brewpi._tcp.local.",
+    "_brewpi._tcp.local.",
+    "_espfwk._tcp.local."
 ]
 
 logger = logging.getLogger(__name__)
@@ -82,3 +84,12 @@ class AsyncDeviceScanner:
         assert self.aiobrowser is not None
         await self.aiobrowser.async_cancel()
         await self.aiozc.async_close()
+
+
+async def test():
+    result = await scan_for_mdns(10)
+    for r in result:
+        print(r)
+
+if __name__ == '__main__':
+    asyncio.run(test())
