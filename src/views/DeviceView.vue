@@ -198,9 +198,10 @@ const chipFamilyOptions = ref([
 const softwareOptions = ref([
   { label: '- unknown -', value: '' },
   { label: 'Gravitymon', value: 'Gravitymon' },
+  { label: 'Gravitymon Gateway', value: 'Gravitymon-Gateway' },
   { label: 'Kegmon', value: 'Kegmon' },
-  // { label: 'Pressuremon', value: 'Pressuremon' },
   { label: 'Brewpi', value: 'Brewpi' }
+  // { label: 'Pressuremon', value: 'Pressuremon' },
   // { label: 'iSpindel', value: 'iSpindel' }
 ])
 
