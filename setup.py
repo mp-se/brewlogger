@@ -13,6 +13,7 @@ install_requires = [
     "apscheduler",
     "redis",
     "scipy",
+    "websockets",
 ]
 
 setup(
