@@ -11,9 +11,9 @@ ALL_SERVICES = [
     "_gravitymon._tcp.local.",
     "_gravitymon-gateway._tcp.local.",
     "_kegmon._tcp.local.",
-    "_http._tcp.local.",
     "_brewpi._tcp.local.",
-    "_espfwk._tcp.local."
+    #"_http._tcp.local.",
+    #"_espfwk._tcp.local."
 ]
 
 logger = logging.getLogger(__name__)

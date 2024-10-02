@@ -1,6 +1,6 @@
 import logging
 from typing import List, Optional
-from fastapi import Depends
+from fastapi import Depends, BackgroundTasks
 from fastapi.routing import APIRouter
 from starlette.exceptions import HTTPException
 from api.db import models, schemas
@@ -56,7 +56,8 @@ async def get_batch_by_id(
     dependencies=[Depends(api_key_auth)],
 )
 async def get_batch_dashboard_by_id(
-    batch_id: int, batch_service: BatchService = Depends(get_batch_service)
+    batch_id: int, 
+    batch_service: BatchService = Depends(get_batch_service)
 ) -> Optional[models.Batch]:
     logger.info("Endpoint GET /api/batch/%d/dashboard", batch_id)
 
@@ -89,11 +90,13 @@ async def get_batch_dashboard_by_id(
     dependencies=[Depends(api_key_auth)],
 )
 async def create_batch(
-    batch: schemas.BatchCreate, batch_service: BatchService = Depends(get_batch_service)
+    batch: schemas.BatchCreate, 
+    background_tasks: BackgroundTasks,
+    batch_service: BatchService = Depends(get_batch_service)
 ) -> models.Batch:
     logger.info("Endpoint POST /api/batch/")
     batch = batch_service.create(batch)
-    await notifyClients("batch", "create", batch.id)
+    background_tasks.add_task(notifyClients, "batch", "create", batch.id)
     return batch
 
 
@@ -103,17 +106,20 @@ async def create_batch(
 async def update_batch_by_id(
     batch_id: int,
     batch: schemas.BatchUpdate,
+    background_tasks: BackgroundTasks,
     batch_service: BatchService = Depends(get_batch_service),
 ) -> Optional[models.Batch]:
     logger.info("Endpoint PATCH /api/batch/%d", batch_id)
-    await notifyClients("batch", "update", batch_id)
+    background_tasks.add_task(notifyClients, "batch", "update", batch_id)
     return batch_service.update(batch_id, batch)
 
 
 @router.delete("/{batch_id}", status_code=204, dependencies=[Depends(api_key_auth)])
 async def delete_batch_by_id(
-    batch_id: int, batch_service: BatchService = Depends(get_batch_service)
+    batch_id: int, 
+    background_tasks: BackgroundTasks,
+    batch_service: BatchService = Depends(get_batch_service)
 ):
     logger.info("Endpoint DELETE /api/batch/%d", batch_id)
     batch_service.delete(batch_id)
-    await notifyClients("batch", "delete", batch_id)
+    background_tasks.add_task(notifyClients, "batch", "delete", batch_id)

@@ -3,14 +3,14 @@ import logging
 import json
 from json import JSONDecodeError
 from typing import List, Optional
-from fastapi import Depends
+from fastapi import Depends, BackgroundTasks
 from fastapi.routing import APIRouter
 from fastapi.responses import Response
 from starlette.exceptions import HTTPException
 from api.db import models, schemas
 from api.services import DeviceService, get_device_service
 from ..security import api_key_auth
-from ..mdns import scan_for_mdns
+from ..cache import findKey, readKey
 from ..ws import notifyClients
 
 logger = logging.getLogger(__name__)
@@ -52,7 +52,8 @@ async def get_device_by_id(
 )
 async def create_device(
     device: schemas.DeviceCreate,
-    devices_service: DeviceService = Depends(get_device_service),
+    background_tasks: BackgroundTasks,
+    devices_service: DeviceService = Depends(get_device_service)
 ) -> models.Device:
     logger.info("Endpoint POST /api/device/")
     if device.chip_id != "000000":
@@ -61,7 +62,7 @@ async def create_device(
             raise HTTPException(status_code=409, detail="Conflict Error")
     logger.info("Creating device: %s", device)
     device = devices_service.create(device)
-    await notifyClients("device", "create", device.id)
+    background_tasks.add_task(notifyClients, "device", "create", device.id)
     return device
 
 
@@ -71,20 +72,23 @@ async def create_device(
 async def update_device_by_id(
     device_id: int,
     device: schemas.DeviceUpdate,
+    background_tasks: BackgroundTasks,
     devices_service: DeviceService = Depends(get_device_service),
 ) -> Optional[models.Device]:
     logger.info("Endpoint PATCH /api/device/%d", device_id)
-    await notifyClients("device", "update", device_id)
+    background_tasks.add_task(notifyClients, "device", "update", device_id)
     return devices_service.update(device_id, device)
 
 
 @router.delete("/{device_id}", status_code=204, dependencies=[Depends(api_key_auth)])
 async def delete_device_by_id(
-    device_id: int, devices_service: DeviceService = Depends(get_device_service)
+    device_id: int, 
+    background_tasks: BackgroundTasks,
+    devices_service: DeviceService = Depends(get_device_service)
 ):
     logger.info("Endpoint DELETE /api/device/%d", device_id)
     devices_service.delete(device_id)
-    await notifyClients("device", "delete", device_id)
+    background_tasks.add_task(notifyClients, "device", "delete", device_id)
 
 
 @router.post("/proxy_fetch/", status_code=200, dependencies=[Depends(api_key_auth)])
@@ -163,5 +167,13 @@ async def fetch_data_from_device(proxy_req: schemas.ProxyRequest):
 @router.get("/mdns/", status_code=200, dependencies=[Depends(api_key_auth)])
 async def scan_for_mdns_devices():
     logger.info("Endpoint GET /api/device/mdns/")
-    mdns = await scan_for_mdns(10)
+
+    mdns = []
+
+    keys = findKey("*.local.")
+    for k in keys:
+        value = readKey(k).decode()
+        logger.info("Found {key} = {value}")
+        mdns.append(json.loads(value))
+
     return Response(content=json.dumps(mdns), media_type="application/json")

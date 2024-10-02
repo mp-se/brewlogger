@@ -20,7 +20,7 @@ def findKey(key):
     logger.info(f"Searching key {key}.")
     try:
         r = redis.Redis(connection_pool=pool)
-        return r.keys(key + "*")
+        return r.keys(key)
     except redis.exceptions.ConnectionError as e:
         logger.error(f"Failed to connect with redis {e}.")
     return []

@@ -9,6 +9,7 @@ from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from apscheduler.triggers.cron import CronTrigger
 from .config import get_settings
 from .cache import writeKey, findKey, readKey, deleteKey
+from .mdns import scan_for_mdns
 
 logger = logging.getLogger(__name__)
 scheduler = AsyncIOScheduler()
@@ -83,7 +84,7 @@ async def task_forward_gravity():
         return # Nothing to do
 
     url = settings.gravity_forward_url
-    keys = findKey("gravity_")
+    keys = findKey("gravity_*")
     for k in keys:
         value = readKey(k).decode()
 
@@ -113,17 +114,33 @@ async def task_forward_gravity():
             logger.error(f"Unknown exception {e}")
 
 
+async def task_scan_mdns():
+    logger.info(f"Task: task_scan_mdns is running at {datetime.now()}")
+
+    mdns_list = await scan_for_mdns(20)
+    
+    for mdns in mdns_list:
+        try:
+            key = mdns["host"] + mdns['type']
+            writeKey(key, json.dumps(mdns), ttl=900)
+        except JSONDecodeError:
+            logger.error(f"Unable to parse JSON response {mdns}")
+
+
 def scheduler_setup(app):
     global app_client
     logger.info("Setting up scheduler")
     app_client = app
 
     # Setting up task to fetch brewpi temperatures and store these in redis cache
-    trigger = CronTrigger(second=0)
-    scheduler.add_job(func=task_fetch_brewpi_temps, trigger=trigger, max_instances=1)
+    brewpi_trigger = CronTrigger(second=0)
+    scheduler.add_job(func=task_fetch_brewpi_temps, trigger=brewpi_trigger, max_instances=1)
 
     # Setting up task to forward gravity data to remove endpoint from redis cache
-    trigger = CronTrigger(second=30)
-    scheduler.add_job(func=task_forward_gravity, trigger=trigger, max_instances=1)
+    gravity_trigger = CronTrigger(second=30)
+    scheduler.add_job(func=task_forward_gravity, trigger=gravity_trigger, max_instances=1)
+
+    # Setting up task to scan for mdns data
+    scheduler.add_job(task_scan_mdns, 'interval', minutes=1, max_instances=1)
 
     scheduler.start()
