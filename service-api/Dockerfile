@@ -2,7 +2,6 @@ FROM python:3.11
 WORKDIR /app
 ENV PYTHONFAULTHANDLER 1
 ENV PYTHONUNBUFFERED 1
-RUN apt-get update && apt-get install avahi-utils -y
 COPY ./requirements/requirements.txt /app/requirements.txt
 RUN pip install --no-cache-dir --upgrade -r /app/requirements.txt
 COPY ./app /app
