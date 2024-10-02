@@ -52,7 +52,6 @@ class BrewfatherBatch(BaseModel):
 class BrewLoggerBase(BaseModel):
     model_config = ConfigDict(alias_generator=to_camel, populate_by_name=True)
 
-    mdns_timeout: int = Field(description="mDNS search timeout")
     temperature_format: str = Field(
         min_length=0, max_length=1, description="Temperature format for presentation"
     )

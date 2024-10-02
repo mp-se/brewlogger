@@ -30,7 +30,6 @@ def load_settings():
 
                 cfg = schemas.BrewLoggerCreate(
                     version=get_settings().version,
-                    mdns_timeout=10,
                     temperature_format="C",
                     pressure_format="PSI",
                     gravity_format="SG",
@@ -158,6 +157,8 @@ def migrate_database():
         "ALTER TABLE brewlogger ALTER COLUMN gravity_forward_url SET NOT NULL",
 
         "DROP INDEX ix_device_chip_id",
+
+        "ALTER TABLE brewlogger DROP COLUMN mdns_timeout",
     }
 
     with engine.connect() as con:

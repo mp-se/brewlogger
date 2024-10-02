@@ -19,7 +19,6 @@ class BrewLogger(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     version = Column(String(10), nullable=False)
-    mdns_timeout = Column(Integer, nullable=False, default=10)
     temperature_format = Column(String(3), nullable=False)
     pressure_format = Column(String(3), nullable=False)
     gravity_format = Column(String(3), nullable=False)
