@@ -59,10 +59,39 @@
               help="" :disabled="global.disabled">
             </BsInputNumber>
           </div>
+
+          <div class="col-md-12" v-if="batch.fermentationSteps != ''">
+            <hr />
+          </div>
+
+          <div class="col-md-4" v-if="batch.fermentationSteps != ''">
+            <label class="form-label fw-bold">Fermentation Steps</label>
+
+            <table class="table table-striped">
+              <thead>
+                <tr>
+                  <th scope="col" class="col-sm-1">Step</th>
+                  <th scope="col" class="col-sm-1">Temperature</th>
+                  <th scope="col" class="col-sm-1">Days</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="(step, index) in JSON.parse(batch.fermentationSteps)" :key="index">
+                  <th scope="row">{{ index + 1 }}</th>
+                  <td>{{ step.temp }}</td>
+                  <td>{{ step.days }}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
         </div>
 
+
         <div class="row gy-2">
-          <div class="col-md-12"></div>
+          <div class="col-md-12">
+            <hr />
+          </div>
           <div class="col-md-12">
             <button type="submit" class="btn btn-primary w-2" :disabled="global.disabled || !batchChanged()">
               <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"
@@ -74,30 +103,15 @@
                 <i class="bi bi-x-square"></i>
                 Cancel
               </button> </router-link>&nbsp;
-            <!-- 
-            <router-link :to="{ name: 'batch-list' }">
-              <button type="button" class="btn btn-secondary w-2">
-                <i class="bi bi-list"></i>
-                Batch list
-              </button> </router-link
-            >&nbsp;-->
           </div>
         </div>
       </form>
     </template>
 
     <template v-else>
-      <!--
-      <BsMessage :dismissable="false" :message="'Unable to find batch with id ' + $route.params.id" alert="danger" />
-      -->
-
       <div class="row gy-2">
         <div class="col-md-12">
           <p class="h4">Loading...</p>
-        </div>
-        <div class="col-md-12">
-          <router-link :to="{ name: 'batch-list' }">
-            <button type="button" class="btn btn-secondary w-2">Batch list</button> </router-link>&nbsp;
         </div>
       </div>
     </template>
@@ -127,6 +141,7 @@ const toggleOptions = ref([
 
 const brewfatherOptions = ref([{ label: '- not connected -', value: '' }])
 
+// These styles are imported from Brewfather definitions BJCP_2008 and GABF_2015
 const styleOptions = ref([
   { label: '- undefined -', value: '' },
   { label: 'Adambier', value: 'Adambier' },
@@ -394,6 +409,7 @@ function brewfatherChanged(id) {
       batch.value.ebc = b.ebc
       batch.value.abv = b.abv
       batch.value.ibu = b.ibu
+      batch.value.fermentationSteps = b.fermentationSteps
       return
     }
   })

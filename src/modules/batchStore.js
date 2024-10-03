@@ -17,7 +17,8 @@ export class Batch {
     ibu,
     brewfatherId,
     gravity,
-    fermentationChamber
+    fermentationChamber,
+    fermentationSteps,
   ) {
     this.id = id === undefined ? 0 : id
     this.name = name === undefined ? '' : name
@@ -33,6 +34,8 @@ export class Batch {
     this.brewfatherId = brewfatherId === undefined ? '' : brewfatherId
     this.fermentationChamber =
       fermentationChamber === undefined || fermentationChamber === null ? 0 : fermentationChamber
+      this.fermentationSteps =
+      fermentationSteps === undefined || fermentationSteps === null ? '' : fermentationSteps
     this.gravityCount = gravity === undefined || gravity === null ? 0 : gravity.length
     this.gravity = []
   }
@@ -50,7 +53,8 @@ export class Batch {
       b1.ebc == b2.ebc &&
       b1.ibu == b2.ibu &&
       b1.brewfatherId == b2.brewfatherId &&
-      b1.fermentationChamber == b2.fermentationChamber
+      b1.fermentationChamber == b2.fermentationChamber &&
+      b1.fermentationSteps == b2.fermentationSteps
     )
   }
   static fromJson(b) {
@@ -68,7 +72,8 @@ export class Batch {
       b.ibu,
       b.brewfatherId,
       b.gravity,
-      b.fermentationChamber
+      b.fermentationChamber,
+      b.fermentationSteps
     )
   }
 
@@ -87,7 +92,8 @@ export class Batch {
       0,
       0,
       bd.gravity,
-      bd.fermentationChamber
+      bd.fermentationChamber,
+      ''
     )
     b.gravity = bd.gravity
     return b
@@ -106,7 +112,8 @@ export class Batch {
       ebc: this.ebc,
       ibu: this.ibu,
       brewfatherId: this.brewfatherId,
-      fermentationChamber: this.fermentationChamber // Optional: Can be undefined (=0)
+      fermentationChamber: this.fermentationChamber, // Optional: Can be undefined (=0)
+      fermentationSteps: this.fermentationSteps // Optional: Can be undefined (='')
     }
 
     // Optional: Can be undefined
@@ -161,6 +168,9 @@ export class Batch {
   get fermentationChamber() {
     return this._fermentationChamber
   }
+  get fermentationSteps() {
+    return this._fermentationSteps
+  }
 
   set id(id) {
     this._id = id
@@ -200,6 +210,9 @@ export class Batch {
   }
   set fermentationChamber(fermentationChamber) {
     this._fermentationChamber = fermentationChamber
+  }
+  set fermentationSteps(fermentationSteps) {
+    this._fermentationSteps = fermentationSteps
   }
   set gravityCount(gravityCount) {
     this._gravityCount = gravityCount

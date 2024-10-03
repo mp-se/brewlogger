@@ -3,7 +3,7 @@ import { global } from '@/modules/pinia'
 import { logDebug, logError } from '@/modules/logger'
 
 export class BrewfatherBatch {
-  constructor(brewfatherId, name, brewDate, style, brewer, abv, ebc, ibu) {
+  constructor(brewfatherId, name, brewDate, style, brewer, abv, ebc, ibu, fermentationSteps) {
     this.name = name === undefined ? '' : name
     this.brewDate = brewDate === undefined ? '' : brewDate
     this.style = style === undefined ? '' : style
@@ -12,6 +12,7 @@ export class BrewfatherBatch {
     this.ebc = ebc === undefined ? 0 : ebc
     this.ibu = ibu === undefined ? 0 : ibu
     this.brewfatherId = brewfatherId === undefined ? '' : brewfatherId
+    this.fermentationSteps = fermentationSteps === undefined ? '' : fermentationSteps
   }
 
   static fromJson(d) {
@@ -23,7 +24,8 @@ export class BrewfatherBatch {
       d.brewer,
       d.abv,
       d.ebc,
-      d.ibu
+      d.ibu,
+      d.fermentationSteps
     )
   }
 
@@ -51,6 +53,9 @@ export class BrewfatherBatch {
   get ibu() {
     return this._ibu
   }
+  get fermentationSteps() {
+    return this._fermentationSteps
+  }
 
   set brewfatherId(brewfatherId) {
     this._brewfatherId = brewfatherId
@@ -75,6 +80,9 @@ export class BrewfatherBatch {
   }
   set ibu(ibu) {
     this._ibu = ibu
+  }
+  set fermentationSteps(fermentationSteps) {
+    this._fermentationSteps = fermentationSteps
   }
 }
 

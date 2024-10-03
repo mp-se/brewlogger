@@ -14,7 +14,8 @@ export class Device {
     url,
     description,
     gravityFormula,
-    gravityPoly
+    gravityPoly,
+    fermentationSteps,
   ) {
     this.id = id === undefined ? 0 : id
     this.chipId = chipId === undefined ? '' : chipId
@@ -27,6 +28,7 @@ export class Device {
     this.url = url === undefined ? '' : url
     this.gravityFormula = gravityFormula === undefined ? '' : gravityFormula
     this.gravityPoly = gravityPoly === undefined ? '' : gravityPoly
+    this.fermentationSteps = fermentationSteps === undefined ? '' : fermentationSteps
 
     if (this.url === 'http://' || this.url === 'https://') this.url = ''
   }
@@ -42,7 +44,8 @@ export class Device {
       d1.url == d2.url &&
       d1.description == d2.description &&
       d1.gravityFormula == d2.gravityFormula &&
-      d1.gravityPoly == d2.gravityPoly
+      d1.gravityPoly == d2.gravityPoly &&
+      d1.fermentationSteps == d2.fermentationSteps      
     )
   }
 
@@ -58,7 +61,8 @@ export class Device {
       d.url,
       d.description,
       d.gravityFormula,
-      d.gravityPoly
+      d.gravityPoly,
+      d.fermentationSteps
     )
   }
 
@@ -73,7 +77,8 @@ export class Device {
       url: this.url,
       description: this.description,
       gravityFormula: this.gravityFormula,
-      gravityPoly: this.gravityPoly
+      gravityPoly: this.gravityPoly,
+      fermentationSteps: this.fermentationSteps
     }
   }
 
@@ -110,6 +115,9 @@ export class Device {
   get gravityPoly() {
     return this._gravityPoly
   }
+  get fermentationSteps() {
+    return this._fermentationSteps
+  }
 
   set id(id) {
     this._id = id
@@ -143,6 +151,9 @@ export class Device {
   }
   set gravityPoly(gravityPoly) {
     this._gravityPoly = gravityPoly
+  }
+  set fermentationSteps(fermentationSteps) {
+    this._fermentationSteps = fermentationSteps
   }
 }
 
