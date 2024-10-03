@@ -6,22 +6,50 @@ from typing import List
 from fastapi import Depends
 from fastapi.routing import APIRouter
 from starlette.exceptions import HTTPException
-from api.db import schemas
+from api.db import schemas, models
 from ..security import api_key_auth
 from ..config import get_settings
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/api/brewfather")
 
+max_records = 100
+
 
 @router.get(
     "/batch/",
     response_model=List[schemas.BrewfatherBatch],
     dependencies=[Depends(api_key_auth)],
-)
-async def get_batches_from_brewfather():
-    logger.info("Endpoint GET /api/brewfather/batch/")
+) 
+async def get_fermenting_batches_from_brewfather(
+    planning: bool = False,
+    brewing: bool = False,
+    fermenting: bool = False,
+    completed: bool = False,
+    archived: bool = False,
+) -> List[models.Batch]:
+    logger.info(f"Endpoint GET /api/brewfather/batch/?planning={planning}&brewing={brewing}&fermenting={fermenting}&completed={completed}&archived={archived}")
+    batches = list()
 
+    if planning:
+        batches += await fetchBatchList("Planning")
+
+    if brewing:
+        batches += await fetchBatchList("Brewing")
+
+    if fermenting:
+        batches += await fetchBatchList("Fermenting")
+
+    if completed:
+        batches += await fetchBatchList("Completed")
+
+    if archived:
+        batches += await fetchBatchList("Archived")
+
+    return batches
+    
+
+async def fetchBatchList(status):
     batches = list()
 
     if get_settings().brewfather_user_key == '' or get_settings().brewfather_api_key == '':
@@ -33,10 +61,10 @@ async def get_batches_from_brewfather():
         async with httpx.AsyncClient() as client:
             url = "https://api.brewfather.app/v2/batches"
             data = {
-                "include": "name,recipe.name,recipe.style.type,brewer,brewDate,estimatedColor,estimatedIbu,measuredAbv",
+                "include": "recipe.abv,recipe.color,recipe.ibu,recipe.style.name,recipe.fermentation",
                 "complete": False,
-                "status": "Completed",
-                "limit": 100,
+                "status": status,
+                "limit": max_records,
             }
             res = await client.get(
                 url=url,
@@ -46,9 +74,13 @@ async def get_batches_from_brewfather():
                     get_settings().brewfather_api_key,
                 ),
             )
-            json = res.json()
+            batch_list = res.json()
 
-            for batch in json:
+            print( batch_list)
+
+            for batch in batch_list:
+                print(batch)
+
                 logger.info(
                     "Processing response from brewfather API #%d", batch["batchNo"]
                 )
@@ -58,18 +90,69 @@ async def get_batches_from_brewfather():
                 ebc = 0
                 ibu = 0
                 style = ""
+                name = batch["name"]
 
-                if ("style" in batch["recipe"] and batch["recipe"]["style"]["type"] is not None):
-                    style = batch["recipe"]["style"]["type"]
-                if "measuredAbv" in batch:
-                    abv = batch["measuredAbv"]
-                if "estimatedColor" in batch:
-                    ebc = batch["estimatedColor"]
-                if "estimatedIbu" in batch:
-                    ibu = batch["estimatedIbu"]
+                """ Example response
+                [
+                    {
+                        "_id": "ejriIST30hkmqSlzDGRQ8420eQyze1",
+                        "batchNo": 78,
+                        "brewDate": 1727474400000,
+                        "brewer": "Magnus Persson",
+                        "name": "Christmas Lager",
+                        "recipe": {
+                            "abv": 4.33,
+                            "color": 14.7,
+                            "fermentation": {
+                                "_id": null,
+                                "name": "Imported",
+                                "steps": [
+                                    {
+                                        "actualTime": 1727474400000,
+                                        "stepTemp": 12,
+                                        "stepTime": 14,
+                                        "type": "Primary"
+                                    },
+                                    {
+                                        "actualTime": 1728684000000,
+                                        "stepTemp": 2,
+                                        "stepTime": 4,
+                                        "type": "Secondary"
+                                    },
+                                    {
+                                        "actualTime": 1729029600000,
+                                        "stepTemp": 16,
+                                        "stepTime": 14,
+                                        "type": "Conditioning"
+                                    }
+                                ]
+                            },
+                            "ibu": 32.3,
+                            "name": "71. Christmas Lager",
+                            "style": {
+                                "name": "American-Style Dark Lager"
+                            }
+                        },
+                        "status": "Fermenting"
+                    }
+                ]               
+                """
+
+                if "recipe" in batch:
+                    if ("style" in batch["recipe"] and "name" in batch["recipe"]["style"]):
+                        style = batch["recipe"]["style"]["name"]
+                    if ("name" in batch["recipe"]):
+                        name = batch["recipe"]["name"]
+
+                if "abv" in batch["recipe"]:
+                    abv = batch["recipe"]["abv"]
+                if "color" in batch["recipe"]:
+                    ebc = batch["recipe"]["color"]
+                if "ibu" in batch["recipe"]:
+                    ibu = batch["recipe"]["ibu"]
 
                 batches.append(schemas.BrewfatherBatch(
-                    name=batch["name"],
+                    name=name,
                     brewDate=datetime.fromtimestamp(batch["brewDate"] / 1000.0).strftime("%Y-%m-%d"),
                     style=style,
                     brewer=batch["brewer"],
@@ -82,128 +165,55 @@ async def get_batches_from_brewfather():
     except JSONDecodeError:
         logger.error("Unable to parse JSON response")
         raise HTTPException(
-            status_code=400, detail="Unable to parse JSON from remote endpoint."
+            status_code=400, detail="Unable to parse JSON from brewfather."
         )
     except httpx.ConnectError:
-        logger.error("Unable to connect to device")
+        logger.error("Unable to connect to brewfather")
         raise HTTPException(
-            status_code=400, detail="Unable to connect to remote endpoint."
+            status_code=400, detail="Unable to connect to brewfather."
         )
 
     return batches
 
 
-"""
-# This will fetch all batches in brewfather and create a copy in brewlogger.. will create duplicates if logging has already started
 @router.get(
-    "/brewfather/",
-    response_model=List[schemas.Batch],
+    "/batch/{batch_id}",
+    response_model=List[schemas.BrewfatherBatch],
     dependencies=[Depends(api_key_auth)],
 )
-async def get_batches_from_brewfather(
-    batch_service: BatchService = Depends(get_batch_service),
-) -> List[models.Batch]:
-    logger.info("Endpoint GET /api/batch/brewfather/")
+async def get_completed_batches_from_brewfather(
+    batch_id: str,
+):
+    logger.info(f"Endpoint GET /api/brewfather/batch/{batch_id}")
+
+    batch = {}
+
+    if get_settings().brewfather_user_key == '' or get_settings().brewfather_api_key == '':
+        raise HTTPException(
+            status_code=400, detail="Brewfather keys are not defined, unable to fetch data."
+        )
 
     try:
         async with httpx.AsyncClient() as client:
-            url = "https://api.brewfather.app/v2/batches"
-            data = {
-                "include": "name,recipe.name,recipe.style.type,brewer,brewDate,estimatedColor,estimatedIbu,measuredAbv",
-                "complete": False,
-                "status": "Completed",
-                "limit": 100,
-            }
+            url = "https://api.brewfather.app/v2/batches/" + batch_id
             res = await client.get(
                 url=url,
-                params=data,
                 auth=(
                     get_settings().brewfather_user_key,
                     get_settings().brewfather_api_key,
                 ),
             )
-            json = res.json()
-
-            for batch in json:
-                logger.info(
-                    "Processing response from brewfather API #%d", batch["batchNo"]
-                )
-                logger.info(batch)
-
-                batch_list = batch_service.search_brewfatherId(batch["_id"])
-
-                if len(batch_list) == 0:
-                    logger.info("Creating batch for brewfather #%d", batch["batchNo"])
-                    newBatch = schemas.BatchCreate(
-                        name=batch["name"],
-                        chipId="000000",
-                        description="Imported from brewfather",
-                        brewDate=datetime.fromtimestamp(
-                            batch["brewDate"] / 1000.0
-                        ).strftime("%Y-%m-%d"),
-                        style="",
-                        brewer=batch["brewer"],
-                        brewfatherId=batch["_id"],
-                        active=True,
-                        abv=0,
-                        ebc=0,
-                        ibu=0,
-                        fermentation_chamber=None,
-                    )
-
-                    if (
-                        "style" in batch["recipe"]
-                        and batch["recipe"]["style"]["type"] is not None
-                    ):
-                        newBatch.style = batch["recipe"]["style"]["type"]
-                    if "measuredAbv" in batch:
-                        newBatch.abv = batch["measuredAbv"]
-                    if "estimatedColor" in batch:
-                        newBatch.ebc = batch["estimatedColor"]
-                    if "estimatedIbu" in batch:
-                        newBatch.ibu = batch["estimatedIbu"]
-
-                    batch_service.create(newBatch)
-                else:
-                    logger.info("Updating batch for brewfather #%d", batch["batchNo"])
-
-                    updBatch = schemas.BatchUpdate(
-                        name=batch["name"],
-                        chipId=batch_list[0].chip_id,
-                        description=batch_list[0].description,
-                        brewDate=datetime.fromtimestamp(
-                            batch["brewDate"] / 1000.0
-                        ).strftime("%Y-%m-%d"),
-                        style=batch_list[0].style,
-                        brewer=batch["brewer"],
-                        brewfatherId=batch["_id"],
-                        active=batch_list[0].active,
-                        abv=batch_list[0].abv,
-                        ebc=batch_list[0].ebc,
-                        ibu=batch_list[0].ibu,
-                    )
-
-                    if "style" in batch["recipe"]:
-                        updBatch.style = batch["recipe"]["style"]["type"]
-                    if "measuredAbv" in batch:
-                        updBatch.abv = batch["measuredAbv"]
-                    if "estimatedColor" in batch:
-                        updBatch.ebc = batch["estimatedColor"]
-                    if "estimatedIbu" in batch:
-                        updBatch.ibu = batch["estimatedIbu"]
-
-                    batch_service.update(batch_list[0].id, updBatch)
+            batch = res.json()
 
     except JSONDecodeError:
         logger.error("Unable to parse JSON response")
         raise HTTPException(
-            status_code=400, detail="Unable to parse JSON from remote endpoint."
+            status_code=400, detail="Unable to parse JSON from brewfather."
         )
     except httpx.ConnectError:
-        logger.error("Unable to connect to device")
+        logger.error("Unable to connect to brewfather")
         raise HTTPException(
-            status_code=400, detail="Unable to connect to remote endpoint."
+            status_code=400, detail="Unable to connect to brewfather."
         )
 
-    return batch_service.list()
-"""
+    return batch
