@@ -390,7 +390,8 @@ function batchChanged() {
 
   if (batch.value == null) return false
 
-  return !Batch.compare(batch.value, batchSaved.value)
+  global.batchChanged = !Batch.compare(batch.value, batchSaved.value)
+  return global.batchChanged
 }
 
 function isNew() {
@@ -500,6 +501,7 @@ const save = () => {
   if (!validateCurrentForm()) return
 
   global.clearMessages()
+  global.batchChanged = false
 
   if (isNew()) {
     batchStore.addBatch(batch.value, (success) => {

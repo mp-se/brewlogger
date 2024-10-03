@@ -137,7 +137,6 @@ watch(updatedBatchData, () => {
 
 onMounted(() => {
   logDebug('BatchListView.onMounted()')
-
   updateBatchList()
   var query = router.currentRoute.value.query
 

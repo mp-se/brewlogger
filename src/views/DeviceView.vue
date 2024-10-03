@@ -212,7 +212,8 @@ function deviceChanged() {
 
   if (device.value == null) return false
 
-  return !Device.compare(device.value, deviceSaved.value)
+  global.deviceChanged = !Device.compare(device.value, deviceSaved.value)
+  return global.deviceChanged
 }
 
 const viewConfig = () => {
@@ -387,6 +388,7 @@ const save = () => {
   if (!validateCurrentForm()) return
 
   global.clearMessages()
+  global.deviceChanged = false
 
   if (isNew()) {
     // Check if a device with the current chipId already exist

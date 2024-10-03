@@ -110,20 +110,12 @@ const router = createRouter({
 
 export default router
 
-router.beforeEach((to, from) => {
-  logDebug('router.beforeEach()', to, from)
-
-  /*if (global.disabled) {
-    logDebug("Route: abort due to global.disabled")
-    return false
-  }*/
-
-  /*if (!validateCurrentForm()) {
-    logDebug('router.beforeEach()', 'Route: abort due to form not valid')
-    return false
-  }*/
+router.afterEach((to, from) => {
+  logDebug('router.afterEach()', to, from)
 
   global.clearMessages()
+  global.batchChanged = false
+  global.deviceChanged = false
   return true
 })
 

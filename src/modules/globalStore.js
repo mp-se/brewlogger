@@ -6,7 +6,10 @@ export const useGlobalStore = defineStore('global', {
     return {
       initialized: false,
       disabled: false,
+
       configChanged: false,
+      batchChanged: false,
+      deviceChanged: false,
 
       messageError: '',
       messageWarning: '',
