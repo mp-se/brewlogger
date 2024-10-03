@@ -260,15 +260,15 @@ def test_validation(app_client):
 
 def test_formula(app_client):
     data = [ 
-            { "angle": 25.0, "gravity": 1.000 },
+            { "a": 25.0, "g": 1.000 },
         ]
     r = app_client.post("/api/gravity/calculate/", json=data, headers=headers)
     assert r.status_code == 400
 
     data = [ 
-            { "angle": 25.0, "gravity": 1.000 },
-            { "angle": 35.0, "gravity": 1.010 },
-            { "angle": 45.0, "gravity": 1.020 },
+            { "a": 25.0, "g": 1.000 },
+            { "a": 35.0, "g": 1.010 },
+            { "a": 45.0, "g": 1.020 },
         ]
     r = app_client.post("/api/gravity/calculate/", json=data, headers=headers)
     assert r.status_code == 200
