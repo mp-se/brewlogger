@@ -20,28 +20,33 @@ def truncate_database():
             con.execute(text("DELETE FROM pressure"))
             con.commit()
         except Exception as e:
+            con.rollback()
             print(e)
 
         try:
             con.execute(text("DELETE FROM gravity"))
             con.commit()
         except Exception as e:
+            con.rollback()
             print(e)
 
         try:
             con.execute(text("DELETE FROM pour"))
             con.commit()
         except Exception as e:
+            con.rollback()
             print(e)
 
         try:
             con.execute(text("DELETE FROM device"))
             con.commit()
         except Exception as e:
+            con.rollback()
             print(e)
 
         try:
             con.execute(text("DELETE FROM batch"))
             con.commit()
         except Exception as e:
+            con.rollback()
             print(e)
