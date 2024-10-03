@@ -97,7 +97,9 @@
         </div>
 
         <div class="row gy-2">
-          <div class="col-md-12"></div>
+          <div class="col-md-12">
+              <hr />
+          </div>
           <div class="col-md-12">
             <button
               type="submit"
@@ -119,13 +121,6 @@
                 Cancel
               </button> </router-link
             >&nbsp;
-            <!-- 
-            <router-link :to="{ name: 'device-list' }">
-              <button type="button" class="btn btn-secondary w-2" :disabled="global.disabled">
-                <i class="bi bi-list"></i>
-                Device list
-              </button> </router-link
-            >&nbsp;-->
             <button
               type="button"
               class="btn btn-secondary"
@@ -162,11 +157,6 @@
       />
       <div class="row gy-2">
         <div class="col-md-12"></div>
-        <div class="col-md-12">
-          <router-link :to="{ name: 'device-list' }">
-            <button type="button" class="btn btn-secondary w-2">Device list</button> </router-link
-          >&nbsp;
-        </div>
       </div>
     </template>
   </div>
