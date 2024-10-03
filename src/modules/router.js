@@ -118,10 +118,10 @@ router.beforeEach((to, from) => {
     return false
   }*/
 
-  if (!validateCurrentForm()) {
+  /*if (!validateCurrentForm()) {
     logDebug('router.beforeEach()', 'Route: abort due to form not valid')
     return false
-  }
+  }*/
 
   global.clearMessages()
   return true
