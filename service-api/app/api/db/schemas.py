@@ -44,7 +44,7 @@ class BrewfatherBatch(BaseModel):
     ebc: float
     ibu: float
     brewfatherId: str     
-
+    fermentationSteps: str
 
 ################################################################################
 
@@ -115,6 +115,7 @@ class DeviceBase(BaseModel):
         min_length=0, max_length=100, description="Gravity formula (Gravitymon)"
     )
     gravity_poly: str = Field(default="", description="JSON document with gravity poly information (Gravitymon)")
+    fermentation_steps: str = Field(default="", description="JSON document with current fermentation steps (Brewpi)")
 
 
 class DeviceUpdate(DeviceBase):
@@ -261,8 +262,9 @@ class BatchBase(BaseModel):
         min_length=0, max_length=30, description="ID used in brewfather"
     )
     fermentation_chamber: Optional[int] = Field(
-        None, description="Device Index of the fermentation chamber"
+        None, description="Device Index of the fermentation chamber (Brewpi)"
     )
+    fermentation_steps: Optional[str] = Field(None, description="JSON document with fermentation steps (Brewpi)")
 
 
 class BatchUpdate(BatchBase):

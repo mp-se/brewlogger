@@ -162,7 +162,8 @@ async def create_gravity_using_ispindel_format(
                 abv=0.0,
                 ebc=0.0,
                 ibu=0.0,
-                # fermentation_chamber=0, # This is optional and should be assigned in UI
+                # fermentation_chamber=None, # This is optional and should be assigned in UI
+                # fermentation_steps=None, # This is optional and should be assigned in UI
             )
             batch_service.create(batch)
             batchList = batch_service.search_chipId_active(req_json["ID"], True)
@@ -185,6 +186,7 @@ async def create_gravity_using_ispindel_format(
                 description="",
                 gravityFormula="",
                 gravityPoly="",
+                fermentation_steps="",
             )
             device_service.create(device)
 
@@ -231,8 +233,9 @@ async def create_gravity_using_ispindel_format(
         g = gravity_service.create(gravity)
 
         # Save the record in redis for background job to forward
-        key = "gravity_" + deviceList[0].chip_id
-        writeKey(key, json.dumps(req_json), ttl=None)
+        if len(deviceList) > 0:
+            key = "gravity_" + deviceList[0].chip_id
+            writeKey(key, json.dumps(req_json), ttl=None)
 
         return g
 

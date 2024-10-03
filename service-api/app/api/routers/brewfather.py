@@ -1,5 +1,6 @@
 import httpx
 import logging
+import json
 from datetime import datetime
 from json import JSONDecodeError
 from typing import List
@@ -91,6 +92,7 @@ async def fetchBatchList(status):
                 ibu = 0
                 style = ""
                 name = batch["name"]
+                steps = []
 
                 """ Example response
                 [
@@ -144,6 +146,12 @@ async def fetchBatchList(status):
                     if ("name" in batch["recipe"]):
                         name = batch["recipe"]["name"]
 
+                    if ("fermentation" in batch["recipe"]):
+                        if ("steps" in batch["recipe"]["fermentation"]):
+                            for step in batch["recipe"]["fermentation"]["steps"]:
+                                # TODO: Fix ramp whatever that is...
+                                steps.append( { "temp": step["stepTemp"], "days": step["stepTime"], "type": step["type"], "ramp": 0, "gravity": 0 } )
+
                 if "abv" in batch["recipe"]:
                     abv = batch["recipe"]["abv"]
                 if "color" in batch["recipe"]:
@@ -160,6 +168,7 @@ async def fetchBatchList(status):
                     ebc=ebc,
                     ibu=ibu,
                     brewfatherId=batch["_id"],
+                    fermentationSteps=json.dumps(steps)
                 ))
 
     except JSONDecodeError:

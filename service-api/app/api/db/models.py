@@ -42,6 +42,9 @@ class Device(Base):
     gravity_formula = Column(String(100), nullable=False)
     gravity_poly = Column(Text, nullable=False)
 
+    # Brewpi specific
+    fermentation_steps = Column(Text, nullable=False)
+
 
 class Batch(Base):
     __tablename__ = "batch"
@@ -61,9 +64,12 @@ class Batch(Base):
     ibu = Column(Float, default=0.0, nullable=False)
 
     brewfather_id = Column(String(30), nullable=False)
+
+    # Brewpi specific
     fermentation_chamber = Column(
         Integer, nullable=True
     )  # Device ID for connected brewpi
+    fermentation_steps = Column(Text, nullable=False)
 
     gravity = relationship("Gravity", back_populates="batch", cascade="all,delete")
     pressure = relationship("Pressure", back_populates="batch", cascade="all,delete")
