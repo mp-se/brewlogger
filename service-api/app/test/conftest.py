@@ -1,5 +1,5 @@
 import pytest
-from api.app import register_handlers
+from api.main import register_handlers
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
 from api.db.session import engine
