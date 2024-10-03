@@ -132,15 +132,19 @@ def scheduler_setup(app):
     logger.info("Setting up scheduler")
     app_client = app
 
-    # Setting up task to fetch brewpi temperatures and store these in redis cache
-    brewpi_trigger = CronTrigger(second=0)
-    scheduler.add_job(func=task_fetch_brewpi_temps, trigger=brewpi_trigger, max_instances=1)
+    if get_settings().scheduler_enabled:
+        # Setting up task to fetch brewpi temperatures and store these in redis cache
+        brewpi_trigger = CronTrigger(second=0)
+        scheduler.add_job(func=task_fetch_brewpi_temps, trigger=brewpi_trigger, max_instances=1)
 
-    # Setting up task to forward gravity data to remove endpoint from redis cache
-    gravity_trigger = CronTrigger(second=30)
-    scheduler.add_job(func=task_forward_gravity, trigger=gravity_trigger, max_instances=1)
+        # Setting up task to forward gravity data to remove endpoint from redis cache
+        gravity_trigger = CronTrigger(second=30)
+        scheduler.add_job(func=task_forward_gravity, trigger=gravity_trigger, max_instances=1)
 
-    # Setting up task to scan for mdns data
-    scheduler.add_job(task_scan_mdns, 'interval', minutes=1, max_instances=1)
+        # Setting up task to scan for mdns data
+        scheduler.add_job(task_scan_mdns, 'interval', minutes=1, max_instances=1)
 
-    scheduler.start()
+        scheduler.start()
+    else:
+        logger.info("Scheduler disabled in configuration")
+

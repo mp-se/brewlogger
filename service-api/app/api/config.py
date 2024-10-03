@@ -16,7 +16,7 @@ def generate_api_key(key_length):
 
 
 class Settings(BaseSettings):
-    version: str = "0.6.0"
+    version: str = "0.7.0"
     app_name: str = "BrewLogger API"
     database_url: str = config(
         "DATABASE_URL", cast=str, default="sqlite:///./brewlogger.sqlite"
@@ -24,6 +24,7 @@ class Settings(BaseSettings):
     redis_url: str = config("REDIS_URL", cast=str, default="redis://localhost")
     api_key: str = config("API_KEY", cast=str, default="")
     api_key_enabled: bool = config("API_KEY_ENABLED", cast=bool, default=True)
+    scheduler_enabled: bool = config("SCHEDULER_ENABLED", cast=bool, default=True)
     brewfather_api_key: str = config("BREWFATHER_API_KEY", cast=str, default="")
     brewfather_user_key: str = config("BREWFATHER_USER_KEY", cast=str, default="")
 
@@ -34,6 +35,7 @@ class Settings(BaseSettings):
     logger.info(f"redis_url: {redis_url}")
     logger.info(f"api_key: {api_key}")
     logger.info(f"api_key_enabled: {api_key_enabled}")
+    logger.info(f"scheduler_enabled: {scheduler_enabled}")
     logger.info(f"brewfather_api_key: {brewfather_api_key}")
     logger.info(f"brewfather_user_key: {brewfather_user_key}")
 
