@@ -115,7 +115,6 @@ class DeviceBase(BaseModel):
         min_length=0, max_length=100, description="Gravity formula (Gravitymon)"
     )
     gravity_poly: str = Field(default="", description="JSON document with gravity poly information (Gravitymon)")
-    fermentation_steps: str = Field(default="", description="JSON document with current fermentation steps (Brewpi)")
 
 
 class DeviceUpdate(DeviceBase):

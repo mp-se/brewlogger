@@ -24,6 +24,7 @@ def test_init(app_client):
         "ebc": 0.2,
         "ibu": 0.3,
         "fermentationChamber": 0,
+        "fermentationSteps": ""
     }
 
     # Add new

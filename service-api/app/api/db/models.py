@@ -42,9 +42,6 @@ class Device(Base):
     gravity_formula = Column(String(100), nullable=False)
     gravity_poly = Column(Text, nullable=False)
 
-    # Brewpi specific
-    fermentation_steps = Column(Text, nullable=False)
-
 
 class Batch(Base):
     __tablename__ = "batch"

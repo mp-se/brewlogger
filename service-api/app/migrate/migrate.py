@@ -49,10 +49,6 @@ def migrate_database():
         "UPDATE device SET gravity_formula = '' WHERE gravity_formula IS NULL",
         "ALTER TABLE device ALTER COLUMN gravity_formula SET NOT NULL",
 
-        "ALTER TABLE device ADD COLUMN fermentation_steps TEXT",
-        "UPDATE device SET fermentation_steps = '' WHERE fermentation_steps IS NULL",
-        "ALTER TABLE device ALTER COLUMN fermentation_steps SET NOT NULL",
-
         'ALTER TABLE brewlogger ADD COLUMN gravity_forward_url VARCHAR(100)',
         "UPDATE brewlogger SET gravity_forward_url = '' WHERE gravity_forward_url IS NULL",
         "ALTER TABLE brewlogger ALTER COLUMN gravity_forward_url SET NOT NULL",
