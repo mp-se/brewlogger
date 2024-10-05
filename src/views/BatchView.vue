@@ -12,15 +12,30 @@
             </BsInputText>
           </div>
           <div class="col-md-3">
-            <BsSelect v-model="batch.chipId" label="Device" :options="gravityDeviceOptions" help=""
-              :disabled="global.disabled"></BsSelect>
+            <BsSelect
+              v-model="batch.chipId"
+              label="Device"
+              :options="gravityDeviceOptions"
+              help=""
+              :disabled="global.disabled"
+            ></BsSelect>
           </div>
           <div class="col-md-3">
-            <BsSelect v-model="batch.fermentationChamber" label="Fermentation chamber"
-              :options="tempControlDeviceOptions" help="" :disabled="global.disabled"></BsSelect>
+            <BsSelect
+              v-model="batch.fermentationChamber"
+              label="Fermentation chamber"
+              :options="tempControlDeviceOptions"
+              help=""
+              :disabled="global.disabled"
+            ></BsSelect>
           </div>
           <div class="col-md-12">
-            <BsInputText v-model="batch.description" label="Description" help="" :disabled="global.disabled">
+            <BsInputText
+              v-model="batch.description"
+              label="Description"
+              help=""
+              :disabled="global.disabled"
+            >
             </BsInputText>
           </div>
           <div class="col-md-4">
@@ -28,35 +43,84 @@
             </BsInputText>
           </div>
           <div class="col-md-4">
-            <BsInputText v-model="batch.brewDate" label="Brew date" help="" :disabled="global.disabled">
+            <BsInputText
+              v-model="batch.brewDate"
+              label="Brew date"
+              help=""
+              :disabled="global.disabled"
+            >
             </BsInputText>
           </div>
           <div class="col-md-4">
-            <BsSelect v-model="batch.style" label="Style" :options="styleOptions" help="" :disabled="global.disabled">
+            <BsSelect
+              v-model="batch.style"
+              label="Style"
+              :options="styleOptions"
+              help=""
+              :disabled="global.disabled"
+            >
             </BsSelect>
           </div>
           <div class="col-md-4">
-            <BsInputRadio v-model="batch.active" :options="toggleOptions" label="Active" help=""
-              :disabled="global.disabled"></BsInputRadio>
+            <BsInputRadio
+              v-model="batch.active"
+              :options="toggleOptions"
+              label="Active"
+              help=""
+              :disabled="global.disabled"
+            ></BsInputRadio>
           </div>
           <div class="col-md-8">
-            <BsSelect @change="brewfatherChanged(batch.brewfatherId)" v-model="batch.brewfatherId" label="Brewfather ID"
-              :options="brewfatherOptions" help="" :disabled="global.disabled">
+            <BsSelect
+              @change="brewfatherChanged(batch.brewfatherId)"
+              v-model="batch.brewfatherId"
+              label="Brewfather ID"
+              :options="brewfatherOptions"
+              help=""
+              :disabled="global.disabled"
+            >
             </BsSelect>
           </div>
           <div class="col-md-4">
-            <BsInputNumber v-model="batch.abv" width="5" label="Alcohol" unit="% ABV" min="0" max="100" step="0.01"
-              help="" :disabled="global.disabled">
+            <BsInputNumber
+              v-model="batch.abv"
+              width="5"
+              label="Alcohol"
+              unit="% ABV"
+              min="0"
+              max="100"
+              step="0.01"
+              help=""
+              :disabled="global.disabled"
+            >
             </BsInputNumber>
           </div>
           <div class="col-md-4">
-            <BsInputNumber v-model="batch.ebc" width="5" label="Color" unit="EBC" min="0" max="100" step="0.1" help=""
-              :disabled="global.disabled">
+            <BsInputNumber
+              v-model="batch.ebc"
+              width="5"
+              label="Color"
+              unit="EBC"
+              min="0"
+              max="100"
+              step="0.1"
+              help=""
+              :disabled="global.disabled"
+            >
             </BsInputNumber>
           </div>
           <div class="col-md-4">
-            <BsInputNumber v-model="batch.ibu" width="5" label="Bitterness" unit="IBU" min="0" max="100" step="0.1"
-              help="" :disabled="global.disabled">
+            <BsInputNumber
+              v-model="batch.ibu"
+              width="5"
+              label="Bitterness"
+              unit="IBU"
+              min="0"
+              max="100"
+              step="0.1"
+              help=""
+              :disabled="global.disabled"
+            >
             </BsInputNumber>
           </div>
 
@@ -73,36 +137,58 @@
                   <th scope="col" class="col-sm-1">Step</th>
                   <th scope="col" class="col-sm-1">Temperature</th>
                   <th scope="col" class="col-sm-1">Days</th>
+                  <th scope="col" class="col-sm-1">Type</th>
                 </tr>
               </thead>
               <tbody>
                 <tr v-for="(step, index) in JSON.parse(batch.fermentationSteps)" :key="index">
-                  <th scope="row">{{ index + 1 }}</th>
+                  <th scope="row">{{ step.order + 1 }}</th>
                   <td>{{ step.temp }}</td>
                   <td>{{ step.days }}</td>
+                  <td>{{ step.type }}</td>
                 </tr>
               </tbody>
             </table>
           </div>
-
         </div>
-
 
         <div class="row gy-2">
           <div class="col-md-12">
             <hr />
           </div>
           <div class="col-md-12">
-            <button type="submit" class="btn btn-primary w-2" :disabled="global.disabled || !batchChanged()">
-              <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"
-                :hidden="!global.disabled"></span>
+            <button
+              type="submit"
+              class="btn btn-primary w-2"
+              :disabled="global.disabled || !batchChanged()"
+            >
+              <span
+                class="spinner-border spinner-border-sm"
+                role="status"
+                aria-hidden="true"
+                :hidden="!global.disabled"
+              ></span>
               <i class="bi bi-floppy"></i>
-              &nbsp;Save</button>&nbsp;
+              &nbsp;Save</button
+            >&nbsp;
             <router-link :to="{ name: 'batch-list' }">
               <button type="button" class="btn btn-secondary w-2">
                 <i class="bi bi-x-square"></i>
                 Cancel
-              </button> </router-link>&nbsp;
+              </button> </router-link
+            >&nbsp;
+
+            <router-link
+              :to="{
+                name: 'batch-fermentation-control',
+                params: { id: router.currentRoute.value.params.id }
+              }"
+              v-if="batch.fermentationChamber > 0 && batch.fermentationSteps != ''"
+            >
+              <button type="button" class="btn btn-secondary w-3">
+                Fermentation Control
+              </button> </router-link
+            >&nbsp;
           </div>
         </div>
       </form>
@@ -183,7 +269,10 @@ const styleOptions = ref([
   { label: 'Bamberg-Style Bock Rauchbier', value: 'Bamberg-Style Bock Rauchbier' },
   { label: 'Bamberg-Style Helles Rauchbier', value: 'Bamberg-Style Helles Rauchbier' },
   { label: 'Bamberg-Style Märzen Rauchbier', value: 'Bamberg-Style Märzen Rauchbier' },
-  { label: 'Bamberg-Style Weiss Rauchbier (Helles or Dunkel)', value: 'Bamberg-Style Weiss Rauchbier (Helles or Dunkel)' },
+  {
+    label: 'Bamberg-Style Weiss Rauchbier (Helles or Dunkel)',
+    value: 'Bamberg-Style Weiss Rauchbier (Helles or Dunkel)'
+  },
   { label: 'Belgian Blond Ale', value: 'Belgian Blond Ale' },
   { label: 'Belgian Dark Strong Ale', value: 'Belgian Dark Strong Ale' },
   { label: 'Belgian Dubbel', value: 'Belgian Dubbel' },
@@ -195,7 +284,10 @@ const styleOptions = ref([
   { label: 'Belgian-Style Blonde Ale', value: 'Belgian-Style Blonde Ale' },
   { label: 'Belgian-Style Dark Strong Ale', value: 'Belgian-Style Dark Strong Ale' },
   { label: 'Belgian-Style Dubbel', value: 'Belgian-Style Dubbel' },
-  { label: 'Belgian-Style Flanders Oud Bruin or Oud Red Ale', value: 'Belgian-Style Flanders Oud Bruin or Oud Red Ale' },
+  {
+    label: 'Belgian-Style Flanders Oud Bruin or Oud Red Ale',
+    value: 'Belgian-Style Flanders Oud Bruin or Oud Red Ale'
+  },
   { label: 'Belgian-Style Fruit Lambic', value: 'Belgian-Style Fruit Lambic' },
   { label: 'Belgian-Style Gueuze Lambic', value: 'Belgian-Style Gueuze Lambic' },
   { label: 'Belgian-Style Lambic', value: 'Belgian-Style Lambic' },
@@ -219,7 +311,10 @@ const styleOptions = ref([
   { label: 'California Common Beer', value: 'California Common Beer' },
   { label: 'Chili Beer', value: 'Chili Beer' },
   { label: 'Chocolate Beer', value: 'Chocolate Beer' },
-  { label: 'Christmas/Winter Specialty Spice Beer', value: 'Christmas/Winter Specialty Spice Beer' },
+  {
+    label: 'Christmas/Winter Specialty Spice Beer',
+    value: 'Christmas/Winter Specialty Spice Beer'
+  },
   { label: 'Classic American Pilsner', value: 'Classic American Pilsner' },
   { label: 'Classic English-Style Pale Ale', value: 'Classic English-Style Pale Ale' },
   { label: 'Classic Irish-Style Dry Stout', value: 'Classic Irish-Style Dry Stout' },
@@ -232,7 +327,10 @@ const styleOptions = ref([
   { label: 'Cyser (Apple Melomel)', value: 'Cyser (Apple Melomel)' },
   { label: 'Dark American Lager', value: 'Dark American Lager' },
   { label: 'Dark American Wheat Beer w/ Yeast', value: 'Dark American Wheat Beer w/ Yeast' },
-  { label: 'Dark American Wheat Beer without Yeast', value: 'Dark American Wheat Beer without Yeast' },
+  {
+    label: 'Dark American Wheat Beer without Yeast',
+    value: 'Dark American Wheat Beer without Yeast'
+  },
   { label: 'Dark American-Belgo-Style Ale', value: 'Dark American-Belgo-Style Ale' },
   { label: 'Doppelbock', value: 'Doppelbock' },
   { label: 'Dortmunder Export', value: 'Dortmunder Export' },
@@ -256,7 +354,10 @@ const styleOptions = ref([
   { label: 'European-Style Dark/Münchner Dunkel', value: 'European-Style Dark/Münchner Dunkel' },
   { label: 'Experimental Beer', value: 'Experimental Beer' },
   { label: 'Export Stout', value: 'Export Stout' },
-  { label: 'Extra Special/Strong Bitter (English Pale Ale)', value: 'Extra Special/Strong Bitter (English Pale Ale)' },
+  {
+    label: 'Extra Special/Strong Bitter (English Pale Ale)',
+    value: 'Extra Special/Strong Bitter (English Pale Ale)'
+  },
   { label: 'Field Beer', value: 'Field Beer' },
   { label: 'Flanders Brown Ale/Oud Bruin', value: 'Flanders Brown Ale/Oud Bruin' },
   { label: 'Flanders Red Ale', value: 'Flanders Red Ale' },
@@ -269,7 +370,10 @@ const styleOptions = ref([
   { label: 'Fruit Lambic', value: 'Fruit Lambic' },
   { label: 'Fruit Wheat Beer', value: 'Fruit Wheat Beer' },
   { label: 'Fruited American-Style Sour Ale', value: 'Fruited American-Style Sour Ale' },
-  { label: 'Fruited Wood- and Barrel-Aged Sour Beer', value: 'Fruited Wood- and Barrel-Aged Sour Beer' },
+  {
+    label: 'Fruited Wood- and Barrel-Aged Sour Beer',
+    value: 'Fruited Wood- and Barrel-Aged Sour Beer'
+  },
   { label: 'German Pilsener', value: 'German Pilsener' },
   { label: 'German Pilsner (Pils)', value: 'German Pilsner (Pils)' },
   { label: 'German-Style Altbier', value: 'German-Style Altbier' },
@@ -302,7 +406,10 @@ const styleOptions = ref([
   { label: 'Kölsch', value: 'Kölsch' },
   { label: 'Leipzig-Style Gose', value: 'Leipzig-Style Gose' },
   { label: 'Light American Wheat Beer w/ Yeast', value: 'Light American Wheat Beer w/ Yeast' },
-  { label: 'Light American Wheat Beer without Yeast', value: 'Light American Wheat Beer without Yeast' },
+  {
+    label: 'Light American Wheat Beer without Yeast',
+    value: 'Light American Wheat Beer without Yeast'
+  },
   { label: 'Lite American Lager', value: 'Lite American Lager' },
   { label: 'Mailbock/Helles Bock', value: 'Mailbock/Helles Bock' },
   { label: 'Metheglin', value: 'Metheglin' },
@@ -321,7 +428,10 @@ const styleOptions = ref([
   { label: 'Other Belgian- and French-Style Ale', value: 'Other Belgian- and French-Style Ale' },
   { label: 'Other Belgian-Style Ale', value: 'Other Belgian-Style Ale' },
   { label: 'Other Belgian-Style Sour Ale', value: 'Other Belgian-Style Sour Ale' },
-  { label: 'Other Belgian-Style Strong Specialty Ale', value: 'Other Belgian-Style Strong Specialty Ale' },
+  {
+    label: 'Other Belgian-Style Strong Specialty Ale',
+    value: 'Other Belgian-Style Strong Specialty Ale'
+  },
   { label: 'Other Fruit Melomel', value: 'Other Fruit Melomel' },
   { label: 'Other Smoke Beer', value: 'Other Smoke Beer' },
   { label: 'Other Smoked Beer', value: 'Other Smoked Beer' },
@@ -347,7 +457,10 @@ const styleOptions = ref([
   { label: 'Session Beer', value: 'Session Beer' },
   { label: 'Session IPA', value: 'Session IPA' },
   { label: 'Smoke Porter', value: 'Smoke Porter' },
-  { label: 'South German-Style Bernsteinfarbenes Weizen/Weissbier', value: 'South German-Style Bernsteinfarbenes Weizen/Weissbier' },
+  {
+    label: 'South German-Style Bernsteinfarbenes Weizen/Weissbier',
+    value: 'South German-Style Bernsteinfarbenes Weizen/Weissbier'
+  },
   { label: 'South German-Style Dunkel Weizen', value: 'South German-Style Dunkel Weizen' },
   { label: 'South German-Style Hefeweizen', value: 'South German-Style Hefeweizen' },
   { label: 'South German-Style Kristal Weizen', value: 'South German-Style Kristal Weizen' },
@@ -379,10 +492,13 @@ const styleOptions = ref([
   { label: 'Witbier', value: 'Witbier' },
   { label: 'Wood Aged Beer', value: 'Wood Aged Beer' },
   { label: 'Wood- and Barrel-Aged Dark Beer', value: 'Wood- and Barrel-Aged Dark Beer' },
-  { label: 'Wood- and Barrel-Aged Pale to Amber Beer', value: 'Wood- and Barrel-Aged Pale to Amber Beer' },
+  {
+    label: 'Wood- and Barrel-Aged Pale to Amber Beer',
+    value: 'Wood- and Barrel-Aged Pale to Amber Beer'
+  },
   { label: 'Wood- and Barrel-Aged Sour Beer', value: 'Wood- and Barrel-Aged Sour Beer' },
   { label: 'Wood- and Barrel-Aged Strong Beer', value: 'Wood- and Barrel-Aged Strong Beer' },
-  { label: 'Wood- and Barrel-Aged Strong Stout', value: 'Wood- and Barrel-Aged Strong Stout' },
+  { label: 'Wood- and Barrel-Aged Strong Stout', value: 'Wood- and Barrel-Aged Strong Stout' }
 ])
 
 function batchChanged() {
@@ -501,7 +617,7 @@ const save = () => {
   if (!validateCurrentForm()) return
 
   global.clearMessages()
-  global.batchChanged = false
+  batchSaved.value = Batch.fromJson(batch.value.toJson())
 
   if (isNew()) {
     batchStore.addBatch(batch.value, (success) => {

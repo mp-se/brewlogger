@@ -127,9 +127,7 @@ const batchList = ref(null)
 const deviceList = ref([])
 const { batchListFilterDevice, batchListFilterActive, batchListFilterData } = storeToRefs(global)
 
-const {
-  updatedBatchData
-} = storeToRefs(global)
+const { updatedBatchData } = storeToRefs(global)
 
 watch(updatedBatchData, () => {
   updateBatchList()

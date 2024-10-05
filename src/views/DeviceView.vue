@@ -98,7 +98,7 @@
 
         <div class="row gy-2">
           <div class="col-md-12">
-              <hr />
+            <hr />
           </div>
           <div class="col-md-12">
             <button
@@ -388,7 +388,7 @@ const save = () => {
   if (!validateCurrentForm()) return
 
   global.clearMessages()
-  global.deviceChanged = false
+  deviceSaved.value = Device.fromJson(device.value.toJson())
 
   if (isNew()) {
     // Check if a device with the current chipId already exist

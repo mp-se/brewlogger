@@ -79,7 +79,11 @@
           <hr />
         </div>
         <div class="col-md-12">
-          <button type="submit" class="btn btn-primary w-2" :disabled="global.disabled || !deviceChanged()">
+          <button
+            type="submit"
+            class="btn btn-primary w-2"
+            :disabled="global.disabled || !deviceChanged()"
+          >
             <span
               class="spinner-border spinner-border-sm"
               role="status"
@@ -122,7 +126,6 @@
           >
             Send to device</button
           >&nbsp;
-
         </div>
       </div>
     </form>

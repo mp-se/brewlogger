@@ -113,7 +113,10 @@
         <span class="badge bg-danger fs-6">Save needed &nbsp;</span>
       </div>
 
-      <div class="vr d-none d-lg-flex h-200 mx-lg-2 text-white" v-if="global.configChanged || global.batchChanged || global.deviceChanged"></div>
+      <div
+        class="vr d-none d-lg-flex h-200 mx-lg-2 text-white"
+        v-if="global.configChanged || global.batchChanged || global.deviceChanged"
+      ></div>
 
       <div class="p-2">
         <div class="spinner-border gx-4" role="status" style="color: white" :hidden="!disabled">
