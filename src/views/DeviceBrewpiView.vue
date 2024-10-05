@@ -7,13 +7,7 @@
     <template v-if="device != null">
       <div class="row gy-2 align-items-end">
         <div class="col-md-3">
-          <pre
-            v-if="lcd != null"
-            style="
-              background-color: black;
-              color: yellow;
-              text-align: center;
-            ">{{ lcd[0] }}<br>{{ lcd[1] }}<br>{{ lcd[2] }}<br>{{ lcd[3] }}</pre>
+          <BrewpiDisplayFragment :url="device.url"></BrewpiDisplayFragment>
         </div>
 
         <div class="col-md-12">
@@ -103,6 +97,7 @@ import { global, deviceStore } from '@/modules/pinia'
 import { logDebug } from '@/modules/logger'
 import router from '@/modules/router'
 import { validateCurrentForm } from '@/modules/utils'
+import BrewpiDisplayFragment from '@/fragments/BrewpiDisplayFragment.vue'
 
 const device = ref(null)
 const lcd = ref(null)
