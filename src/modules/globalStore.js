@@ -29,7 +29,7 @@ export const useGlobalStore = defineStore('global', {
       updatedDeviceData: 0,
       updatedBatchData: 0,
       updatedGravityData: 0,
-      updatedPourData: 0,
+      updatedPourData: 0
     }
   },
   getters: {
