@@ -25,6 +25,7 @@ class BrewLogger(Base):
     gravity_forward_url = Column(String(100), nullable=False)
     dark_mode = Column(Boolean, nullable=False)
 
+
 class Device(Base):
     __tablename__ = "device"
 
@@ -41,6 +42,23 @@ class Device(Base):
     ble_color = Column(String(15), nullable=False)
     gravity_formula = Column(String(100), nullable=False)
     gravity_poly = Column(Text, nullable=False)
+
+    fermentation_step = relationship("FermentationStep", back_populates="device", cascade="all,delete")
+
+
+class FermentationStep(Base):
+    __tablename__ = "fermentation_step"
+
+    id = Column(Integer, primary_key=True, index=True, nullable=False)
+    order = Column(Integer, nullable=False)
+    date = Column(String, nullable=False)
+    temp = Column(Float, nullable=False)
+    days = Column(Integer, nullable=False)
+    name = Column(String(30), nullable=False)
+    type = Column(String(30), nullable=False)
+
+    device_id = Column(Integer, ForeignKey(Device.__table__.c.id))
+    device = relationship("Device", back_populates="fermentation_step")
 
 
 class Batch(Base):

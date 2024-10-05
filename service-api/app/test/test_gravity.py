@@ -45,6 +45,7 @@ def test_add(app_client):
         "active": True,
         "chamberTemperature": 0,
         "beerTemperature": 0,
+        "fermentationSteps": "",
     }
 
     # Add new
@@ -143,6 +144,7 @@ def test_gravity_batch(app_client):
         "active": True,
         "chamberTemperature": 0,
         "beerTemperature": 0,
+        "fermentationSteps": "",
     }
 
     # Add new

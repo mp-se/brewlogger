@@ -78,7 +78,7 @@ def test_brewpi(app_client):
         "bleColor": "",
         "description": "",
         "gravityFormula": "",
-        "gravityPoly": ""
+        "gravityPoly": "",
     }
 
     # Add new

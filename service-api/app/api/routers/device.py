@@ -8,7 +8,7 @@ from fastapi.routing import APIRouter
 from fastapi.responses import Response
 from starlette.exceptions import HTTPException
 from api.db import models, schemas
-from api.services import DeviceService, get_device_service
+from api.services import DeviceService, get_device_service, FermentationStepService, get_fermentation_step_service
 from ..security import api_key_auth
 from ..cache import findKey, readKey
 from ..ws import notifyClients
@@ -177,3 +177,36 @@ async def scan_for_mdns_devices():
         mdns.append(json.loads(value))
 
     return Response(content=json.dumps(mdns), media_type="application/json")
+
+
+@router.post(
+    "/{device_id}/step",
+    response_model=List[schemas.FermentationStep],
+    status_code=201,
+    responses={409: {"description": "Conflict Error"}},
+    dependencies=[Depends(api_key_auth)],
+)
+async def create_fermentation_step(
+    device_id: int,
+    fermentation_step_list: List[schemas.FermentationStepCreate],
+    fermentation_step_service: FermentationStepService = Depends(get_fermentation_step_service),
+) -> List[models.FermentationStep]:
+    logger.info(f"Endpoint POST /api/device/{device_id}/step")
+
+    step_list = fermentation_step_service.search_by_deviceId(device_id)
+    if len(step_list) > 0:
+        raise HTTPException(status_code=409, detail="Conflict Error")
+
+    return fermentation_step_service.createList(fermentation_step_list)
+
+
+@router.delete(
+        "/{device_id}/step", 
+        status_code=204, 
+        dependencies=[Depends(api_key_auth)])
+async def delete_fermentation_step_by_device_id(
+    device_id: int,
+    fermentation_step_service: FermentationStepService = Depends(get_fermentation_step_service)
+):
+    logger.info(f"Endpoint DELETE /api/fermentation_step/{device_id}")
+    fermentation_step_service.delete_by_deviceId(device_id)

@@ -88,6 +88,38 @@ class BrewLogger(BrewLoggerCreate):
 ################################################################################
 
 
+class FermentationStepBase(BaseModel):
+    model_config = ConfigDict(alias_generator=to_camel, populate_by_name=True)
+        
+    date: str = Field(
+        min_length=0, max_length=20, description="Date this step starts"
+    )
+    order: int = Field(description="Sequence number for the fermentation step")
+    temp: float = Field(description="Target temperature")
+    days: int = Field(description="Number of days")
+    name: str = Field(
+        min_length=0, max_length=30, description="Name of the step"
+    )
+    type: str = Field(
+        min_length=0, max_length=30, description="Type of the step"
+    )
+
+
+class FermentationStepUpdate(FermentationStepBase):
+    pass
+
+
+class FermentationStepCreate(FermentationStepBase):
+    device_id: int
+
+
+class FermentationStep(FermentationStepCreate):
+    model_config = ConfigDict(from_attributes=True)
+    id: int
+
+################################################################################
+
+
 class DeviceBase(BaseModel):
     model_config = ConfigDict(alias_generator=to_camel, populate_by_name=True)
     chip_family: str = Field(
@@ -130,6 +162,7 @@ class DeviceCreate(DeviceBase):
 class Device(DeviceCreate):
     model_config = ConfigDict(from_attributes=True)
     id: int
+    fermentation_step: List[FermentationStep] = None
 
 
 ################################################################################
@@ -252,7 +285,7 @@ class BatchBase(BaseModel):
     brew_date: str = Field(
         min_length=0, max_length=20, description="When the brew date was"
     )
-    style: str = Field(min_length=0, max_length=20, description="Style of the beer")
+    style: str = Field(min_length=0, max_length=40, description="Style of the beer")
     brewer: str = Field(min_length=0, max_length=40, description="Name of the brewer")
     abv: float = Field(description="Alcohol level of the batch")
     ebc: float = Field(description="Color of the batch")

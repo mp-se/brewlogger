@@ -30,7 +30,7 @@ async def list_gravities(
     chipId: str = "*",
     gravity_service: GravityService = Depends(get_gravity_service),
 ) -> List[models.Gravity]:
-    logger.info("Endpoint GET /api/gravity/?chipId=%s", chipId)
+    logger.info(f"Endpoint GET /api/gravity/?chipId={chipId}")
     if chipId != "*":
         return gravity_service.search(chipId)
 
@@ -46,7 +46,7 @@ async def list_gravities(
 async def get_gravity_by_id(
     gravity_id: int, gravity_service: GravityService = Depends(get_gravity_service)
 ) -> Optional[models.Gravity]:
-    logger.info("Endpoint GET /api/gravity/%d", gravity_id)
+    logger.info(f"Endpoint GET /api/gravity/{gravity_id}")
     return gravity_service.get(gravity_id)
 
 
@@ -64,7 +64,7 @@ async def create_gravity(
     logger.info("Endpoint POST /api/gravity/")
     if gravity.created is None:
         gravity.created = datetime.now()
-        logger.info("Added timestamp to gravity record %s", gravity.created)
+        logger.info(f"Added timestamp to gravity record {gravity.created}")
     return gravity_service.create(gravity)
 
 
@@ -93,7 +93,7 @@ async def update_gravity_by_id(
     gravity: schemas.GravityUpdate,
     gravity_service: GravityService = Depends(get_gravity_service),
 ) -> Optional[models.Gravity]:
-    logger.info("Endpoint PATCH /api/gravity/%d", gravity_id)
+    logger.info(f"Endpoint PATCH /api/gravity/{gravity_id}")
     return gravity_service.update(gravity_id, gravity)
 
 
@@ -101,7 +101,7 @@ async def update_gravity_by_id(
 async def delete_gravity_by_id(
     gravity_id: int, gravity_service: GravityService = Depends(get_gravity_service)
 ):
-    logger.info("Endpoint DELETE /api/gravity/%d", gravity_id)
+    logger.info(f"Endpoint DELETE /api/gravity/{gravity_id}")
     gravity_service.delete(gravity_id)
 
 

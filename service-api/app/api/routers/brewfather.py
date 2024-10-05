@@ -148,9 +148,11 @@ async def fetchBatchList(status):
 
                     if ("fermentation" in batch["recipe"]):
                         if ("steps" in batch["recipe"]["fermentation"]):
+                            i = 0
                             for step in batch["recipe"]["fermentation"]["steps"]:
-                                # TODO: Fix ramp whatever that is...
-                                steps.append( { "temp": step["stepTemp"], "days": step["stepTime"], "type": step["type"], "ramp": 0, "gravity": 0 } )
+                                # Note! This should represent model.FermentationStep
+                                steps.append( { "order": i, "date": '', "temp": step["stepTemp"], "days": step["stepTime"], "type": step["type"] } )
+                                i += 1
 
                 if "abv" in batch["recipe"]:
                     abv = batch["recipe"]["abv"]
