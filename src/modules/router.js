@@ -1,6 +1,5 @@
 import { ref } from 'vue'
 import { createRouter, createWebHistory } from 'vue-router'
-import { validateCurrentForm } from '@/modules/utils'
 import { global } from '@/modules/pinia'
 import HomeView from '@/views/HomeView.vue'
 import DeviceView from '@/views/DeviceView.vue'
@@ -12,6 +11,7 @@ import BatchView from '@/views/BatchView.vue'
 import BatchListView from '@/views/BatchListView.vue'
 import BatchGravityListView from '@/views/BatchGravityListView.vue'
 import BatchGravityGraphView from '@/views/BatchGravityGraphView.vue'
+import BatchFermentationControlView from '@/views/BatchFermentationControlView.vue'
 import BatchPressureView from '@/views/BatchPressureView.vue'
 import AboutView from '@/views/AboutView.vue'
 import SettingsView from '@/views/SettingsView.vue'
@@ -65,6 +65,11 @@ const routes = [
     path: '/batch/:id/gravity/graph',
     name: 'batch-gravity-graph',
     component: BatchGravityGraphView
+  },
+  {
+    path: '/batch/:id/fermentation-control',
+    name: 'batch-fermentation-control',
+    component: BatchFermentationControlView
   },
   {
     path: '/batch/:id/gravity',

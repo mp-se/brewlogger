@@ -18,7 +18,7 @@ export class Batch {
     brewfatherId,
     gravity,
     fermentationChamber,
-    fermentationSteps,
+    fermentationSteps
   ) {
     this.id = id === undefined ? 0 : id
     this.name = name === undefined ? '' : name
@@ -34,7 +34,7 @@ export class Batch {
     this.brewfatherId = brewfatherId === undefined ? '' : brewfatherId
     this.fermentationChamber =
       fermentationChamber === undefined || fermentationChamber === null ? 0 : fermentationChamber
-      this.fermentationSteps =
+    this.fermentationSteps =
       fermentationSteps === undefined || fermentationSteps === null ? '' : fermentationSteps
     this.gravityCount = gravity === undefined || gravity === null ? 0 : gravity.length
     this.gravity = []

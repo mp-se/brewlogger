@@ -203,32 +203,40 @@ function restore() {
 async function processRestore(json) {
   logDebug('BackupView.processRestore()')
 
-  var cntDevices = json.devices.length
-  var cntBatches = json.batches.length * 2 // Batch, Gravity
+  global.clearMessages()
 
-  progress.value = 0
-  progressMax.value = cntDevices + cntBatches
+  try {
+    var cntDevices = json.devices.length + deviceStore.deviceList.length
+    var cntBatches = json.batches.length * 2 + batchStore.batchList.length // For update we separate sending batch + gravity
 
-  logDebug('BackupView.processRestore()', 'Steps to complete restore', progressMax.value)
+    progress.value = 0
+    progressMax.value = cntDevices + cntBatches
 
-  /* Check the current database and delete records if needed */
+    logDebug('BackupView.processRestore()', 'Steps to complete restore', progressMax.value)
 
-  logDebug('BackupView.processRestore()', 'Deleting devices')
-  await deleteDevices()
-  logDebug('BackupView.processRestore()', 'Deleting batches')
-  await deleteBatches()
+    /* Check the current database and delete records if needed */
 
-  /* Do the restore */
+    logDebug('BackupView.processRestore()', 'Deleting devices')
+    await deleteDevices()
+    logDebug('BackupView.processRestore()', 'Deleting batches')
+    await deleteBatches()
 
-  restoreErrors.value = 0
+    /* Do the restore */
 
-  logDebug('BackupView.processRestore()', 'Restore devices')
-  await restoreDevices(json.devices)
+    restoreErrors.value = 0
 
-  logDebug('BackupView.processRestore()', 'Restore batches')
-  await restoreBatches(json.batches)
+    logDebug('BackupView.processRestore()', 'Restore devices')
+    await restoreDevices(json.devices)
 
-  logDebug('BackupView.processRestore()', 'Restore completed')
+    logDebug('BackupView.processRestore()', 'Restore batches')
+    await restoreBatches(json.batches)
+
+    logDebug('BackupView.processRestore()', 'Restore completed')
+  } catch (error) {
+    logError('‹', error)
+    restoreErrors.value += 1
+    global.disabled = false
+  }
 
   if (restoreErrors.value) {
     global.messageError = 'Restore failed'
@@ -262,6 +270,9 @@ async function restoreDevices(dl) {
 
       if (d.gravityFormula === undefined) d.gravityFormula = ''
       if (d.gravityPoly === undefined) d.gravityPoly = ''
+      if (d.fermentationSteps === undefined) d.fermentationSteps = []
+
+      console.log(d)
 
       const res = await fetch(global.baseURL + 'api/device/', {
         method: 'POST',
@@ -279,6 +290,8 @@ async function restoreBatches(bl) {
   const results = await Promise.all(
     bl.map(async (b) => {
       logDebug('BackupView.restoreBatch()', 'Restore batch', b.id)
+
+      if (b.fermentationSteps === undefined) b.fermentationSteps = ''
 
       const res = await fetch(global.baseURL + 'api/batch/', {
         method: 'POST',
@@ -359,6 +372,7 @@ async function deleteDevices() {
   json.forEach((d) => {
     logDebug('BackupView.deleteDevices()', 'Deleting device', d.id)
     deleteDevice(d)
+    updateProgress()
   })
 }
 
@@ -391,6 +405,7 @@ async function deleteBatches() {
   json.forEach((b) => {
     logDebug('BackupView.deleteDevices()', 'Deleting batch', b.id)
     deleteBatch(b)
+    updateProgress()
   })
 }
 

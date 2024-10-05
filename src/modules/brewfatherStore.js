@@ -110,11 +110,15 @@ export const useBrewfatherStore = defineStore('brewfatherStore', {
 
       logDebug('brewfatherStore.getBatchList()')
       global.disabled = true
-      fetch(global.baseURL + 'api/brewfather/batch/?planning=true&brewing=true&fermenting=true&completed=true&archived=false', {
-        method: 'GET',
-        headers: { Authorization: global.token },
-        signal: AbortSignal.timeout(global.fetchTimout)
-      })
+      fetch(
+        global.baseURL +
+          'api/brewfather/batch/?planning=true&brewing=true&fermenting=true&completed=true&archived=false',
+        {
+          method: 'GET',
+          headers: { Authorization: global.token },
+          signal: AbortSignal.timeout(global.fetchTimout)
+        }
+      )
         .then((res) => {
           logDebug('brewfatherStore.getBatchList()', res.status)
           if (!res.ok) throw res

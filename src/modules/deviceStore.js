@@ -14,8 +14,7 @@ export class Device {
     url,
     description,
     gravityFormula,
-    gravityPoly,
-    fermentationSteps,
+    gravityPoly
   ) {
     this.id = id === undefined ? 0 : id
     this.chipId = chipId === undefined ? '' : chipId
@@ -28,7 +27,6 @@ export class Device {
     this.url = url === undefined ? '' : url
     this.gravityFormula = gravityFormula === undefined ? '' : gravityFormula
     this.gravityPoly = gravityPoly === undefined ? '' : gravityPoly
-    this.fermentationSteps = fermentationSteps === undefined ? '' : fermentationSteps
 
     if (this.url === 'http://' || this.url === 'https://') this.url = ''
   }
@@ -44,8 +42,7 @@ export class Device {
       d1.url == d2.url &&
       d1.description == d2.description &&
       d1.gravityFormula == d2.gravityFormula &&
-      d1.gravityPoly == d2.gravityPoly &&
-      d1.fermentationSteps == d2.fermentationSteps      
+      d1.gravityPoly == d2.gravityPoly
     )
   }
 
@@ -61,8 +58,7 @@ export class Device {
       d.url,
       d.description,
       d.gravityFormula,
-      d.gravityPoly,
-      d.fermentationSteps
+      d.gravityPoly
     )
   }
 
@@ -78,7 +74,7 @@ export class Device {
       description: this.description,
       gravityFormula: this.gravityFormula,
       gravityPoly: this.gravityPoly,
-      fermentationSteps: this.fermentationSteps
+      fermentationSteps: []
     }
   }
 
@@ -115,9 +111,6 @@ export class Device {
   get gravityPoly() {
     return this._gravityPoly
   }
-  get fermentationSteps() {
-    return this._fermentationSteps
-  }
 
   set id(id) {
     this._id = id
@@ -152,8 +145,108 @@ export class Device {
   set gravityPoly(gravityPoly) {
     this._gravityPoly = gravityPoly
   }
-  set fermentationSteps(fermentationSteps) {
-    this._fermentationSteps = fermentationSteps
+}
+
+export class FermentationStep {
+  constructor(order, name, type, date, temp, days) {
+    this.order = order
+    this.name = name === undefined ? '' : name
+    this.type = type
+    this.date = date
+    this.temp = temp
+    this.days = days
+  }
+
+  static fromJson(fs) {
+    return new FermentationStep(fs.order, fs.name, fs.type, fs.date, fs.temp, fs.days)
+  }
+
+  static listFromJson(fsList) {
+    var list = []
+
+    fsList.forEach((fs) => {
+      var step = FermentationStep.fromJson(fs)
+      list.push(step)
+    })
+
+    var day = new Date()
+
+    list.forEach((fs) => {
+      fs.date = new Date(day).toISOString().substring(0, 10)
+      day.setDate(day.getDate() + fs.days)
+    })
+
+    return list
+  }
+
+  // THis is for the API payload which needs to include deviceId
+  static listToJson(fsList, deviceId) {
+    var list = []
+
+    fsList.forEach((fs) => {
+      // TODO: Figure out why I the object type has been lost..... This works for now.
+      var step = new FermentationStep(
+        fs.order,
+        fs.name,
+        fs.type,
+        fs.date,
+        fs.temp,
+        fs.days
+      ).toJson()
+      step.deviceId = deviceId
+      list.push(step)
+    })
+
+    return list
+  }
+
+  toJson() {
+    return {
+      order: this.order,
+      name: this.name,
+      type: this.type,
+      date: this.date,
+      temp: this.temp,
+      days: this.days
+    }
+  }
+
+  get order() {
+    return this._order
+  }
+  get name() {
+    return this._name
+  }
+  get type() {
+    return this._type
+  }
+  get date() {
+    return this._date
+  }
+  get temp() {
+    return this._temp
+  }
+  get days() {
+    return this._days
+  }
+
+  set order(order) {
+    this._order = order
+  }
+  set name(name) {
+    this._name = name
+  }
+  set type(type) {
+    this._type = type
+  }
+  set date(date) {
+    this._date = date
+  }
+  set temp(temp) {
+    this._temp = temp
+  }
+  set days(days) {
+    this._days = days
   }
 }
 
@@ -340,6 +433,84 @@ export const useDeviceStore = defineStore('deviceStore', {
         })
         .catch((err) => {
           logError('deviceStore.deleteDevice()', err)
+          callback(false)
+          global.disabled = false
+        })
+    },
+    getDeviceFermentationSteps(id, callback) {
+      // callback => (success, device)
+
+      logDebug('deviceStore.getDeviceFermentationSteps()', id)
+      global.disabled = true
+      fetch(global.baseURL + 'api/device/' + id, {
+        method: 'GET',
+        headers: { Authorization: global.token },
+        signal: AbortSignal.timeout(global.fetchTimout)
+      })
+        .then((res) => {
+          logDebug('deviceStore.getDeviceFermentationSteps()', res.status)
+          if (!res.ok) throw res
+          return res.json()
+        })
+        .then((json) => {
+          logDebug('deviceStore.getDeviceFermentationSteps()', json)
+          var stepList = FermentationStep.listFromJson(json.fermentationStep)
+          callback(true, stepList)
+          global.disabled = false
+        })
+        .catch((err) => {
+          global.disabled = false
+          logError('deviceStore.getDeviceFermentationSteps()', err)
+          callback(false, null)
+        })
+    },
+    addDeviceFermentationSteps(id, fsList, callback) {
+      // callback => (success)
+
+      logDebug('deviceStore.addDeviceFermentationSteps()', id)
+      global.disabled = true
+      fetch(global.baseURL + 'api/device/' + id + '/step/', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: global.token },
+        body: JSON.stringify(FermentationStep.listToJson(fsList, id)),
+        signal: AbortSignal.timeout(global.fetchTimout)
+      })
+        .then((res) => {
+          global.disabled = false
+          logDebug('deviceStore.addDeviceFermentationSteps()', res.status)
+          if (res.status != 201) {
+            callback(false)
+          } else {
+            callback(true)
+          }
+        })
+        .catch((err) => {
+          logError('deviceStore.addDeviceFermentationSteps()', err)
+          callback(false)
+          global.disabled = false
+        })
+    },
+    deleteDeviceFermentationSteps(id, callback) {
+      // callback => (success)
+
+      logDebug('deviceStore.deleteDeviceFermentationSteps()', id)
+      global.disabled = true
+      fetch(global.baseURL + 'api/device/' + id + '/step/', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json', Authorization: global.token },
+        signal: AbortSignal.timeout(global.fetchTimout)
+      })
+        .then((res) => {
+          global.disabled = false
+          logDebug('deviceStore.deleteDeviceFermentationSteps()', res.status)
+          if (res.status != 204) {
+            callback(false)
+          } else {
+            callback(true)
+          }
+        })
+        .catch((err) => {
+          logError('deviceStore.deleteDeviceFermentationSteps()', err)
           callback(false)
           global.disabled = false
         })
