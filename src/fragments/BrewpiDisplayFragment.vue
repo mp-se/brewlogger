@@ -16,6 +16,7 @@ import { logDebug } from '@/modules/logger'
 const lcd = ref(null)
 const ticker = ref(null)
 const url = defineModel('url')
+const refresh = defineModel('refresh')
 
 onUnmounted(() => {
   logDebug('BrewpiDisplayFragment.onUnmounted()')
@@ -25,10 +26,13 @@ onUnmounted(() => {
 onMounted(() => {
   logDebug('BrewpiDisplayFragment.onMounted()')
 
+  if(refresh.value === undefined)
+    refresh.value = 5
+
   fetchDisplay()
   ticker.value = setInterval(() => {
     fetchDisplay()
-  }, 2000)
+  }, refresh.value * 1000)
 })
 
 function fetchDisplay() {

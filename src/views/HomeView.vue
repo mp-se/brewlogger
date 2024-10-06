@@ -1,7 +1,7 @@
 <template>
   <div class="container">
     <p></p>
-    <p class="h3">Home - Active Batches</p>
+    <p class="h3">Home - Overview</p>
     <hr />
 
     <div class="row gy-4">
@@ -23,10 +23,9 @@
       </div>
 
       <div class="col-md-4" v-for="(d, index) in fermentationControlList" :key="index">
-        <BsCard :header="'Fermentation: ' + d.mdns" color="info" title="">
-          <div class="text-center">{{ d.description }}</div>
+        <BsCard :header="'Fermentation: ' + d.mdns + ', ' + d.description" color="info" title="">
+          <BrewpiDisplayFragment :url="d.url" refresh="5"></BrewpiDisplayFragment>
           <div class="text-center">Controller has assigned profile</div>
-          <div class="text-center">{{ d.fermentationSteps.length }} steps in profile</div>
         </BsCard>
       </div>
 
@@ -56,6 +55,7 @@ import { onMounted, onUnmounted, ref, computed } from 'vue'
 import { config, global, batchStore, deviceStore } from '@/modules/pinia'
 import { gravityToPlato, tempToF, formatTime } from '@/modules/utils'
 import { logDebug, logError } from '@/modules/logger'
+import BrewpiDisplayFragment from '@/fragments/BrewpiDisplayFragment.vue'
 
 const activeBatchList = ref([])
 const schedulerStatus = ref(null)

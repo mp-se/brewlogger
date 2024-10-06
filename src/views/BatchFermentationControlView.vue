@@ -22,7 +22,7 @@
       </div>
 
       <div class="col-md-3">
-        <BrewpiDisplayFragment :url="device.url"></BrewpiDisplayFragment>
+        <BrewpiDisplayFragment :url="device.url" refresh="3"></BrewpiDisplayFragment>
       </div>
     </div>
 
