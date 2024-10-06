@@ -2,8 +2,6 @@ import json
 from api.config import get_settings
 from .conftest import truncate_database
 
-from api.db import models, schemas
-
 headers = {
     "Authorization": "Bearer " + get_settings().api_key,
     "Content-Type": "application/json",
@@ -124,6 +122,7 @@ def test_update(app_client):
     # Update missing entity
     r = app_client.patch("/api/device/10", json=data, headers=headers)
     assert r.status_code == 404
+
 
 def test_search(app_client):
     # Do a search for devices with software

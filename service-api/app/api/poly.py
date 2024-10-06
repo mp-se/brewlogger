@@ -6,7 +6,8 @@ import warnings
 
 logger = logging.getLogger(__name__)
 
-def create_formula(order, points = List[schemas.FormulaPoint]):
+
+def create_formula(order, points=List[schemas.FormulaPoint]):
     logger.info(f"Creating formula based on {len(points)} points and {order}")
     warnings.filterwarnings("error")
 
@@ -14,7 +15,7 @@ def create_formula(order, points = List[schemas.FormulaPoint]):
     y = []
 
     for p in points:
-        if p.a > 0: # Ignore angles of Zero
+        if p.a > 0:  # Ignore angles of Zero
             x.append(float(p.a))
             y.append(float(p.g))
 
@@ -23,8 +24,8 @@ def create_formula(order, points = List[schemas.FormulaPoint]):
         return ""
 
     try:
-        poly = numpy.polyfit(x, y, order, full = False)
-    except numpy.exceptions.RankWarning as e:
+        poly = numpy.polyfit(x, y, order, full=False)
+    except numpy.exceptions.RankWarning:
         logger.error("Failed to create poly for supplied values")
         return ""
 
@@ -39,6 +40,4 @@ def create_formula(order, points = List[schemas.FormulaPoint]):
     else:
         result = f"{poly[0]:.8f}*tilt+{poly[1]:.8f}"
 
-    return result.replace('+-', '-')
-
-
+    return result.replace("+-", "-")

@@ -27,7 +27,7 @@ def test_add(app_client):
         "ebc": 0.2,
         "ibu": 0.3,
         "fermentationChamber": 0,
-        "fermentationSteps": ""
+        "fermentationSteps": "",
     }
 
     # Add new
@@ -71,7 +71,7 @@ def test_add(app_client):
         "abv": 0.1,
         "ebc": 0.2,
         "ibu": 0.3,
-        "fermentationSteps": "",    
+        "fermentationSteps": "",
     }
 
     # Add new without optional parameters
@@ -100,7 +100,7 @@ def test_update(app_client):
         "ebc": 1.2,
         "ibu": 1.3,
         "fermentationChamber": 0,
-        "fermentationSteps": ""
+        "fermentationSteps": "",
     }
 
     # Update existing entity
@@ -156,7 +156,7 @@ def test_query(app_client):
         "ebc": 0.2,
         "ibu": 0.3,
         "fermentationChamber": 0,
-        "fermentationSteps": ""
+        "fermentationSteps": "",
     }
 
     # Update existing entity
@@ -182,7 +182,7 @@ def test_query(app_client):
 def test_validation(app_client):
     data = {
         "name": "f1",
-        "chipId": "BBBBBBB", # Failure point
+        "chipId": "BBBBBBB",  # Failure point
         "description": "f3",
         "brewDate": "f4",
         "style": "f5",
@@ -193,7 +193,7 @@ def test_validation(app_client):
         "ebc": 0.2,
         "ibu": 0.3,
         "fermentationChamber": 0,
-        "fermentationSteps": ""
+        "fermentationSteps": "",
     }
 
     # Add new
@@ -201,7 +201,7 @@ def test_validation(app_client):
     assert r.status_code == 422
 
     data = {
-        "name": "01234567890123456789012345678901234567890", # Failure point
+        "name": "01234567890123456789012345678901234567890",  # Failure point
         "chipId": "012345",
         "description": "f3",
         "brewDate": "f4",
@@ -213,7 +213,7 @@ def test_validation(app_client):
         "ebc": 0.2,
         "ibu": 0.3,
         "fermentationChamber": 0,
-        "fermentationSteps": ""
+        "fermentationSteps": "",
     }
 
     # Add new
@@ -223,7 +223,7 @@ def test_validation(app_client):
     data = {
         "name": "f1",
         "chipId": "012345",
-        "description": "0123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890", # Failure point
+        "description": "0123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890",  # Failure point
         "brewDate": "f4",
         "style": "f5",
         "brewer": "f6",
@@ -233,7 +233,7 @@ def test_validation(app_client):
         "ebc": 0.2,
         "ibu": 0.3,
         "fermentationChamber": 0,
-        "fermentationSteps": ""
+        "fermentationSteps": "",
     }
 
     # Add new
@@ -244,7 +244,7 @@ def test_validation(app_client):
         "name": "f1",
         "chipId": "012345",
         "description": "f2",
-        "brewDate": "012345678901234567890", # Failure point
+        "brewDate": "012345678901234567890",  # Failure point
         "style": "f5",
         "brewer": "f6",
         "brewfatherId": "1",
@@ -253,7 +253,7 @@ def test_validation(app_client):
         "ebc": 0.2,
         "ibu": 0.3,
         "fermentationChamber": 0,
-        "fermentationSteps": ""
+        "fermentationSteps": "",
     }
 
     # Add new
@@ -265,7 +265,7 @@ def test_validation(app_client):
         "chipId": "012345",
         "description": "f2",
         "brewDate": "f3",
-        "style": "01234567890123456789001234567890012345678901", # Failure point
+        "style": "01234567890123456789001234567890012345678901",  # Failure point
         "brewer": "f6",
         "brewfatherId": "1",
         "active": True,
@@ -273,7 +273,7 @@ def test_validation(app_client):
         "ebc": 0.2,
         "ibu": 0.3,
         "fermentationChamber": 0,
-        "fermentationSteps": ""
+        "fermentationSteps": "",
     }
 
     # Add new
@@ -286,14 +286,14 @@ def test_validation(app_client):
         "description": "f2",
         "brewDate": "f3",
         "style": "f4",
-        "brewer": "012345678901234567890", # Failure point
+        "brewer": "012345678901234567890",  # Failure point
         "brewfatherId": "1",
         "active": True,
         "abv": 0.1,
         "ebc": 0.2,
         "ibu": 0.3,
         "fermentationChamber": 0,
-        "fermentationSteps": ""
+        "fermentationSteps": "",
     }
 
     # Add new

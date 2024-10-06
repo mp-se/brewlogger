@@ -43,7 +43,9 @@ class Device(Base):
     gravity_formula = Column(String(100), nullable=False)
     gravity_poly = Column(Text, nullable=False)
 
-    fermentation_step = relationship("FermentationStep", back_populates="device", cascade="all,delete")
+    fermentation_step = relationship(
+        "FermentationStep", back_populates="device", cascade="all,delete"
+    )
 
 
 class FermentationStep(Base):
@@ -105,8 +107,8 @@ class Gravity(Base):
     run_time = Column(Float, nullable=False)
 
     # Data from brewpi
-    beer_temperature = Column(Float, nullable=True) # Temperature from brewpi
-    chamber_temperature = Column(Float, nullable=True) # Temperature from brewpi
+    beer_temperature = Column(Float, nullable=True)  # Temperature from brewpi
+    chamber_temperature = Column(Float, nullable=True)  # Temperature from brewpi
 
     # Internal
     created = Column(DateTime, nullable=False)

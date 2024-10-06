@@ -19,6 +19,7 @@ from .cache import writeKey
 
 logger = logging.getLogger(__name__)
 
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # Running on startup

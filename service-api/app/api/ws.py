@@ -4,6 +4,7 @@ from fastapi import WebSocket
 
 logger = logging.getLogger(__name__)
 
+
 class WsConnectionManager:
     def __init__(self):
         self.active_connections: list[WebSocket] = []
@@ -19,10 +20,14 @@ class WsConnectionManager:
         for connection in self.active_connections:
             await connection.send_text(message)
 
+
 ws_manager = WsConnectionManager()
+
 
 async def notifyClients(table, method, record_id):
     try:
-        await ws_manager.broadcast( json.dumps({ "method": method, "table": table, "id": record_id }) )
+        await ws_manager.broadcast(
+            json.dumps({"method": method, "table": table, "id": record_id})
+        )
     except Exception as e:
-       logger.error(f"Failed to notify clients {e}") 
+        logger.error(f"Failed to notify clients {e}")

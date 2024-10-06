@@ -21,7 +21,7 @@ max_records = 100
     "/batch/",
     response_model=List[schemas.BrewfatherBatch],
     dependencies=[Depends(api_key_auth)],
-) 
+)
 async def get_fermenting_batches_from_brewfather(
     planning: bool = False,
     brewing: bool = False,
@@ -29,7 +29,9 @@ async def get_fermenting_batches_from_brewfather(
     completed: bool = False,
     archived: bool = False,
 ) -> List[models.Batch]:
-    logger.info(f"Endpoint GET /api/brewfather/batch/?planning={planning}&brewing={brewing}&fermenting={fermenting}&completed={completed}&archived={archived}")
+    logger.info(
+        f"Endpoint GET /api/brewfather/batch/?planning={planning}&brewing={brewing}&fermenting={fermenting}&completed={completed}&archived={archived}"
+    )
     batches = list()
 
     if planning:
@@ -48,14 +50,18 @@ async def get_fermenting_batches_from_brewfather(
         batches += await fetchBatchList("Archived")
 
     return batches
-    
+
 
 async def fetchBatchList(status):
     batches = list()
 
-    if get_settings().brewfather_user_key == '' or get_settings().brewfather_api_key == '':
+    if (
+        get_settings().brewfather_user_key == ""
+        or get_settings().brewfather_api_key == ""
+    ):
         raise HTTPException(
-            status_code=400, detail="Brewfather keys are not defined, unable to fetch data."
+            status_code=400,
+            detail="Brewfather keys are not defined, unable to fetch data.",
         )
 
     try:
@@ -77,7 +83,7 @@ async def fetchBatchList(status):
             )
             batch_list = res.json()
 
-            print( batch_list)
+            print(batch_list)
 
             for batch in batch_list:
                 print(batch)
@@ -137,21 +143,32 @@ async def fetchBatchList(status):
                         },
                         "status": "Fermenting"
                     }
-                ]               
+                ]
                 """
 
                 if "recipe" in batch:
-                    if ("style" in batch["recipe"] and "name" in batch["recipe"]["style"]):
+                    if (
+                        "style" in batch["recipe"]
+                        and "name" in batch["recipe"]["style"]
+                    ):
                         style = batch["recipe"]["style"]["name"]
-                    if ("name" in batch["recipe"]):
+                    if "name" in batch["recipe"]:
                         name = batch["recipe"]["name"]
 
-                    if ("fermentation" in batch["recipe"]):
-                        if ("steps" in batch["recipe"]["fermentation"]):
+                    if "fermentation" in batch["recipe"]:
+                        if "steps" in batch["recipe"]["fermentation"]:
                             i = 0
                             for step in batch["recipe"]["fermentation"]["steps"]:
                                 # Note! This should represent model.FermentationStep
-                                steps.append( { "order": i, "date": '', "temp": step["stepTemp"], "days": step["stepTime"], "type": step["type"] } )
+                                steps.append(
+                                    {
+                                        "order": i,
+                                        "date": "",
+                                        "temp": step["stepTemp"],
+                                        "days": step["stepTime"],
+                                        "type": step["type"],
+                                    }
+                                )
                                 i += 1
 
                 if "abv" in batch["recipe"]:
@@ -161,17 +178,21 @@ async def fetchBatchList(status):
                 if "ibu" in batch["recipe"]:
                     ibu = batch["recipe"]["ibu"]
 
-                batches.append(schemas.BrewfatherBatch(
-                    name=name,
-                    brewDate=datetime.fromtimestamp(batch["brewDate"] / 1000.0).strftime("%Y-%m-%d"),
-                    style=style,
-                    brewer=batch["brewer"],
-                    abv=abv,
-                    ebc=ebc,
-                    ibu=ibu,
-                    brewfatherId=batch["_id"],
-                    fermentationSteps=json.dumps(steps)
-                ))
+                batches.append(
+                    schemas.BrewfatherBatch(
+                        name=name,
+                        brewDate=datetime.fromtimestamp(
+                            batch["brewDate"] / 1000.0
+                        ).strftime("%Y-%m-%d"),
+                        style=style,
+                        brewer=batch["brewer"],
+                        abv=abv,
+                        ebc=ebc,
+                        ibu=ibu,
+                        brewfatherId=batch["_id"],
+                        fermentationSteps=json.dumps(steps),
+                    )
+                )
 
     except JSONDecodeError:
         logger.error("Unable to parse JSON response")
@@ -180,9 +201,7 @@ async def fetchBatchList(status):
         )
     except httpx.ConnectError:
         logger.error("Unable to connect to brewfather")
-        raise HTTPException(
-            status_code=400, detail="Unable to connect to brewfather."
-        )
+        raise HTTPException(status_code=400, detail="Unable to connect to brewfather.")
 
     return batches
 
@@ -199,9 +218,13 @@ async def get_completed_batches_from_brewfather(
 
     batch = {}
 
-    if get_settings().brewfather_user_key == '' or get_settings().brewfather_api_key == '':
+    if (
+        get_settings().brewfather_user_key == ""
+        or get_settings().brewfather_api_key == ""
+    ):
         raise HTTPException(
-            status_code=400, detail="Brewfather keys are not defined, unable to fetch data."
+            status_code=400,
+            detail="Brewfather keys are not defined, unable to fetch data.",
         )
 
     try:
@@ -223,8 +246,6 @@ async def get_completed_batches_from_brewfather(
         )
     except httpx.ConnectError:
         logger.error("Unable to connect to brewfather")
-        raise HTTPException(
-            status_code=400, detail="Unable to connect to brewfather."
-        )
+        raise HTTPException(status_code=400, detail="Unable to connect to brewfather.")
 
     return batch

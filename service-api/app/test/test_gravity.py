@@ -262,17 +262,17 @@ def test_validation(app_client):
 
 
 def test_formula(app_client):
-    data = [ 
-            { "a": 25.0, "g": 1.000 },
-        ]
+    data = [
+        {"a": 25.0, "g": 1.000},
+    ]
     r = app_client.post("/api/gravity/calculate/", json=data, headers=headers)
     assert r.status_code == 400
 
-    data = [ 
-            { "a": 25.0, "g": 1.000 },
-            { "a": 35.0, "g": 1.010 },
-            { "a": 45.0, "g": 1.020 },
-        ]
+    data = [
+        {"a": 25.0, "g": 1.000},
+        {"a": 35.0, "g": 1.010},
+        {"a": 45.0, "g": 1.020},
+    ]
     r = app_client.post("/api/gravity/calculate/", json=data, headers=headers)
     assert r.status_code == 200
     data2 = json.loads(r.text)

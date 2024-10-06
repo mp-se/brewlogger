@@ -19,7 +19,6 @@ def get_settings() -> Settings:
     return settings
 
 
-
 def create_session() -> scoped_session:
     print("Creating database session.")
     Session = scoped_session(
@@ -37,28 +36,21 @@ def migrate_database():
 
     db_updates = [
         "ALTER TABLE batch ADD COLUMN fermentation_chamber INTEGER",
-
         "ALTER TABLE gravity ADD COLUMN beer_temperature FLOAT",
         "ALTER TABLE gravity ADD COLUMN chamber_temperature FLOAT",
-
         "ALTER TABLE device ADD COLUMN gravity_poly TEXT",
         "UPDATE device SET gravity_poly = '' WHERE gravity_poly IS NULL",
         "ALTER TABLE device ALTER COLUMN gravity_poly SET NOT NULL",
-
-        'ALTER TABLE device ADD COLUMN gravity_formula VARCHAR(100)',
+        "ALTER TABLE device ADD COLUMN gravity_formula VARCHAR(100)",
         "UPDATE device SET gravity_formula = '' WHERE gravity_formula IS NULL",
         "ALTER TABLE device ALTER COLUMN gravity_formula SET NOT NULL",
-
-        'ALTER TABLE brewlogger ADD COLUMN gravity_forward_url VARCHAR(100)',
+        "ALTER TABLE brewlogger ADD COLUMN gravity_forward_url VARCHAR(100)",
         "UPDATE brewlogger SET gravity_forward_url = '' WHERE gravity_forward_url IS NULL",
         "ALTER TABLE brewlogger ALTER COLUMN gravity_forward_url SET NOT NULL",
-
         "ALTER TABLE batch ADD COLUMN fermentation_steps TEXT",
         "UPDATE batch SET fermentation_steps = '' WHERE fermentation_steps IS NULL",
         "ALTER TABLE batch ALTER COLUMN fermentation_steps SET NOT NULL",
-
         "DROP INDEX ix_device_chip_id",
-
         "ALTER TABLE brewlogger DROP COLUMN mdns_timeout",
     ]
 
@@ -68,19 +60,17 @@ def migrate_database():
                 con.execute(text(db_update))
                 con.commit()
                 print(f"Success running SQL {db_update}")
-            except (OperationalError, ProgrammingError, InternalError) as e:
-                # Error means the database is already updated.
-                #print(f"Failed running SQL {db_update}")
+            except (OperationalError, ProgrammingError, InternalError):
                 con.rollback()
 
     print("Completed postgres migration.")
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     print("Migrating postgres database structure to v0.7.")
 
     # Init database sessions
     db_url = get_settings().database_url
-
 
     if db_url.startswith("sqlite:"):
         print("This migration script will only work for Postgresx exiting...")

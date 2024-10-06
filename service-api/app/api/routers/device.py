@@ -8,7 +8,12 @@ from fastapi.routing import APIRouter
 from fastapi.responses import Response
 from starlette.exceptions import HTTPException
 from api.db import models, schemas
-from api.services import DeviceService, get_device_service, FermentationStepService, get_fermentation_step_service
+from api.services import (
+    DeviceService,
+    get_device_service,
+    FermentationStepService,
+    get_fermentation_step_service,
+)
 from ..security import api_key_auth
 from ..cache import findKey, readKey
 from ..ws import notifyClients
@@ -53,7 +58,7 @@ async def get_device_by_id(
 async def create_device(
     device: schemas.DeviceCreate,
     background_tasks: BackgroundTasks,
-    devices_service: DeviceService = Depends(get_device_service)
+    devices_service: DeviceService = Depends(get_device_service),
 ) -> models.Device:
     logger.info("Endpoint POST /api/device/")
     if device.chip_id != "000000":
@@ -82,9 +87,9 @@ async def update_device_by_id(
 
 @router.delete("/{device_id}", status_code=204, dependencies=[Depends(api_key_auth)])
 async def delete_device_by_id(
-    device_id: int, 
+    device_id: int,
     background_tasks: BackgroundTasks,
-    devices_service: DeviceService = Depends(get_device_service)
+    devices_service: DeviceService = Depends(get_device_service),
 ):
     logger.info("Endpoint DELETE /api/device/%d", device_id)
     devices_service.delete(device_id)
@@ -189,7 +194,9 @@ async def scan_for_mdns_devices():
 async def create_fermentation_step(
     device_id: int,
     fermentation_step_list: List[schemas.FermentationStepCreate],
-    fermentation_step_service: FermentationStepService = Depends(get_fermentation_step_service),
+    fermentation_step_service: FermentationStepService = Depends(
+        get_fermentation_step_service
+    ),
 ) -> List[models.FermentationStep]:
     logger.info(f"Endpoint POST /api/device/{device_id}/step")
 
@@ -201,12 +208,13 @@ async def create_fermentation_step(
 
 
 @router.delete(
-        "/{device_id}/step", 
-        status_code=204, 
-        dependencies=[Depends(api_key_auth)])
+    "/{device_id}/step", status_code=204, dependencies=[Depends(api_key_auth)]
+)
 async def delete_fermentation_step_by_device_id(
     device_id: int,
-    fermentation_step_service: FermentationStepService = Depends(get_fermentation_step_service)
+    fermentation_step_service: FermentationStepService = Depends(
+        get_fermentation_step_service
+    ),
 ):
     logger.info(f"Endpoint DELETE /api/fermentation_step/{device_id}")
     fermentation_step_service.delete_by_deviceId(device_id)

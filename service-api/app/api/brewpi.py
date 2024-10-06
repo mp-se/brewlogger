@@ -2,9 +2,9 @@ import logging
 import httpx
 import json
 from json import JSONDecodeError
-from .config import get_settings
 
 logger = logging.getLogger(__name__)
+
 
 async def brewpi_temps(url):
     timeout = httpx.Timeout(10.0, connect=10.0, read=10.0)
@@ -41,9 +41,7 @@ async def brewpi_temps(url):
         except httpx.ConnectTimeout:
             logger.error(f"Unable to connect to device {url}")
     else:
-        logger.error(
-            f"brewpi device has no defined url, unable to fetch temperatures."
-        )
+        logger.error("brewpi device has no defined url, unable to fetch temperatures.")
 
     return None
 
@@ -62,9 +60,13 @@ async def brewpi_set_fridge_temp(url, temp):
 
         try:
             logger.info(f"Setting target fridge temperature on {url} to {temp}")
-            
+
             async with httpx.AsyncClient(timeout=timeout) as client:
-                res = await client.put(url, data=json.dumps({ "mode": 'f', "setPoint": temp }), headers=headers)
+                res = await client.put(
+                    url,
+                    data=json.dumps({"mode": "f", "setPoint": temp}),
+                    headers=headers,
+                )
 
                 if res.status_code == 200:
                     return True
@@ -82,8 +84,6 @@ async def brewpi_set_fridge_temp(url, temp):
         except httpx.ConnectTimeout:
             logger.error(f"Unable to connect to device {url}")
     else:
-        logger.error(
-            f"brewpi device has no defined url, unable to fetch temperatures."
-        )
+        logger.error("brewpi device has no defined url, unable to fetch temperatures.")
 
     return False

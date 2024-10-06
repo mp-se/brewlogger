@@ -199,7 +199,7 @@ async def create_gravity_using_ispindel_format(
             temperature=req_json["temperature"],
             gravity=req_json["gravity"],
             angle=req_json["angle"],
-            battery=req_json["battery"],                
+            battery=req_json["battery"],
             rssi=req_json["RSSI"],
             corr_gravity=corr_gravity,
             run_time=run_time,
@@ -246,6 +246,7 @@ async def create_gravity_using_ispindel_format(
         logging.error(e)
         raise HTTPException(status_code=422, detail="Unable to parse request")
 
+
 @router.post(
     "/calculate/",
     response_model=schemas.Formula,
@@ -257,8 +258,10 @@ async def create_gravity_formula(
 ):
     logger.info("Endpoint GET /api/gravity/calculate/")
 
-    if(len(point_list)<2):
-        raise HTTPException(status_code=400, detail="Too few values to calculate formula")
+    if len(point_list) < 2:
+        raise HTTPException(
+            status_code=400, detail="Too few values to calculate formula"
+        )
 
     poly1 = create_formula(1, point_list)
     poly2 = create_formula(2, point_list)

@@ -56,8 +56,7 @@ async def get_batch_by_id(
     dependencies=[Depends(api_key_auth)],
 )
 async def get_batch_dashboard_by_id(
-    batch_id: int, 
-    batch_service: BatchService = Depends(get_batch_service)
+    batch_id: int, batch_service: BatchService = Depends(get_batch_service)
 ) -> Optional[models.Batch]:
     logger.info("Endpoint GET /api/batch/%d/dashboard", batch_id)
 
@@ -90,9 +89,9 @@ async def get_batch_dashboard_by_id(
     dependencies=[Depends(api_key_auth)],
 )
 async def create_batch(
-    batch: schemas.BatchCreate, 
+    batch: schemas.BatchCreate,
     background_tasks: BackgroundTasks,
-    batch_service: BatchService = Depends(get_batch_service)
+    batch_service: BatchService = Depends(get_batch_service),
 ) -> models.Batch:
     logger.info("Endpoint POST /api/batch/")
     batch = batch_service.create(batch)
@@ -116,9 +115,9 @@ async def update_batch_by_id(
 
 @router.delete("/{batch_id}", status_code=204, dependencies=[Depends(api_key_auth)])
 async def delete_batch_by_id(
-    batch_id: int, 
+    batch_id: int,
     background_tasks: BackgroundTasks,
-    batch_service: BatchService = Depends(get_batch_service)
+    batch_service: BatchService = Depends(get_batch_service),
 ):
     logger.info("Endpoint DELETE /api/batch/%d", batch_id)
     batch_service.delete(batch_id)

@@ -10,10 +10,16 @@ logger = logging.getLogger(__name__)
 
 
 class FermentationStepService(
-    BaseService[models.FermentationStep, schemas.FermentationStepCreate, schemas.FermentationStepUpdate]
+    BaseService[
+        models.FermentationStep,
+        schemas.FermentationStepCreate,
+        schemas.FermentationStepUpdate,
+    ]
 ):
     def __init__(self, db_session: Session):
-        super(FermentationStepService, self).__init__(models.FermentationStep, db_session)
+        super(FermentationStepService, self).__init__(
+            models.FermentationStep, db_session
+        )
 
     # def create(self, obj: schemas.FermentationStepCreate) -> models.FermentationStep:
     #     device = self.db_session.get(models.Device, obj.device_id)
@@ -25,7 +31,9 @@ class FermentationStepService(
     #         )
     #     return super(FermentationStepService, self).create(obj)
 
-    def createList(self, lst: List[schemas.FermentationStepCreate]) -> List[models.FermentationStep]:
+    def createList(
+        self, lst: List[schemas.FermentationStepCreate]
+    ) -> List[models.FermentationStep]:
         logger.info("Adding %d fermentation step records for device", len(lst))
         if len(lst) == 0:
             raise HTTPException(
@@ -48,7 +56,9 @@ class FermentationStepService(
             select(self.model).filter_by(**filters)
         ).all()
         logger.info(
-            "Fetched fermentation steps based on deviceId=%d, records found %d", deviceId, len(objs)
+            "Fetched fermentation steps based on deviceId=%d, records found %d",
+            deviceId,
+            len(objs),
         )
         return objs
 
@@ -62,6 +72,8 @@ class FermentationStepService(
             self.delete(obj.id)
 
         logger.info(
-            "Deleted fermentation steps based on deviceId=%d, records found %d", deviceId, len(objs)
+            "Deleted fermentation steps based on deviceId=%d, records found %d",
+            deviceId,
+            len(objs),
         )
         return objs

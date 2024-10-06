@@ -19,4 +19,3 @@ def api_key_auth(api_key: str = Depends(oauth2_scheme)):
             )
     else:
         logger.info("Access validation is disabled configuration")
-

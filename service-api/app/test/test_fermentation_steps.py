@@ -1,18 +1,15 @@
 import json
 import pytest
-import asyncio
-from datetime import datetime
 from api.config import get_settings
 from .conftest import truncate_database
-from api.db import models, schemas
-from api.fermentation_control import fermentation_controller_run
 
 headers = {
     "Authorization": "Bearer " + get_settings().api_key,
     "Content-Type": "application/json",
 }
 
-pytest_plugins = ('pytest_asyncio',)
+pytest_plugins = ("pytest_asyncio",)
+
 
 def test_init(app_client):
     truncate_database()
@@ -44,7 +41,7 @@ def test_add(app_client):
             "date": "2024-10-05",
             "temp": 12,
             "days": 2,
-            "deviceId": 1
+            "deviceId": 1,
         },
         {
             "order": 1,
@@ -53,8 +50,9 @@ def test_add(app_client):
             "date": "2024-10-08",
             "temp": 2,
             "days": 4,
-            "deviceId": 1
-        }]
+            "deviceId": 1,
+        },
+    ]
 
     # Add new
     r = app_client.post("/api/device/1/step", json=data, headers=headers)
@@ -72,7 +70,7 @@ def test_add(app_client):
 @pytest.mark.asyncio
 async def test_controller():
     pass
-    #await fermentation_controller_run(datetime.now())
+    # await fermentation_controller_run(datetime.now())
 
 
 def test_delete(app_client):

@@ -107,11 +107,11 @@ def dump_metadata():
             for i in idx:
                 print(f"Table: {i[0]:15} Index: {i[1]:20}")
 
-        except (OperationalError, ProgrammingError, InternalError) as e:
+        except (OperationalError, ProgrammingError, InternalError):
             con.rollback()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     print("Dumping postgres database structure v0.7.")
 
     # Init database sessions
