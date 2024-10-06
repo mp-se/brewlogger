@@ -79,3 +79,12 @@ Use pre-commit to validate the code
 ```
 pre-commit run --all-files
 ```
+
+
+## Git commands
+
+Add a new tag
+```
+git tag -a [tag_name] HEAD -m "Tag message"
+git push origin tag [tag_name]
+```
