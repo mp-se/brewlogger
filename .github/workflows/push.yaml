@@ -64,10 +64,11 @@ jobs:
           # Set output parameters.
           #OLD echo ::set-output name=tags::${TAGS}
           #OLD echo ::set-output name=docker_image::${DOCKER_IMAGE}
-                    echo "name=tags::${TAGS}" >> $GITHUB_OUTPUT
+          echo "name=tags::${TAGS}" >> $GITHUB_OUTPUT
           echo "name=docker_image::${DOCKER_IMAGE}" >> $GITHUB_OUTPUT
 
-          echo $GITHUB_REF, $SHORTREF, $VERSION, $TAGS, $GITHUB_OUTPUT
+          #echo $GITHUB_REF, $SHORTREF, $VERSION, $TAGS, $GITHUB_OUTPUT
+          cat $GITHUB_OUTPUT
 
       - name: Set up QEMU
         id: qemu
