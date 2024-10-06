@@ -12,13 +12,20 @@
               <router-link :to="{ name: 'batch-gravity-graph', params: { id: b.id } }">
                 <button type="button" class="btn btn-success btn-sm">
                   <i class="bi bi-graph-down"></i>
-                </button> </router-link
-              >&nbsp;
+                </button> </router-link>&nbsp;
             </template>
             Age: {{ getGravityReadingAge(b) }}
           </p>
-          <p class="text-center">Gravity: {{ getGravityOG(b) }} - {{ getLastGravity(b) }}</p>
-          <p class="text-center">Temperature {{ getLastTemperature(b) }}</p>
+          <div class="text-center">Gravity: {{ getGravityOG(b) }} - {{ getLastGravity(b) }}</div>
+          <div class="text-center">Temperature {{ getLastTemperature(b) }}</div>
+        </BsCard>
+      </div>
+
+      <div class="col-md-4" v-if="schedulerStatus != null">
+        <BsCard header="Scheduler" color="info" title="">
+          <template v-for="(task, index) in schedulerStatus" :key="index">
+            <div class="text-center">{{ prettySchedulerName(task.name) }}: {{ task.nextRunIn }} s</div>
+          </template>
         </BsCard>
       </div>
 
@@ -44,12 +51,25 @@
 </template>
 
 <script setup>
-import { onMounted, ref, computed } from 'vue'
-import { config, batchStore, deviceStore } from '@/modules/pinia'
+import { onMounted, onUnmounted, ref, computed } from 'vue'
+import { config, global, batchStore, deviceStore } from '@/modules/pinia'
 import { gravityToPlato, tempToF, formatTime } from '@/modules/utils'
-import { logDebug } from '@/modules/logger'
+import { logDebug, logError } from '@/modules/logger'
 
 const batchList = ref([])
+const schedulerStatus = ref(null)
+const ticker = ref(null)
+
+function prettySchedulerName(n) {
+  switch(n) {
+    case 'task_scan_mdns': return "MDNS Scanning";
+    case 'task_fetch_brewpi_temps': return "Fetch Brewpi Temps";
+    case 'task_fermentation_control': return "Brewpi Control";
+    case 'task_forward_gravity': return "Forward gravity";
+      }
+
+  return "Unknown mapping"
+}
 
 const deviceCount = computed(() => {
   return deviceStore.deviceList.length
@@ -113,6 +133,12 @@ function getLastTemperature(batch) {
   return 'N/A'
 }
 
+onUnmounted(() => {
+  logDebug('HomeView.onUnmounted()')
+
+  if (ticker.value != null) clearInterval(ticker.value)
+})
+
 onMounted(() => {
   logDebug('HomeView.onMounted()')
 
@@ -126,5 +152,28 @@ onMounted(() => {
       })
     }
   })
+
+  ticker.value = setInterval(() => {
+    fetchScheduler()
+  }, 2000)
 })
+
+function fetchScheduler() {
+  logDebug('HomeView.fetchScheduler()')
+
+  fetch(global.baseURL + 'api/system/scheduler/', {
+    method: 'GET',
+    headers: { 'Content-Type': 'application/json', Authorization: global.token },
+    signal: AbortSignal.timeout(global.fetchTimout)
+    })
+    .then((res) => {
+      return res.json()
+    })
+  .then((json) => {
+    schedulerStatus.value = json
+  })
+  .catch((err) => {
+    logError('HomeView.fetchScheduler()', err)
+  })
+}
 </script>
