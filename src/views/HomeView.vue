@@ -5,7 +5,6 @@
     <hr />
 
     <div class="row gy-4">
-
       <div class="col-md-4" v-for="b in activeBatchList" :key="b.id">
         <BsCard :header="'Batch: ' + b.name" color="info" title="">
           <p class="text-center">
@@ -13,7 +12,8 @@
               <router-link :to="{ name: 'batch-gravity-graph', params: { id: b.id } }">
                 <button type="button" class="btn btn-success btn-sm">
                   <i class="bi bi-graph-down"></i>
-                </button> </router-link>&nbsp;
+                </button> </router-link
+              >&nbsp;
             </template>
             Age: {{ getGravityReadingAge(b) }}
           </p>
@@ -33,7 +33,9 @@
       <div class="col-md-4" v-if="schedulerStatus != null">
         <BsCard header="Scheduler" color="info" title="">
           <template v-for="(task, index) in schedulerStatus" :key="index">
-            <div class="text-center">{{ prettySchedulerName(task.name) }}: {{ task.nextRunIn }} s</div>
+            <div class="text-center">
+              {{ prettySchedulerName(task.name) }}: {{ task.nextRunIn }} s
+            </div>
           </template>
         </BsCard>
       </div>
@@ -61,21 +63,25 @@ const ticker = ref(null)
 const fermentationControlList = ref([])
 
 function prettySchedulerName(n) {
-  switch(n) {
-    case 'task_scan_mdns': return "MDNS Scanning";
-    case 'task_fetch_brewpi_temps': return "Fetch Brewpi Temps";
-    case 'task_fermentation_control': return "Brewpi Control";
-    case 'task_forward_gravity': return "Forward gravity";
-      }
+  switch (n) {
+    case 'task_scan_mdns':
+      return 'MDNS Scanning'
+    case 'task_fetch_brewpi_temps':
+      return 'Fetch Brewpi Temps'
+    case 'task_fermentation_control':
+      return 'Brewpi Control'
+    case 'task_forward_gravity':
+      return 'Forward gravity'
+  }
 
-  return "Unknown mapping"
+  return 'Unknown mapping'
 }
 
 const gravityCount = computed(() => {
   var l = 0
 
-  batchStore.batchList.forEach(b => {
-    l += b.gravityCount    
+  batchStore.batchList.forEach((b) => {
+    l += b.gravityCount
   })
 
   return l
@@ -165,9 +171,9 @@ onMounted(() => {
   })
 
   deviceStore.deviceList.forEach((device) => {
-    if(device.software == 'Brewpi') {
+    if (device.software == 'Brewpi') {
       deviceStore.getDevice(device.id, (success, d, fs) => {
-        if (success && fs.length > 0) { 
+        if (success && fs.length > 0) {
           d.fermentationSteps = fs
           fermentationControlList.value.push(d)
         }
@@ -187,15 +193,15 @@ function fetchScheduler() {
     method: 'GET',
     headers: { 'Content-Type': 'application/json', Authorization: global.token },
     signal: AbortSignal.timeout(global.fetchTimout)
-    })
+  })
     .then((res) => {
       return res.json()
     })
-  .then((json) => {
-    schedulerStatus.value = json
-  })
-  .catch((err) => {
-    logError('HomeView.fetchScheduler()', err)
-  })
+    .then((json) => {
+      schedulerStatus.value = json
+    })
+    .catch((err) => {
+      logError('HomeView.fetchScheduler()', err)
+    })
 }
 </script>
