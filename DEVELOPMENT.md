@@ -63,6 +63,15 @@ or
 uvicorn --reload --port 8000 api.main:app --env-file ../.development_env --log-config ./log_conf.yaml --lifespan on
 ```
 
+## Database migration
+
+This will run the database migration scripts for Postgres
+
+```
+python api.db_migration --env-file ../.development_env
+
+```
+
 ## Validating code standards
 
 Use pre-commit to validate the code
