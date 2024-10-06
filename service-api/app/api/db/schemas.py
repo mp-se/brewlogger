@@ -30,6 +30,10 @@ class FormulaPoint(BaseModel):
     a: float # Angle
     g: float # Gravity
 
+class Job(BaseModel):
+    name: str
+    nextRunIn: int
+
 class SelfTestResult(BaseModel):
     databaseConnection: bool
     redisConnection: bool

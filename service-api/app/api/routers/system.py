@@ -1,5 +1,6 @@
 import logging
-import asyncio
+from datetime import datetime, timezone
+from typing import List
 from fastapi import WebSocket, WebSocketDisconnect
 from fastapi.routing import APIRouter
 from api.db import schemas
@@ -16,7 +17,7 @@ router = APIRouter(prefix="/api/system")
 @router.get(
     "/self_test/", response_model=schemas.SelfTestResult
 )
-async def run_self_test():
+async def self_test():
     logger.info("Endpoint GET /api/system/self_test/")
 
     # Check for database connectivity
@@ -46,6 +47,21 @@ async def run_self_test():
         background_jobs.append(job.name)
 
     return schemas.SelfTestResult(databaseConnection=database_connection, redisConnection=redis_connection, backgroundJobs=background_jobs)
+
+
+@router.get(
+    "/scheduler/", response_model=List[schemas.Job]
+)
+async def scheduler_status():
+    logger.info("Endpoint GET /api/system/scheduler/")
+
+    jobs = scheduler.get_jobs()
+    today = datetime.now(timezone.utc)
+    background_jobs = list()
+    for job in jobs:
+        background_jobs.append(schemas.Job(name=job.name, nextRunIn=int((job.next_run_time-today).total_seconds())))
+
+    return background_jobs
 
 
 @router.websocket("/notify")
