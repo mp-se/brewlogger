@@ -1,14 +1,18 @@
 import json
+import pytest
+import asyncio
+from datetime import datetime
 from api.config import get_settings
 from .conftest import truncate_database
-
 from api.db import models, schemas
+from api.fermentation_control import fermentation_controller_run
 
 headers = {
     "Authorization": "Bearer " + get_settings().api_key,
     "Content-Type": "application/json",
 }
 
+pytest_plugins = ('pytest_asyncio',)
 
 def test_init(app_client):
     truncate_database()
@@ -16,10 +20,10 @@ def test_init(app_client):
     data = {
         "chipId": "000000",
         "chipFamily": "f2",
-        "software": "f3",
+        "software": "Brewpi",
         "mdns": "f4",
         "config": "",
-        "url": "f6",
+        "url": "http://test.home.arpa",
         "bleColor": "f7",
         "description": "f8",
         "gravityFormula": "",
@@ -39,14 +43,14 @@ def test_add(app_client):
             "type": "Primary",
             "date": "2024-10-05",
             "temp": 12,
-            "days": 14,
+            "days": 2,
             "deviceId": 1
         },
         {
             "order": 1,
             "name": "",
             "type": "Secondary",
-            "date": "2024-10-19",
+            "date": "2024-10-08",
             "temp": 2,
             "days": 4,
             "deviceId": 1
@@ -63,6 +67,12 @@ def test_add(app_client):
     assert r.status_code == 200
     data1 = json.loads(r.text)
     assert data1["fermentationStep"][0]["order"] == 0
+
+
+@pytest.mark.asyncio
+async def test_controller():
+    pass
+    #await fermentation_controller_run(datetime.now())
 
 
 def test_delete(app_client):
