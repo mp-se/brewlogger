@@ -5,7 +5,8 @@
     <hr />
 
     <div class="row gy-4">
-      <div class="col-md-4" v-for="b in batchList" :key="b.id">
+
+      <div class="col-md-4" v-for="b in activeBatchList" :key="b.id">
         <BsCard :header="'Batch: ' + b.name" color="info" title="">
           <p class="text-center">
             <template v-if="b.gravityCount > 0">
@@ -21,6 +22,14 @@
         </BsCard>
       </div>
 
+      <div class="col-md-4" v-for="(d, index) in fermentationControlList" :key="index">
+        <BsCard :header="'Fermentation: ' + d.mdns" color="info" title="">
+          <div class="text-center">{{ d.description }}</div>
+          <div class="text-center">Controller has assigned profile</div>
+          <div class="text-center">{{ d.fermentationSteps.length }} steps in profile</div>
+        </BsCard>
+      </div>
+
       <div class="col-md-4" v-if="schedulerStatus != null">
         <BsCard header="Scheduler" color="info" title="">
           <template v-for="(task, index) in schedulerStatus" :key="index">
@@ -29,21 +38,11 @@
         </BsCard>
       </div>
 
-      <div class="col-md-4" v-if="batchList.length == 0">
-        <BsCard header="No active batches" color="warning" title="">
-          <p class="text-center">No active batches in the system</p>
-        </BsCard>
-      </div>
-
       <div class="col-md-4">
-        <BsCard header="Metrics" color="info" title="Device">
-          <p class="text-center">{{ deviceCount }} devices in database</p>
-        </BsCard>
-      </div>
-
-      <div class="col-md-4">
-        <BsCard header="Metrics" color="info" title="Batch">
-          <p class="text-center">{{ batchCount }} batches in database</p>
+        <BsCard header="Database Metrics" color="info" title="">
+          <div class="text-center">{{ deviceCount }} devices in database</div>
+          <div class="text-center">{{ batchCount }} batches in database</div>
+          <div class="text-center">{{ gravityCount }} gravity points in database</div>
         </BsCard>
       </div>
     </div>
@@ -56,9 +55,10 @@ import { config, global, batchStore, deviceStore } from '@/modules/pinia'
 import { gravityToPlato, tempToF, formatTime } from '@/modules/utils'
 import { logDebug, logError } from '@/modules/logger'
 
-const batchList = ref([])
+const activeBatchList = ref([])
 const schedulerStatus = ref(null)
 const ticker = ref(null)
+const fermentationControlList = ref([])
 
 function prettySchedulerName(n) {
   switch(n) {
@@ -70,6 +70,16 @@ function prettySchedulerName(n) {
 
   return "Unknown mapping"
 }
+
+const gravityCount = computed(() => {
+  var l = 0
+
+  batchStore.batchList.forEach(b => {
+    l += b.gravityCount    
+  })
+
+  return l
+})
 
 const deviceCount = computed(() => {
   return deviceStore.deviceList.length
@@ -142,13 +152,25 @@ onUnmounted(() => {
 onMounted(() => {
   logDebug('HomeView.onMounted()')
 
-  batchList.value = []
+  activeBatchList.value = []
+  fermentationControlList.value = []
 
   batchStore.batchList.forEach((batch) => {
     if (batch.active) {
       batchStore.getBatchDashboard(batch.id, (success, b) => {
         console.log(success, b)
-        if (success) batchList.value.push(b)
+        if (success) activeBatchList.value.push(b)
+      })
+    }
+  })
+
+  deviceStore.deviceList.forEach((device) => {
+    if(device.software == 'Brewpi') {
+      deviceStore.getDevice(device.id, (success, d, fs) => {
+        if (success && fs.length > 0) { 
+          d.fermentationSteps = fs
+          fermentationControlList.value.push(d)
+        }
       })
     }
   })
