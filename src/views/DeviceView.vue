@@ -78,11 +78,11 @@
               :disabled="disableTilt"
             ></BsInputRadio>
           </div>
-          <div class="col-md-11">
+          <div class="col-md-11" v-if="device.software != 'Brewpi'">
             <BsInputText v-model="device.config" label="Configuration" width="11" help="" disabled>
             </BsInputText>
           </div>
-          <div class="col-md-1">
+          <div class="col-md-1" v-if="device.software != 'Brewpi'">
             <BsInputBase label="&nbsp;">
               <button
                 type="button"
@@ -93,6 +93,20 @@
                 <i class="bi bi-clipboard"></i></button
               >&nbsp;
             </BsInputBase>
+          </div>
+        </div>
+
+        <div class="row gy-2" v-if="activeFermentationSteps != null">
+          <div class="col-md-12">
+            <hr />
+          </div>
+          <div class="row">
+            <div class="col-md-12">
+              <p class="h4">Active Fermentation Steps</p>
+              <FermentationStepFragment
+                :fermentationSteps="activeFermentationSteps"
+              ></FermentationStepFragment>
+            </div>
           </div>
         </div>
 
@@ -121,14 +135,18 @@
                 Cancel
               </button> </router-link
             >&nbsp;
-            <button
-              type="button"
-              class="btn btn-secondary"
-              @click="fetchConfigFromDevice()"
-              :disabled="global.disabled || device.software == 'Brewpi' || device.url == ''"
-            >
-              <i class="bi bi-box-arrow-down"></i> Fetch config</button
-            >&nbsp;
+
+            <template v-if="device.software != 'Brewwpi'">
+              <button
+                type="button"
+                class="btn btn-secondary"
+                @click="fetchConfigFromDevice()"
+                :disabled="global.disabled || device.url == ''"
+              >
+                <i class="bi bi-box-arrow-down"></i> Fetch config</button
+              >&nbsp;
+            </template>
+
             <BsModal
               @click="viewConfig()"
               v-model="render"
@@ -137,14 +155,33 @@
               button="View config"
               :disabled="global.disabled || device.config == ''"
             />&nbsp;
-            <router-link
-              :to="{ name: 'device-gravity' }"
-              v-if="device.software == 'Gravitymon' && !isNew()"
-            >
-              <button type="button" class="btn btn-secondary w-2" :disabled="global.disabled">
-                Gravity formula
-              </button> </router-link
-            >&nbsp;
+
+            <template v-if="device.software == 'Gravitymon' && !isNew()">
+              <router-link :to="{ name: 'device-gravity' }">
+                <button type="button" class="btn btn-secondary w-2" :disabled="global.disabled">
+                  Gravity formula
+                </button> </router-link
+              >&nbsp;
+            </template>
+
+            <BsModalConfirm
+              :callback="deleteFermentationStepsCallback"
+              message="Do you reallu want to delete the fermentation steps"
+              id="deleteFermentationSteps"
+              title="Delete"
+              :disabled="global.disabled"
+            />
+
+            <template v-if="activeFermentationSteps != null">
+              <button
+                type="button"
+                class="btn btn-secondary"
+                @click="deleteFermentationSteps()"
+                :disabled="global.disabled"
+              >
+                Delete steps</button
+              >&nbsp;
+            </template>
           </div>
         </div>
       </form>
@@ -167,6 +204,7 @@ import { computed, onMounted, ref } from 'vue'
 import { global, deviceStore } from '@/modules/pinia'
 import { validateCurrentForm } from '@/modules/utils'
 import { Device } from '@/modules/deviceStore'
+import FermentationStepFragment from '@/fragments/FermentationStepFragment.vue'
 import router from '@/modules/router'
 import { logDebug, logError, logInfo } from '@/modules/logger'
 import BsInputBase from '@/components/BsInputBase.vue'
@@ -175,6 +213,7 @@ const render = ref('')
 const device = ref(null)
 const deviceSaved = ref(null)
 const chipIdValid = ref(false)
+const activeFermentationSteps = ref(null)
 
 const chipFamilyOptions = ref([
   { label: '- unknown -', value: '' },
@@ -241,17 +280,20 @@ onMounted(() => {
   logDebug('DeviceView.onMounted()')
 
   device.value = null
+  activeFermentationSteps.value = null
   chipIdValid.value = true
 
   if (isNew()) {
     deviceSaved.value = new Device()
     device.value = new Device()
   } else {
-    deviceStore.getDevice(router.currentRoute.value.params.id, (success, d) => {
+    deviceStore.getDevice(router.currentRoute.value.params.id, (success, d, fs) => {
       if (success) {
         deviceSaved.value = Device.fromJson(d.toJson())
         device.value = d
-        logDebug(device.value)
+        if (fs.length > 0) {
+          activeFermentationSteps.value = fs
+        }
       } else {
         // global.messageError = "Failed to load device " + id
       }
@@ -407,7 +449,9 @@ const save = () => {
         deviceStore.getDeviceList((success) => {
           logDebug('DeviceView.addDevice()', 'Refresh device list', success)
         })
-      } else global.messageError = 'Failed to add device'
+      } else {
+        global.messageError = 'Failed to add device'
+      }
     })
   } else {
     deviceStore.updateDevice(device.value, (success) => {
@@ -416,5 +460,24 @@ const save = () => {
       else global.messageError = 'Failed to save device'
     })
   }
+}
+
+function deleteFermentationSteps() {
+  logDebug('DeviceView.deleteFermentationSteps()')
+  document.getElementById('deleteFermentationSteps').click()
+}
+
+function deleteFermentationStepsCallback() {
+  logDebug('DeviceView.deleteFermentationStepsCallback()')
+
+  deviceStore.deleteDeviceFermentationSteps(device.value.id, (success) => {
+    logDebug('DeviceView.deleteFermentationSteps()', success)
+    if (success) {
+      global.messageSuccess = 'Fermentation steps removed'
+      activeFermentationSteps.value = null
+    } else {
+      global.messageError = 'Failed to remove fermentation steps'
+    }
+  })
 }
 </script>

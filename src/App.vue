@@ -120,36 +120,42 @@ function connect() {
   socket.value = new WebSocket(host + 'api/system/notify')
 
   socket.value.onopen = function () {
-    logInfo("App.connect()", "Established webocket with server for notifications.")
+    logInfo('App.connect()', 'Established webocket with server for notifications.')
   }
 
   socket.value.onmessage = function (event) {
     var ev = JSON.parse(event.data)
 
-    logDebug("App.connect()", ev)
+    logDebug('App.connect()', ev)
 
-    if(ev.table == "device") {
+    if (ev.table == 'device') {
       global.updatedDeviceData += 1
-    } else if(ev.table == "batch") {
+    } else if (ev.table == 'batch') {
       global.updatedBatchData += 1
-    } else if(ev.table == "gravity") {
+    } else if (ev.table == 'gravity') {
       global.updatedGravityData += 1
-    } else if(ev.table == "pour") {
+    } else if (ev.table == 'pour') {
       global.updatedPourData += 1
-    } 
+    }
   }
 
   socket.value.onclose = function () {
-    logInfo("App.connect()", "Disconnected webocket from server, retry connection.")
+    logInfo('App.connect()', 'Disconnected webocket from server, retry connection.')
     socket.value = null
-    setTimeout( () => { connect() }, 100 )
+    setTimeout(() => {
+      connect()
+    }, 100)
   }
 }
 
 onUnmounted(() => {
   if (socket.value) socket.value.close()
-    socket.value = null
+  socket.value = null
 })
+
+function test() {
+  deviceStore
+}
 
 onMounted(() => {
   logDebug('App.onMounted()')
@@ -191,6 +197,8 @@ onMounted(() => {
               if (success) {
                 global.initialized = true
                 hideSpinner()
+
+                test()
               } else {
                 global.messageError = 'Failed to load list of batches'
                 hideSpinner()
@@ -208,7 +216,9 @@ onMounted(() => {
     })
   }
 
-  setTimeout( () => { connect() }, 100 )
+  setTimeout(() => {
+    connect()
+  }, 100)
 })
 
 function showSpinner() {

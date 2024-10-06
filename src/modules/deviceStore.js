@@ -161,7 +161,7 @@ export class FermentationStep {
     return new FermentationStep(fs.order, fs.name, fs.type, fs.date, fs.temp, fs.days)
   }
 
-  static listFromJson(fsList) {
+  static listFromJson(fsList, updateDates) {
     var list = []
 
     fsList.forEach((fs) => {
@@ -169,12 +169,14 @@ export class FermentationStep {
       list.push(step)
     })
 
-    var day = new Date()
+    if (updateDates) {
+      var day = new Date()
 
-    list.forEach((fs) => {
-      fs.date = new Date(day).toISOString().substring(0, 10)
-      day.setDate(day.getDate() + fs.days)
-    })
+      list.forEach((fs) => {
+        fs.date = new Date(day).toISOString().substring(0, 10)
+        day.setDate(day.getDate() + fs.days)
+      })
+    }
 
     return list
   }
@@ -334,7 +336,7 @@ export const useDeviceStore = defineStore('deviceStore', {
         })
     },
     getDevice(id, callback) {
-      // callback => (success, device)
+      // callback => (success, device, fermentationSteps)
 
       logDebug('deviceStore.getDevice()', id)
       global.disabled = true
@@ -351,13 +353,14 @@ export const useDeviceStore = defineStore('deviceStore', {
         .then((json) => {
           logDebug('deviceStore.getDevice()', json)
           var device = Device.fromJson(json)
-          callback(true, device)
+          var stepList = FermentationStep.listFromJson(json.fermentationStep, false) // Dont update the dates
+          callback(true, device, stepList)
           global.disabled = false
         })
         .catch((err) => {
           global.disabled = false
           logError('deviceStore.getDevice()', err)
-          callback(false, null)
+          callback(false, null, null)
         })
     },
     updateDevice(d, callback) {
@@ -454,7 +457,7 @@ export const useDeviceStore = defineStore('deviceStore', {
         })
         .then((json) => {
           logDebug('deviceStore.getDeviceFermentationSteps()', json)
-          var stepList = FermentationStep.listFromJson(json.fermentationStep)
+          var stepList = FermentationStep.listFromJson(json.fermentationStep, false) // Dont update the dates
           callback(true, stepList)
           global.disabled = false
         })

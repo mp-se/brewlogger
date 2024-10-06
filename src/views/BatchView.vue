@@ -128,9 +128,13 @@
             <hr />
           </div>
 
-          <div class="col-md-4" v-if="batch.fermentationSteps != ''">
+          <div class="col-md-12" v-if="batch.fermentationSteps != ''">
             <label class="form-label fw-bold">Fermentation Steps</label>
 
+            <FermentationStepFragment
+              :fermentationSteps="JSON.parse(batch.fermentationSteps)"
+            ></FermentationStepFragment>
+            <!-- 
             <table class="table table-striped">
               <thead>
                 <tr>
@@ -148,7 +152,7 @@
                   <td>{{ step.type }}</td>
                 </tr>
               </tbody>
-            </table>
+            </table>-->
           </div>
         </div>
 
@@ -178,17 +182,18 @@
               </button> </router-link
             >&nbsp;
 
-            <router-link
-              :to="{
-                name: 'batch-fermentation-control',
-                params: { id: router.currentRoute.value.params.id }
-              }"
-              v-if="batch.fermentationChamber > 0 && batch.fermentationSteps != ''"
-            >
-              <button type="button" class="btn btn-secondary w-3">
-                Fermentation Control
-              </button> </router-link
-            >&nbsp;
+            <template v-if="batch.fermentationChamber > 0 && batch.fermentationSteps != ''">
+              <router-link
+                :to="{
+                  name: 'batch-fermentation-control',
+                  params: { id: router.currentRoute.value.params.id }
+                }"
+              >
+                <button type="button" class="btn btn-secondary w-3">
+                  Fermentation Control
+                </button> </router-link
+              >&nbsp;
+            </template>
           </div>
         </div>
       </form>
@@ -211,6 +216,7 @@ import { validateCurrentForm } from '@/modules/utils'
 import { Batch } from '@/modules/batchStore'
 import router from '@/modules/router'
 import { logDebug } from '@/modules/logger'
+import FermentationStepFragment from '@/fragments/FermentationStepFragment.vue'
 
 // TODO: Add date selector
 

@@ -200,6 +200,7 @@ const deleteDevice = (id, name) => {
   confirmDeleteId.value = id
   document.getElementById('deleteDevice').click()
 }
+
 function openUrl(url) {
   logDebug('DeviceListView.openUrl()', url)
   window.open(url, '_blank')

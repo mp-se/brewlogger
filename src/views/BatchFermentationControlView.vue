@@ -21,8 +21,6 @@
         <BsInputReadonly v-model="device.url" label="URL"></BsInputReadonly>
       </div>
 
-      <!-- Add view of brewpi device, to visualize what going on -->
-
       <div class="col-md-3">
         <BrewpiDisplayFragment :url="device.url"></BrewpiDisplayFragment>
       </div>
@@ -31,29 +29,9 @@
     <div class="row" v-if="activeFermentationSteps != null && activeFermentationSteps.length > 0">
       <div class="col-md-12">
         <p class="h4">Active Fermentation Steps</p>
-
-        <table class="table table-striped">
-          <thead>
-            <tr>
-              <th scope="col" class="col-sm-1">Step</th>
-              <th scope="col" class="col-sm-2">Date</th>
-              <th scope="col" class="col-sm-1">Temperature</th>
-              <th scope="col" class="col-sm-1">Days</th>
-              <th scope="col" class="col-sm-2">Name</th>
-              <th scope="col" class="col-sm-2">Type</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr v-for="(step, index) in activeFermentationSteps" :key="index">
-              <th scope="row">{{ step.order + 1 }}</th>
-              <td>{{ step.date }}</td>
-              <td>{{ step.temp }}</td>
-              <td>{{ step.days }}</td>
-              <td>{{ step.name }}</td>
-              <td>{{ step.type }}</td>
-            </tr>
-          </tbody>
-        </table>
+        <FermentationStepFragment
+          :fermentationSteps="activeFermentationSteps"
+        ></FermentationStepFragment>
       </div>
     </div>
 
@@ -64,32 +42,11 @@
         <BsMessage
           v-if="activeFermentationSteps != null && activeFermentationSteps.length > 0"
           :dismissable="false"
-          message="The fermentation device has registered fermentation steps, Starting will overwrite those!"
+          message="The fermentation device has active fermentation steps, Starting will overwrite those!"
           alert="warning"
         />
 
-        <table class="table table-striped">
-          <thead>
-            <tr>
-              <th scope="col" class="col-sm-1">Step</th>
-              <th scope="col" class="col-sm-2">Date</th>
-              <th scope="col" class="col-sm-1">Temperature</th>
-              <th scope="col" class="col-sm-1">Days</th>
-              <th scope="col" class="col-sm-2">Name</th>
-              <th scope="col" class="col-sm-2">Type</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr v-for="(step, index) in fermentationSteps" :key="index">
-              <th scope="row">{{ step.order + 1 }}</th>
-              <td>{{ step.date }}</td>
-              <td>{{ step.temp }}</td>
-              <td>{{ step.days }}</td>
-              <td>{{ step.name }}</td>
-              <td>{{ step.type }}</td>
-            </tr>
-          </tbody>
-        </table>
+        <FermentationStepFragment :fermentationSteps="fermentationSteps"></FermentationStepFragment>
       </div>
     </div>
 
@@ -117,6 +74,7 @@ import { onMounted, ref } from 'vue'
 import { batchStore, deviceStore, global } from '@/modules/pinia'
 import { FermentationStep } from '@/modules/deviceStore'
 import BrewpiDisplayFragment from '@/fragments/BrewpiDisplayFragment.vue'
+import FermentationStepFragment from '@/fragments/FermentationStepFragment.vue'
 import router from '@/modules/router'
 import { logDebug, logInfo, logError } from '@/modules/logger'
 
@@ -146,7 +104,10 @@ function loadProfile() {
 
       // Try to parse fermentation steps if defined in batch (should be imported from brewfather)
       try {
-        fermentationSteps.value = FermentationStep.listFromJson(JSON.parse(b.fermentationSteps))
+        fermentationSteps.value = FermentationStep.listFromJson(
+          JSON.parse(b.fermentationSteps),
+          true
+        ) // Set new dates based on today
         logDebug(fermentationSteps.value)
       } catch (e) {
         logError('BatchFermentationControlView.onMounted()', e)
