@@ -1,7 +1,7 @@
+import logging
 from sqlalchemy.orm import Session
 from api.db import schemas, models
 from .base import BaseService
-import logging
 
 logger = logging.getLogger(__name__)
 

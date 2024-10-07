@@ -3,6 +3,7 @@ from datetime import datetime, timedelta
 from api.db.session import create_session
 from api.services import DeviceService
 from .brewpi import brewpi_temps, brewpi_set_fridge_temp
+from .log import system_log_fermentationcontrol
 
 logger = logging.getLogger(__name__)
 
@@ -20,8 +21,6 @@ async def fermentation_controller_run(curr_date):
             first_date = datetime.strptime(step.date, "%Y-%m-%d")
             last_date = first_date + timedelta(days=step.days - 1)
 
-            # logger.info(f"Step {step.date} {step.days} Active dates: {first_date} - {last_date}, Current: {curr_date}")
-
             if curr_date >= first_date and curr_date <= last_date:
                 logger.info(
                     f"Found step that is active; {step.order} => {first_date} - {last_date}, Temp: {step.temp}"
@@ -33,6 +32,8 @@ async def fermentation_controller_run(curr_date):
                 if res is not None:
                     # Set target temperature of the brewpi controller
                     if res["FridgeSet"] != step.temp:
+                        system_log_fermentationcontrol(f"Assigning Brewpi device at {url} a new Fridge temperature of {step.temp}, old setting {res['FridgeSet']}", 0)
+
                         logger.info(
                             f"Setting new target temperature to {step.temp}, current {res['FridgeSet']}"
                         )

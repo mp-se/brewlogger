@@ -75,7 +75,7 @@ class BrewLoggerBase(BaseModel):
         min_length=0, max_length=10, description="Database software version"
     )
     gravity_forward_url: str = Field(
-        min_length=0, max_length=100, description="URL to forward gravity data to"
+        min_length=0, max_length=200, description="URL to forward gravity data to"
     )
     dark_mode: bool = Field(description="Enable dark mode in UI")
 
@@ -100,18 +100,18 @@ class BrewLogger(BrewLoggerCreate):
 
 class SystemLogBase(BaseModel):
     model_config = ConfigDict(alias_generator=to_camel, populate_by_name=True)
-    timestamp: datetime
     message: str
     module: str
     error_code: int
+    log_level: int
 
 
-class SystemLogUpdate(BrewLoggerBase):
+class SystemLogUpdate(SystemLogBase):
     pass
 
 
-class SystemLogCreate(BrewLoggerBase):
-    pass
+class SystemLogCreate(SystemLogBase):
+    timestamp: datetime
 
 
 class SystemLog(SystemLogCreate):

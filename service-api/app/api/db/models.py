@@ -1,4 +1,5 @@
 from typing import Any
+from datetime import datetime
 from sqlalchemy import (
     Column,
     Integer,
@@ -10,6 +11,7 @@ from sqlalchemy import (
     Text,
 )
 from sqlalchemy.orm import declarative_base, relationship
+from sqlalchemy.sql import func
 
 Base: Any = declarative_base()
 
@@ -30,10 +32,11 @@ class SystemLog(Base):
     __tablename__ = "systemlog"
 
     id = Column(Integer, primary_key=True, index=True)
-    timestamp = Column(DateTime, nullable=False)
+    timestamp = Column(DateTime(timezone=True), default=datetime.now())
     message = Column(String(100), nullable=False)
     module = Column(String(20), nullable=False)
     error_code = Column(Integer, nullable=False)
+    log_level = Column(Integer, nullable=False)
 
 
 class Device(Base):

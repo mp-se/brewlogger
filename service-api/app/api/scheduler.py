@@ -11,6 +11,7 @@ from .cache import writeKey, findKey, readKey, deleteKey
 from .mdns import scan_for_mdns
 from .fermentationcontrol import fermentation_controller_run
 from .brewpi import brewpi_temps
+from .log import system_log_scheduler
 
 logger = logging.getLogger(__name__)
 scheduler = AsyncIOScheduler()
@@ -75,12 +76,16 @@ async def task_forward_gravity():
                 deleteKey(k)
 
         except httpx.ReadTimeout:
+            system_log_scheduler(f"Failed to forward gravity to {url}, ReadTimeout", 0)
             logger.error(f"Unable to connect to device {url}")
         except httpx.ConnectError:
+            system_log_scheduler(f"Failed to forward gravity to {url}, ConnectError", 0)
             logger.error(f"Unable to read from device {url}")
         except httpx.ConnectTimeout:
+            system_log_scheduler(f"Failed to forward gravity to {url}, ConnectTimeout", 0)
             logger.error(f"Unable to connect to device {url}")
         except Exception as e:
+            system_log_scheduler(f"Failed to forward gravity to {url}, Uknown error {e}", 0)
             logger.error(f"Unknown exception {e}")
 
 
@@ -94,6 +99,7 @@ async def task_scan_mdns():
             key = mdns["host"] + mdns["type"]
             writeKey(key, json.dumps(mdns), ttl=900)
         except JSONDecodeError:
+            system_log_scheduler(f"Failed parse JSON from mdns scanner {mdns}", 0)
             logger.error(f"Unable to parse JSON response {mdns}")
 
 
@@ -123,7 +129,7 @@ def scheduler_setup(app):
         scheduler.add_job(
             task_fermentation_control, "interval", seconds=30, max_instances=1
         )
-
-        scheduler.start()
     else:
         logger.warning("Scheduler disabled in configuration")
+
+    scheduler.start()

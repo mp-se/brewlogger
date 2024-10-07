@@ -1,14 +1,15 @@
 import logging
 from datetime import datetime, timezone
 from typing import List
-from fastapi import WebSocket, WebSocketDisconnect
+from fastapi import Depends, WebSocket, WebSocketDisconnect
 from fastapi.routing import APIRouter
-from api.db import schemas
+from api.db import models, schemas
 from api.db.session import create_session
-from api.services import BrewLoggerService
+from api.services import BrewLoggerService, SystemLogService, get_systemlog_service
 from ..cache import writeKey, readKey
 from ..scheduler import scheduler
 from ..ws import ws_manager
+from ..security import api_key_auth
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/api/system")
@@ -67,6 +68,30 @@ async def scheduler_status():
         )
 
     return background_jobs
+
+
+@router.get("/log/", response_model=List[schemas.SystemLog], dependencies=[Depends(api_key_auth)])
+async def system_log(
+    systemlog_service: SystemLogService = Depends(get_systemlog_service),
+):
+    logger.info("Endpoint GET /api/system/log/")
+    return systemlog_service.list()
+
+
+@router.post(
+    "/log/",
+    response_model=schemas.SystemLog,
+    status_code=201,
+    responses={409: {"description": "Conflict Error"}},
+    dependencies=[Depends(api_key_auth)],
+)
+async def create_device(
+    log: schemas.SystemLogCreate,
+    systemlog_service: SystemLogService = Depends(get_systemlog_service),
+) -> models.SystemLog:
+    logger.info("Endpoint POST /api/system/log/")
+    record = systemlog_service.create(log)
+    return record
 
 
 @router.websocket("/notify")

@@ -1,4 +1,5 @@
 import logging
+from datetime import datetime
 from api.routers import device as apiDevice
 from api.routers import batch as apiBatch
 from api.routers import pour as apiPour
@@ -16,6 +17,7 @@ from .scheduler import scheduler_shutdown, scheduler_setup
 from .utils import load_settings
 from contextlib import asynccontextmanager
 from .cache import writeKey
+from .log import system_log
 
 logger = logging.getLogger(__name__)
 
@@ -84,3 +86,5 @@ app = FastAPI(
 register_handlers(app)
 scheduler_setup(app)
 writeKey("brewlogger", get_settings().version, ttl=None)
+
+system_log("main", f"System started", 0)
