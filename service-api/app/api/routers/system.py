@@ -70,7 +70,11 @@ async def scheduler_status():
     return background_jobs
 
 
-@router.get("/log/", response_model=List[schemas.SystemLog], dependencies=[Depends(api_key_auth)])
+@router.get(
+    "/log/",
+    response_model=List[schemas.SystemLog],
+    dependencies=[Depends(api_key_auth)],
+)
 async def system_log(
     systemlog_service: SystemLogService = Depends(get_systemlog_service),
 ):

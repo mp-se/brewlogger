@@ -32,7 +32,10 @@ async def fermentation_controller_run(curr_date):
                 if res is not None:
                     # Set target temperature of the brewpi controller
                     if res["FridgeSet"] != step.temp:
-                        system_log_fermentationcontrol(f"Assigning Brewpi device at {url} a new Fridge temperature of {step.temp}, old setting {res['FridgeSet']}", 0)
+                        system_log_fermentationcontrol(
+                            f"Assigning Brewpi device at {url} a new Fridge temperature of {step.temp}, old setting {res['FridgeSet']}",
+                            0,
+                        )
 
                         logger.info(
                             f"Setting new target temperature to {step.temp}, current {res['FridgeSet']}"

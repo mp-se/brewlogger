@@ -11,7 +11,6 @@ from sqlalchemy import (
     Text,
 )
 from sqlalchemy.orm import declarative_base, relationship
-from sqlalchemy.sql import func
 
 Base: Any = declarative_base()
 

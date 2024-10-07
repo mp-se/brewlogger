@@ -1,5 +1,4 @@
 import logging
-from datetime import datetime
 from api.routers import device as apiDevice
 from api.routers import batch as apiBatch
 from api.routers import pour as apiPour
@@ -87,4 +86,4 @@ register_handlers(app)
 scheduler_setup(app)
 writeKey("brewlogger", get_settings().version, ttl=None)
 
-system_log("main", f"System started", 0)
+system_log("main", "System started", 0)

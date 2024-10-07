@@ -15,7 +15,7 @@ if get_settings().cache_enabled:
 
 
 def deleteKey(key):
-    if pool is None:    
+    if pool is None:
         return
 
     logger.info(f"Removing {key}.")
@@ -28,7 +28,7 @@ def deleteKey(key):
 
 
 def findKey(key):
-    if pool is None:    
+    if pool is None:
         return []
 
     logger.info(f"Searching key {key}.")
@@ -41,7 +41,7 @@ def findKey(key):
 
 
 def writeKey(key, value, ttl):
-    if pool is None:    
+    if pool is None:
         return True
 
     logger.info(f"Writing key {key} = {value} ttl:{ttl}.")
@@ -55,7 +55,7 @@ def writeKey(key, value, ttl):
 
 
 def readKey(key):
-    if pool is None:    
+    if pool is None:
         return None
 
     logger.info(f"Reading key {key}.")
@@ -69,7 +69,7 @@ def readKey(key):
 
 
 def existKey(key):
-    if pool is None:    
+    if pool is None:
         return False
 
     logger.info(f"Check key {key}.")

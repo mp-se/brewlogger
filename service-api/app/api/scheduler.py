@@ -82,10 +82,14 @@ async def task_forward_gravity():
             system_log_scheduler(f"Failed to forward gravity to {url}, ConnectError", 0)
             logger.error(f"Unable to read from device {url}")
         except httpx.ConnectTimeout:
-            system_log_scheduler(f"Failed to forward gravity to {url}, ConnectTimeout", 0)
+            system_log_scheduler(
+                f"Failed to forward gravity to {url}, ConnectTimeout", 0
+            )
             logger.error(f"Unable to connect to device {url}")
         except Exception as e:
-            system_log_scheduler(f"Failed to forward gravity to {url}, Uknown error {e}", 0)
+            system_log_scheduler(
+                f"Failed to forward gravity to {url}, Uknown error {e}", 0
+            )
             logger.error(f"Unknown exception {e}")
 
 
