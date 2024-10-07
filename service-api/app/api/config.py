@@ -25,6 +25,7 @@ class Settings(BaseSettings):
     api_key: str = config("API_KEY", cast=str, default="")
     api_key_enabled: bool = config("API_KEY_ENABLED", cast=bool, default=True)
     scheduler_enabled: bool = config("SCHEDULER_ENABLED", cast=bool, default=True)
+    cache_enabled: bool = config("CACHE_ENABLED", cast=bool, default=True)
     brewfather_api_key: str = config("BREWFATHER_API_KEY", cast=str, default="")
     brewfather_user_key: str = config("BREWFATHER_USER_KEY", cast=str, default="")
 
@@ -36,6 +37,7 @@ class Settings(BaseSettings):
     logger.info(f"api_key: {api_key}")
     logger.info(f"api_key_enabled: {api_key_enabled}")
     logger.info(f"scheduler_enabled: {scheduler_enabled}")
+    logger.info(f"cache_enabled: {cache_enabled}")
     logger.info(f"brewfather_api_key: {brewfather_api_key}")
     logger.info(f"brewfather_user_key: {brewfather_user_key}")
 
