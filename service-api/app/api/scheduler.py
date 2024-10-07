@@ -11,7 +11,7 @@ from .cache import writeKey, findKey, readKey, deleteKey
 from .mdns import scan_for_mdns
 from .fermentationcontrol import fermentation_controller_run
 from .brewpi import brewpi_temps
-from .log import system_log_scheduler
+from .log import system_log_scheduler, system_log_purge
 
 logger = logging.getLogger(__name__)
 scheduler = AsyncIOScheduler()
@@ -114,6 +114,11 @@ async def task_fermentation_control():
     await fermentation_controller_run(datetime.now())
 
 
+async def task_check_database():
+    logger.info(f"Task: task_check_database is running at {datetime.now()}")
+    system_log_purge()
+
+
 def scheduler_setup(app):
     global app_client
     logger.info("Setting up scheduler")
@@ -122,18 +127,21 @@ def scheduler_setup(app):
     if get_settings().scheduler_enabled:
         # Setting up task to fetch brewpi temperatures and store these in redis cache
         scheduler.add_job(
-            task_fetch_brewpi_temps, "interval", minutes=2, max_instances=1
+            task_fetch_brewpi_temps, "interval", minutes=5, max_instances=1
         )
 
         # Setting up task to forward gravity data to remove endpoint from redis cache
-        scheduler.add_job(task_forward_gravity, "interval", minutes=5, max_instances=1)
+        scheduler.add_job(task_forward_gravity, "interval", minutes=15, max_instances=1)
 
         # Setting up task to scan for mdns data
         scheduler.add_job(task_scan_mdns, "interval", minutes=1, max_instances=1)
 
+        # Setting up task to scan for mdns data
+        scheduler.add_job(task_check_database, "interval", hours=6, max_instances=1)
+
         # Setting up task to run fermentation control
         scheduler.add_job(
-            task_fermentation_control, "interval", seconds=30, max_instances=1
+            task_fermentation_control, "interval", minutes=5, max_instances=1
         )
     else:
         logger.warning("Scheduler disabled in configuration")

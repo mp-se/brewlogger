@@ -20,6 +20,13 @@ def system_log(module, message, error_code):
     systemlog_service.create(entry)
 
 
+def system_log_purge():
+    logger.info("Purging order system log from records older than 60 days")
+    systemlog_service = SystemLogService(create_session())
+    count = systemlog_service.deleteByTimestamp(60)
+    logger.info(f"Deleted {count} records from system log")
+
+
 def system_log_scheduler(message, error_code):
     system_log("scheduler", message=message, error_code=error_code)
 
