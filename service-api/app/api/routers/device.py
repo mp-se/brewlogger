@@ -12,7 +12,7 @@ from api.services import (
     DeviceService,
     get_device_service,
     FermentationStepService,
-    get_fermentation_step_service,
+    get_fermentationstep_service,
 )
 from ..security import api_key_auth
 from ..cache import findKey, readKey
@@ -195,7 +195,7 @@ async def create_fermentation_step(
     device_id: int,
     fermentation_step_list: List[schemas.FermentationStepCreate],
     fermentation_step_service: FermentationStepService = Depends(
-        get_fermentation_step_service
+        get_fermentationstep_service
     ),
 ) -> List[models.FermentationStep]:
     logger.info(f"Endpoint POST /api/device/{device_id}/step")
@@ -213,7 +213,7 @@ async def create_fermentation_step(
 async def delete_fermentation_step_by_device_id(
     device_id: int,
     fermentation_step_service: FermentationStepService = Depends(
-        get_fermentation_step_service
+        get_fermentationstep_service
     ),
 ):
     logger.info(f"Endpoint DELETE /api/fermentation_step/{device_id}")

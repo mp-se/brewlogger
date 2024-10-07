@@ -35,6 +35,17 @@ def migrate_database():
     print("Running postgres sql commands to migrate database from v0.5 to v0.7")
 
     db_updates = [
+        # Changes from v0.4
+        "ALTER TABLE gravity ADD COLUMN active BOOLEAN",
+        "UPDATE gravity SET active = true WHERE active IS NULL",
+        "ALTER TABLE gravity ALTER COLUMN active SET NOT NULL",
+        "ALTER TABLE pour ADD COLUMN active BOOLEAN",
+        "UPDATE pour SET active = true WHERE active IS NULL",
+        "ALTER TABLE pour ALTER COLUMN active SET NOT NULL",
+        "ALTER TABLE pressure ADD COLUMN active BOOLEAN",
+        "UPDATE pressure SET active = true WHERE active IS NULL",
+        "ALTER TABLE pressure ALTER COLUMN active SET NOT NULL",
+        # Changes from v0.5 & v0.6
         "ALTER TABLE batch ADD COLUMN fermentation_chamber INTEGER",
         "ALTER TABLE gravity ADD COLUMN beer_temperature FLOAT",
         "ALTER TABLE gravity ADD COLUMN chamber_temperature FLOAT",

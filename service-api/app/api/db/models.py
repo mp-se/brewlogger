@@ -26,6 +26,16 @@ class BrewLogger(Base):
     dark_mode = Column(Boolean, nullable=False)
 
 
+class SystemLog(Base):
+    __tablename__ = "systemlog"
+
+    id = Column(Integer, primary_key=True, index=True)
+    timestamp = Column(DateTime, nullable=False)
+    message = Column(String(100), nullable=False)
+    module = Column(String(20), nullable=False)
+    error_code = Column(Integer, nullable=False)
+
+
 class Device(Base):
     __tablename__ = "device"
 
@@ -49,7 +59,7 @@ class Device(Base):
 
 
 class FermentationStep(Base):
-    __tablename__ = "fermentation_step"
+    __tablename__ = "fermentationstep"
 
     id = Column(Integer, primary_key=True, index=True, nullable=False)
     order = Column(Integer, nullable=False)

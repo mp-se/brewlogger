@@ -9,7 +9,7 @@ from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from .config import get_settings
 from .cache import writeKey, findKey, readKey, deleteKey
 from .mdns import scan_for_mdns
-from .fermentation_control import fermentation_controller_run
+from .fermentationcontrol import fermentation_controller_run
 from .brewpi import brewpi_temps
 
 logger = logging.getLogger(__name__)

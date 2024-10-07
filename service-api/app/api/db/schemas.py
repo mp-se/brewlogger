@@ -98,6 +98,30 @@ class BrewLogger(BrewLoggerCreate):
 ################################################################################
 
 
+class SystemLogBase(BaseModel):
+    model_config = ConfigDict(alias_generator=to_camel, populate_by_name=True)
+    timestamp: datetime
+    message: str
+    module: str
+    error_code: int
+
+
+class SystemLogUpdate(BrewLoggerBase):
+    pass
+
+
+class SystemLogCreate(BrewLoggerBase):
+    pass
+
+
+class SystemLog(SystemLogCreate):
+    model_config = ConfigDict(from_attributes=True)
+    id: int
+
+
+################################################################################
+
+
 class FermentationStepBase(BaseModel):
     model_config = ConfigDict(alias_generator=to_camel, populate_by_name=True)
 

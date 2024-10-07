@@ -9,7 +9,8 @@ from .gravity import GravityService
 from .pressure import PressureService
 from .brewlogger import BrewLoggerService
 from .pour import PourService
-from .fermentation_step import FermentationStepService
+from .fermentationstep import FermentationStepService
+from .systemlog import SystemLogService
 
 
 def get_device_service(db_session: Session = Depends(get_session)) -> DeviceService:
@@ -32,7 +33,7 @@ def get_pour_service(db_session: Session = Depends(get_session)) -> PourService:
     return PourService(db_session)
 
 
-def get_fermentation_step_service(
+def get_fermentationstep_service(
     db_session: Session = Depends(get_session),
 ) -> FermentationStepService:
     return FermentationStepService(db_session)
@@ -44,6 +45,12 @@ def get_brewlogger_service(
     return BrewLoggerService(db_session)
 
 
+def get_systemlog_service(
+    db_session: Session = Depends(get_session),
+) -> SystemLogService:
+    return SystemLogService(db_session)
+
+
 __all__ = (
     "get_device_service",
     "get_batch_service",
@@ -51,4 +58,6 @@ __all__ = (
     "get_pressure_service",
     "get_pour_service",
     "get_brewlogger_service",
+    "get_fermentationstep_service",
+    "get_systemlog_service",
 )

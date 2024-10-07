@@ -52,7 +52,7 @@ def truncate_database():
             print(e)
 
         try:
-            con.execute(text("DELETE FROM fermentation_step"))
+            con.execute(text("DELETE FROM fermentationstep"))
             con.commit()
         except Exception as e:
             con.rollback()
