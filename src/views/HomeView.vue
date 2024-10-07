@@ -33,7 +33,7 @@
         <BsCard header="Scheduler" color="info" title="">
           <template v-for="(task, index) in schedulerStatus" :key="index">
             <div class="text-center">
-              {{ prettySchedulerName(task.name) }}: {{ task.nextRunIn }} s
+              {{ prettySchedulerName(task.name) }}: {{ prettySeconds(task.nextRunIn) }}
             </div>
           </template>
         </BsCard>
@@ -72,9 +72,21 @@ function prettySchedulerName(n) {
       return 'Brewpi Control'
     case 'task_forward_gravity':
       return 'Forward gravity'
+    case 'task_check_database':
+      return 'Database Maintenance'
   }
 
   return 'Unknown mapping'
+}
+
+function prettySeconds(t) {
+  if(t < 60) {
+    return t + " s"
+  } else if( t < 3600) {
+    return Math.round(t/60) + " m"
+  }
+  
+  return Math.round(t/3600) + " h"
 }
 
 const gravityCount = computed(() => {

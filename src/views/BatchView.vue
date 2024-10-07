@@ -12,30 +12,15 @@
             </BsInputText>
           </div>
           <div class="col-md-3">
-            <BsSelect
-              v-model="batch.chipId"
-              label="Device"
-              :options="gravityDeviceOptions"
-              help=""
-              :disabled="global.disabled"
-            ></BsSelect>
+            <BsSelect v-model="batch.chipId" label="Device" :options="gravityDeviceOptions" help=""
+              :disabled="global.disabled"></BsSelect>
           </div>
           <div class="col-md-3">
-            <BsSelect
-              v-model="batch.fermentationChamber"
-              label="Fermentation chamber"
-              :options="tempControlDeviceOptions"
-              help=""
-              :disabled="global.disabled"
-            ></BsSelect>
+            <BsSelect v-model="batch.fermentationChamber" label="Fermentation chamber"
+              :options="tempControlDeviceOptions" help="" :disabled="global.disabled"></BsSelect>
           </div>
           <div class="col-md-12">
-            <BsInputText
-              v-model="batch.description"
-              label="Description"
-              help=""
-              :disabled="global.disabled"
-            >
+            <BsInputText v-model="batch.description" label="Description" help="" :disabled="global.disabled">
             </BsInputText>
           </div>
           <div class="col-md-4">
@@ -43,84 +28,35 @@
             </BsInputText>
           </div>
           <div class="col-md-4">
-            <BsInputText
-              v-model="batch.brewDate"
-              label="Brew date"
-              help=""
-              :disabled="global.disabled"
-            >
+            <BsInputText v-model="batch.brewDate" label="Brew date" help="" :disabled="global.disabled">
             </BsInputText>
           </div>
           <div class="col-md-4">
-            <BsSelect
-              v-model="batch.style"
-              label="Style"
-              :options="styleOptions"
-              help=""
-              :disabled="global.disabled"
-            >
+            <BsSelect v-model="batch.style" label="Style" :options="styleOptions" help="" :disabled="global.disabled">
             </BsSelect>
           </div>
           <div class="col-md-4">
-            <BsInputRadio
-              v-model="batch.active"
-              :options="toggleOptions"
-              label="Active"
-              help=""
-              :disabled="global.disabled"
-            ></BsInputRadio>
+            <BsInputRadio v-model="batch.active" :options="toggleOptions" label="Active" help=""
+              :disabled="global.disabled"></BsInputRadio>
           </div>
           <div class="col-md-8">
-            <BsSelect
-              @change="brewfatherChanged(batch.brewfatherId)"
-              v-model="batch.brewfatherId"
-              label="Brewfather ID"
-              :options="brewfatherOptions"
-              help=""
-              :disabled="global.disabled"
-            >
+            <BsSelect @change="brewfatherChanged(batch.brewfatherId)" v-model="batch.brewfatherId" label="Brewfather ID"
+              :options="brewfatherOptions" help="" :disabled="global.disabled">
             </BsSelect>
           </div>
           <div class="col-md-4">
-            <BsInputNumber
-              v-model="batch.abv"
-              width="5"
-              label="Alcohol"
-              unit="% ABV"
-              min="0"
-              max="100"
-              step="0.01"
-              help=""
-              :disabled="global.disabled"
-            >
+            <BsInputNumber v-model="batch.abv" width="5" label="Alcohol" unit="% ABV" min="0" max="100" step="0.01"
+              help="" :disabled="global.disabled">
             </BsInputNumber>
           </div>
           <div class="col-md-4">
-            <BsInputNumber
-              v-model="batch.ebc"
-              width="5"
-              label="Color"
-              unit="EBC"
-              min="0"
-              max="100"
-              step="0.1"
-              help=""
-              :disabled="global.disabled"
-            >
+            <BsInputNumber v-model="batch.ebc" width="5" label="Color" unit="EBC" min="0" max="100" step="0.1" help=""
+              :disabled="global.disabled">
             </BsInputNumber>
           </div>
           <div class="col-md-4">
-            <BsInputNumber
-              v-model="batch.ibu"
-              width="5"
-              label="Bitterness"
-              unit="IBU"
-              min="0"
-              max="100"
-              step="0.1"
-              help=""
-              :disabled="global.disabled"
-            >
+            <BsInputNumber v-model="batch.ibu" width="5" label="Bitterness" unit="IBU" min="0" max="100" step="0.1"
+              help="" :disabled="global.disabled">
             </BsInputNumber>
           </div>
 
@@ -131,9 +67,8 @@
           <div class="col-md-12" v-if="batch.fermentationSteps != ''">
             <label class="form-label fw-bold">Fermentation Steps</label>
 
-            <FermentationStepFragment
-              :fermentationSteps="JSON.parse(batch.fermentationSteps)"
-            ></FermentationStepFragment>
+            <FermentationStepFragment :fermentationSteps="JSON.parse(batch.fermentationSteps)">
+            </FermentationStepFragment>
             <!-- 
             <table class="table table-striped">
               <thead>
@@ -161,38 +96,25 @@
             <hr />
           </div>
           <div class="col-md-12">
-            <button
-              type="submit"
-              class="btn btn-primary w-2"
-              :disabled="global.disabled || !batchChanged()"
-            >
-              <span
-                class="spinner-border spinner-border-sm"
-                role="status"
-                aria-hidden="true"
-                :hidden="!global.disabled"
-              ></span>
+            <button type="submit" class="btn btn-primary w-2" :disabled="global.disabled || !batchChanged()">
+              <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"
+                :hidden="!global.disabled"></span>
               <i class="bi bi-floppy"></i>
-              &nbsp;Save</button
-            >&nbsp;
+              &nbsp;Save</button>&nbsp;
             <router-link :to="{ name: 'batch-list' }">
               <button type="button" class="btn btn-secondary w-2">
                 <i class="bi bi-x-square"></i>
                 Cancel
-              </button> </router-link
-            >&nbsp;
+              </button> </router-link>&nbsp;
 
             <template v-if="batch.fermentationChamber > 0 && batch.fermentationSteps != ''">
-              <router-link
-                :to="{
-                  name: 'batch-fermentation-control',
-                  params: { id: router.currentRoute.value.params.id }
-                }"
-              >
+              <router-link :to="{
+                name: 'batch-fermentation-control',
+                params: { id: router.currentRoute.value.params.id }
+              }">
                 <button type="button" class="btn btn-secondary w-3">
                   Fermentation Control
-                </button> </router-link
-              >&nbsp;
+                </button> </router-link>&nbsp;
             </template>
           </div>
         </div>
@@ -602,10 +524,12 @@ function updateDeviceOptions() {
         if (d.software == 'Brewpi' || d.chipId == '000000') {
           s = d.mdns != '' ? d.mdns : d.url != '' ? d.url : d.description
 
-          tempControlDeviceOptions.value.push({
-            value: dl[i].id,
-            label: 'Brewpi (' + s + ')'
-          })
+          if (d.url != "") {
+            tempControlDeviceOptions.value.push({
+              value: dl[i].id,
+              label: 'Brewpi (' + s + ')'
+            })
+          }
         }
       }
 

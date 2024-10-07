@@ -17,6 +17,7 @@ import AboutView from '@/views/AboutView.vue'
 import SettingsView from '@/views/SettingsView.vue'
 import BackupView from '@/views/BackupView.vue'
 import SupportView from '@/views/SupportView.vue'
+import LogListView from '@/views/LogListView.vue'
 import NotFoundView from '@/views/NotFoundView.vue'
 import { logDebug } from '@/modules/logger'
 
@@ -97,6 +98,11 @@ const routes = [
     component: SupportView
   },
   {
+    path: '/other/log',
+    name: 'log',
+    component: LogListView
+  },
+  {
     path: '/other/about',
     name: 'about',
     component: AboutView
@@ -157,6 +163,10 @@ const items = ref([
       {
         label: 'Backup & Restore',
         path: '/other/backup'
+      },
+      {
+        label: 'System log',
+        path: '/other/log'
       },
       /*{
         label: 'Support',
