@@ -34,12 +34,14 @@ async def task_fetch_brewpi_temps():
         logger.info(f"Processing brewpi device {device.id}, {device.url}")
         url = device.url
 
-        res = await brewpi_temps(url)
-        if res is not None:
-            key = "brewpi_" + str(device.id) + "_beer_temp"
-            writeKey(key, res["BeerTemp"], ttl=300)
-            key = "brewpi_" + str(device.id) + "_fridge_temp"
-            writeKey(key, res["FridgeTemp"], ttl=300)
+        if url != "":
+            res = await brewpi_temps(url)
+            if res is not None:
+                key = "brewpi_" + str(device.id) + "_beer_temp"
+                writeKey(key, res["BeerTemp"], ttl=300)
+                key = "brewpi_" + str(device.id) + "_fridge_temp"
+                writeKey(key, res["FridgeTemp"], ttl=300)
+
 
 
 async def task_forward_gravity():
