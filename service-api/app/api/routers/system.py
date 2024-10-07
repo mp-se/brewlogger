@@ -76,10 +76,11 @@ async def scheduler_status():
     dependencies=[Depends(api_key_auth)],
 )
 async def system_log(
+    limit: int = 100,
     systemlog_service: SystemLogService = Depends(get_systemlog_service),
 ):
     logger.info("Endpoint GET /api/system/log/")
-    return systemlog_service.list()
+    return systemlog_service.list(limit)
 
 
 @router.post(
