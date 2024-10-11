@@ -55,7 +55,7 @@ services:
     restart: always
     environment:
      - API_KEY=[your API key for securing access to brew_api]
-     - API_URL=brew_api
+     - API_URL=brew_api:80
     networks:
       - brew_net
     ports:
