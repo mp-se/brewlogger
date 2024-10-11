@@ -1,14 +1,14 @@
-import { ref } from 'vue'
-
-const debug = ref(true)
-const info = ref(true)
-
 export function logDebug(...args) {
-  if (debug.value) console.log('Debug', ...args)
+  // console.log("Debug: env=", import.meta.env);
+  if (import.meta.env.VITE_APP_DEBUG === undefined) return
+  console.log('Debug', ...args)
 }
 
 export function logInfo(...args) {
-  if (info.value) console.log('Info', ...args)
+  // if(process.env.VUE_APP_INFO === undefined)
+  //  return
+
+  console.log('Info', ...args)
 }
 
 export function logError(...args) {

@@ -7,6 +7,7 @@ services:
     restart: always
     environment:
      - API_KEY=mykey
+     - API_URL=brew_api
     networks:
       - brew_net
     ports:
@@ -23,7 +24,6 @@ services:
     environment:
      - API_KEY=mykey
      - DATABASE_URL=postgresql://postgres:password@brew_db:5432/app
-     - API_KEY_ENABLED=1
      - BREWFATHER_API_KEY=
      - BREWFATHER_USER_KEY=
     depends_on:
