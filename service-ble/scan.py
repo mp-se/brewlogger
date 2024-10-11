@@ -15,7 +15,8 @@ from bleak.backends.scanner import AdvertisementData
 
 logger = logging.getLogger("tilt")
 
-endpoint = "http://brew_api:80/api/gravity/public"
+
+endpoint = "http://" + os.getenv("API_URL") + "/api/gravity/public"
 headers = {
     "Content-Type": "application/json",
 }
@@ -165,11 +166,11 @@ async def parse_gravitymon(device: BLEDevice):
                                         logger.info(f"Response {r}.")
                                     except Exception as e:
                                         logger.error(
-                                            "Failed to post data, Error: %s", e
+                                            f"Failed to post data, Error: {e}"
                                         )
 
                             except Exception as e:
-                                logger.error("Failed to read data, Error: %s", e)
+                                logger.error(f"Failed to read data, Error: {e}")
             await client.disconnect()
     except Exception:
         pass
@@ -195,7 +196,7 @@ def parse_eddystone(device: BLEDevice, advertisement_data: AdvertisementData):
             "temp_units": "C",
             "RSSI": 0,
         }
-        logger.info("Data received: %s %s", json.dumps(data), device.address)
+        logger.info(f"Data received: {json.dumps(data)} {device.address}")
 
         now = time.time()
         logger.debug(
@@ -212,7 +213,7 @@ def parse_eddystone(device: BLEDevice, advertisement_data: AdvertisementData):
                 r = requests.post(endpoint, json=data, headers=headers)
                 logger.info(f"Response {r}.")
             except Exception as e:
-                logger.error("Failed to post data, Error: %s", e)
+                logger.error(f"Failed to post data, Error: {e}")
 
     except ConstError:
         pass
@@ -244,14 +245,14 @@ def parse_tilt(advertisement_data: AdvertisementData):
                     "RSSI": advertisement_data.rssi,
                 }
 
-                logger.info("Data received: %s", json.dumps(data))
+                logger.info(f"Data received: {json.dumps(data)}")
 
                 try:
                     logger.info("Posting data.")
                     r = requests.post(endpoint, json=data, headers=headers)
                     logger.info(f"Response {r}.")
                 except Exception as e:
-                    logger.error("Failed to post data, Error: %s", e)
+                    logger.error(f"Failed to post data, Error: {e}")
 
     except KeyError:
         pass
@@ -282,7 +283,7 @@ async def main():
     minium_interval = 5 * 60  # seconds
     if t is not None:
         minium_interval = int(t)
-    logger.info("Minium interval = %d", minium_interval)
+    logger.info(f"Minium interval = {minium_interval}, reporting to {endpoint}")
 
     init()
     scanner = BleakScanner(detection_callback=device_found, scanning_mode="active")
