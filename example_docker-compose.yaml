@@ -7,7 +7,7 @@ services:
     restart: always
     environment:
      - API_KEY=mykey
-     - API_URL=brew_api
+     - API_URL=brew_api:80
     networks:
       - brew_net
     ports:
