@@ -291,7 +291,7 @@ async function restoreBatches(bl) {
     bl.map(async (b) => {
       logDebug('BackupView.restoreBatch()', 'Restore batch', b.id)
 
-      if (b.fermentationSteps === undefined) b.fermentationSteps = ''
+      if (b.fermentationSteps === undefined || b.fermentationSteps === null) b.fermentationSteps = ''
 
       const res = await fetch(global.baseURL + 'api/batch/', {
         method: 'POST',
