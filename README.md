@@ -55,11 +55,11 @@ services:
     restart: always
     environment:
      - API_KEY=[your API key for securing access to brew_api]
-     - API_URL=brew_api:80
+     - API_URL=brew_api
     networks:
       - brew_net
     ports:
-      - 80:8080
+      - 80:80
     depends_on:
       - brew_api
 
@@ -126,7 +126,7 @@ services:
       - USE_MDNS_REPEATER=1
       - EXTERNAL_INTERFACE=[Host server interface of your network, eg: en0]
       - DOCKER_NETWORK_NAME=brewnet
-      - OPTIONS=""
+      - OPTIONS=
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
 
@@ -138,7 +138,7 @@ services:
     restart: always
     privileged: true
     environment:
-      - API_URL=
+      - API_URL=brew_api
       - MIN_INTERVAL=[Minimum time in seconds between sending data to API, ie. 300]
     volumes:
       - /dev:/dev
