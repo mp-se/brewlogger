@@ -6,10 +6,11 @@ services:
     restart: always
     environment:
      - API_KEY=akljnv13bvi2vfo0b0bw789jlljsdf
+     - API_URL=brew_api
     networks:
       - brew_net
     ports:
-      - 8080:8080
+      - 80:80
     depends_on:
       - brew_api
 
@@ -17,14 +18,11 @@ services:
     build: service-api
     hostname: brew_api
     restart: always
-    #ports:
-    #  - 8000:80
     networks:
       - brew_net
     environment:
      - API_KEY=akljnv13bvi2vfo0b0bw789jlljsdf
      - DATABASE_URL=postgresql://postgres:password@brew_db:5432/app
-     - API_KEY_ENABLED=0
      - REDIS_URL=brew_cache
      - BREWFATHER_API_KEY=
      - BREWFATHER_USER_KEY=
@@ -36,8 +34,6 @@ services:
     image: redis:7
     hostname: brew_cache
     restart: always
-    #ports:
-    #  - 6379:6379
     networks:
       - brew_net
 
@@ -63,8 +59,8 @@ services:
     networks:
       - brew_net
     environment:
-      PGADMIN_DEFAULT_EMAIL: admin@admin.com
-      PGADMIN_DEFAULT_PASSWORD: root
+      - PGADMIN_DEFAULT_EMAIL=admin@admin.com
+      - PGADMIN_DEFAULT_PASSWORD=root
     ports:
       - 5050:80
     volumes:
@@ -75,13 +71,13 @@ services:
     hostname: brew_mdns
     container_name: mdns
     restart: always
-    network_mode: "host"
+    network_mode: host
     privileged: true
     environment:
-      USE_MDNS_REPEATER: 1
-      EXTERNAL_INTERFACE: en0
-      DOCKER_NETWORK_NAME: brewnet
-      OPTIONS: ""
+      - USE_MDNS_REPEATER=1
+      - EXTERNAL_INTERFACE=en0
+      - DOCKER_NETWORK_NAME=brewnet
+      - OPTIONS=
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
 
@@ -93,7 +89,8 @@ services:
     restart: always
     privileged: true
     environment:
-      MIN_INTERVAL: 300
+      - MIN_INTERVAL=300
+      - API_URL=brew_api
     volumes:
       - /dev:/dev
       - /var/run/dbus:/var/run/dbus
