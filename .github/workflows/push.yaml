@@ -61,6 +61,7 @@ jobs:
             TAGS="$TAGS,${DOCKER_IMAGE}:latest"
           fi
 
+          echo ${GITHUB_REF}
           echo ${DOCKER_IMAGE}
           echo ${VERSION}
           echo ${SHORTREF}
