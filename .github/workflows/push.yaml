@@ -1,11 +1,11 @@
 name: PlatformIO CI
 
 on: 
-  pull_request:
   push:
-    branches: 
-      - main
-
+    branches: main
+  release:
+    types: [published]
+    
 jobs:
   vue-build:
     runs-on: ubuntu-latest
