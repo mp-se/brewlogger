@@ -26,8 +26,7 @@ onUnmounted(() => {
 onMounted(() => {
   logDebug('BrewpiDisplayFragment.onMounted()')
 
-  if(refresh.value === undefined)
-    refresh.value = 5
+  if (refresh.value === undefined) refresh.value = 5
 
   fetchDisplay()
   ticker.value = setInterval(() => {

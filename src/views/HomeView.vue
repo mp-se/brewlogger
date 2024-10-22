@@ -80,13 +80,13 @@ function prettySchedulerName(n) {
 }
 
 function prettySeconds(t) {
-  if(t < 60) {
-    return t + " s"
-  } else if( t < 3600) {
-    return Math.round(t/60) + " m"
+  if (t < 60) {
+    return t + ' s'
+  } else if (t < 3600) {
+    return Math.round(t / 60) + ' m'
   }
-  
-  return Math.round(t/3600) + " h"
+
+  return Math.round(t / 3600) + ' h'
 }
 
 const gravityCount = computed(() => {

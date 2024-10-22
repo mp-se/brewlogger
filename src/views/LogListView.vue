@@ -20,7 +20,9 @@
         </thead>
         <tbody>
           <tr v-for="l in logList" :key="l.id">
-            <td scope="row">{{ l.timestamp.substring(0,10) }} {{ l.timestamp.substring(11,19) }}</td>
+            <td scope="row">
+              {{ l.timestamp.substring(0, 10) }} {{ l.timestamp.substring(11, 19) }}
+            </td>
             <td>{{ l.module }}</td>
             <td>{{ l.message }}</td>
             <td>{{ l.errorCode }}</td>
@@ -28,7 +30,6 @@
         </tbody>
       </table>
     </div>
-
   </div>
 </template>
 
@@ -66,7 +67,7 @@ function updateLogList() {
     })
     .catch(() => {
       global.disabled = false
-      global.messageError = "Failed to retrive list of system log enties"
+      global.messageError = 'Failed to retrive list of system log enties'
     })
 }
 </script>
