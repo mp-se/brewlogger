@@ -52,8 +52,6 @@ class Device(Base):
 
     # Gravitymon specific
     ble_color = Column(String(15), nullable=False)
-    # gravity_formula = Column(String(100), nullable=False)
-    # gravity_poly = Column(Text, nullable=False)
 
     fermentation_step = relationship(
         "FermentationStep", back_populates="device", cascade="all,delete"
