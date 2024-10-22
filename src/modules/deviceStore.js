@@ -13,8 +13,6 @@ export class Device {
     bleColor,
     url,
     description
-    /*gravityFormula,
-    gravityPoly*/
   ) {
     this.id = id === undefined ? 0 : id
     this.chipId = chipId === undefined ? '' : chipId
@@ -25,8 +23,6 @@ export class Device {
     this.bleColor = bleColor === undefined ? '' : bleColor
     this.description = description === undefined ? '' : description
     this.url = url === undefined ? '' : url
-    /*this.gravityFormula = gravityFormula === undefined ? '' : gravityFormula
-    this.gravityPoly = gravityPoly === undefined ? '' : gravityPoly*/
 
     if (this.url === 'http://' || this.url === 'https://') this.url = ''
   }
@@ -40,9 +36,7 @@ export class Device {
       d1.config == d2.config &&
       d1.bleColor == d2.bleColor &&
       d1.url == d2.url &&
-      d1.description == d2.description /*&&
-      d1.gravityFormula == d2.gravityFormula &&
-      d1.gravityPoly == d2.gravityPoly*/
+      d1.description == d2.description 
     )
   }
 
@@ -57,8 +51,6 @@ export class Device {
       d.bleColor,
       d.url,
       d.description
-      /*d.gravityFormula,
-      d.gravityPoly*/
     )
   }
 
@@ -72,8 +64,6 @@ export class Device {
       bleColor: this.bleColor,
       url: this.url,
       description: this.description,
-      /*gravityFormula: this.gravityFormula,
-      gravityPoly: this.gravityPoly,*/
       fermentationSteps: []
     }
   }
@@ -105,12 +95,6 @@ export class Device {
   get description() {
     return this._description
   }
-  /*get gravityFormula() {
-    return this._gravityFormula
-  }
-  get gravityPoly() {
-    return this._gravityPoly
-  }*/
 
   set id(id) {
     this._id = id
@@ -139,12 +123,6 @@ export class Device {
   set description(description) {
     this._description = description
   }
-  /*set gravityFormula(gravityFormula) {
-    this._gravityFormula = gravityFormula
-  }
-  set gravityPoly(gravityPoly) {
-    this._gravityPoly = gravityPoly
-  }*/
 }
 
 export class FermentationStep {

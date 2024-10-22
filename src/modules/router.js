@@ -6,7 +6,6 @@ import DeviceView from '@/views/DeviceView.vue'
 import DeviceBrewpiView from '@/views/DeviceBrewpiView.vue'
 import DeviceListView from '@/views/DeviceListView.vue'
 import DeviceBatchView from '@/views/DeviceBatchView.vue'
-//import DeviceGravityView from '@/views/DeviceGravityView.vue'
 import BatchView from '@/views/BatchView.vue'
 import BatchListView from '@/views/BatchListView.vue'
 import BatchGravityListView from '@/views/BatchGravityListView.vue'
@@ -47,11 +46,6 @@ const routes = [
     name: 'device-batch',
     component: DeviceBatchView
   },
-  /*{
-    path: '/device/:id/gravity',
-    name: 'device-gravity',
-    component: DeviceGravityView
-  },*/
   {
     path: '/batch',
     name: 'batch-list',

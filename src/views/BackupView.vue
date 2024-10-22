@@ -268,8 +268,6 @@ async function restoreDevices(dl) {
     dl.map(async (d) => {
       logDebug('BackupView.restoreDevice()', 'Restore device', d.id)
 
-      //if (d.gravityFormula === undefined) d.gravityFormula = ''
-      //if (d.gravityPoly === undefined) d.gravityPoly = ''
       if (d.fermentationSteps === undefined) d.fermentationSteps = []
 
       console.log(d)
