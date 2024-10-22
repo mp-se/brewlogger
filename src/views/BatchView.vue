@@ -64,8 +64,17 @@
           <div class="col-md-4">
             <BsInputRadio
               v-model="batch.active"
-              :options="toggleOptions"
+              :options="activeOptions"
               label="Active"
+              help=""
+              :disabled="global.disabled"
+            ></BsInputRadio>
+          </div>
+          <div class="col-md-4">
+            <BsInputRadio
+              v-model="batch.tapList"
+              :options="tapListOptions"
+              label="Active in tapList"
               help=""
               :disabled="global.disabled"
             ></BsInputRadio>
@@ -133,25 +142,7 @@
 
             <FermentationStepFragment :fermentationSteps="JSON.parse(batch.fermentationSteps)">
             </FermentationStepFragment>
-            <!-- 
-            <table class="table table-striped">
-              <thead>
-                <tr>
-                  <th scope="col" class="col-sm-1">Step</th>
-                  <th scope="col" class="col-sm-1">Temperature</th>
-                  <th scope="col" class="col-sm-1">Days</th>
-                  <th scope="col" class="col-sm-1">Type</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr v-for="(step, index) in JSON.parse(batch.fermentationSteps)" :key="index">
-                  <th scope="row">{{ step.order + 1 }}</th>
-                  <td>{{ step.temp }}</td>
-                  <td>{{ step.days }}</td>
-                  <td>{{ step.type }}</td>
-                </tr>
-              </tbody>
-            </table>-->
+
           </div>
         </div>
 
@@ -225,9 +216,14 @@ const batchSaved = ref(null)
 const gravityDeviceOptions = ref([])
 const tempControlDeviceOptions = ref([])
 
-const toggleOptions = ref([
+const activeOptions = ref([
   { label: 'Active', value: true },
   { label: 'Closed', value: false }
+])
+
+const tapListOptions = ref([
+  { label: 'Visible', value: true },
+  { label: 'Hidden', value: false }
 ])
 
 const brewfatherOptions = ref([{ label: '- not connected -', value: '' }])

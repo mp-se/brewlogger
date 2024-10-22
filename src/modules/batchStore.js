@@ -18,7 +18,8 @@ export class Batch {
     brewfatherId,
     gravity,
     fermentationChamber,
-    fermentationSteps
+    fermentationSteps,
+    tapList
   ) {
     this.id = id === undefined ? 0 : id
     this.name = name === undefined ? '' : name
@@ -37,6 +38,7 @@ export class Batch {
     this.fermentationSteps =
       fermentationSteps === undefined || fermentationSteps === null ? '' : fermentationSteps
     this.gravityCount = gravity === undefined || gravity === null ? 0 : gravity.length
+    this.tapList = tapList === undefined ? true : tapList
     this.gravity = []
   }
 
@@ -46,6 +48,7 @@ export class Batch {
       b1.description == b2.description &&
       b1.chipId == b2.chipId &&
       b1.active == b2.active &&
+      b1.tapList == b2.tapList &&
       b1.brewDate == b2.brewDate &&
       b1.style == b2.style &&
       b1.brewer == b2.brewer &&
@@ -73,7 +76,8 @@ export class Batch {
       b.brewfatherId,
       b.gravity,
       b.fermentationChamber,
-      b.fermentationSteps
+      b.fermentationSteps,
+      b.tapList
     )
   }
 
@@ -93,7 +97,8 @@ export class Batch {
       0,
       bd.gravity,
       bd.fermentationChamber,
-      ''
+      '',
+      bd.tapList
     )
     b.gravity = bd.gravity
     return b
@@ -113,7 +118,8 @@ export class Batch {
       ibu: this.ibu,
       brewfatherId: this.brewfatherId,
       fermentationChamber: this.fermentationChamber, // Optional: Can be undefined (=0)
-      fermentationSteps: this.fermentationSteps // Optional: Can be undefined (='')
+      fermentationSteps: this.fermentationSteps, // Optional: Can be undefined (='')
+      tapList: this.tapList
     }
 
     // Optional: Can be undefined
@@ -171,6 +177,9 @@ export class Batch {
   get fermentationSteps() {
     return this._fermentationSteps
   }
+  get tapList() {
+    return this._tapList
+  }
 
   set id(id) {
     this._id = id
@@ -213,6 +222,9 @@ export class Batch {
   }
   set fermentationSteps(fermentationSteps) {
     this._fermentationSteps = fermentationSteps
+  }
+  set tapList(tapList) {
+    this._tapList = tapList
   }
   set gravityCount(gravityCount) {
     this._gravityCount = gravityCount
