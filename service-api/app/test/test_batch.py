@@ -28,6 +28,7 @@ def test_add(app_client):
         "ibu": 0.3,
         "fermentationChamber": 0,
         "fermentationSteps": "",
+        "tapList": True,
     }
 
     # Add new
@@ -48,6 +49,7 @@ def test_add(app_client):
     assert data1["brewfatherId"] == data["brewfatherId"]
     assert data1["fermentationChamber"] == data["fermentationChamber"]
     assert data1["fermentationSteps"] == data["fermentationSteps"]
+    assert data1["tapList"] == data["tapList"]
 
     # Read data and check values
     r2 = app_client.get("/api/batch/1", headers=headers)
@@ -72,6 +74,7 @@ def test_add(app_client):
         "ebc": 0.2,
         "ibu": 0.3,
         "fermentationSteps": "",
+        "tapList": True,
     }
 
     # Add new without optional parameters
@@ -101,6 +104,7 @@ def test_update(app_client):
         "ibu": 1.3,
         "fermentationChamber": 0,
         "fermentationSteps": "",
+        "tapList": True,
     }
 
     # Update existing entity
@@ -124,6 +128,7 @@ def test_update(app_client):
     assert data["brewfatherId"] == data2["brewfatherId"]
     assert data["fermentationChamber"] == data2["fermentationChamber"]
     assert data["fermentationSteps"] == data2["fermentationSteps"]
+    assert data["tapList"] == data2["tapList"]
 
     # Update missing entity
     r = app_client.patch("/api/batch/10", json=data, headers=headers)
@@ -157,6 +162,7 @@ def test_query(app_client):
         "ibu": 0.3,
         "fermentationChamber": 0,
         "fermentationSteps": "",
+        "tapList": True,
     }
 
     # Update existing entity
@@ -194,6 +200,7 @@ def test_validation(app_client):
         "ibu": 0.3,
         "fermentationChamber": 0,
         "fermentationSteps": "",
+        "tapList": True,
     }
 
     # Add new
@@ -214,6 +221,7 @@ def test_validation(app_client):
         "ibu": 0.3,
         "fermentationChamber": 0,
         "fermentationSteps": "",
+        "tapList": True,
     }
 
     # Add new
@@ -234,6 +242,7 @@ def test_validation(app_client):
         "ibu": 0.3,
         "fermentationChamber": 0,
         "fermentationSteps": "",
+        "tapList": True,
     }
 
     # Add new
@@ -254,7 +263,8 @@ def test_validation(app_client):
         "ibu": 0.3,
         "fermentationChamber": 0,
         "fermentationSteps": "",
-    }
+         "tapList": True,
+   }
 
     # Add new
     r = app_client.post("/api/batch/", json=data, headers=headers)
@@ -274,6 +284,7 @@ def test_validation(app_client):
         "ibu": 0.3,
         "fermentationChamber": 0,
         "fermentationSteps": "",
+        "tapList": True,
     }
 
     # Add new
@@ -294,6 +305,7 @@ def test_validation(app_client):
         "ibu": 0.3,
         "fermentationChamber": 0,
         "fermentationSteps": "",
+        "tapList": True,
     }
 
     # Add new

@@ -163,6 +163,7 @@ async def create_gravity_using_ispindel_format(
                 ibu=0.0,
                 # fermentation_chamber=None, # This is optional and should be assigned in UI
                 fermentation_steps="",
+                tap_list=True,
             )
             batch_service.create(batch)
             batchList = batch_service.search_chipId_active(req_json["ID"], True)
@@ -183,8 +184,6 @@ async def create_gravity_using_ispindel_format(
                 bleColor="",
                 url="",
                 description="",
-                gravityFormula="",
-                gravityPoly="",
             )
             device_service.create(device)
 

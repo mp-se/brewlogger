@@ -20,6 +20,7 @@ async def list_batches(
     chipId: str = "*",
     active: str = "*",
     batch_service: BatchService = Depends(get_batch_service),
+    dependencies=[Depends(api_key_auth)],
 ) -> List[models.Batch]:
     logger.info(f"Endpoint GET /api/batch/?chipId={chipId}&active={active}")
     if chipId != "*":  # ChipId + Active flas
@@ -35,6 +36,21 @@ async def list_batches(
             return batch_service.search_active(False)
     # return all records
     return batch_service.list()
+
+
+@router.get(
+    "/taplist",
+    response_model=List[schemas.TapListBatch],
+)
+async def get_tap_list(
+    batch_service: BatchService = Depends(get_batch_service),
+) -> List[models.Batch]:
+    logger.info("Endpoint GET /api/batch/taplist")
+    tapList = []
+    for b in batch_service.search_tapList():
+        tap = schemas.TapListBatch(name=b.name, brewDate=b.brew_date, style=b.style, abv=b.abv, ebc=b.ebc, ibu=b.ibu, id=b.id, brewfatherId=b.brewfather_id)
+        tapList.append(tap)
+    return tapList
 
 
 @router.get(

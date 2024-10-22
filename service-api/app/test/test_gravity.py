@@ -25,6 +25,7 @@ def test_init(app_client):
         "ibu": 0.3,
         "fermentationChamber": 0,
         "fermentationSteps": "",
+        "tapList": True,
     }
 
     # Add new
@@ -240,8 +241,6 @@ def test_public2(app_client):
         "config": "",
         "url": "",
         "bleColor": "red",
-        "gravityFormula": "",
-        "gravityPoly": "",
     }
 
     r = app_client.post("/api/device/", json=data, headers=headers)
@@ -259,21 +258,3 @@ def test_public2(app_client):
 
 def test_validation(app_client):
     pass
-
-
-def test_formula(app_client):
-    data = [
-        {"a": 25.0, "g": 1.000},
-    ]
-    r = app_client.post("/api/gravity/calculate/", json=data, headers=headers)
-    assert r.status_code == 400
-
-    data = [
-        {"a": 25.0, "g": 1.000},
-        {"a": 35.0, "g": 1.010},
-        {"a": 45.0, "g": 1.020},
-    ]
-    r = app_client.post("/api/gravity/calculate/", json=data, headers=headers)
-    assert r.status_code == 200
-    data2 = json.loads(r.text)
-    print(data2)

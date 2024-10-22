@@ -133,6 +133,7 @@ async def create_pressure_using_json(
                 ibu=0.0,
                 fermentation_steps="",
                 # fermentation_chamber=None, # This is optional and should be assigned in UI
+                tapList=True,
             )
             batch_service.create(batch)
             batchList = batch_service.search_chipId_active(chipId, True)
@@ -153,8 +154,6 @@ async def create_pressure_using_json(
                 bleColor="",
                 url="",
                 description="",
-                gravityFormula="",
-                gravityPoly="",
             )
             device_service.create(device)
 

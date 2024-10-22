@@ -43,6 +43,15 @@ class BrewfatherBatch(BaseModel):
     brewfatherId: str
     fermentationSteps: str
 
+class TapListBatch(BaseModel):
+    name: str
+    brewDate: str
+    style: str
+    abv: float
+    ebc: float
+    ibu: float
+    id: int
+    brewfatherId: str
 
 ################################################################################
 

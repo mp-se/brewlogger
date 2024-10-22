@@ -25,6 +25,7 @@ def test_init(app_client):
         "ibu": 0.3,
         "fermentationChamber": 0,
         "fermentationSteps": "",
+        "tapList": True,
     }
 
     # Add new
