@@ -42,7 +42,7 @@ jobs:
           echo ${VERSION}
           echo ${SHORTREF}
           echo ${TAGS}
-                    
+
           # Set output parameters.
           echo "tags=${TAGS}" >> $GITHUB_OUTPUT
           echo "docker_image=${DOCKER_IMAGE}" >> $GITHUB_OUTPUT
