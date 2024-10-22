@@ -16,7 +16,12 @@ class SystemLogService(
         super(SystemLogService, self).__init__(models.SystemLog, db_session)
 
     def list(self, limit: int = 100) -> List[models.SystemLog]:
-        objs: List[models.SystemLog] = self.db_session.query(models.SystemLog).order_by(models.SystemLog.timestamp.desc()).limit(limit).all()
+        objs: List[models.SystemLog] = (
+            self.db_session.query(models.SystemLog)
+            .order_by(models.SystemLog.timestamp.desc())
+            .limit(limit)
+            .all()
+        )
         return objs
 
     def deleteByTimestamp(self, days: int = 30):

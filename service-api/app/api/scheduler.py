@@ -43,7 +43,6 @@ async def task_fetch_brewpi_temps():
                 writeKey(key, res["FridgeTemp"], ttl=300)
 
 
-
 async def task_forward_gravity():
     logger.info(f"Task: task_forward_gravity is running at {datetime.now()}")
 

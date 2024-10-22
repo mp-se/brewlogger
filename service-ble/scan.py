@@ -165,9 +165,7 @@ async def parse_gravitymon(device: BLEDevice):
                                         )
                                         logger.info(f"Response {r}.")
                                     except Exception as e:
-                                        logger.error(
-                                            f"Failed to post data, Error: {e}"
-                                        )
+                                        logger.error(f"Failed to post data, Error: {e}")
 
                             except Exception as e:
                                 logger.error(f"Failed to read data, Error: {e}")
