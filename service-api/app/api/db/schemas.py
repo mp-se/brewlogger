@@ -21,18 +21,6 @@ class ProxyRequest(BaseModel):
     header: Optional[str]
 
 
-class Formula(BaseModel):
-    poly1: str
-    poly2: str
-    poly3: str
-    poly4: str
-
-
-class FormulaPoint(BaseModel):
-    a: float  # Angle
-    g: float  # Gravity
-
-
 class Job(BaseModel):
     name: str
     nextRunIn: int
@@ -173,13 +161,6 @@ class DeviceBase(BaseModel):
     )
     ble_color: str = Field(
         min_length=0, max_length=15, description="Bluetooth color (Gravitymon)"
-    )
-    gravity_formula: str = Field(
-        min_length=0, max_length=100, description="Gravity formula (Gravitymon)"
-    )
-    gravity_poly: str = Field(
-        default="",
-        description="JSON document with gravity poly information (Gravitymon)",
     )
 
 
