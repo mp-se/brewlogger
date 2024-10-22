@@ -45,16 +45,16 @@ def migrate_database():
         "ALTER TABLE pressure ADD COLUMN active BOOLEAN",
         "UPDATE pressure SET active = true WHERE active IS NULL",
         "ALTER TABLE pressure ALTER COLUMN active SET NOT NULL",
-        # Changes from v0.5 & v0.6
+        # Changes from v0.5 -> v0.7
         "ALTER TABLE batch ADD COLUMN fermentation_chamber INTEGER",
         "ALTER TABLE gravity ADD COLUMN beer_temperature FLOAT",
         "ALTER TABLE gravity ADD COLUMN chamber_temperature FLOAT",
-        "ALTER TABLE device ADD COLUMN gravity_poly TEXT",
-        "UPDATE device SET gravity_poly = '' WHERE gravity_poly IS NULL",
-        "ALTER TABLE device ALTER COLUMN gravity_poly SET NOT NULL",
-        "ALTER TABLE device ADD COLUMN gravity_formula VARCHAR(100)",
-        "UPDATE device SET gravity_formula = '' WHERE gravity_formula IS NULL",
-        "ALTER TABLE device ALTER COLUMN gravity_formula SET NOT NULL",
+        #"ALTER TABLE device ADD COLUMN gravity_poly TEXT",
+        #"UPDATE device SET gravity_poly = '' WHERE gravity_poly IS NULL",
+        #"ALTER TABLE device ALTER COLUMN gravity_poly SET NOT NULL",
+        #"ALTER TABLE device ADD COLUMN gravity_formula VARCHAR(100)",
+        #"UPDATE device SET gravity_formula = '' WHERE gravity_formula IS NULL",
+        #"ALTER TABLE device ALTER COLUMN gravity_formula SET NOT NULL",
         "ALTER TABLE brewlogger ADD COLUMN gravity_forward_url VARCHAR(100)",
         "UPDATE brewlogger SET gravity_forward_url = '' WHERE gravity_forward_url IS NULL",
         "ALTER TABLE brewlogger ALTER COLUMN gravity_forward_url SET NOT NULL",
@@ -63,6 +63,11 @@ def migrate_database():
         "ALTER TABLE batch ALTER COLUMN fermentation_steps SET NOT NULL",
         "DROP INDEX ix_device_chip_id",
         "ALTER TABLE brewlogger DROP COLUMN mdns_timeout",
+        # Changes from 0.7 to 0.8
+        "ALTER TABLE device DROP COLUMN gravity_poly",
+        "ALTER TABLE device DROP COLUMN gravity_formula",
+        "ALTER TABLE batch ADD COLUMN tap_list BOOLEAN",
+        "UPDATE batch SET tap_list = true WHERE tap_list IS NULL",
     ]
 
     with engine.connect() as con:

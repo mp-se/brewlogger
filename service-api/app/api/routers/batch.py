@@ -13,7 +13,8 @@ router = APIRouter(prefix="/api/batch")
 
 
 @router.get(
-    "/", response_model=List[schemas.Batch], dependencies=[Depends(api_key_auth)]
+    "/",
+    response_model=List[schemas.Batch],
 )
 async def list_batches(
     chipId: str = "*",

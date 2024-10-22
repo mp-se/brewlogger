@@ -159,4 +159,3 @@ When posting data from Gravitymon use the following URL's which points to the sa
 
 - http://[your name or ip]/ispindel
 - http://[your name or ip]/gravity
-

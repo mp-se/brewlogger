@@ -81,6 +81,7 @@ class Batch(Base):
     chip_id = Column(String(6), nullable=False)
     description = Column(String(80), nullable=False)
     active = Column(Boolean, nullable=False)
+    tap_list = Column(Boolean, nullable=False)
 
     brew_date = Column(String, nullable=False)
     description = Column(String, nullable=False)

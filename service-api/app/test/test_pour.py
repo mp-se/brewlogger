@@ -1,5 +1,6 @@
 import json
 from api.config import get_settings
+from .conftest import truncate_database
 
 headers = {
     "Authorization": "Bearer " + get_settings().api_key,
@@ -8,6 +9,8 @@ headers = {
 
 
 def test_init(app_client):
+    truncate_database()
+
     data = {
         "name": "f1",
         "chipId": "DDDDDD",
@@ -81,3 +84,29 @@ def test_delete(app_client):
     assert r.status_code == 200
     data = json.loads(r.text)
     assert len(data) == 0
+
+
+def test_public(app_client):
+    data = {"pour": 0.1, "id": "1"}
+
+    # Add new
+    r = app_client.post("/api/pour/public", json=data, headers=headers)
+    assert r.status_code == 200
+
+    data = {"pour": 0.1, "id": "2"}
+
+    # Add new
+    r = app_client.post("/api/pour/public", json=data, headers=headers)
+    assert r.status_code == 404
+
+    data = {"volume": 0.1, "id": "1"}
+
+    # Add new
+    r = app_client.post("/api/pour/public", json=data, headers=headers)
+    assert r.status_code == 200
+
+    data = {"pour": 0.1, "volume": 10, "id": "1"}
+
+    # Add new
+    r = app_client.post("/api/pour/public", json=data, headers=headers)
+    assert r.status_code == 200

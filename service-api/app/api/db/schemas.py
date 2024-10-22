@@ -297,6 +297,9 @@ class BatchBase(BaseModel):
     active: bool = Field(
         description="If the batch is active or not, active = can recive new gravity data"
     )
+    tap_list: bool = Field(
+        description="If the batch should be visible in the tap list"
+    )
     brew_date: str = Field(
         min_length=0, max_length=20, description="When the brew date was"
     )
