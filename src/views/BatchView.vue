@@ -65,7 +65,7 @@
             <BsInputRadio
               v-model="batch.active"
               :options="activeOptions"
-              label="Active"
+              label="Receiving data"
               help=""
               :disabled="global.disabled"
             ></BsInputRadio>
@@ -74,12 +74,12 @@
             <BsInputRadio
               v-model="batch.tapList"
               :options="tapListOptions"
-              label="Active in tapList"
+              label="Tap list"
               help=""
               :disabled="global.disabled"
             ></BsInputRadio>
           </div>
-          <div class="col-md-8">
+          <div class="col-md-4">
             <BsSelect
               @change="brewfatherChanged(batch.brewfatherId)"
               v-model="batch.brewfatherId"
