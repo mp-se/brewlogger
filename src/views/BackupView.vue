@@ -268,8 +268,8 @@ async function restoreDevices(dl) {
     dl.map(async (d) => {
       logDebug('BackupView.restoreDevice()', 'Restore device', d.id)
 
-      if (d.gravityFormula === undefined) d.gravityFormula = ''
-      if (d.gravityPoly === undefined) d.gravityPoly = ''
+      //if (d.gravityFormula === undefined) d.gravityFormula = ''
+      //if (d.gravityPoly === undefined) d.gravityPoly = ''
       if (d.fermentationSteps === undefined) d.fermentationSteps = []
 
       console.log(d)
@@ -291,7 +291,8 @@ async function restoreBatches(bl) {
     bl.map(async (b) => {
       logDebug('BackupView.restoreBatch()', 'Restore batch', b.id)
 
-      if (b.fermentationSteps === undefined || b.fermentationSteps === null) b.fermentationSteps = ''
+      if (b.fermentationSteps === undefined || b.fermentationSteps === null)
+        b.fermentationSteps = ''
 
       const res = await fetch(global.baseURL + 'api/batch/', {
         method: 'POST',

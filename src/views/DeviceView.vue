@@ -156,13 +156,14 @@
               :disabled="global.disabled || device.config == ''"
             />&nbsp;
 
+            <!-- 
             <template v-if="device.software == 'Gravitymon' && !isNew()">
               <router-link :to="{ name: 'device-gravity' }">
                 <button type="button" class="btn btn-secondary w-2" :disabled="global.disabled">
                   Gravity formula
                 </button> </router-link
               >&nbsp;
-            </template>
+            </template>-->
 
             <BsModalConfirm
               :callback="deleteFermentationStepsCallback"

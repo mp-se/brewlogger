@@ -1,4 +1,6 @@
 <template>
+  <p></p>
+  <!-- 
   <div class="container">
     <p></p>
     <p class="h2">Gravity - Formula</p>
@@ -140,10 +142,11 @@
     </div>
 
     <canvas id="gravityChart" :hidden="polyResult == null"></canvas>
-  </div>
+  </div>-->
 </template>
 
 <script setup>
+/*
 import { onMounted, ref } from 'vue'
 import { validateCurrentForm } from '@/modules/utils'
 import { global, config, deviceStore } from '@/modules/pinia'
@@ -464,5 +467,5 @@ const save = () => {
     if (success) global.messageSuccess = 'Device saved'
     else global.messageError = 'Failed to update device'
   })
-}
+}*/
 </script>
