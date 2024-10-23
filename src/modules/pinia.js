@@ -5,6 +5,8 @@ import { useConfigStore } from '@/modules/configStore'
 import { useDeviceStore } from '@/modules/deviceStore'
 import { useBatchStore } from '@/modules/batchStore'
 import { useGravityStore } from '@/modules/gravityStore'
+import { usePressureStore } from '@/modules/pressureStore'
+import { usePourStore } from '@/modules/pourStore'
 import { useBrewfatherStore } from '@/modules/brewfatherStore'
 import { logDebug, logError } from '@/modules/logger'
 
@@ -17,9 +19,20 @@ const global = useGlobalStore(piniaInstance)
 const deviceStore = useDeviceStore(piniaInstance)
 const batchStore = useBatchStore(piniaInstance)
 const gravityStore = useGravityStore(piniaInstance)
+const pressureStore = usePressureStore(piniaInstance)
+const pourStore = usePourStore(piniaInstance)
 const brewfatherStore = useBrewfatherStore(piniaInstance)
 
-export { global, config, deviceStore, batchStore, gravityStore, brewfatherStore }
+export {
+  global,
+  config,
+  deviceStore,
+  batchStore,
+  gravityStore,
+  pressureStore,
+  pourStore,
+  brewfatherStore
+}
 
 const configCompare = ref(null)
 

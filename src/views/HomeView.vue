@@ -176,7 +176,7 @@ onMounted(() => {
   batchStore.batchList.forEach((batch) => {
     if (batch.active) {
       batchStore.getBatchDashboard(batch.id, (success, b) => {
-        console.log(success, b)
+        logDebug("HomeView.onMounted()", success, b)
         if (success) activeBatchList.value.push(b)
       })
     }

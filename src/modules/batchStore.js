@@ -16,16 +16,19 @@ export class Batch {
     ebc,
     ibu,
     brewfatherId,
-    gravity,
     fermentationChamber,
     fermentationSteps,
-    tapList
+    tapList,
+    gravity,
+    pressure,
+    pour
   ) {
     this.id = id === undefined ? 0 : id
     this.name = name === undefined ? '' : name
     this.description = description === undefined ? '' : description
     this.chipId = chipId === undefined ? '' : chipId
     this.active = active === undefined ? true : active
+    this.tapList = tapList === undefined ? true : tapList
     this.brewDate = brewDate === undefined ? '' : brewDate
     this.style = style === undefined ? '' : style
     this.brewer = brewer === undefined ? '' : brewer
@@ -37,9 +40,13 @@ export class Batch {
       fermentationChamber === undefined || fermentationChamber === null ? 0 : fermentationChamber
     this.fermentationSteps =
       fermentationSteps === undefined || fermentationSteps === null ? '' : fermentationSteps
+
     this.gravityCount = gravity === undefined || gravity === null ? 0 : gravity.length
-    this.tapList = tapList === undefined ? true : tapList
     this.gravity = []
+    this.pressureCount = pressure === undefined || pressure === null ? 0 : pressure.length
+    this.pressure = []
+    this.pourCount = pour === undefined || pour === null ? 0 : pour.length
+    this.pour = []
   }
 
   static compare(b1, b2) {
@@ -74,10 +81,12 @@ export class Batch {
       b.ebc,
       b.ibu,
       b.brewfatherId,
-      b.gravity,
       b.fermentationChamber,
       b.fermentationSteps,
-      b.tapList
+      b.tapList,
+      b.gravity,
+      b.pressure,
+      b.pour
     )
   }
 
@@ -95,12 +104,16 @@ export class Batch {
       0,
       0,
       0,
-      bd.gravity,
       bd.fermentationChamber,
       '',
-      bd.tapList
+      bd.tapList,
+      bd.gravity,
+      bd.pressure,
+      bd.pour
     )
     b.gravity = bd.gravity
+    b.pressure = bd.pressure
+    b.pour = bd.pour
     return b
   }
 
@@ -110,6 +123,7 @@ export class Batch {
       description: this.description,
       chipId: this.chipId,
       active: this.active,
+      tapList: this.tapList,
       brewDate: this.brewDate,
       style: this.style,
       brewer: this.brewer,
@@ -118,8 +132,7 @@ export class Batch {
       ibu: this.ibu,
       brewfatherId: this.brewfatherId,
       fermentationChamber: this.fermentationChamber, // Optional: Can be undefined (=0)
-      fermentationSteps: this.fermentationSteps, // Optional: Can be undefined (='')
-      tapList: this.tapList
+      fermentationSteps: this.fermentationSteps // Optional: Can be undefined (='')
     }
 
     // Optional: Can be undefined
@@ -165,12 +178,6 @@ export class Batch {
   get brewfatherId() {
     return this._brewfatherId
   }
-  get gravityCount() {
-    return this._gravityCount
-  }
-  get gravity() {
-    return this._gravity
-  }
   get fermentationChamber() {
     return this._fermentationChamber
   }
@@ -179,6 +186,24 @@ export class Batch {
   }
   get tapList() {
     return this._tapList
+  }
+  get gravityCount() {
+    return this._gravityCount
+  }
+  get gravity() {
+    return this._gravity
+  }
+  get pressureCount() {
+    return this._pressureCount
+  }
+  get pressure() {
+    return this._pressure
+  }
+  get pourCount() {
+    return this._pourCount
+  }
+  get pour() {
+    return this._pour
   }
 
   set id(id) {
@@ -231,6 +256,18 @@ export class Batch {
   }
   set gravity(gravity) {
     this._gravity = gravity
+  }
+  set pressureCount(pressureCount) {
+    this._pressureCount = pressureCount
+  }
+  set pressure(pressure) {
+    this._pressure = pressure
+  }
+  set pourCount(pourCount) {
+    this._pourCount = pourCount
+  }
+  set pour(pour) {
+    this._pour = pour
   }
 }
 

@@ -37,7 +37,7 @@
             name="upload"
             id="upload"
             label="Select backup file"
-            accept=".txt"
+            accept=".txt,.json"
             :disabled="global.disabled"
           >
           </BsFileUpload>
@@ -76,12 +76,14 @@ const progressMax = ref(0)
 const restoreErrors = ref(0)
 const backup = ref({
   meta: {
-    version: '0.5',
+    version: '0.8', // 0.5 is used for older version, 0.8 include pressure and pour data
     software: 'BrewLogger',
     created: ''
   },
   batches: [],
-  devices: []
+  devices: [],
+  pressure: [],
+  pour: []
 })
 
 async function getBatchList(callback) {
@@ -185,7 +187,7 @@ function restore() {
         const data = JSON.parse(text)
         if (
           data.meta.software === 'BrewLogger' &&
-          (data.meta.version === '0.5' || data.meta.version === '0.4')
+          (data.meta.version === '0.8' || data.meta.version === '0.5')
         ) {
           processRestore(data)
         } else {
@@ -193,7 +195,7 @@ function restore() {
         }
       } catch (error) {
         console.error(error)
-        global.messageFailed = 'Unable to parse configuration file for GravityMon.'
+        global.messageFailed = 'Unable to parse configuration file for BrewLogger.'
       }
     })
     reader.readAsText(fileElement.files[0])
@@ -207,7 +209,7 @@ async function processRestore(json) {
 
   try {
     var cntDevices = json.devices.length + deviceStore.deviceList.length
-    var cntBatches = json.batches.length * 2 + batchStore.batchList.length // For update we separate sending batch + gravity
+    var cntBatches = json.batches.length * 4 + batchStore.batchList.length // For update we separate sending batch + gravity + pressure + pour
 
     progress.value = 0
     progressMax.value = cntDevices + cntBatches
@@ -233,7 +235,7 @@ async function processRestore(json) {
 
     logDebug('BackupView.processRestore()', 'Restore completed')
   } catch (error) {
-    logError('‹', error)
+    logError('BackupView.processRestore()', error)
     restoreErrors.value += 1
     global.disabled = false
   }
@@ -270,8 +272,6 @@ async function restoreDevices(dl) {
 
       if (d.fermentationSteps === undefined) d.fermentationSteps = []
 
-      console.log(d)
-
       const res = await fetch(global.baseURL + 'api/device/', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: global.token },
@@ -290,7 +290,14 @@ async function restoreBatches(bl) {
       logDebug('BackupView.restoreBatch()', 'Restore batch', b.id)
 
       if (b.fermentationSteps === undefined || b.fermentationSteps === null)
+        // New in 0.7
         b.fermentationSteps = ''
+
+      if (b.tapList === undefined || b.tapList === null)
+        // New in 0.8
+        b.tapList = true
+
+      b.fermentationChamber = 0
 
       const res = await fetch(global.baseURL + 'api/batch/', {
         method: 'POST',
@@ -302,12 +309,18 @@ async function restoreBatches(bl) {
       const json = await res.json()
       updateProgress()
       b.id = json.id
+
+      // Update the batchId to match related data sets
       b.gravity.forEach((g) => {
         g.batchId = json.id
+      })
 
-        if (!Object.prototype.hasOwnProperty.call(g, 'active'))
-          // New in v0.5
-          g.active = true
+      b.pressure.forEach((p) => {
+        p.batchId = json.id
+      })
+
+      b.pour.forEach((p) => {
+        p.batchId = json.id
       })
 
       return b
@@ -316,7 +329,8 @@ async function restoreBatches(bl) {
 
   logDebug('BackupView.restoreBatch()', 'Results', results)
 
-  const results2 = await Promise.all(
+  // Restore gravity readings
+  await Promise.all(
     results.map(async (b) => {
       logDebug('BackupView.restoreBatch()', 'Restore batch gravity', b.id)
 
@@ -339,7 +353,55 @@ async function restoreBatches(bl) {
     })
   )
 
-  logDebug('BackupView.restoreBatch()', 'Results2', results2)
+  // Restore pressure readings
+  await Promise.all(
+    results.map(async (b) => {
+      logDebug('BackupView.restoreBatch()', 'Restore batch pressure', b.id)
+
+      if (b.pressure.length == 0) {
+        logInfo('BackupView.restoreBatch()', 'No pressure readings for batch', b.id)
+        updateProgress()
+        return {}
+      }
+
+      const res = await fetch(global.baseURL + 'api/pressure/list/', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: global.token },
+        body: JSON.stringify(b.pressure)
+        // signal: AbortSignal.timeout(global.fetchTimout),
+      })
+
+      const json = await res.json()
+      updateProgress()
+      return json
+    })
+  )
+
+  // Restore pour readings
+  await Promise.all(
+    results.map(async (b) => {
+      logDebug('BackupView.restoreBatch()', 'Restore batch pour', b.id)
+
+      if (b.pour.length == 0) {
+        logInfo('BackupView.restoreBatch()', 'No pour readings for batch', b.id)
+        updateProgress()
+        return {}
+      }
+
+      const res = await fetch(global.baseURL + 'api/pour/list/', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: global.token },
+        body: JSON.stringify(b.pour)
+        // signal: AbortSignal.timeout(global.fetchTimout),
+      })
+
+      const json = await res.json()
+      updateProgress()
+      return json
+    })
+  )
+
+  logDebug('BackupView.restoreBatch()')
 }
 
 async function deleteDevice(d) {

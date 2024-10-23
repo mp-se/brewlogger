@@ -8,6 +8,7 @@ import DeviceListView from '@/views/DeviceListView.vue'
 import DeviceBatchView from '@/views/DeviceBatchView.vue'
 import BatchView from '@/views/BatchView.vue'
 import BatchListView from '@/views/BatchListView.vue'
+import TapListView from '@/views/TapListView.vue'
 import BatchGravityListView from '@/views/BatchGravityListView.vue'
 import BatchGravityGraphView from '@/views/BatchGravityGraphView.vue'
 import BatchFermentationControlView from '@/views/BatchFermentationControlView.vue'
@@ -77,6 +78,11 @@ const routes = [
     component: BatchPressureView
   },
   {
+    path: '/taplist',
+    name: 'tap-list',
+    component: TapListView
+  },
+  {
     path: '/settings',
     name: 'settings',
     component: SettingsView
@@ -141,6 +147,12 @@ const items = ref([
     label: 'Batch',
     icon: 'IconGraphUpArrow',
     path: '/batch',
+    subs: []
+  },
+  {
+    label: 'Tap List',
+    icon: 'IconListUl',
+    path: '/taplist',
     subs: []
   },
   {

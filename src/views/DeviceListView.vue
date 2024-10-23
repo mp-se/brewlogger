@@ -21,7 +21,6 @@
     <table class="table table-striped">
       <thead>
         <tr>
-          <th scope="col" class="col-sm-1">ID</th>
           <th scope="col" class="col-sm-3">mDNS</th>
           <th scope="col" class="col-sm-1">Chip ID</th>
           <th scope="col" class="col-sm-1">Chip Family</th>
@@ -31,13 +30,12 @@
       </thead>
       <tbody>
         <tr v-for="d in deviceList" :key="d.id">
-          <th scope="row">{{ d.id }}</th>
-          <td>{{ d.mdns != '' ? d.mdns : d.url != '' ? d.url : d.description }}</td>
-          <td>
-            <pre>{{ d.chipId }}</pre>
+          <td class="fs-5">{{ d.mdns != '' ? d.mdns : d.url != '' ? d.url : d.description }}</td>
+          <td class="fs-5">
+            {{ d.chipId }}
           </td>
-          <td>{{ d.chipFamily }}</td>
-          <td>{{ d.software }}</td>
+          <td class="fs-5">{{ d.chipFamily }}</td>
+          <td class="fs-5">{{ d.software }}</td>
           <td>
             <router-link :to="{ name: 'device', params: { id: d.id } }">
               <button type="button" class="btn btn-primary btn-sm">

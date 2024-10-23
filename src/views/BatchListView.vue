@@ -39,25 +39,21 @@
     <table class="table table-striped">
       <thead>
         <tr>
-          <th scope="col" class="col-sm-1">ID</th>
           <th scope="col" class="col-sm-2">Name</th>
-          <th scope="col" class="col-sm-1">Brewdate</th>
-          <th scope="col" class="col-sm-1">Device</th>
+          <th scope="col" class="col-sm-2">Brewdate</th>
           <th scope="col" class="col-sm-1">Active</th>
-          <th scope="col" class="col-sm-1">Gravity #</th>
-          <th scope="col" class="col-sm-2">Action</th>
+          <th scope="col" class="col-sm-1">TapList</th>
+          <th scope="col" class="col-sm-2"># Grav / Press / Pour</th>
+          <th scope="col" class="col-sm-3">Action</th>
         </tr>
       </thead>
       <tbody>
         <tr v-for="b in batchList" :key="b.id">
-          <th scope="row">{{ b.id }}</th>
-          <td>{{ b.name }}</td>
-          <td>{{ b.brewDate }}</td>
-          <td>
-            <pre>{{ b.chipId }}</pre>
-          </td>
-          <td>{{ b.active }}</td>
-          <td>{{ b.gravityCount }}</td>
+          <td class="fs-5">{{ b.name }}</td>
+          <td class="fs-5">{{ b.brewDate }}</td>
+          <td><div class="form-check"><input class="form-check-input" v-model="b.active" type="checkbox" @click="toggleBatchActive(b.id)" /></div></td>
+          <td><div class="form-check"><input class="form-check-input" v-model="b.tapList" type="checkbox" @click="toggleBatchTapList(b.id)" /></div></td>
+          <td class="fs-5">{{ b.gravityCount }} / {{ b.pressureCount }} / {{ b.pourCount }}</td>
           <td>
             <router-link :to="{ name: 'batch', params: { id: b.id } }">
               <button type="button" class="btn btn-primary btn-sm">
@@ -151,6 +147,44 @@ onMounted(() => {
   })
 })
 
+async function toggleBatchTapList(id) {
+  logDebug('BatchListView.toggleBatchTapList()', id)
+
+  batchList.value.forEach((b) => {
+    if (b.id == id) {
+      logDebug('BatchListView.toggleBatchTapList()', 'Found Record', b)
+
+      b.tapList = !b.tapList
+      batchStore.updateBatch(b, (success) => {
+        if (success) {
+          logDebug('BatchListView.toggleBatchTapList()', 'Success')
+        } else {
+          global.messageError = 'Failed to load batch ' + id
+        }
+      })
+    }
+  })
+}
+
+async function toggleBatchActive(id) {
+  logDebug('BatchListView.toggleBatchActive()', id)
+
+  batchList.value.forEach((b) => {
+    if (b.id == id) {
+      logDebug('BatchListView.toggleBatchActive()', 'Found Record', b)
+
+      b.active = !b.active
+      batchStore.updateBatch(b, (success) => {
+        if (success) {
+          logDebug('BatchListView.toggleBatchActive()', 'Success')
+        } else {
+          global.messageError = 'Failed to load batch ' + id
+        }
+      })
+    }
+  })
+}
+
 function filterBatchList() {
   logDebug(
     'BatchListView.filterBatchList()',
@@ -167,8 +201,6 @@ function filterBatchList() {
       logDebug('BatchListView.filterBatchList()', 'exclude device: ', b.id, b.chipId)
       include = false
     }
-
-    console.log(global.batchListFilterActive)
 
     if (global.batchListFilterActive) {
       if (!b.active) {
@@ -261,7 +293,7 @@ function exportBatchCSV(id) {
   getBatch(id, (success, b) => {
     if (success) {
       logDebug('BatchListView.exportBatchCSV()', 'Collected batch')
-      var s = 'Name,Created,Temperature,Gravity,Angle,Battery,RSSI,CorrGravity,RunTime\n'
+      var s = 'Name,Created,Temperature,Gravity,Angle,Battery,RSSI,CorrGravity,RunTime,ChamberTemperature,BeerTemperature\n'
       b.gravity.forEach((g) => {
         s +=
           b.name +
@@ -281,6 +313,10 @@ function exportBatchCSV(id) {
           g.corrGravity +
           ',' +
           g.runTime +
+          ',' +
+          g.chamberTemperature +
+          ',' +
+          g.beerTemperature +
           '\n'
       })
 

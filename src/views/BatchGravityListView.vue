@@ -69,9 +69,8 @@
       <table class="table table-striped">
         <thead>
           <tr>
-            <th scope="col" class="col-sm-1">ID</th>
-            <th scope="col" class="col-sm-1">Active</th>
             <th scope="col" class="col-sm-2">Date</th>
+            <th scope="col" class="col-sm-1">Active</th>
             <th scope="col" class="col-sm-1">Gravity ({{ config.isGravitySG ? 'SG' : 'P' }})</th>
             <th scope="col" class="col-sm-1">Angle</th>
             <th scope="col" class="col-sm-1">Temp ({{ config.isTempC ? 'C' : 'F' }})</th>
@@ -83,27 +82,26 @@
 
         <tbody :key="forceRender">
           <tr v-for="g in gravityList" :key="g.id">
-            <th scope="row">{{ g.id }}</th>
-            <td><input v-model="g.active" type="checkbox" @click="updateGravity(g.id)" /></td>
-            <td>{{ g.created.substring(0, 10) }} {{ g.created.substring(11, 19) }}</td>
-            <td>
+            <td class="fs-5">{{ g.created.substring(0, 10) }} {{ g.created.substring(11, 19) }}</td>
+            <td><div class="form-check"><input class="form-check-input" v-model="g.active" type="checkbox" @click="updateGravity(g.id)" /></div></td>
+            <td class="fs-5">
               {{
                 config.isGravitySG
                   ? new Number(g.gravity).toFixed(3)
                   : new Number(gravityToPlato(g.gravity)).toFixed(2)
               }}
             </td>
-            <td>{{ new Number(g.angle).toFixed(2) }}</td>
-            <td>
+            <td class="fs-5">{{ new Number(g.angle).toFixed(2) }}</td>
+            <td class="fs-5">
               {{
                 config.isTempC
                   ? new Number(g.temperature).toFixed(2)
                   : new Number(tempToF(g.temperature)).toFixed(2)
               }}
             </td>
-            <td>{{ new Number(g.battery).toFixed(2) }}</td>
-            <td>{{ g.rssi }}</td>
-            <td>{{ new Number(g.runTime).toFixed(2) }}</td>
+            <td class="fs-5">{{ new Number(g.battery).toFixed(2) }}</td>
+            <td class="fs-5">{{ g.rssi }}</td>
+            <td class="fs-5">{{ new Number(g.runTime).toFixed(2) }}</td>
           </tr>
         </tbody>
       </table>

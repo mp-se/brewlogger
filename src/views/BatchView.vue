@@ -142,7 +142,6 @@
 
             <FermentationStepFragment :fermentationSteps="JSON.parse(batch.fermentationSteps)">
             </FermentationStepFragment>
-
           </div>
         </div>
 

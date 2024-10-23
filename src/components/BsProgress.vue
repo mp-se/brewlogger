@@ -1,12 +1,13 @@
 <template>
-  <div class="progress" style="height: 20px">
-    <div class="progress-bar" role="progressbar" :style="progressStyle"></div>
-  </div>
+  <div class="progress" role="progressbar" aria-label="testing" :aria-valuenow="progress" aria-valuemin="0" aria-valuemax="100" v-bind="$attrs">
+    <div class="progress-bar" :style="progressStyle">{{progress}}%</div>
+</div>
 </template>
 
 <script setup>
 /**
  * 2024-05-28 Bootstrap VueJS wrapper, Magnus Persson
+ * 2024-10-23 Updated with value for BrewLogger
  */
 
 import { computed } from 'vue'
