@@ -51,8 +51,26 @@
         <tr v-for="b in batchList" :key="b.id">
           <td class="fs-5">{{ b.name }}</td>
           <td class="fs-5">{{ b.brewDate }}</td>
-          <td><div class="form-check"><input class="form-check-input" v-model="b.active" type="checkbox" @click="toggleBatchActive(b.id)" /></div></td>
-          <td><div class="form-check"><input class="form-check-input" v-model="b.tapList" type="checkbox" @click="toggleBatchTapList(b.id)" /></div></td>
+          <td>
+            <div class="form-check">
+              <input
+                class="form-check-input"
+                v-model="b.active"
+                type="checkbox"
+                @click="toggleBatchActive(b.id)"
+              />
+            </div>
+          </td>
+          <td>
+            <div class="form-check">
+              <input
+                class="form-check-input"
+                v-model="b.tapList"
+                type="checkbox"
+                @click="toggleBatchTapList(b.id)"
+              />
+            </div>
+          </td>
           <td class="fs-5">{{ b.gravityCount }} / {{ b.pressureCount }} / {{ b.pourCount }}</td>
           <td>
             <router-link :to="{ name: 'batch', params: { id: b.id } }">
@@ -293,7 +311,8 @@ function exportBatchCSV(id) {
   getBatch(id, (success, b) => {
     if (success) {
       logDebug('BatchListView.exportBatchCSV()', 'Collected batch')
-      var s = 'Name,Created,Temperature,Gravity,Angle,Battery,RSSI,CorrGravity,RunTime,ChamberTemperature,BeerTemperature\n'
+      var s =
+        'Name,Created,Temperature,Gravity,Angle,Battery,RSSI,CorrGravity,RunTime,ChamberTemperature,BeerTemperature\n'
       b.gravity.forEach((g) => {
         s +=
           b.name +

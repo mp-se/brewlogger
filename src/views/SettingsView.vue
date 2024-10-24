@@ -44,7 +44,7 @@
             :options="pressureOptions"
             label="Gravity Forward URL"
             type="url"
-            help="Enter URL to forward received gravity readings to in iSpindle format"
+            help="Enter URL to forward received gravity readings to in iSpindle format, transmission will be done every 15 minutes."
             width=""
             :disabled="global.disabled"
           ></BsInputText>

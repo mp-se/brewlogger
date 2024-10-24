@@ -47,6 +47,15 @@ export class Batch {
     this.pressure = []
     this.pourCount = pour === undefined || pour === null ? 0 : pour.length
     this.pour = []
+
+    // Sort the pour list in decending order (newest first) to extract the last reported volume for the batch, undefined if nothing is reported
+    if (pour !== undefined && pour !== null) {
+      pour.sort((a, b) => Date.parse(a.created) - Date.parse(b.created))
+      if (pour.length) {
+        this.lastPourVolume = pour[0].volume
+        this.lastPourMaxVolume = pour[0].maxVolume
+      }
+    }
   }
 
   static compare(b1, b2) {
@@ -205,6 +214,12 @@ export class Batch {
   get pour() {
     return this._pour
   }
+  get lastPourVolume() {
+    return this._lastPourVolume
+  }
+  get lastPourMaxVolume() {
+    return this._lastPourMaxVolume
+  }
 
   set id(id) {
     this._id = id
@@ -269,6 +284,12 @@ export class Batch {
   set pour(pour) {
     this._pour = pour
   }
+  set lastPourVolume(lastPourVolume) {
+    this._lastPourVolume = lastPourVolume
+  }
+  set lastPourMaxVolume(lastPourMaxVolume) {
+    this._lastPourMaxVolume = lastPourMaxVolume
+  }
 }
 
 export const useBatchStore = defineStore('batchStore', {
@@ -306,7 +327,7 @@ export const useBatchStore = defineStore('batchStore', {
           return res.json()
         })
         .then((json) => {
-          logDebug(json)
+          logDebug('batchStore.getBatchList()', json)
           this.batches = []
 
           json.forEach((b) => {

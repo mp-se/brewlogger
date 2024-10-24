@@ -28,6 +28,7 @@
         {
           "pour": 24.56,
           "volume": 1.0426,
+          "maxVolume": 4,
           "created": "2024-09-28T16:13:24.548583",
           "active": true,
           "batchId": 34,
@@ -35,7 +36,8 @@
         },
         {
           "pour": 0,
-          "volume": 1.0426,
+          "volume": 0.9456,
+          "maxVolume": 4,
           "created": "2024-09-28T16:42:27.870075",
           "active": true,
           "batchId": 34,

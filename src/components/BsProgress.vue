@@ -1,7 +1,15 @@
 <template>
-  <div class="progress" role="progressbar" aria-label="testing" :aria-valuenow="progress" aria-valuemin="0" aria-valuemax="100" v-bind="$attrs">
-    <div class="progress-bar" :style="progressStyle">{{progress}}%</div>
-</div>
+  <div
+    class="progress"
+    role="progressbar"
+    aria-label="testing"
+    :aria-valuenow="progress"
+    aria-valuemin="0"
+    aria-valuemax="100"
+    v-bind="$attrs"
+  >
+    <div class="progress-bar" :style="progressStyle">{{ Number(progress).toFixed(0) }}%</div>
+  </div>
 </template>
 
 <script setup>

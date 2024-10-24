@@ -3,17 +3,18 @@ import { global } from '@/modules/pinia'
 import { logDebug, logError } from '@/modules/logger'
 
 export class Pour {
-  constructor(id, pour, volume, created, batchId, active) {
+  constructor(id, pour, volume, maxVolume, created, batchId, active) {
     this.id = id === undefined ? 0 : id
     this.pour = pour === undefined ? 0.0 : pour
     this.volume = volume === undefined ? 0.0 : volume
+    this.maxVolume = maxVolume === undefined ? 0.0 : maxVolume
     this.created = created === undefined ? '' : created
     this.batchId = batchId === undefined ? 0 : batchId
     this.active = active === undefined ? true : active
   }
 
   static fromJson(p) {
-    return new Pour(p.id, p.pour, p.volume, p.created, p.batchId, p.active)
+    return new Pour(p.id, p.pour, p.volume, p.maxVolume, p.created, p.batchId, p.active)
   }
 
   toJson() {
@@ -22,6 +23,7 @@ export class Pour {
       //"batchId": this.batchId,
       pour: this.pour,
       volume: this.volume,
+      maxVolume: this.maxVolume,
       created: this.created,
       active: this.active
     }
@@ -37,6 +39,9 @@ export class Pour {
   }
   get volume() {
     return this._volume
+  }
+  get maxVolume() {
+    return this._maxVolume
   }
   get created() {
     return this._created
@@ -56,6 +61,9 @@ export class Pour {
   }
   set volume(volume) {
     this._volume = volume
+  }
+  set maxVolume(maxVolume) {
+    this._maxVolume = maxVolume
   }
   set created(created) {
     this._created = created

@@ -83,7 +83,16 @@
         <tbody :key="forceRender">
           <tr v-for="g in gravityList" :key="g.id">
             <td class="fs-5">{{ g.created.substring(0, 10) }} {{ g.created.substring(11, 19) }}</td>
-            <td><div class="form-check"><input class="form-check-input" v-model="g.active" type="checkbox" @click="updateGravity(g.id)" /></div></td>
+            <td>
+              <div class="form-check">
+                <input
+                  class="form-check-input"
+                  v-model="g.active"
+                  type="checkbox"
+                  @click="updateGravity(g.id)"
+                />
+              </div>
+            </td>
             <td class="fs-5">
               {{
                 config.isGravitySG
@@ -224,7 +233,7 @@ onMounted(() => {
   gravityStore.getGravityListForBatch(router.currentRoute.value.params.id, (success, gl) => {
     if (success) {
       gravityList.value = gl
-      logDebug(gravityList.value)
+      logDebug('BatchGravityListView.onMounted()', gravityList.value)
 
       gravityStats.value = getGravityDataAnalytics(gravityList.value)
 
