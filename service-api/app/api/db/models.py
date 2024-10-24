@@ -151,6 +151,7 @@ class Pour(Base):
     id = Column(Integer, primary_key=True, index=True, nullable=False)
     pour = Column(Float, nullable=False)
     volume = Column(Float, nullable=False)
+    max_volume = Column(Float, nullable=False)
     created = Column(DateTime, nullable=False)
     active = Column(Boolean, nullable=False)
 

@@ -263,8 +263,8 @@ def test_validation(app_client):
         "ibu": 0.3,
         "fermentationChamber": 0,
         "fermentationSteps": "",
-         "tapList": True,
-   }
+        "tapList": True,
+    }
 
     # Add new
     r = app_client.post("/api/batch/", json=data, headers=headers)

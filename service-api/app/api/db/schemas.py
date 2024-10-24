@@ -43,6 +43,7 @@ class BrewfatherBatch(BaseModel):
     brewfatherId: str
     fermentationSteps: str
 
+
 class TapListBatch(BaseModel):
     name: str
     brewDate: str
@@ -52,6 +53,7 @@ class TapListBatch(BaseModel):
     ibu: float
     id: int
     brewfatherId: str
+
 
 ################################################################################
 
@@ -266,8 +268,9 @@ class Pressure(PressureCreate):
 
 class PourBase(BaseModel):
     model_config = ConfigDict(alias_generator=to_camel, populate_by_name=True)
-    pour: float = Field(description="How much was poured from the device")
-    volume: float = Field(description="Total volume left in the device")
+    pour: float = Field(description="How much was poured from the device in liters")
+    volume: float = Field(description="Volume left in the device in liters")
+    max_volume: float = Field(description="Total volume the container can hold in liters")
     created: Optional[datetime] | None = Field(
         default=None, description="If undefined the current time will be used"
     )
@@ -306,9 +309,7 @@ class BatchBase(BaseModel):
     active: bool = Field(
         description="If the batch is active or not, active = can recive new gravity data"
     )
-    tap_list: bool = Field(
-        description="If the batch should be visible in the tap list"
-    )
+    tap_list: bool = Field(description="If the batch should be visible in the tap list")
     brew_date: str = Field(
         min_length=0, max_length=20, description="When the brew date was"
     )

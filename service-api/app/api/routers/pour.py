@@ -29,7 +29,7 @@ async def list_pours(
 @router.get(
     "/{pour_id}",
     response_model=schemas.Pour,
-    responses={404: {"description": "Gravity not found"}},
+    responses={404: {"description": "Pour not found"}},
     dependencies=[Depends(api_key_auth)],
 )
 async def get_pour_by_id(
@@ -54,6 +54,21 @@ async def create_pour(
         pour.created = datetime.now()
         logger.info(f"Added timestamp to pour record {pour.created}")
     return pour_service.create(pour)
+
+
+@router.post(
+    "/list/",
+    response_model=List[schemas.Pour],
+    status_code=201,
+    responses={409: {"description": "Conflict Error"}},
+    dependencies=[Depends(api_key_auth)],
+)
+async def create_pour_list(
+    pour_list: List[schemas.PourCreate],
+    pour_service: PourService = Depends(get_pour_service),
+) -> List[models.Pour]:
+    logger.info("Endpoint POST /api/pour/list/")
+    return pour_service.createList(pour_list)
 
 
 @router.patch(
@@ -89,6 +104,7 @@ async def create_pour_using_kegmon_format(
 
         pour = 0
         volume = 0
+        maxVolume = 0
 
         if "pour" in req_json:
             logger.info(
@@ -102,12 +118,19 @@ async def create_pour_using_kegmon_format(
             )
             volume = req_json["volume"]
 
+        if "maxVolume" in req_json:
+            logger.info(
+                "Detected maxVolume information searching for batch for %s", req_json["id"]
+            )
+            maxVolume = req_json["maxVolume"]
+
         # Check if there is an active batch
         batch = batch_service.get(int(req_json["id"]))
 
         pour = schemas.PourCreate(
             pour=pour,
             volume=volume,
+            maxVolume=maxVolume,
             batch_id=batch.id,
             created=datetime.now(),
             active=True,

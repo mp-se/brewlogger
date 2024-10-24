@@ -1,3 +1,4 @@
+from typing import List
 from fastapi import HTTPException
 from sqlalchemy.orm import Session
 from api.db import models, schemas
@@ -19,3 +20,20 @@ class PourService(BaseService[models.Pour, schemas.PourCreate, schemas.PourUpdat
                 detail=f"Batch with id = {obj.batch_id} not found.",
             )
         return super(PourService, self).create(obj)
+
+    def createList(self, lst: List[schemas.PourCreate]) -> List[models.Pour]:
+        logger.info("Adding %d pour records for batch", len(lst))
+        if len(lst) == 0:
+            raise HTTPException(
+                status_code=400,
+                detail="No pour readings in request.",
+            )
+
+        batch = self.db_session.get(models.Batch, lst[0].batch_id)
+        logger.info("Searching for batch with id=%s %s", lst[0].batch_id, batch)
+        if batch is None:
+            raise HTTPException(
+                status_code=400,
+                detail=f"Batch with id = {lst[0].batch_id} not found.",
+            )
+        return super(PourService, self).createList(lst)

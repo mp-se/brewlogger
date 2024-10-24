@@ -49,12 +49,12 @@ def migrate_database():
         "ALTER TABLE batch ADD COLUMN fermentation_chamber INTEGER",
         "ALTER TABLE gravity ADD COLUMN beer_temperature FLOAT",
         "ALTER TABLE gravity ADD COLUMN chamber_temperature FLOAT",
-        #"ALTER TABLE device ADD COLUMN gravity_poly TEXT",
-        #"UPDATE device SET gravity_poly = '' WHERE gravity_poly IS NULL",
-        #"ALTER TABLE device ALTER COLUMN gravity_poly SET NOT NULL",
-        #"ALTER TABLE device ADD COLUMN gravity_formula VARCHAR(100)",
-        #"UPDATE device SET gravity_formula = '' WHERE gravity_formula IS NULL",
-        #"ALTER TABLE device ALTER COLUMN gravity_formula SET NOT NULL",
+        # "ALTER TABLE device ADD COLUMN gravity_poly TEXT",
+        # "UPDATE device SET gravity_poly = '' WHERE gravity_poly IS NULL",
+        # "ALTER TABLE device ALTER COLUMN gravity_poly SET NOT NULL",
+        # "ALTER TABLE device ADD COLUMN gravity_formula VARCHAR(100)",
+        # "UPDATE device SET gravity_formula = '' WHERE gravity_formula IS NULL",
+        # "ALTER TABLE device ALTER COLUMN gravity_formula SET NOT NULL",
         "ALTER TABLE brewlogger ADD COLUMN gravity_forward_url VARCHAR(100)",
         "UPDATE brewlogger SET gravity_forward_url = '' WHERE gravity_forward_url IS NULL",
         "ALTER TABLE brewlogger ALTER COLUMN gravity_forward_url SET NOT NULL",
@@ -68,6 +68,9 @@ def migrate_database():
         "ALTER TABLE device DROP COLUMN gravity_formula",
         "ALTER TABLE batch ADD COLUMN tap_list BOOLEAN",
         "UPDATE batch SET tap_list = true WHERE tap_list IS NULL",
+        "ALTER TABLE pour ADD COLUMN max_volume FLOAT",
+        "UPDATE pour SET max_volume = 0 WHERE max_volume IS NULL",
+        "ALTER TABLE pour ALTER COLUMN max_volume SET NOT NULL",
     ]
 
     with engine.connect() as con:

@@ -48,7 +48,16 @@ async def get_tap_list(
     logger.info("Endpoint GET /api/batch/taplist")
     tapList = []
     for b in batch_service.search_tapList():
-        tap = schemas.TapListBatch(name=b.name, brewDate=b.brew_date, style=b.style, abv=b.abv, ebc=b.ebc, ibu=b.ibu, id=b.id, brewfatherId=b.brewfather_id)
+        tap = schemas.TapListBatch(
+            name=b.name,
+            brewDate=b.brew_date,
+            style=b.style,
+            abv=b.abv,
+            ebc=b.ebc,
+            ibu=b.ibu,
+            id=b.id,
+            brewfatherId=b.brewfather_id,
+        )
         tapList.append(tap)
     return tapList
 
