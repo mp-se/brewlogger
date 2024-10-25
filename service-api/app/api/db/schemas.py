@@ -70,6 +70,9 @@ class BrewLoggerBase(BaseModel):
     gravity_format: str = Field(
         min_length=0, max_length=2, description="Gravity format for presentation"
     )
+    volume_format: str = Field(
+        min_length=0, max_length=2, description="Volume format for presentation"
+    )
     version: str = Field(
         min_length=0, max_length=10, description="Database software version"
     )

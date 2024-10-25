@@ -23,6 +23,7 @@ class BrewLogger(Base):
     temperature_format = Column(String(3), nullable=False)
     pressure_format = Column(String(3), nullable=False)
     gravity_format = Column(String(3), nullable=False)
+    volume_format = Column(String(3), nullable=False)
     gravity_forward_url = Column(String(100), nullable=False)
     dark_mode = Column(Boolean, nullable=False)
 
