@@ -1,5 +1,6 @@
 from typing import List
 from fastapi import HTTPException
+from sqlalchemy import select
 from sqlalchemy.orm import Session
 from api.db import models, schemas
 from .base import BaseService
@@ -37,3 +38,13 @@ class PourService(BaseService[models.Pour, schemas.PourCreate, schemas.PourUpdat
                 detail=f"Batch with id = {lst[0].batch_id} not found.",
             )
         return super(PourService, self).createList(lst)
+
+    def search_by_batchId(self, batchId: int) -> List[models.Pour]:
+        filters = {"batch_id": batchId}
+        objs: List[self.model] = self.db_session.scalars(
+            select(self.model).filter_by(**filters)
+        ).all()
+        logger.info(
+            "Fetched pour based on batchId=%d, records found %d", batchId, len(objs)
+        )
+        return objs

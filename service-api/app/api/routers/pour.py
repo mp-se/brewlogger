@@ -127,6 +127,18 @@ async def create_pour_using_kegmon_format(
         # Check if there is an active batch
         batch = batch_service.get(int(req_json["id"]))
 
+        pour_list = pour_service.search_by_batchId(batch.id)
+        pour_list.sort(key=lambda x: x.created, reverse=True)
+
+        for p in pour_list:
+            logging.info(f"{p.created} {p.volume}")
+
+        # If we get a volume update and no pour, check if the value has changed
+        if len(pour_list) > 0 and pour == 0: 
+            if pour_list[0].volume == volume:
+                logging.info("Volume recevied in pour update has not changed, ignoring data.")
+                return None
+
         pour = schemas.PourCreate(
             pour=pour,
             volume=volume,
