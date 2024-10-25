@@ -12,7 +12,7 @@
       <thead>
         <tr>
           <th scope="col" class="col-sm-2">Brewdate</th>
-          <th scope="col" class="col-sm-2">Name</th>
+          <th scope="col" class="col-sm-3">Name</th>
           <th scope="col" class="col-sm-3">Style</th>
           <th scope="col" class="col-sm-3">Volume</th>
           <th scope="col" class="col-sm-1"></th>
@@ -32,11 +32,13 @@
                 <i class="bi bi-pencil-square"></i>
               </button> </router-link
             >&nbsp;
-            <router-link :to="{ name: 'tap-pour-list', params: { id: b.id } }">
-              <button type="button" class="btn btn-success btn-sm">
-                <i class="bi bi-list"></i>
-              </button> </router-link
-            >&nbsp;
+            <template v-if="b.pourCount > 0">
+              <router-link :to="{ name: 'tap-pour-list', params: { id: b.id } }">
+                <button type="button" class="btn btn-success btn-sm">
+                  <i class="bi bi-list"></i>
+                </button> </router-link
+              >&nbsp;
+            </template>
           </td>
         </tr>
       </tbody>

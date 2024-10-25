@@ -30,6 +30,22 @@ export function tempToC(f) {
   return (f - 32.0) / 1.8
 }
 
+export function volumeLtoUSGallon(v) {
+  return v * 0.264172052
+}
+
+export function volumeLtoUKGallon(v) {
+  return v * 0.2199692483
+}
+
+export function volumeCLtoUSOZ(v) {
+  return v * 0.34
+}
+
+export function volumeCLtoUKOZ(v) {
+  return v == 0.0 ? 0.0 : v / 2.84
+}
+
 export function isValidJson(s) {
   try {
     JSON.stringify(JSON.parse(s))

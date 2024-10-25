@@ -9,6 +9,7 @@ export const useConfigStore = defineStore('config', {
       temperatureFormat: '',
       pressureFormat: '',
       gravityFormat: '',
+      volumeFormat: '',
       appVersion: 0,
       gravityForwardUrl: '',
       dark_mode: false // TODO: Name used in components
@@ -29,7 +30,16 @@ export const useConfigStore = defineStore('config', {
     },
     isGravityP() {
       return this.gravityFormat == 'P' ? true : false
-    }
+    },
+    isVolumeMetric() {
+      return this.volumeFormat == 'L' ? true : false
+    },
+    isVolumeUs() {
+      return this.volumeFormat == 'US' ? true : false
+    },
+    isVolumeUk() {
+      return this.volumeFormat == 'UK' ? true : false
+    },
   },
   actions: {
     load(callback) {
@@ -48,6 +58,7 @@ export const useConfigStore = defineStore('config', {
           this.temperatureFormat = json.temperatureFormat
           this.pressureFormat = json.pressureFormat
           this.gravityFormat = json.gravityFormat
+          this.volumeFormat = json.volumeFormat
           this.appVersion = json.appVersion
           this.gravityForwardUrl = json.gravityForwardUrl
           this.dark_mode = json.darkMode
@@ -67,6 +78,7 @@ export const useConfigStore = defineStore('config', {
         pressureFormat: this.pressureFormat,
         gravityFormat: this.gravityFormat,
         temperatureFormat: this.temperatureFormat,
+        volumeFormat: this.volumeFormat,
         darkMode: this.dark_mode,
         gravityForwardUrl: this.gravityForwardUrl,
         version: ''

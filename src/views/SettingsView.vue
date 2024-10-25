@@ -6,7 +6,7 @@
 
     <form @submit.prevent="saveSettings" class="needs-validation" novalidate>
       <div class="row">
-        <div class="col-md-4">
+        <div class="col-md-3">
           <BsInputRadio
             v-model="config.temperatureFormat"
             :options="temperatureOptions"
@@ -15,7 +15,7 @@
             :disabled="global.disabled"
           ></BsInputRadio>
         </div>
-        <div class="col-md-4">
+        <div class="col-md-3">
           <BsInputRadio
             v-model="config.gravityFormat"
             :options="gravityOptions"
@@ -24,11 +24,20 @@
             :disabled="global.disabled"
           ></BsInputRadio>
         </div>
-        <div class="col-md-4">
+        <div class="col-md-3">
           <BsInputRadio
             v-model="config.pressureFormat"
             :options="pressureOptions"
             label="Pressure Format"
+            width=""
+            :disabled="global.disabled"
+          ></BsInputRadio>
+        </div>
+        <div class="col-md-3">
+          <BsInputRadio
+            v-model="config.volumeFormat"
+            :options="volumeOptions"
+            label="Volume Format"
             width=""
             :disabled="global.disabled"
           ></BsInputRadio>
@@ -111,6 +120,12 @@ import { logDebug } from '@/modules/logger'
 const temperatureOptions = ref([
   { label: 'Celsius °C', value: 'C' },
   { label: 'Fahrenheit °F', value: 'F' }
+])
+
+const volumeOptions = ref([
+  { label: 'Metric (Liters)', value: 'L' },
+  { label: 'US', value: 'US' },
+  { label: 'Imperial (UK)', value: 'UK' }
 ])
 
 const gravityOptions = ref([
