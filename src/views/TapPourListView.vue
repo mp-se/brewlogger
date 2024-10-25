@@ -8,7 +8,7 @@
       <thead>
         <tr>
           <th scope="col" class="col-sm-2">Date&nbsp;
-            <a class="icon-link icon-link-hover" @click="sortPourList('date', 'date')">
+            <a class="icon-link icon-link-hover" @click="sortPourList('created', 'date')">
               <i class="bi bi-sort-alpha-down"></i>
             </a></th>
           <th scope="col" class="col-sm-2">
