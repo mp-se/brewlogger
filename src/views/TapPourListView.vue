@@ -7,10 +7,25 @@
     <table class="table table-striped">
       <thead>
         <tr>
-          <th scope="col" class="col-sm-2">Date</th>
-          <th scope="col" class="col-sm-2">Pour ({{ config.isVolumeMetric ? 'cl' : 'fl. oz.' }})</th>
-          <th scope="col" class="col-sm-2">Volume ({{ config.isVolumeMetric ? 'Liters' : 'Gallon' }})</th>
-          <th scope="col" class="col-sm-2">Max Volume ({{ config.isVolumeMetric ? 'Liters' : 'Gallon' }})</th>
+          <th scope="col" class="col-sm-2">Date&nbsp;
+            <a class="icon-link icon-link-hover" @click="sortPourList('date', 'date')">
+              <i class="bi bi-sort-alpha-down"></i>
+            </a></th>
+          <th scope="col" class="col-sm-2">
+            Pour ({{ config.isVolumeMetric ? 'cl' : 'fl. oz.' }})&nbsp;
+            <a class="icon-link icon-link-hover" @click="sortPourList('pour', 'num')">
+              <i class="bi bi-sort-alpha-down"></i>
+            </a>
+          </th>
+          <th scope="col" class="col-sm-2">
+            Volume ({{ config.isVolumeMetric ? 'Liters' : 'Gallon' }})&nbsp;
+            <a class="icon-link icon-link-hover" @click="sortPourList('volume', 'num')">
+              <i class="bi bi-sort-alpha-down"></i>
+            </a>
+          </th>
+          <th scope="col" class="col-sm-2">
+            Max Volume ({{ config.isVolumeMetric ? 'Liters' : 'Gallon' }})
+          </th>
         </tr>
       </thead>
 
@@ -40,19 +55,49 @@ import { onMounted, ref } from 'vue'
 import { pourStore, batchStore, config } from '@/modules/pinia'
 import router from '@/modules/router'
 import { logDebug, logError } from '@/modules/logger'
-import { volumeLtoUSGallon, volumeLtoUKGallon, volumeCLtoUSOZ, volumeCLtoUKOZ } from '@/modules/utils' 
+import {
+  volumeLtoUSGallon,
+  volumeLtoUKGallon,
+  volumeCLtoUSOZ,
+  volumeCLtoUKOZ
+} from '@/modules/utils'
 
 const pourList = ref(null)
 const forceRender = ref(0)
 const batchName = ref('')
 
+const sortDirection = ref(true)
+
+function sortPourList(column, type) {
+  // Type: str, num, date
+  logDebug('TapPourListView.sortBatches()', column, sortDirection.value)
+
+  if (sortDirection.value) {
+    if (type == 'str') pourList.value.sort((a, b) => a[column].localeCompare(b[column]))
+    else if (type == 'date')
+    pourList.value.sort((a, b) => Date.parse(a[column]) - Date.parse(b[column]))
+    else pourList.value.sort((a, b) => a[column] - b[column])
+  } else {
+    if (type == 'str') pourList.value.sort((a, b) => b[column].localeCompare(a[column]))
+    else if (type == 'date')
+    pourList.value.sort((a, b) => Date.parse(b[column]) - Date.parse(a[column]))
+    else pourList.value.sort((a, b) => b[column] - a[column])
+  }
+
+  sortDirection.value = !sortDirection.value
+}
+
 function convertCL(v) {
   v = v / 100 // Convert to CL
-  return Number(config.isVolumeMetric ? v : (config.isVolumeUk ? volumeCLtoUKOZ(v) : volumeCLtoUSOZ(v) )).toFixed(0)
+  return Number(
+    config.isVolumeMetric ? v : config.isVolumeUk ? volumeCLtoUKOZ(v) : volumeCLtoUSOZ(v)
+  ).toFixed(0)
 }
 
 function convertL(v) {
-  return Number(config.isVolumeMetric ? v : (config.isVolumeUk ? volumeLtoUKGallon(v) : volumeLtoUSGallon(v) )).toFixed(2)
+  return Number(
+    config.isVolumeMetric ? v : config.isVolumeUk ? volumeLtoUKGallon(v) : volumeLtoUSGallon(v)
+  ).toFixed(2)
 }
 
 onMounted(() => {

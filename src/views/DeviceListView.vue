@@ -21,10 +21,22 @@
     <table class="table table-striped">
       <thead>
         <tr>
-          <th scope="col" class="col-sm-3">mDNS</th>
-          <th scope="col" class="col-sm-1">Chip ID</th>
-          <th scope="col" class="col-sm-1">Chip Family</th>
-          <th scope="col" class="col-sm-2">Software</th>
+          <th scope="col" class="col-sm-3">mDNS&nbsp;
+            <a class="icon-link icon-link-hover" @click="sortDeviceList('mdns')">
+              <i class="bi bi-sort-alpha-down"></i>
+            </a></th>
+          <th scope="col" class="col-sm-1">Chip ID&nbsp;
+            <a class="icon-link icon-link-hover" @click="sortDeviceList('chipId')">
+              <i class="bi bi-sort-alpha-down"></i>
+            </a></th>
+          <th scope="col" class="col-sm-1">Chip Family&nbsp;
+            <a class="icon-link icon-link-hover" @click="sortDeviceList('chipFamily')">
+              <i class="bi bi-sort-alpha-down"></i>
+            </a></th>
+          <th scope="col" class="col-sm-2">Software&nbsp;
+            <a class="icon-link icon-link-hover" @click="sortDeviceList('software')">
+              <i class="bi bi-sort-alpha-down"></i>
+            </a></th>
           <th scope="col" class="col-sm-2">Action</th>
         </tr>
       </thead>
@@ -120,6 +132,21 @@ const confirmDeleteId = ref(null)
 const deviceList = ref(null)
 const { updatedDeviceData, deviceListFilterSoftware } = storeToRefs(global)
 
+const sortDirection = ref(true)
+
+function sortDeviceList(column) {
+  // Type: str
+  logDebug('DeviceListView.sortBatches()', column, sortDirection.value)
+
+  if (sortDirection.value) {
+    deviceList.value.sort((a, b) => a[column].localeCompare(b[column]))
+  } else {
+    deviceList.value.sort((a, b) => b[column].localeCompare(a[column]))
+  }
+
+  sortDirection.value = !sortDirection.value
+}
+
 watch(updatedDeviceData, () => {
   updateDeviceList()
 })
@@ -139,9 +166,9 @@ const searchSelected = ref('')
 
 onMounted(() => {
   logDebug('DeviceListView.onMounted()')
-  updateDeviceList()
   deviceList.value = deviceStore.deviceList
   filterDeviceList()
+  sortDeviceList('mdns')
 })
 
 function filterDeviceList() {

@@ -39,7 +39,7 @@ export const useConfigStore = defineStore('config', {
     },
     isVolumeUk() {
       return this.volumeFormat == 'UK' ? true : false
-    },
+    }
   },
   actions: {
     load(callback) {

@@ -39,8 +39,18 @@
     <table class="table table-striped">
       <thead>
         <tr>
-          <th scope="col" class="col-sm-2">Name</th>
-          <th scope="col" class="col-sm-2">Brewdate</th>
+          <th scope="col" class="col-sm-2">
+            Name&nbsp;
+            <a class="icon-link icon-link-hover" @click="sortBatchList('name', 'str')">
+              <i class="bi bi-sort-alpha-down"></i>
+            </a>
+          </th>
+          <th scope="col" class="col-sm-2">
+            Brewdate&nbsp;
+            <a class="icon-link icon-link-hover" @click="sortBatchList('brewDate', 'date')">
+              <i class="bi bi-sort-alpha-down"></i>
+            </a>
+          </th>
           <th scope="col" class="col-sm-1">Active</th>
           <th scope="col" class="col-sm-1">TapList</th>
           <th scope="col" class="col-sm-2"># Grav / Press / Pour</th>
@@ -143,13 +153,33 @@ const { batchListFilterDevice, batchListFilterActive, batchListFilterData } = st
 
 const { updatedBatchData } = storeToRefs(global)
 
+const sortDirection = ref(true)
+
+function sortBatchList(column, type) {
+  // Type: str, num, date
+  logDebug('BatchListView.sortBatches()', column, sortDirection.value)
+
+  if (sortDirection.value) {
+    if (type == 'str') batchList.value.sort((a, b) => a[column].localeCompare(b[column]))
+    else if (type == 'date')
+      batchList.value.sort((a, b) => Date.parse(a[column]) - Date.parse(b[column]))
+    else batchList.value.sort((a, b) => a[column] - b[column])
+  } else {
+    if (type == 'str') batchList.value.sort((a, b) => b[column].localeCompare(a[column]))
+    else if (type == 'date')
+      batchList.value.sort((a, b) => Date.parse(b[column]) - Date.parse(a[column]))
+    else batchList.value.sort((a, b) => b[column] - a[column])
+  }
+
+  sortDirection.value = !sortDirection.value
+}
+
 watch(updatedBatchData, () => {
   updateBatchList()
 })
 
 onMounted(() => {
   logDebug('BatchListView.onMounted()')
-  updateBatchList()
   var query = router.currentRoute.value.query
 
   if (Object.prototype.hasOwnProperty.call(query, 'chipId')) {
@@ -158,6 +188,7 @@ onMounted(() => {
   }
 
   filterBatchList()
+  sortBatchList('name', 'str')
 
   deviceList.value.push({ label: 'All', value: '*' })
   deviceStore.deviceList.forEach((d) => {

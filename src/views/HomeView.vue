@@ -44,6 +44,8 @@
           <div class="text-center">{{ deviceCount }} devices in database</div>
           <div class="text-center">{{ batchCount }} batches in database</div>
           <div class="text-center">{{ gravityCount }} gravity points in database</div>
+          <div class="text-center">{{ pourCount }} pour points in database</div>
+          <div class="text-center">{{ pressureCount }} pressure points in database</div>
         </BsCard>
       </div>
     </div>
@@ -94,6 +96,26 @@ const gravityCount = computed(() => {
 
   batchStore.batchList.forEach((b) => {
     l += b.gravityCount
+  })
+
+  return l
+})
+
+const pourCount = computed(() => {
+  var l = 0
+
+  batchStore.batchList.forEach((b) => {
+    l += b.pourCount
+  })
+
+  return l
+})
+
+const pressureCount = computed(() => {
+  var l = 0
+
+  batchStore.batchList.forEach((b) => {
+    l += b.pressureCount
   })
 
   return l
