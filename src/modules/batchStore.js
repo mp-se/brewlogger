@@ -305,7 +305,11 @@ export const useBatchStore = defineStore('batchStore', {
     anyBatchesForDevice(chipId) {
       logDebug('batchStore.anyBatchesForDevice()')
 
+      if(chipId == '000000')
+        return false
+
       var found = false
+
       this.batches.forEach((b) => {
         if (b.chipId == chipId) found = true
       })
