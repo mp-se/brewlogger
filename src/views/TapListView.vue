@@ -65,26 +65,32 @@ const batchList = ref(null)
 
 const { updatedBatchData } = storeToRefs(global)
 
-const sortDirection = ref(true)
+const sorting = ref( { column: 'brewDate', type: 'date', order: true })
 
 function sortBatchList(column, type) {
   // Type: str, num, date
-  logDebug('TapListView.sortBatches()', column, sortDirection.value)
+  logDebug('TapListView.sortBatchList()', column, type)
 
-  if(batchList.value == null)
-    return
+  sorting.value.column = column 
+  sorting.value.type = type 
+  sorting.value.order = !sorting.value.order 
+  applySortBatchList()
+}
 
-  if (sortDirection.value) {
-    if (type == 'str') batchList.value.sort((a, b) => a[column].localeCompare(b[column]))
-    else if (type == 'date') batchList.value.sort((a, b) => Date.parse(a[column]) - Date.parse(b[column]))
-    else batchList.value.sort((a, b) => a[column] - b[column])
+function applySortBatchList() {  
+  logDebug('TapListView.applySortBatchList()')
+
+  if (sorting.value.order) {
+    if (sorting.value.type == 'str') batchList.value.sort((a, b) => a[sorting.value.column].localeCompare(b[sorting.value.column]))
+    else if (sorting.value.type == 'date')
+      batchList.value.sort((a, b) => Date.parse(a[sorting.value.column]) - Date.parse(b[sorting.value.column]))
+    else batchList.value.sort((a, b) => a[sorting.value.column] - b[sorting.value.column])
   } else {
-    if (type == 'str') batchList.value.sort((a, b) => b[column].localeCompare(a[column]))
-    else if (type == 'date') batchList.value.sort((a, b) => Date.parse(b[column]) - Date.parse(a[column]))
-    else batchList.value.sort((a, b) => b[column] - a[column])
+    if (sorting.value.type == 'str') batchList.value.sort((a, b) => b[sorting.value.column].localeCompare(a[sorting.value.column]))
+    else if (sorting.value.type == 'date')
+      batchList.value.sort((a, b) => Date.parse(b[sorting.value.column]) - Date.parse(a[sorting.value.column]))
+    else batchList.value.sort((a, b) => b[sorting.value.column] - a[sorting.value.column])
   }
-
-  sortDirection.value = !sortDirection.value
 }
 
 watch(updatedBatchData, () => {
@@ -93,8 +99,7 @@ watch(updatedBatchData, () => {
 
 onMounted(() => {
   logDebug('TapListView.onMounted()')
-  filterBatchList()
-  sortBatchList('brewDate', 'date')
+  updateBatchList()
 })
 
 function calculateProgress(b) {
@@ -110,6 +115,8 @@ function filterBatchList() {
   batchStore.batchList.forEach((b) => {
     if (b.tapList) batchList.value.push(b)
   })
+
+  applySortBatchList()
 }
 
 function updateBatchList() {

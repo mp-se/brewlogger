@@ -121,7 +121,7 @@
     <div class="row">
       <div class="col-md-12">
         <router-link :to="{ name: 'batch', params: { id: 'new' } }">
-          <button type="button" class="btn btn-secondary">Add Batch</button> </router-link
+          <button type="button" class="btn btn-secondary" :disabled="global.disabled">Add Batch</button> </router-link
         >&nbsp;
       </div>
     </div>
@@ -153,25 +153,32 @@ const { batchListFilterDevice, batchListFilterActive, batchListFilterData } = st
 
 const { updatedBatchData } = storeToRefs(global)
 
-const sortDirection = ref(true)
+const sorting = ref( { column: 'name', type: 'str', order: true })
 
 function sortBatchList(column, type) {
   // Type: str, num, date
-  logDebug('BatchListView.sortBatches()', column, sortDirection.value)
+  logDebug('BatchListView.sortBatchList()', column, type)
 
-  if (sortDirection.value) {
-    if (type == 'str') batchList.value.sort((a, b) => a[column].localeCompare(b[column]))
-    else if (type == 'date')
-      batchList.value.sort((a, b) => Date.parse(a[column]) - Date.parse(b[column]))
-    else batchList.value.sort((a, b) => a[column] - b[column])
+  sorting.value.column = column 
+  sorting.value.type = type 
+  sorting.value.order = !sorting.value.order 
+  applySortBatchList()
+}
+
+function applySortBatchList() {  
+  logDebug('BatchListView.applySortBatchList()')
+
+  if (sorting.value.order) {
+    if (sorting.value.type == 'str') batchList.value.sort((a, b) => a[sorting.value.column].localeCompare(b[sorting.value.column]))
+    else if (sorting.value.type == 'date')
+      batchList.value.sort((a, b) => Date.parse(a[sorting.value.column]) - Date.parse(b[sorting.value.column]))
+    else batchList.value.sort((a, b) => a[sorting.value.column] - b[sorting.value.column])
   } else {
-    if (type == 'str') batchList.value.sort((a, b) => b[column].localeCompare(a[column]))
-    else if (type == 'date')
-      batchList.value.sort((a, b) => Date.parse(b[column]) - Date.parse(a[column]))
-    else batchList.value.sort((a, b) => b[column] - a[column])
+    if (sorting.value.type == 'str') batchList.value.sort((a, b) => b[sorting.value.column].localeCompare(a[sorting.value.column]))
+    else if (sorting.value.type == 'date')
+      batchList.value.sort((a, b) => Date.parse(b[sorting.value.column]) - Date.parse(a[sorting.value.column]))
+    else batchList.value.sort((a, b) => b[sorting.value.column] - a[sorting.value.column])
   }
-
-  sortDirection.value = !sortDirection.value
 }
 
 watch(updatedBatchData, () => {
@@ -187,9 +194,8 @@ onMounted(() => {
     global.batchListFilterDevice = query.chipId
   }
 
-  filterBatchList()
-  sortBatchList('name', 'str')
-
+  updateBatchList()
+ 
   deviceList.value.push({ label: 'All', value: '*' })
   deviceStore.deviceList.forEach((d) => {
     deviceList.value.push({ label: d.chipId + ' (' + d.mdns + ')', value: d.chipId })
@@ -267,6 +273,8 @@ function filterBatchList() {
 
     if (include) batchList.value.push(b)
   })
+
+  applySortBatchList()
 }
 
 watch(batchListFilterDevice, async (selected) => {
@@ -284,7 +292,7 @@ watch(batchListFilterData, async (selected) => {
   filterBatchList()
 })
 
-function updateBatchList() {
+async function updateBatchList() {
   logDebug('BatchListView.updateBatchList()')
 
   batchStore.getBatchList((success, bl) => {

@@ -22,19 +22,19 @@
       <thead>
         <tr>
           <th scope="col" class="col-sm-3">mDNS&nbsp;
-            <a class="icon-link icon-link-hover" @click="sortDeviceList('mdns')">
+            <a class="icon-link icon-link-hover" @click="sortDeviceList('mdns', 'str')">
               <i class="bi bi-sort-alpha-down"></i>
             </a></th>
           <th scope="col" class="col-sm-1">Chip ID&nbsp;
-            <a class="icon-link icon-link-hover" @click="sortDeviceList('chipId')">
+            <a class="icon-link icon-link-hover" @click="sortDeviceList('chipId'), 'str'">
               <i class="bi bi-sort-alpha-down"></i>
             </a></th>
           <th scope="col" class="col-sm-1">Chip Family&nbsp;
-            <a class="icon-link icon-link-hover" @click="sortDeviceList('chipFamily')">
+            <a class="icon-link icon-link-hover" @click="sortDeviceList('chipFamily', 'str')">
               <i class="bi bi-sort-alpha-down"></i>
             </a></th>
           <th scope="col" class="col-sm-2">Software&nbsp;
-            <a class="icon-link icon-link-hover" @click="sortDeviceList('software')">
+            <a class="icon-link icon-link-hover" @click="sortDeviceList('software', 'str')">
               <i class="bi bi-sort-alpha-down"></i>
             </a></th>
           <th scope="col" class="col-sm-2">Action</th>
@@ -132,19 +132,32 @@ const confirmDeleteId = ref(null)
 const deviceList = ref(null)
 const { updatedDeviceData, deviceListFilterSoftware } = storeToRefs(global)
 
-const sortDirection = ref(true)
+const sorting = ref( { column: 'mdns', type: 'str', order: true })
 
-function sortDeviceList(column) {
-  // Type: str
-  logDebug('DeviceListView.sortBatches()', column, sortDirection.value)
+function sortDeviceList(column, type) {
+  // Type: str, num, date
+  logDebug('DeviceListView.sortDeviceList()', column, type)
 
-  if (sortDirection.value) {
-    deviceList.value.sort((a, b) => a[column].localeCompare(b[column]))
+  sorting.value.column = column 
+  sorting.value.type = type 
+  sorting.value.order = !sorting.value.order 
+  applySortDeviceList()
+}
+
+function applySortDeviceList() {  
+  logDebug('DeviceListView.applySortDeviceList()')
+
+  if (sorting.value.order) {
+    if (sorting.value.type == 'str') deviceList.value.sort((a, b) => a[sorting.value.column].localeCompare(b[sorting.value.column]))
+    else if (sorting.value.type == 'date')
+    deviceList.value.sort((a, b) => Date.parse(a[sorting.value.column]) - Date.parse(b[sorting.value.column]))
+    else deviceList.value.sort((a, b) => a[sorting.value.column] - b[sorting.value.column])
   } else {
-    deviceList.value.sort((a, b) => b[column].localeCompare(a[column]))
+    if (sorting.value.type == 'str') deviceList.value.sort((a, b) => b[sorting.value.column].localeCompare(a[sorting.value.column]))
+    else if (sorting.value.type == 'date')
+    deviceList.value.sort((a, b) => Date.parse(b[sorting.value.column]) - Date.parse(a[sorting.value.column]))
+    else deviceList.value.sort((a, b) => b[sorting.value.column] - a[sorting.value.column])
   }
-
-  sortDirection.value = !sortDirection.value
 }
 
 watch(updatedDeviceData, () => {
@@ -167,8 +180,7 @@ const searchSelected = ref('')
 onMounted(() => {
   logDebug('DeviceListView.onMounted()')
   deviceList.value = deviceStore.deviceList
-  filterDeviceList()
-  sortDeviceList('mdns')
+  updateDeviceList()
 })
 
 function filterDeviceList() {
@@ -182,6 +194,8 @@ function filterDeviceList() {
       if (d.software == global.deviceListFilterSoftware) deviceList.value.push(d)
     }
   })
+
+  applySortDeviceList()
 }
 
 watch(deviceListFilterSoftware, async (selected) => {
