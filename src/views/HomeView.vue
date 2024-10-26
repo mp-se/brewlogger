@@ -31,6 +31,11 @@
 
       <div class="col-md-4" v-if="schedulerStatus != null">
         <BsCard header="Scheduler" color="info" title="">
+          <template v-if="schedulerStatus.length == 0"> 
+            <div class="text-center">
+                Scheduler disabled
+            </div>
+          </template>
           <template v-for="(task, index) in schedulerStatus" :key="index">
             <div class="text-center">
               {{ prettySchedulerName(task.name) }}: {{ prettySeconds(task.nextRunIn) }}
