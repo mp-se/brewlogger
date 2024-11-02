@@ -21,22 +21,38 @@
     <table class="table table-striped">
       <thead>
         <tr>
-          <th scope="col" class="col-sm-3">mDNS&nbsp;
-            <a class="icon-link icon-link-hover" @click="sortDeviceList('mdns', 'str')">
-              <i class="bi bi-sort-alpha-down"></i>
-            </a></th>
-          <th scope="col" class="col-sm-1">Chip ID&nbsp;
-            <a class="icon-link icon-link-hover" @click="sortDeviceList('chipId'), 'str'">
-              <i class="bi bi-sort-alpha-down"></i>
-            </a></th>
-          <th scope="col" class="col-sm-1">Chip Family&nbsp;
-            <a class="icon-link icon-link-hover" @click="sortDeviceList('chipFamily', 'str')">
-              <i class="bi bi-sort-alpha-down"></i>
-            </a></th>
-          <th scope="col" class="col-sm-2">Software&nbsp;
-            <a class="icon-link icon-link-hover" @click="sortDeviceList('software', 'str')">
-              <i class="bi bi-sort-alpha-down"></i>
-            </a></th>
+          <th scope="col" class="col-sm-3">
+            <div :class="sortedClass('mdns')">
+              mDNS&nbsp;
+              <a class="icon-link icon-link-hover" @click="sortDeviceList('mdns', 'str')">
+                <i :class="sortedIconClass"></i>
+              </a>
+            </div>
+          </th>
+          <th scope="col" class="col-sm-1">
+            <div :class="sortedClass('chipId')">
+              Chip ID&nbsp;
+              <a class="icon-link icon-link-hover" @click="sortDeviceList('chipId'), 'str'">
+                <i :class="sortedIconClass"></i>
+              </a>
+            </div>
+          </th>
+          <th scope="col" class="col-sm-1">
+            <div :class="sortedClass('chipFamily')">
+              Chip Family&nbsp;
+              <a class="icon-link icon-link-hover" @click="sortDeviceList('chipFamily', 'str')">
+                <i :class="sortedIconClass"></i>
+              </a>
+            </div>
+          </th>
+          <th scope="col" class="col-sm-2">
+            <div :class="sortedClass('software')">
+              Software&nbsp;
+              <a class="icon-link icon-link-hover" @click="sortDeviceList('software', 'str')">
+                <i :class="sortedIconClass"></i>
+              </a>
+            </div>
+          </th>
           <th scope="col" class="col-sm-2">Action</th>
         </tr>
       </thead>
@@ -120,7 +136,7 @@
 </template>
 
 <script setup>
-import { onMounted, ref, watch } from 'vue'
+import { onMounted, ref, watch, computed } from 'vue'
 import { storeToRefs } from 'pinia'
 import { Device } from '@/modules/deviceStore'
 import { global, deviceStore, batchStore } from '@/modules/pinia'
@@ -132,30 +148,41 @@ const confirmDeleteId = ref(null)
 const deviceList = ref(null)
 const { updatedDeviceData, deviceListFilterSoftware } = storeToRefs(global)
 
-const sorting = ref( { column: 'mdns', type: 'str', order: true })
+const sorting = ref({ column: 'mdns', type: 'str', order: true })
+
+function sortedClass(column) {
+  if (column == sorting.value.column) return 'text-primary'
+  return ''
+}
+
+const sortedIconClass = computed(() => {
+  return 'bi ' + (sorting.value.order ? 'bi-sort-alpha-down' : 'bi-sort-alpha-up')
+})
 
 function sortDeviceList(column, type) {
   // Type: str, num, date
   logDebug('DeviceListView.sortDeviceList()', column, type)
 
-  sorting.value.column = column 
-  sorting.value.type = type 
-  sorting.value.order = !sorting.value.order 
+  sorting.value.column = column
+  sorting.value.type = type
+  sorting.value.order = !sorting.value.order
   applySortDeviceList()
 }
 
-function applySortDeviceList() {  
+function applySortDeviceList() {
   logDebug('DeviceListView.applySortDeviceList()')
 
   if (sorting.value.order) {
-    if (sorting.value.type == 'str') deviceList.value.sort((a, b) => a[sorting.value.column].localeCompare(b[sorting.value.column]))
-    else if (sorting.value.type == 'date')
-    deviceList.value.sort((a, b) => Date.parse(a[sorting.value.column]) - Date.parse(b[sorting.value.column]))
+    if (sorting.value.type == 'str')
+      deviceList.value.sort((a, b) =>
+        a[sorting.value.column].localeCompare(b[sorting.value.column])
+      )
     else deviceList.value.sort((a, b) => a[sorting.value.column] - b[sorting.value.column])
   } else {
-    if (sorting.value.type == 'str') deviceList.value.sort((a, b) => b[sorting.value.column].localeCompare(a[sorting.value.column]))
-    else if (sorting.value.type == 'date')
-    deviceList.value.sort((a, b) => Date.parse(b[sorting.value.column]) - Date.parse(a[sorting.value.column]))
+    if (sorting.value.type == 'str')
+      deviceList.value.sort((a, b) =>
+        b[sorting.value.column].localeCompare(a[sorting.value.column])
+      )
     else deviceList.value.sort((a, b) => b[sorting.value.column] - a[sorting.value.column])
   }
 }

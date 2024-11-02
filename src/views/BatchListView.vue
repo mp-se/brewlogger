@@ -39,17 +39,17 @@
     <table class="table table-striped">
       <thead>
         <tr>
-          <th scope="col" class="col-sm-2">
+          <th scope="col" class="col-sm-2"><div :class="sortedClass('name')">
             Name&nbsp;
             <a class="icon-link icon-link-hover" @click="sortBatchList('name', 'str')">
-              <i class="bi bi-sort-alpha-down"></i>
-            </a>
+              <i :class="sortedIconClass"></i>
+            </a></div>
           </th>
-          <th scope="col" class="col-sm-2">
+          <th scope="col" class="col-sm-2"><div :class="sortedClass('brewDate')">
             Brewdate&nbsp;
             <a class="icon-link icon-link-hover" @click="sortBatchList('brewDate', 'date')">
-              <i class="bi bi-sort-alpha-down"></i>
-            </a>
+              <i :class="sortedIconClass"></i>
+            </a></div>
           </th>
           <th scope="col" class="col-sm-1">Active</th>
           <th scope="col" class="col-sm-1">TapList</th>
@@ -137,7 +137,7 @@
 </template>
 
 <script setup>
-import { onMounted, ref, watch } from 'vue'
+import { onMounted, ref, watch, computed } from 'vue'
 import { global, batchStore, deviceStore } from '@/modules/pinia'
 import { storeToRefs } from 'pinia'
 import router from '@/modules/router'
@@ -153,7 +153,18 @@ const { batchListFilterDevice, batchListFilterActive, batchListFilterData } = st
 
 const { updatedBatchData } = storeToRefs(global)
 
-const sorting = ref( { column: 'name', type: 'str', order: true })
+const sorting = ref( { column: 'brewDate', type: 'date', order: false })
+
+function sortedClass(column) {
+  logDebug('BatchListView.sortedClass()', column)
+  if(column == sorting.value.column) 
+    return "text-primary"
+  return ""
+}
+
+const sortedIconClass = computed(() => {
+  return "bi " + (sorting.value.order ? "bi-sort-alpha-down" : "bi-sort-alpha-up" )
+})
 
 function sortBatchList(column, type) {
   // Type: str, num, date

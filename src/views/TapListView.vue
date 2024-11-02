@@ -11,18 +11,18 @@
     <table class="table table-striped">
       <thead>
         <tr>
-          <th scope="col" class="col-sm-2">Brewdate&nbsp;
+          <th scope="col" class="col-sm-2"><div :class="sortedClass('brewDate')">Brewdate&nbsp;
             <a class="icon-link icon-link-hover" @click="sortBatchList('brewDate', 'date')">
-              <i class="bi bi-sort-alpha-down"></i>
-            </a></th>
-          <th scope="col" class="col-sm-3">Name&nbsp;
+              <i :class="sortedIconClass"></i>
+            </a></div></th>
+          <th scope="col" class="col-sm-3"><div :class="sortedClass('name')">Name&nbsp;
             <a class="icon-link icon-link-hover" @click="sortBatchList('name', 'str')">
-              <i class="bi bi-sort-alpha-down"></i>
-            </a></th>
-          <th scope="col" class="col-sm-3">Style‹&nbsp;
+              <i :class="sortedIconClass"></i>
+            </a></div></th>
+          <th scope="col" class="col-sm-3"><div :class="sortedClass('style')">Style‹&nbsp;
             <a class="icon-link icon-link-hover" @click="sortBatchList('style', 'str')">
-              <i class="bi bi-sort-alpha-down"></i>
-            </a></th>
+              <i :class="sortedIconClass"></i>
+            </a></div></th>
           <th scope="col" class="col-sm-3">Volume</th>
           <th scope="col" class="col-sm-1"></th>
         </tr>
@@ -56,7 +56,7 @@
 </template>
 
 <script setup>
-import { onMounted, ref, watch } from 'vue'
+import { onMounted, ref, watch, computed } from 'vue'
 import { global, batchStore } from '@/modules/pinia'
 import { storeToRefs } from 'pinia'
 import { logDebug } from '@/modules/logger'
@@ -65,7 +65,18 @@ const batchList = ref(null)
 
 const { updatedBatchData } = storeToRefs(global)
 
-const sorting = ref( { column: 'brewDate', type: 'date', order: true })
+const sorting = ref( { column: 'brewDate', type: 'date', order: false })
+
+function sortedClass(column) {
+  logDebug('BatchListView.sortedClass()', column)
+  if(column == sorting.value.column) 
+    return "text-primary"
+  return ""
+}
+
+const sortedIconClass = computed(() => {
+  return "bi " + (sorting.value.order ? "bi-sort-alpha-down" : "bi-sort-alpha-up" )
+})
 
 function sortBatchList(column, type) {
   // Type: str, num, date
