@@ -82,7 +82,7 @@ const forceRender = ref(0)
 const batchName = ref('')
 
 function convertCL(v) {
-  v = v / 100 // Convert to CL
+  v = v * 100 // Convert to CL
   return Number(
     config.isVolumeMetric ? v : config.isVolumeUk ? volumeCLtoUKOZ(v) : volumeCLtoUSOZ(v)
   ).toFixed(0)
