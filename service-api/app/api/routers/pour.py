@@ -120,7 +120,8 @@ async def create_pour_using_kegmon_format(
 
         if "maxVolume" in req_json:
             logger.info(
-                "Detected maxVolume information searching for batch for %s", req_json["id"]
+                "Detected maxVolume information searching for batch for %s",
+                req_json["id"],
             )
             maxVolume = req_json["maxVolume"]
 
@@ -134,9 +135,11 @@ async def create_pour_using_kegmon_format(
             logging.info(f"{p.created} {p.volume}")
 
         # If we get a volume update and no pour, check if the value has changed
-        if len(pour_list) > 0 and pour == 0: 
+        if len(pour_list) > 0 and pour == 0:
             if pour_list[0].volume == volume:
-                logging.info("Volume recevied in pour update has not changed, ignoring data.")
+                logging.info(
+                    "Volume recevied in pour update has not changed, ignoring data."
+                )
                 return None
 
         pour = schemas.PourCreate(
