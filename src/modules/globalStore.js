@@ -16,7 +16,7 @@ export const useGlobalStore = defineStore('global', {
       messageSuccess: '',
       messageInfo: '',
 
-      fetchTimout: 8000,
+      fetchTimout: 30000,
 
       // Global variables (filters)
       batchListFilterDevice: '*',
