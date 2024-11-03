@@ -67,7 +67,7 @@ def test_update(app_client):
     data = {
         "pour": 1.1,
         "volume": 1.2,
-        "maxVolume": 2, 
+        "maxVolume": 2,
         "batchId": 1,
         "active": True,
     }

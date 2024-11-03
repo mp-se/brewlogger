@@ -208,6 +208,27 @@ def test_validation(app_client):
     assert r.status_code == 422
 
     data = {
+        "name": "f1",
+        "chipId": "23", # Failure point
+        "description": "f3",
+        "brewDate": "f4",
+        "style": "f5",
+        "brewer": "f6",
+        "brewfatherId": "1",
+        "active": True,
+        "abv": 0.1,
+        "ebc": 0.2,
+        "ibu": 0.3,
+        "fermentationChamber": 0,
+        "fermentationSteps": "",
+        "tapList": True,
+    }
+
+    # Add new
+    r = app_client.post("/api/batch/", json=data, headers=headers)
+    assert r.status_code == 422
+
+    data = {
         "name": "01234567890123456789012345678901234567890",  # Failure point
         "chipId": "012345",
         "description": "f3",
