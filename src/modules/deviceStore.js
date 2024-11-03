@@ -332,7 +332,7 @@ export const useDeviceStore = defineStore('deviceStore', {
         })
     },
     updateDevice(d, callback) {
-      // callback => (success)
+      // callback => (success, device)
 
       logDebug('deviceStore.updateDevice()', d.id, d.toJson())
       global.disabled = true
@@ -343,22 +343,24 @@ export const useDeviceStore = defineStore('deviceStore', {
         signal: AbortSignal.timeout(global.fetchTimout)
       })
         .then((res) => {
-          global.disabled = false
           logDebug('deviceStore.updateDevice()', res.status)
-          if (res.status != 200) {
-            callback(false)
-          } else {
-            callback(true)
-          }
+          if (res.status != 200) throw res
+          return res.json()
+        })
+        .then((json) => {
+          global.disabled = false
+          logDebug('deviceStore.updateDevice()', json)
+          var device = Device.fromJson(json)
+          callback(true, device)
         })
         .catch((err) => {
           logError('deviceStore.updateDevice()', err)
-          callback(false)
+          callback(false, {})
           global.disabled = false
         })
     },
     addDevice(d, callback) {
-      // callback => (success)
+      // callback => (success, device)
 
       logDebug('deviceStore.addDevice()', d.toJson())
       global.disabled = true
@@ -369,17 +371,19 @@ export const useDeviceStore = defineStore('deviceStore', {
         signal: AbortSignal.timeout(global.fetchTimout)
       })
         .then((res) => {
-          global.disabled = false
           logDebug('deviceStore.addDevice()', res.status)
-          if (res.status != 201) {
-            callback(false)
-          } else {
-            callback(true)
-          }
+          if (res.status != 201) throw res
+          return res.json()
+        })
+        .then((json) => {
+          global.disabled = false
+          logDebug('deviceStore.addDevice()', json)
+          var device = Device.fromJson(json)
+          callback(true, device)
         })
         .catch((err) => {
           logError('deviceStore.addDevice()', err)
-          callback(false)
+          callback(false, {})
           global.disabled = false
         })
     },

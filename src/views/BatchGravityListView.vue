@@ -69,24 +69,32 @@
       <table class="table table-striped">
         <thead>
           <tr>
-            <th scope="col" class="col-sm-2">Date&nbsp;
-            <a class="icon-link icon-link-hover" @click="sortGravityList('created', 'date')">
-              <i class="bi bi-sort-alpha-down"></i>
-            </a></th>
+            <th scope="col" class="col-sm-2">
+              Date&nbsp;
+              <a class="icon-link icon-link-hover" @click="sortGravityList('created', 'date')">
+                <i class="bi bi-sort-alpha-down"></i>
+              </a>
+            </th>
             <th scope="col" class="col-sm-1">Active</th>
-            <th scope="col" class="col-sm-1">Gravity ({{ config.isGravitySG ? 'SG' : 'P' }}) &nbsp;
-            <a class="icon-link icon-link-hover" @click="sortGravityList('gravity', 'num')">
-              <i class="bi bi-sort-alpha-down"></i>
-            </a></th>
-            <th scope="col" class="col-sm-1">Angle&nbsp;
-            <a class="icon-link icon-link-hover" @click="sortGravityList('angle', 'num')">
-              <i class="bi bi-sort-alpha-down"></i>
-            </a></th>
+            <th scope="col" class="col-sm-1">
+              Gravity ({{ config.isGravitySG ? 'SG' : 'P' }}) &nbsp;
+              <a class="icon-link icon-link-hover" @click="sortGravityList('gravity', 'num')">
+                <i class="bi bi-sort-alpha-down"></i>
+              </a>
+            </th>
+            <th scope="col" class="col-sm-1">
+              Angle&nbsp;
+              <a class="icon-link icon-link-hover" @click="sortGravityList('angle', 'num')">
+                <i class="bi bi-sort-alpha-down"></i>
+              </a>
+            </th>
             <th scope="col" class="col-sm-1">Temp ({{ config.isTempC ? 'C' : 'F' }})</th>
-            <th scope="col" class="col-sm-1">Battery (V)&nbsp;
-            <a class="icon-link icon-link-hover" @click="sortGravityList('battery', 'num')">
-              <i class="bi bi-sort-alpha-down"></i>
-            </a></th>
+            <th scope="col" class="col-sm-1">
+              Battery (V)&nbsp;
+              <a class="icon-link icon-link-hover" @click="sortGravityList('battery', 'num')">
+                <i class="bi bi-sort-alpha-down"></i>
+              </a>
+            </th>
             <th scope="col" class="col-sm-1">RSSI</th>
             <th scope="col" class="col-sm-1">Run time (s)</th>
           </tr>
@@ -166,12 +174,12 @@ function sortGravityList(column, type) {
   if (sortDirection.value) {
     if (type == 'str') gravityList.value.sort((a, b) => a[column].localeCompare(b[column]))
     else if (type == 'date')
-    gravityList.value.sort((a, b) => Date.parse(a[column]) - Date.parse(b[column]))
+      gravityList.value.sort((a, b) => Date.parse(a[column]) - Date.parse(b[column]))
     else gravityList.value.sort((a, b) => a[column] - b[column])
   } else {
     if (type == 'str') gravityList.value.sort((a, b) => b[column].localeCompare(a[column]))
     else if (type == 'date')
-    gravityList.value.sort((a, b) => Date.parse(b[column]) - Date.parse(a[column]))
+      gravityList.value.sort((a, b) => Date.parse(b[column]) - Date.parse(a[column]))
     else gravityList.value.sort((a, b) => b[column] - a[column])
   }
 

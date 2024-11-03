@@ -305,8 +305,7 @@ export const useBatchStore = defineStore('batchStore', {
     anyBatchesForDevice(chipId) {
       logDebug('batchStore.anyBatchesForDevice()')
 
-      if(chipId == '000000')
-        return false
+      if (chipId == '000000') return false
 
       var found = false
 
@@ -403,7 +402,7 @@ export const useBatchStore = defineStore('batchStore', {
         })
     },
     updateBatch(b, callback) {
-      // callback => (success)
+      // callback => (success, batch)
 
       logDebug('batchStore.updateBatch()', b.id, b.toJson())
       global.disabled = true
@@ -414,22 +413,24 @@ export const useBatchStore = defineStore('batchStore', {
         signal: AbortSignal.timeout(global.fetchTimout)
       })
         .then((res) => {
-          global.disabled = false
           logDebug('batchStore.updateBatch()', res.status)
-          if (res.status != 200) {
-            callback(false)
-          } else {
-            callback(true)
-          }
+          if (res.status != 200) throw res
+          return res.json()
+        })
+        .then((json) => {
+          logDebug('batchStore.updateBatch()', json)
+          global.disabled = false
+          var batch = Batch.fromJson(json)
+          callback(true, batch)
         })
         .catch((err) => {
           logError('batchStore.updateBatch()', err)
-          callback(false)
+          callback(false, {})
           global.disabled = false
         })
     },
     addBatch(b, callback) {
-      // callback => (success)
+      // callback => (success, batch)
 
       logDebug('batchStore.addBatch()', b.toJson())
       global.disabled = true
@@ -440,13 +441,15 @@ export const useBatchStore = defineStore('batchStore', {
         signal: AbortSignal.timeout(global.fetchTimout)
       })
         .then((res) => {
-          global.disabled = false
           logDebug('batchStore.addBatch()', res.status)
-          if (res.status != 201) {
-            callback(false)
-          } else {
-            callback(true)
-          }
+          if (res.status != 201) throw res
+          return res.json()
+        })
+        .then((json) => {
+          global.disabled = false
+          logDebug('batchStore.addBatch()', json)
+          var batch = Batch.fromJson(json)
+          callback(true, batch)
         })
         .catch((err) => {
           logError('batchStore.addBatch()', err)

@@ -433,13 +433,13 @@ const save = () => {
       }
     }
 
-    deviceStore.addDevice(device.value, (success) => {
+    deviceStore.addDevice(device.value, (success, d) => {
       logDebug('DeviceView.addDevice()', 'Add device', success)
-
+      device.value = d
       if (success) {
-        global.messageSuccess = 'Added device'
         deviceStore.getDeviceList((success) => {
-          logDebug('DeviceView.addDevice()', 'Refresh device list', success)
+          logDebug('DeviceView.addDevice()', 'Change to editor', success, device.value)
+          router.push({ name: 'device', params: { id: device.value.id } })
         })
       } else {
         global.messageError = 'Failed to add device'

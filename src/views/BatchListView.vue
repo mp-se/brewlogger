@@ -36,95 +36,111 @@
     </div>
 
     <hr />
-    <table class="table table-striped">
-      <thead>
-        <tr>
-          <th scope="col" class="col-sm-2"><div :class="sortedClass('name')">
-            Name&nbsp;
-            <a class="icon-link icon-link-hover" @click="sortBatchList('name', 'str')">
-              <i :class="sortedIconClass"></i>
-            </a></div>
-          </th>
-          <th scope="col" class="col-sm-2"><div :class="sortedClass('brewDate')">
-            Brewdate&nbsp;
-            <a class="icon-link icon-link-hover" @click="sortBatchList('brewDate', 'date')">
-              <i :class="sortedIconClass"></i>
-            </a></div>
-          </th>
-          <th scope="col" class="col-sm-1">Active</th>
-          <th scope="col" class="col-sm-1">TapList</th>
-          <th scope="col" class="col-sm-2"># Grav / Press / Pour</th>
-          <th scope="col" class="col-sm-3">Action</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr v-for="b in batchList" :key="b.id">
-          <td class="fs-5">{{ b.name }}</td>
-          <td class="fs-5">{{ b.brewDate }}</td>
-          <td>
-            <div class="form-check">
-              <input
-                class="form-check-input"
-                v-model="b.active"
-                type="checkbox"
-                @click="toggleBatchActive(b.id)"
-              />
-            </div>
-          </td>
-          <td>
-            <div class="form-check">
-              <input
-                class="form-check-input"
-                v-model="b.tapList"
-                type="checkbox"
-                @click="toggleBatchTapList(b.id)"
-              />
-            </div>
-          </td>
-          <td class="fs-5">{{ b.gravityCount }} / {{ b.pressureCount }} / {{ b.pourCount }}</td>
-          <td>
-            <router-link :to="{ name: 'batch', params: { id: b.id } }">
-              <button type="button" class="btn btn-primary btn-sm">
-                <i class="bi bi-pencil-square"></i>
-              </button> </router-link
-            >&nbsp;
-            <button
-              type="button"
-              class="btn btn-danger btn-sm"
-              @click.prevent="deleteBatch(b.id, b.name)"
-            >
-              <i class="bi bi-file-x"></i></button
-            >&nbsp;
-            <template v-if="b.gravityCount > 0">
-              <router-link :to="{ name: 'batch-gravity-graph', params: { id: b.id } }">
-                <button type="button" class="btn btn-success btn-sm">
-                  <i class="bi bi-graph-down"></i>
+    <template v-if="batchList != null">
+      <table class="table table-striped">
+        <thead>
+          <tr>
+            <th scope="col" class="col-sm-2">
+              <div :class="sortedClass('name')">
+                Name&nbsp;
+                <a class="icon-link icon-link-hover" @click="sortBatchList('name', 'str')">
+                  <i :class="sortedIconClass"></i>
+                </a>
+              </div>
+            </th>
+            <th scope="col" class="col-sm-2">
+              <div :class="sortedClass('brewDate')">
+                Brewdate&nbsp;
+                <a class="icon-link icon-link-hover" @click="sortBatchList('brewDate', 'date')">
+                  <i :class="sortedIconClass"></i>
+                </a>
+              </div>
+            </th>
+            <th scope="col" class="col-sm-1">Active</th>
+            <th scope="col" class="col-sm-1">TapList</th>
+            <th scope="col" class="col-sm-2"># Grav / Press / Pour</th>
+            <th scope="col" class="col-sm-3">Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr v-for="b in batchList" :key="b.id">
+            <td class="fs-5">{{ b.name }}</td>
+            <td class="fs-5">{{ b.brewDate }}</td>
+            <td>
+              <div class="form-check">
+                <input
+                  class="form-check-input"
+                  v-model="b.active"
+                  type="checkbox"
+                  @click="toggleBatchActive(b.id)"
+                />
+              </div>
+            </td>
+            <td>
+              <div class="form-check">
+                <input
+                  class="form-check-input"
+                  v-model="b.tapList"
+                  type="checkbox"
+                  @click="toggleBatchTapList(b.id)"
+                />
+              </div>
+            </td>
+            <td class="fs-5">{{ b.gravityCount }} / {{ b.pressureCount }} / {{ b.pourCount }}</td>
+            <td>
+              <router-link :to="{ name: 'batch', params: { id: b.id } }">
+                <button type="button" class="btn btn-primary btn-sm">
+                  <i class="bi bi-pencil-square"></i>
                 </button> </router-link
               >&nbsp;
-              <router-link :to="{ name: 'batch-gravity-list', params: { id: b.id } }">
-                <button type="button" class="btn btn-success btn-sm">
-                  <i class="bi bi-list"></i>
-                </button> </router-link
+              <button
+                type="button"
+                class="btn btn-danger btn-sm"
+                @click.prevent="deleteBatch(b.id, b.name)"
+              >
+                <i class="bi bi-file-x"></i></button
               >&nbsp;
-              <button @click="exportBatchJSON(b.id)" type="button" class="btn btn-info btn-sm">
-                <i class="bi bi-filetype-json"></i></button
-              >&nbsp;
-              <button @click="exportBatchCSV(b.id)" type="button" class="btn btn-info btn-sm">
-                <i class="bi bi-filetype-csv"></i></button
-              >&nbsp;
-            </template>
-          </td>
-        </tr>
-      </tbody>
-    </table>
+              <template v-if="b.gravityCount > 0">
+                <router-link :to="{ name: 'batch-gravity-graph', params: { id: b.id } }">
+                  <button type="button" class="btn btn-success btn-sm">
+                    <i class="bi bi-graph-down"></i>
+                  </button> </router-link
+                >&nbsp;
+                <router-link :to="{ name: 'batch-gravity-list', params: { id: b.id } }">
+                  <button type="button" class="btn btn-success btn-sm">
+                    <i class="bi bi-list"></i>
+                  </button> </router-link
+                >&nbsp;
+                <button @click="exportBatchJSON(b.id)" type="button" class="btn btn-info btn-sm">
+                  <i class="bi bi-filetype-json"></i></button
+                >&nbsp;
+                <button @click="exportBatchCSV(b.id)" type="button" class="btn btn-info btn-sm">
+                  <i class="bi bi-filetype-csv"></i></button
+                >&nbsp;
+              </template>
+            </td>
+          </tr>
+        </tbody>
+      </table>
 
-    <div class="row">
-      <div class="col-md-12">
-        <router-link :to="{ name: 'batch', params: { id: 'new' } }">
-          <button type="button" class="btn btn-secondary" :disabled="global.disabled">Add Batch</button> </router-link
-        >&nbsp;
+      <div class="row">
+        <div class="col-md-12">
+          <router-link :to="{ name: 'batch', params: { id: 'new' } }">
+            <button type="button" class="btn btn-secondary" :disabled="global.disabled">
+              Add Batch
+            </button> </router-link
+          >&nbsp;
+        </div>
       </div>
-    </div>
+    </template>
+
+    <template v-else>
+      <div class="row gy-2">
+        <div class="col-md-12">
+          <p class="h4">Loading...</p>
+        </div>
+      </div>
+    </template>
 
     <BsModalConfirm
       :callback="confirmDeleteCallback"
@@ -153,41 +169,46 @@ const { batchListFilterDevice, batchListFilterActive, batchListFilterData } = st
 
 const { updatedBatchData } = storeToRefs(global)
 
-const sorting = ref( { column: 'brewDate', type: 'date', order: false })
+const sorting = ref({ column: 'brewDate', type: 'date', order: false })
 
 function sortedClass(column) {
   logDebug('BatchListView.sortedClass()', column)
-  if(column == sorting.value.column) 
-    return "text-primary"
-  return ""
+  if (column == sorting.value.column) return 'text-primary'
+  return ''
 }
 
 const sortedIconClass = computed(() => {
-  return "bi " + (sorting.value.order ? "bi-sort-alpha-down" : "bi-sort-alpha-up" )
+  return 'bi ' + (sorting.value.order ? 'bi-sort-alpha-down' : 'bi-sort-alpha-up')
 })
 
 function sortBatchList(column, type) {
   // Type: str, num, date
   logDebug('BatchListView.sortBatchList()', column, type)
 
-  sorting.value.column = column 
-  sorting.value.type = type 
-  sorting.value.order = !sorting.value.order 
+  sorting.value.column = column
+  sorting.value.type = type
+  sorting.value.order = !sorting.value.order
   applySortBatchList()
 }
 
-function applySortBatchList() {  
+function applySortBatchList() {
   logDebug('BatchListView.applySortBatchList()')
 
   if (sorting.value.order) {
-    if (sorting.value.type == 'str') batchList.value.sort((a, b) => a[sorting.value.column].localeCompare(b[sorting.value.column]))
+    if (sorting.value.type == 'str')
+      batchList.value.sort((a, b) => a[sorting.value.column].localeCompare(b[sorting.value.column]))
     else if (sorting.value.type == 'date')
-      batchList.value.sort((a, b) => Date.parse(a[sorting.value.column]) - Date.parse(b[sorting.value.column]))
+      batchList.value.sort(
+        (a, b) => Date.parse(a[sorting.value.column]) - Date.parse(b[sorting.value.column])
+      )
     else batchList.value.sort((a, b) => a[sorting.value.column] - b[sorting.value.column])
   } else {
-    if (sorting.value.type == 'str') batchList.value.sort((a, b) => b[sorting.value.column].localeCompare(a[sorting.value.column]))
+    if (sorting.value.type == 'str')
+      batchList.value.sort((a, b) => b[sorting.value.column].localeCompare(a[sorting.value.column]))
     else if (sorting.value.type == 'date')
-      batchList.value.sort((a, b) => Date.parse(b[sorting.value.column]) - Date.parse(a[sorting.value.column]))
+      batchList.value.sort(
+        (a, b) => Date.parse(b[sorting.value.column]) - Date.parse(a[sorting.value.column])
+      )
     else batchList.value.sort((a, b) => b[sorting.value.column] - a[sorting.value.column])
   }
 }
@@ -206,7 +227,7 @@ onMounted(() => {
   }
 
   updateBatchList()
- 
+
   deviceList.value.push({ label: 'All', value: '*' })
   deviceStore.deviceList.forEach((d) => {
     deviceList.value.push({ label: d.chipId + ' (' + d.mdns + ')', value: d.chipId })

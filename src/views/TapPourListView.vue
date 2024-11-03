@@ -7,10 +7,12 @@
     <table class="table table-striped">
       <thead>
         <tr>
-          <th scope="col" class="col-sm-2">Date&nbsp;
+          <th scope="col" class="col-sm-2">
+            Date&nbsp;
             <a class="icon-link icon-link-hover" @click="sortPourList('created', 'date')">
               <i class="bi bi-sort-alpha-down"></i>
-            </a></th>
+            </a>
+          </th>
           <th scope="col" class="col-sm-2">
             Pour ({{ config.isVolumeMetric ? 'cl' : 'fl. oz.' }})&nbsp;
             <a class="icon-link icon-link-hover" @click="sortPourList('pour', 'num')">
@@ -75,12 +77,12 @@ function sortPourList(column, type) {
   if (sortDirection.value) {
     if (type == 'str') pourList.value.sort((a, b) => a[column].localeCompare(b[column]))
     else if (type == 'date')
-    pourList.value.sort((a, b) => Date.parse(a[column]) - Date.parse(b[column]))
+      pourList.value.sort((a, b) => Date.parse(a[column]) - Date.parse(b[column]))
     else pourList.value.sort((a, b) => a[column] - b[column])
   } else {
     if (type == 'str') pourList.value.sort((a, b) => b[column].localeCompare(a[column]))
     else if (type == 'date')
-    pourList.value.sort((a, b) => Date.parse(b[column]) - Date.parse(a[column]))
+      pourList.value.sort((a, b) => Date.parse(b[column]) - Date.parse(a[column]))
     else pourList.value.sort((a, b) => b[column] - a[column])
   }
 

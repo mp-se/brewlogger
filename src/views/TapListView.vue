@@ -8,21 +8,33 @@
     </div>
 
     <hr />
-    <table class="table table-striped">
+    <table class="table table-striped" v-if="batchList != null">
       <thead>
         <tr>
-          <th scope="col" class="col-sm-2"><div :class="sortedClass('brewDate')">Brewdate&nbsp;
-            <a class="icon-link icon-link-hover" @click="sortBatchList('brewDate', 'date')">
-              <i :class="sortedIconClass"></i>
-            </a></div></th>
-          <th scope="col" class="col-sm-3"><div :class="sortedClass('name')">Name&nbsp;
-            <a class="icon-link icon-link-hover" @click="sortBatchList('name', 'str')">
-              <i :class="sortedIconClass"></i>
-            </a></div></th>
-          <th scope="col" class="col-sm-3"><div :class="sortedClass('style')">Style‹&nbsp;
-            <a class="icon-link icon-link-hover" @click="sortBatchList('style', 'str')">
-              <i :class="sortedIconClass"></i>
-            </a></div></th>
+          <th scope="col" class="col-sm-2">
+            <div :class="sortedClass('brewDate')">
+              Brewdate&nbsp;
+              <a class="icon-link icon-link-hover" @click="sortBatchList('brewDate', 'date')">
+                <i :class="sortedIconClass"></i>
+              </a>
+            </div>
+          </th>
+          <th scope="col" class="col-sm-3">
+            <div :class="sortedClass('name')">
+              Name&nbsp;
+              <a class="icon-link icon-link-hover" @click="sortBatchList('name', 'str')">
+                <i :class="sortedIconClass"></i>
+              </a>
+            </div>
+          </th>
+          <th scope="col" class="col-sm-3">
+            <div :class="sortedClass('style')">
+              Style‹&nbsp;
+              <a class="icon-link icon-link-hover" @click="sortBatchList('style', 'str')">
+                <i :class="sortedIconClass"></i>
+              </a>
+            </div>
+          </th>
           <th scope="col" class="col-sm-3">Volume</th>
           <th scope="col" class="col-sm-1"></th>
         </tr>
@@ -52,6 +64,13 @@
         </tr>
       </tbody>
     </table>
+    <template v-else>
+      <div class="row gy-2">
+        <div class="col-md-12">
+          <p class="h4">Loading...</p>
+        </div>
+      </div>
+    </template>
   </div>
 </template>
 
@@ -65,41 +84,46 @@ const batchList = ref(null)
 
 const { updatedBatchData } = storeToRefs(global)
 
-const sorting = ref( { column: 'brewDate', type: 'date', order: false })
+const sorting = ref({ column: 'brewDate', type: 'date', order: false })
 
 function sortedClass(column) {
   logDebug('BatchListView.sortedClass()', column)
-  if(column == sorting.value.column) 
-    return "text-primary"
-  return ""
+  if (column == sorting.value.column) return 'text-primary'
+  return ''
 }
 
 const sortedIconClass = computed(() => {
-  return "bi " + (sorting.value.order ? "bi-sort-alpha-down" : "bi-sort-alpha-up" )
+  return 'bi ' + (sorting.value.order ? 'bi-sort-alpha-down' : 'bi-sort-alpha-up')
 })
 
 function sortBatchList(column, type) {
   // Type: str, num, date
   logDebug('TapListView.sortBatchList()', column, type)
 
-  sorting.value.column = column 
-  sorting.value.type = type 
-  sorting.value.order = !sorting.value.order 
+  sorting.value.column = column
+  sorting.value.type = type
+  sorting.value.order = !sorting.value.order
   applySortBatchList()
 }
 
-function applySortBatchList() {  
+function applySortBatchList() {
   logDebug('TapListView.applySortBatchList()')
 
   if (sorting.value.order) {
-    if (sorting.value.type == 'str') batchList.value.sort((a, b) => a[sorting.value.column].localeCompare(b[sorting.value.column]))
+    if (sorting.value.type == 'str')
+      batchList.value.sort((a, b) => a[sorting.value.column].localeCompare(b[sorting.value.column]))
     else if (sorting.value.type == 'date')
-      batchList.value.sort((a, b) => Date.parse(a[sorting.value.column]) - Date.parse(b[sorting.value.column]))
+      batchList.value.sort(
+        (a, b) => Date.parse(a[sorting.value.column]) - Date.parse(b[sorting.value.column])
+      )
     else batchList.value.sort((a, b) => a[sorting.value.column] - b[sorting.value.column])
   } else {
-    if (sorting.value.type == 'str') batchList.value.sort((a, b) => b[sorting.value.column].localeCompare(a[sorting.value.column]))
+    if (sorting.value.type == 'str')
+      batchList.value.sort((a, b) => b[sorting.value.column].localeCompare(a[sorting.value.column]))
     else if (sorting.value.type == 'date')
-      batchList.value.sort((a, b) => Date.parse(b[sorting.value.column]) - Date.parse(a[sorting.value.column]))
+      batchList.value.sort(
+        (a, b) => Date.parse(b[sorting.value.column]) - Date.parse(a[sorting.value.column])
+      )
     else batchList.value.sort((a, b) => b[sorting.value.column] - a[sorting.value.column])
   }
 }

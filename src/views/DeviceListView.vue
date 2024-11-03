@@ -18,102 +18,113 @@
     </div>
 
     <hr />
-    <table class="table table-striped">
-      <thead>
-        <tr>
-          <th scope="col" class="col-sm-3">
-            <div :class="sortedClass('mdns')">
-              mDNS&nbsp;
-              <a class="icon-link icon-link-hover" @click="sortDeviceList('mdns', 'str')">
-                <i :class="sortedIconClass"></i>
-              </a>
-            </div>
-          </th>
-          <th scope="col" class="col-sm-1">
-            <div :class="sortedClass('chipId')">
-              Chip ID&nbsp;
-              <a class="icon-link icon-link-hover" @click="sortDeviceList('chipId'), 'str'">
-                <i :class="sortedIconClass"></i>
-              </a>
-            </div>
-          </th>
-          <th scope="col" class="col-sm-1">
-            <div :class="sortedClass('chipFamily')">
-              Chip Family&nbsp;
-              <a class="icon-link icon-link-hover" @click="sortDeviceList('chipFamily', 'str')">
-                <i :class="sortedIconClass"></i>
-              </a>
-            </div>
-          </th>
-          <th scope="col" class="col-sm-2">
-            <div :class="sortedClass('software')">
-              Software&nbsp;
-              <a class="icon-link icon-link-hover" @click="sortDeviceList('software', 'str')">
-                <i :class="sortedIconClass"></i>
-              </a>
-            </div>
-          </th>
-          <th scope="col" class="col-sm-2">Action</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr v-for="d in deviceList" :key="d.id">
-          <td class="fs-5">{{ d.mdns != '' ? d.mdns : d.url != '' ? d.url : d.description }}</td>
-          <td class="fs-5">
-            {{ d.chipId }}
-          </td>
-          <td class="fs-5">{{ d.chipFamily }}</td>
-          <td class="fs-5">{{ d.software }}</td>
-          <td>
-            <router-link :to="{ name: 'device', params: { id: d.id } }">
-              <button type="button" class="btn btn-primary btn-sm">
-                <i class="bi bi-pencil-square"></i>
-              </button> </router-link
-            >&nbsp;
-            <button
-              type="button"
-              class="btn btn-danger btn-sm"
-              @click.prevent="deleteDevice(d.id, d.mdns)"
-            >
-              <i class="bi bi-file-x"></i></button
-            >&nbsp;
-
-            <template v-if="d.software == 'Brewpi'">
-              <router-link :to="{ name: 'device-brewpi', params: { id: d.id } }">
-                <button type="button" class="btn btn-info btn-sm">
-                  <i class="bi bi-thermometer-snow"></i>
+    <template v-if="deviceList != null">
+      <table class="table table-striped">
+        <thead>
+          <tr>
+            <th scope="col" class="col-sm-3">
+              <div :class="sortedClass('mdns')">
+                mDNS&nbsp;
+                <a class="icon-link icon-link-hover" @click="sortDeviceList('mdns', 'str')">
+                  <i :class="sortedIconClass"></i>
+                </a>
+              </div>
+            </th>
+            <th scope="col" class="col-sm-1">
+              <div :class="sortedClass('chipId')">
+                Chip ID&nbsp;
+                <a class="icon-link icon-link-hover" @click="sortDeviceList('chipId'), 'str'">
+                  <i :class="sortedIconClass"></i>
+                </a>
+              </div>
+            </th>
+            <th scope="col" class="col-sm-1">
+              <div :class="sortedClass('chipFamily')">
+                Chip Family&nbsp;
+                <a class="icon-link icon-link-hover" @click="sortDeviceList('chipFamily', 'str')">
+                  <i :class="sortedIconClass"></i>
+                </a>
+              </div>
+            </th>
+            <th scope="col" class="col-sm-2">
+              <div :class="sortedClass('software')">
+                Software&nbsp;
+                <a class="icon-link icon-link-hover" @click="sortDeviceList('software', 'str')">
+                  <i :class="sortedIconClass"></i>
+                </a>
+              </div>
+            </th>
+            <th scope="col" class="col-sm-2">Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr v-for="d in deviceList" :key="d.id">
+            <td class="fs-5">{{ d.mdns != '' ? d.mdns : d.url != '' ? d.url : d.description }}</td>
+            <td class="fs-5">
+              {{ d.chipId }}
+            </td>
+            <td class="fs-5">{{ d.chipFamily }}</td>
+            <td class="fs-5">{{ d.software }}</td>
+            <td>
+              <router-link :to="{ name: 'device', params: { id: d.id } }">
+                <button type="button" class="btn btn-primary btn-sm">
+                  <i class="bi bi-pencil-square"></i>
                 </button> </router-link
               >&nbsp;
-            </template>
-
-            <template v-if="batchStore.anyBatchesForDevice(d.chipId)">
-              <router-link :to="{ name: 'batch-list', query: { chipId: d.chipId } }">
-                <button type="button" class="btn btn-success btn-sm">
-                  <i class="bi bi-boxes"></i>
-                </button> </router-link
+              <button
+                type="button"
+                class="btn btn-danger btn-sm"
+                @click.prevent="deleteDevice(d.id, d.mdns)"
+              >
+                <i class="bi bi-file-x"></i></button
               >&nbsp;
-            </template>
 
-            <template v-if="d.url.length > 7">
-              <button @click="openUrl(d.url)" type="button" class="btn btn-secondary btn-sm">
-                <i class="bi bi-link"></i></button
-              >&nbsp;
-            </template>
-          </td>
-        </tr>
-      </tbody>
-    </table>
+              <template v-if="d.software == 'Brewpi'">
+                <router-link :to="{ name: 'device-brewpi', params: { id: d.id } }">
+                  <button type="button" class="btn btn-info btn-sm">
+                    <i class="bi bi-thermometer-snow"></i>
+                  </button> </router-link
+                >&nbsp;
+              </template>
 
-    <div class="row">
-      <div class="col-md-12">
-        <router-link :to="{ name: 'device', params: { id: 'new' } }">
-          <button type="button" class="btn btn-secondary">Add Device</button> </router-link
-        >&nbsp;
+              <template v-if="batchStore.anyBatchesForDevice(d.chipId)">
+                <router-link :to="{ name: 'batch-list', query: { chipId: d.chipId } }">
+                  <button type="button" class="btn btn-success btn-sm">
+                    <i class="bi bi-boxes"></i>
+                  </button> </router-link
+                >&nbsp;
+              </template>
 
-        <button @click="search()" type="button" class="btn btn-secondary">Search for Devices</button
-        >&nbsp;
+              <template v-if="d.url.length > 7">
+                <button @click="openUrl(d.url)" type="button" class="btn btn-secondary btn-sm">
+                  <i class="bi bi-link"></i></button
+                >&nbsp;
+              </template>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="row">
+        <div class="col-md-12">
+          <router-link :to="{ name: 'device', params: { id: 'new' } }">
+            <button type="button" class="btn btn-secondary">Add Device</button> </router-link
+          >&nbsp;
+
+          <button @click="search()" type="button" class="btn btn-secondary">
+            Search for Devices</button
+          >&nbsp;
+        </div>
       </div>
-    </div>
+    </template>
+
+    <template v-else>
+      <div class="row gy-2">
+        <div class="col-md-12">
+          <p class="h4">Loading...</p>
+        </div>
+      </div>
+    </template>
 
     <BsModalConfirm
       :callback="confirmDeleteCallback"

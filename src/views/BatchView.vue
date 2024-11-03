@@ -225,7 +225,7 @@ const tapListOptions = ref([
   { label: 'Hidden', value: false }
 ])
 
-const brewfatherOptions = ref([{ label: '- not connected -', value: '' }])
+const brewfatherOptions = ref([{ label: '- Not connected -', value: '' }])
 
 // These styles are imported from Brewfather definitions BJCP_2008 and GABF_2015
 const styleOptions = ref([
@@ -570,6 +570,7 @@ function updateDeviceOptions() {
   logDebug('BatchView.updateDeviceOptions()')
 
   gravityDeviceOptions.value = []
+  gravityDeviceOptions.value = [{ value: '', label: '-- No connected --' }]
   tempControlDeviceOptions.value = [{ value: 0, label: '-- Disabled --' }]
 
   deviceStore.getDeviceList((success, dl) => {
@@ -622,11 +623,16 @@ const save = () => {
   batchSaved.value = Batch.fromJson(batch.value.toJson())
 
   if (isNew()) {
-    batchStore.addBatch(batch.value, (success) => {
+    batchStore.addBatch(batch.value, (success, b) => {
       logDebug('BatchView.addBatch()', success)
+      batch.value = b
 
-      if (success) global.messageSuccess = 'Added batch'
-      else global.messageError = 'Failed to add batch'
+      if (success) {
+        logDebug('BatchView.addBatch()', 'Change to editor', success, batch.value)
+        router.push({ name: 'batch', params: { id: batch.value.id } })
+      } else {
+        global.messageError = 'Failed to add batch'
+      }
     })
   } else {
     batchStore.updateBatch(batch.value, (success) => {
