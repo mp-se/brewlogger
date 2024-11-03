@@ -95,6 +95,13 @@ def test_public(app_client):
     # Add new
     r = app_client.post("/api/pour/public", json=data, headers=headers)
     assert r.status_code == 200
+    res = json.loads(r.text)
+
+    r2 = app_client.get(f"/api/pour/{res['id']}", headers=headers)
+    assert r2.status_code == 200
+    data2 = json.loads(r.text)
+    assert data["pour"] == data2["pour"]
+    assert True == data2["active"]
 
     data = {"pour": 0.1, "id": "2"}
 
@@ -107,9 +114,24 @@ def test_public(app_client):
     # Add new
     r = app_client.post("/api/pour/public", json=data, headers=headers)
     assert r.status_code == 200
+    res = json.loads(r.text)
+
+    r2 = app_client.get(f"/api/pour/{res['id']}", headers=headers)
+    assert r2.status_code == 200
+    data2 = json.loads(r.text)
+    assert data["volume"] == data2["volume"]
+    assert data["maxVolume"] == data2["maxVolume"]
 
     data = {"pour": 0.1, "volume": 10, "maxVolume": 20, "id": "1"}
 
     # Add new
     r = app_client.post("/api/pour/public", json=data, headers=headers)
     assert r.status_code == 200
+    res = json.loads(r.text)
+
+    r2 = app_client.get(f"/api/pour/{res['id']}", headers=headers)
+    assert r2.status_code == 200
+    data2 = json.loads(r.text)
+    assert data["pour"] == data2["pour"]
+    assert data["volume"] == data2["volume"]
+    assert data["maxVolume"] == data2["maxVolume"]

@@ -91,39 +91,31 @@ async def delete_pour_by_id(
     pour_service.delete(pour_id)
 
 
-@router.post("/public", status_code=200)
+@router.post("/public", 
+    response_model=schemas.Pour,
+    status_code=200)
 async def create_pour_using_kegmon_format(
     request: Request,
     pour_service: PourService = Depends(get_pour_service),
     batch_service: BatchService = Depends(get_batch_service),
-):
+)-> models.Pour:
     logger.info("Endpoint POST /api/pour/public")
 
     try:
         req_json = await request.json()
 
-        pour = 0
-        volume = 0
-        maxVolume = 0
+        pourVal = 0
+        volumeVal = 0
+        maxVolumeVal = 0
 
         if "pour" in req_json:
-            logger.info(
-                "Detected pour information searching for batch for %s", req_json["id"]
-            )
-            pour = req_json["pour"]
+            pourVal = req_json["pour"]
 
         if "volume" in req_json:
-            logger.info(
-                "Detected volume information searching for batch for %s", req_json["id"]
-            )
-            volume = req_json["volume"]
+            volumeVal = req_json["volume"]
 
         if "maxVolume" in req_json:
-            logger.info(
-                "Detected maxVolume information searching for batch for %s",
-                req_json["id"],
-            )
-            maxVolume = req_json["maxVolume"]
+            maxVolumeVal = req_json["maxVolume"]
 
         # Check if there is an active batch
         batch = batch_service.get(int(req_json["id"]))
@@ -135,17 +127,17 @@ async def create_pour_using_kegmon_format(
             logging.info(f"{p.created} {p.volume}")
 
         # If we get a volume update and no pour, check if the value has changed
-        if len(pour_list) > 0 and pour == 0:
-            if pour_list[0].volume == volume:
+        if len(pour_list) > 0 and pourVal == 0:
+            if pour_list[0].volume == volumeVal:
                 logging.info(
                     "Volume recevied in pour update has not changed, ignoring data."
                 )
                 return None
 
         pour = schemas.PourCreate(
-            pour=pour,
-            volume=volume,
-            maxVolume=maxVolume,
+            pour=pourVal,
+            volume=volumeVal,
+            maxVolume=maxVolumeVal,
             batch_id=batch.id,
             created=datetime.now(),
             active=True,

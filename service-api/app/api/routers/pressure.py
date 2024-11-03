@@ -101,13 +101,15 @@ async def delete_pressure_by_id(
     pressure_service.delete(pressure_id)
 
 
-@router.post("/public", status_code=200)
+@router.post("/public", 
+    response_model=schemas.Pressure,
+             status_code=200)
 async def create_pressure_using_json(
     request: Request,
     pressure_service: PressureService = Depends(get_pressure_service),
     batch_service: BatchService = Depends(get_batch_service),
     device_service: DeviceService = Depends(get_device_service),
-):
+) -> models.Pressure:
     logger.info("Endpoint POST /api/pressure/public")
 
     try:
