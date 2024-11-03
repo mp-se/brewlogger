@@ -8,22 +8,28 @@
       <thead>
         <tr>
           <th scope="col" class="col-sm-2">
-            Date&nbsp;
+            <div :class="sortedClass('created')">
+              Date&nbsp;
             <a class="icon-link icon-link-hover" @click="sortPourList('created', 'date')">
-              <i class="bi bi-sort-alpha-down"></i>
+              <i :class="sortedIconClass"></i>
             </a>
+            </div>
           </th>
           <th scope="col" class="col-sm-2">
-            Pour ({{ config.isVolumeMetric ? 'cl' : 'fl. oz.' }})&nbsp;
+            <div :class="sortedClass('pour')">
+              Pour ({{ config.isVolumeMetric ? 'cl' : 'fl. oz.' }})&nbsp;
             <a class="icon-link icon-link-hover" @click="sortPourList('pour', 'num')">
-              <i class="bi bi-sort-alpha-down"></i>
+              <i :class="sortedIconClass"></i>
             </a>
+            </div>
           </th>
           <th scope="col" class="col-sm-2">
-            Volume ({{ config.isVolumeMetric ? 'Liters' : 'Gallon' }})&nbsp;
+            <div :class="sortedClass('volume')">
+              Volume ({{ config.isVolumeMetric ? 'Liters' : 'Gallon' }})&nbsp;
             <a class="icon-link icon-link-hover" @click="sortPourList('volume', 'num')">
-              <i class="bi bi-sort-alpha-down"></i>
+              <i :class="sortedIconClass"></i>
             </a>
+            </div>
           </th>
           <th scope="col" class="col-sm-2">
             Max Volume ({{ config.isVolumeMetric ? 'Liters' : 'Gallon' }})
@@ -53,7 +59,7 @@
 </template>
 
 <script setup>
-import { onMounted, ref } from 'vue'
+import { onMounted, ref, computed } from 'vue'
 import { pourStore, batchStore, config } from '@/modules/pinia'
 import router from '@/modules/router'
 import { logDebug, logError } from '@/modules/logger'
@@ -68,26 +74,50 @@ const pourList = ref(null)
 const forceRender = ref(0)
 const batchName = ref('')
 
-const sortDirection = ref(true)
+const sorting = ref({ column: 'created', type: 'date', order: true })
+
+function sortedClass(column) {
+  logDebug('TapPourListView.sortedClass()', column)
+  if (column == sorting.value.column) return 'text-primary'
+  return ''
+}
+
+const sortedIconClass = computed(() => {
+  return 'bi ' + (sorting.value.order ? 'bi-sort-alpha-down' : 'bi-sort-alpha-up')
+})
 
 function sortPourList(column, type) {
   // Type: str, num, date
-  logDebug('TapPourListView.sortBatches()', column, sortDirection.value)
+  logDebug('PourListView.sortPourList()', column, type)
 
-  if (sortDirection.value) {
-    if (type == 'str') pourList.value.sort((a, b) => a[column].localeCompare(b[column]))
-    else if (type == 'date')
-      pourList.value.sort((a, b) => Date.parse(a[column]) - Date.parse(b[column]))
-    else pourList.value.sort((a, b) => a[column] - b[column])
-  } else {
-    if (type == 'str') pourList.value.sort((a, b) => b[column].localeCompare(a[column]))
-    else if (type == 'date')
-      pourList.value.sort((a, b) => Date.parse(b[column]) - Date.parse(a[column]))
-    else pourList.value.sort((a, b) => b[column] - a[column])
-  }
-
-  sortDirection.value = !sortDirection.value
+  sorting.value.column = column
+  sorting.value.type = type
+  sorting.value.order = !sorting.value.order
+  applySortPourList()
 }
+
+function applySortPourList() {
+  logDebug('LogListView.applySortPourList()')
+
+  if (sorting.value.order) {
+    if (sorting.value.type == 'str')
+    pourList.value.sort((a, b) => a[sorting.value.column].localeCompare(b[sorting.value.column]))
+    else if (sorting.value.type == 'date')
+    pourList.value.sort(
+        (a, b) => Date.parse(a[sorting.value.column]) - Date.parse(b[sorting.value.column])
+      )
+    else pourList.value.sort((a, b) => a[sorting.value.column] - b[sorting.value.column])
+  } else {
+    if (sorting.value.type == 'str')
+    pourList.value.sort((a, b) => b[sorting.value.column].localeCompare(a[sorting.value.column]))
+    else if (sorting.value.type == 'date')
+    pourList.value.sort(
+        (a, b) => Date.parse(b[sorting.value.column]) - Date.parse(a[sorting.value.column])
+      )
+    else pourList.value.sort((a, b) => b[sorting.value.column] - a[sorting.value.column])
+  }
+}
+
 
 function convertCL(v) {
   v = v / 100 // Convert to CL
