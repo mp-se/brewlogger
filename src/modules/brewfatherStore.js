@@ -140,7 +140,7 @@ export const useBrewfatherStore = defineStore('brewfatherStore', {
           // Keep valid for 5 minutes
           setTimeout(() => {
             this.valid = false
-          }, 60 * 5)
+          }, 60 * 5 * 1000)
         })
         .catch((err) => {
           global.disabled = false
