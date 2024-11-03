@@ -1,6 +1,6 @@
 from datetime import datetime
 from typing import List, Optional
-from pydantic import BaseModel, Field, ConfigDict
+from pydantic import BaseModel, Field, ConfigDict, field_validator
 
 
 def to_camel(string: str) -> str:
@@ -273,7 +273,9 @@ class PourBase(BaseModel):
     model_config = ConfigDict(alias_generator=to_camel, populate_by_name=True)
     pour: float = Field(description="How much was poured from the device in liters")
     volume: float = Field(description="Volume left in the device in liters")
-    max_volume: float = Field(description="Total volume the container can hold in liters")
+    max_volume: float = Field(
+        description="Total volume the container can hold in liters"
+    )
     created: Optional[datetime] | None = Field(
         default=None, description="If undefined the current time will be used"
     )
@@ -307,8 +309,16 @@ class BatchBase(BaseModel):
         min_length=0, max_length=80, description="Longer description of the batch"
     )
     chip_id: str = Field(
-        min_length=6, max_length=6, description="Chip id, must be 6 characters"
+        min_length=0, max_length=6, description="Chip id, 6 characters or empty"
     )
+
+    @field_validator("chip_id")
+    @classmethod
+    def validate_chip_id(cls, v: str) -> str:
+        if len(v) != 0 and len(v) != 6:
+            raise ValueError("chip_id must be zero or 6 characters long")
+        return v
+
     active: bool = Field(
         description="If the batch is active or not, active = can recive new gravity data"
     )
