@@ -302,6 +302,31 @@ export const useBatchStore = defineStore('batchStore', {
     }
   },
   actions: {
+    processEvent(method, id) {
+      logDebug('batchStore.processEvent()', method, id)
+      if(method == "delete") {
+        this.batches = this.batches.filter((b) => { return b.id !== id })
+        logDebug('batchStore.processEvent()', "Removed batch with", id)
+        global.updatedBatchData += 1
+      } else if(method == "update") {
+        this.getBatch(id, (success, b) => { 
+          if(success) {
+            this.batches = this.batches.filter((b) => { return b.id !== id }) 
+            this.batches.push(b)
+            logDebug('batchStore.processEvent()', "Updated batch with", id)
+            global.updatedBatchData += 1
+          }
+        })     
+      } else if(method == "create") {        
+        this.getBatch(id, (success, b) => { 
+          if(success) {
+            this.batches.push(b)
+            logDebug('batchStore.processEvent()', "Added batch with", id)
+            global.updatedBatchData += 1
+          }
+        })
+      }
+    },
     anyBatchesForDevice(chipId) {
       logDebug('batchStore.anyBatchesForDevice()')
 

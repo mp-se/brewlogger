@@ -129,9 +129,9 @@ function connect() {
     logDebug('App.connect()', ev)
 
     if (ev.table == 'device') {
-      global.updatedDeviceData += 1
+      deviceStore.processEvent(ev.method, ev.id)
     } else if (ev.table == 'batch') {
-      global.updatedBatchData += 1
+      batchStore.processEvent(ev.method, ev.id)
     } else if (ev.table == 'gravity') {
       global.updatedGravityData += 1
     } else if (ev.table == 'pour') {

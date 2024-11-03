@@ -270,6 +270,31 @@ export const useDeviceStore = defineStore('deviceStore', {
     }
   },
   actions: {
+    processEvent(method, id) {
+      logDebug('deviceStore.processEvent()', method, id)
+      if(method == "delete") {
+        this.devices = this.devices.filter((d) => { return d.id !== id })
+        logDebug('deviceStore.processEvent()', "Removed device with", id)
+        global.updatedDeviceData += 1
+      } else if(method == "update") {
+        this.getDevice(id, (success, d) => { 
+          if(success) {
+            this.devices = this.devices.filter((d) => { return d.id !== id }) 
+            this.devices.push(d)
+            logDebug('deviceStore.processEvent()', "Updated device with", id)
+            global.updatedDeviceData += 1
+          }
+        })     
+      } else if(method == "create") {        
+        this.getDevice(id, (success, d) => { 
+          if(success) {
+            this.devices.push(d)
+            logDebug('deviceStore.processEvent()', "Added device with", id)
+            global.updatedDeviceData += 1
+          }
+        })
+      }
+    },
     getDeviceList(callback) {
       // callback => (success, devices[])
 
