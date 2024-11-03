@@ -10,25 +10,25 @@
           <th scope="col" class="col-sm-2">
             <div :class="sortedClass('created')">
               Date&nbsp;
-            <a class="icon-link icon-link-hover" @click="sortPourList('created', 'date')">
-              <i :class="sortedIconClass"></i>
-            </a>
+              <a class="icon-link icon-link-hover" @click="sortList(pourList, 'created', 'date')">
+                <i :class="sortedIconClass"></i>
+              </a>
             </div>
           </th>
           <th scope="col" class="col-sm-2">
             <div :class="sortedClass('pour')">
               Pour ({{ config.isVolumeMetric ? 'cl' : 'fl. oz.' }})&nbsp;
-            <a class="icon-link icon-link-hover" @click="sortPourList('pour', 'num')">
-              <i :class="sortedIconClass"></i>
-            </a>
+              <a class="icon-link icon-link-hover" @click="sortList(pourList, 'pour', 'num')">
+                <i :class="sortedIconClass"></i>
+              </a>
             </div>
           </th>
           <th scope="col" class="col-sm-2">
             <div :class="sortedClass('volume')">
               Volume ({{ config.isVolumeMetric ? 'Liters' : 'Gallon' }})&nbsp;
-            <a class="icon-link icon-link-hover" @click="sortPourList('volume', 'num')">
-              <i :class="sortedIconClass"></i>
-            </a>
+              <a class="icon-link icon-link-hover" @click="sortList(pourList, 'volume', 'num')">
+                <i :class="sortedIconClass"></i>
+              </a>
             </div>
           </th>
           <th scope="col" class="col-sm-2">
@@ -59,7 +59,7 @@
 </template>
 
 <script setup>
-import { onMounted, ref, computed } from 'vue'
+import { onMounted, ref } from 'vue'
 import { pourStore, batchStore, config } from '@/modules/pinia'
 import router from '@/modules/router'
 import { logDebug, logError } from '@/modules/logger'
@@ -69,55 +69,17 @@ import {
   volumeCLtoUSOZ,
   volumeCLtoUKOZ
 } from '@/modules/utils'
+import {
+  sortedIconClass,
+  setSortingDefault,
+  sortedClass,
+  sortList,
+  applySortList
+} from '@/modules/ui'
 
 const pourList = ref(null)
 const forceRender = ref(0)
 const batchName = ref('')
-
-const sorting = ref({ column: 'created', type: 'date', order: true })
-
-function sortedClass(column) {
-  logDebug('TapPourListView.sortedClass()', column)
-  if (column == sorting.value.column) return 'text-primary'
-  return ''
-}
-
-const sortedIconClass = computed(() => {
-  return 'bi ' + (sorting.value.order ? 'bi-sort-alpha-down' : 'bi-sort-alpha-up')
-})
-
-function sortPourList(column, type) {
-  // Type: str, num, date
-  logDebug('PourListView.sortPourList()', column, type)
-
-  sorting.value.column = column
-  sorting.value.type = type
-  sorting.value.order = !sorting.value.order
-  applySortPourList()
-}
-
-function applySortPourList() {
-  logDebug('LogListView.applySortPourList()')
-
-  if (sorting.value.order) {
-    if (sorting.value.type == 'str')
-    pourList.value.sort((a, b) => a[sorting.value.column].localeCompare(b[sorting.value.column]))
-    else if (sorting.value.type == 'date')
-    pourList.value.sort(
-        (a, b) => Date.parse(a[sorting.value.column]) - Date.parse(b[sorting.value.column])
-      )
-    else pourList.value.sort((a, b) => a[sorting.value.column] - b[sorting.value.column])
-  } else {
-    if (sorting.value.type == 'str')
-    pourList.value.sort((a, b) => b[sorting.value.column].localeCompare(a[sorting.value.column]))
-    else if (sorting.value.type == 'date')
-    pourList.value.sort(
-        (a, b) => Date.parse(b[sorting.value.column]) - Date.parse(a[sorting.value.column])
-      )
-    else pourList.value.sort((a, b) => b[sorting.value.column] - a[sorting.value.column])
-  }
-}
-
 
 function convertCL(v) {
   v = v / 100 // Convert to CL
@@ -134,6 +96,7 @@ function convertL(v) {
 
 onMounted(() => {
   logDebug('TapPourListView.onMounted()')
+  setSortingDefault('created', 'date', false)
 
   pourList.value = null
 
@@ -144,6 +107,7 @@ onMounted(() => {
   pourStore.getPourListForBatch(router.currentRoute.value.params.id, (success, pl) => {
     if (success) {
       pourList.value = pl
+      applySortList(pourList.value)
       logDebug('TapPourListView.onMounted()', pourList.value)
     } else {
       logError(

@@ -43,7 +43,7 @@
             <th scope="col" class="col-sm-2">
               <div :class="sortedClass('name')">
                 Name&nbsp;
-                <a class="icon-link icon-link-hover" @click="sortBatchList('name', 'str')">
+                <a class="icon-link icon-link-hover" @click="sortList(batchList, 'name', 'str')">
                   <i :class="sortedIconClass"></i>
                 </a>
               </div>
@@ -51,7 +51,10 @@
             <th scope="col" class="col-sm-2">
               <div :class="sortedClass('brewDate')">
                 Brewdate&nbsp;
-                <a class="icon-link icon-link-hover" @click="sortBatchList('brewDate', 'date')">
+                <a
+                  class="icon-link icon-link-hover"
+                  @click="sortList(batchList, 'brewDate', 'date')"
+                >
                   <i :class="sortedIconClass"></i>
                 </a>
               </div>
@@ -153,12 +156,19 @@
 </template>
 
 <script setup>
-import { onMounted, ref, watch, computed } from 'vue'
+import { onMounted, ref, watch } from 'vue'
 import { global, batchStore, deviceStore } from '@/modules/pinia'
 import { storeToRefs } from 'pinia'
 import router from '@/modules/router'
 import { download } from '@/modules/utils'
 import { logDebug, logError } from '@/modules/logger'
+import {
+  sortedIconClass,
+  setSortingDefault,
+  sortedClass,
+  sortList,
+  applySortList
+} from '@/modules/ui'
 
 const confirmDeleteMessage = ref(null)
 const confirmDeleteId = ref(null)
@@ -169,56 +179,14 @@ const { batchListFilterDevice, batchListFilterActive, batchListFilterData } = st
 
 const { updatedBatchData } = storeToRefs(global)
 
-const sorting = ref({ column: 'brewDate', type: 'date', order: false })
-
-function sortedClass(column) {
-  logDebug('BatchListView.sortedClass()', column)
-  if (column == sorting.value.column) return 'text-primary'
-  return ''
-}
-
-const sortedIconClass = computed(() => {
-  return 'bi ' + (sorting.value.order ? 'bi-sort-alpha-down' : 'bi-sort-alpha-up')
-})
-
-function sortBatchList(column, type) {
-  // Type: str, num, date
-  logDebug('BatchListView.sortBatchList()', column, type)
-
-  sorting.value.column = column
-  sorting.value.type = type
-  sorting.value.order = !sorting.value.order
-  applySortBatchList()
-}
-
-function applySortBatchList() {
-  logDebug('BatchListView.applySortBatchList()')
-
-  if (sorting.value.order) {
-    if (sorting.value.type == 'str')
-      batchList.value.sort((a, b) => a[sorting.value.column].localeCompare(b[sorting.value.column]))
-    else if (sorting.value.type == 'date')
-      batchList.value.sort(
-        (a, b) => Date.parse(a[sorting.value.column]) - Date.parse(b[sorting.value.column])
-      )
-    else batchList.value.sort((a, b) => a[sorting.value.column] - b[sorting.value.column])
-  } else {
-    if (sorting.value.type == 'str')
-      batchList.value.sort((a, b) => b[sorting.value.column].localeCompare(a[sorting.value.column]))
-    else if (sorting.value.type == 'date')
-      batchList.value.sort(
-        (a, b) => Date.parse(b[sorting.value.column]) - Date.parse(a[sorting.value.column])
-      )
-    else batchList.value.sort((a, b) => b[sorting.value.column] - a[sorting.value.column])
-  }
-}
-
 watch(updatedBatchData, () => {
   updateBatchList()
 })
 
 onMounted(() => {
   logDebug('BatchListView.onMounted()')
+  setSortingDefault('brewDate', 'date', false)
+
   var query = router.currentRoute.value.query
 
   if (Object.prototype.hasOwnProperty.call(query, 'chipId')) {
@@ -306,7 +274,7 @@ function filterBatchList() {
     if (include) batchList.value.push(b)
   })
 
-  applySortBatchList()
+  applySortList(batchList.value)
 }
 
 watch(batchListFilterDevice, async (selected) => {

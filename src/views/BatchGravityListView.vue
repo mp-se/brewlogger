@@ -70,30 +70,47 @@
         <thead>
           <tr>
             <th scope="col" class="col-sm-2">
-              Date&nbsp;
-              <a class="icon-link icon-link-hover" @click="sortGravityList('created', 'date')">
-                <i class="bi bi-sort-alpha-down"></i>
-              </a>
+              <div :class="sortedClass('created')">
+                Date&nbsp;
+                <a
+                  class="icon-link icon-link-hover"
+                  @click="sortList(gravityList, 'created', 'date')"
+                >
+                  <i :class="sortedIconClass"></i>
+                </a>
+              </div>
             </th>
             <th scope="col" class="col-sm-1">Active</th>
             <th scope="col" class="col-sm-1">
-              Gravity ({{ config.isGravitySG ? 'SG' : 'P' }}) &nbsp;
-              <a class="icon-link icon-link-hover" @click="sortGravityList('gravity', 'num')">
-                <i class="bi bi-sort-alpha-down"></i>
-              </a>
+              <div :class="sortedClass('gravity')">
+                Gravity ({{ config.isGravitySG ? 'SG' : 'P' }})&nbsp;
+                <a
+                  class="icon-link icon-link-hover"
+                  @click="sortList(gravityList, 'gravity', 'num')"
+                >
+                  <i :class="sortedIconClass"></i>
+                </a>
+              </div>
             </th>
             <th scope="col" class="col-sm-1">
-              Angle&nbsp;
-              <a class="icon-link icon-link-hover" @click="sortGravityList('angle', 'num')">
-                <i class="bi bi-sort-alpha-down"></i>
-              </a>
+              <div :class="sortedClass('angle')">
+                Angle&nbsp;
+                <a class="icon-link icon-link-hover" @click="sortList(gravityList, 'angle', 'num')">
+                  <i :class="sortedIconClass"></i>
+                </a>
+              </div>
             </th>
             <th scope="col" class="col-sm-1">Temp ({{ config.isTempC ? 'C' : 'F' }})</th>
             <th scope="col" class="col-sm-1">
-              Battery (V)&nbsp;
-              <a class="icon-link icon-link-hover" @click="sortGravityList('battery', 'num')">
-                <i class="bi bi-sort-alpha-down"></i>
-              </a>
+              <div :class="sortedClass('battery')">
+                Battery&nbsp;
+                <a
+                  class="icon-link icon-link-hover"
+                  @click="sortList(gravityList, 'battery', 'num')"
+                >
+                  <i :class="sortedIconClass"></i>
+                </a>
+              </div>
             </th>
             <th scope="col" class="col-sm-1">RSSI</th>
             <th scope="col" class="col-sm-1">Run time (s)</th>
@@ -153,6 +170,13 @@ import { config, gravityStore, batchStore, global } from '@/modules/pinia'
 import router from '@/modules/router'
 import { gravityToPlato, tempToF, getGravityDataAnalytics } from '@/modules/utils'
 import { logDebug, logError } from '@/modules/logger'
+import {
+  sortedIconClass,
+  setSortingDefault,
+  sortedClass,
+  sortList,
+  applySortList
+} from '@/modules/ui'
 
 const gravityList = ref(null)
 const gravityStats = ref(null)
@@ -164,27 +188,6 @@ const infoOG = ref(null)
 const infoFG = ref(null)
 
 const batchName = ref('')
-
-const sortDirection = ref(true)
-
-function sortGravityList(column, type) {
-  // Type: str, num, date
-  logDebug('BatchListView.sortBatches()', column, sortDirection.value)
-
-  if (sortDirection.value) {
-    if (type == 'str') gravityList.value.sort((a, b) => a[column].localeCompare(b[column]))
-    else if (type == 'date')
-      gravityList.value.sort((a, b) => Date.parse(a[column]) - Date.parse(b[column]))
-    else gravityList.value.sort((a, b) => a[column] - b[column])
-  } else {
-    if (type == 'str') gravityList.value.sort((a, b) => b[column].localeCompare(a[column]))
-    else if (type == 'date')
-      gravityList.value.sort((a, b) => Date.parse(b[column]) - Date.parse(a[column]))
-    else gravityList.value.sort((a, b) => b[column] - a[column])
-  }
-
-  sortDirection.value = !sortDirection.value
-}
 
 async function updateGravity(id) {
   logDebug('BatchGravityListView.updateGravity()', id)
@@ -264,6 +267,7 @@ function activateAll() {
 
 onMounted(() => {
   logDebug('BatchGravityListView.onMounted()')
+  setSortingDefault('created', 'date', false)
 
   gravityList.value = null
 
@@ -274,6 +278,7 @@ onMounted(() => {
   gravityStore.getGravityListForBatch(router.currentRoute.value.params.id, (success, gl) => {
     if (success) {
       gravityList.value = gl
+      applySortList(gravityList.value)
       logDebug('BatchGravityListView.onMounted()', gravityList.value)
 
       gravityStats.value = getGravityDataAnalytics(gravityList.value)
