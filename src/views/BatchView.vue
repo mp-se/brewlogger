@@ -570,48 +570,40 @@ function updateDeviceOptions() {
   logDebug('BatchView.updateDeviceOptions()')
 
   gravityDeviceOptions.value = []
-  gravityDeviceOptions.value = [{ value: '', label: '-- No connected --' }]
+  gravityDeviceOptions.value = [{ value: '', label: '-- Disabled --' }]
   tempControlDeviceOptions.value = [{ value: 0, label: '-- Disabled --' }]
 
-  deviceStore.getDeviceList((success, dl) => {
-    if (success) {
-      for (var i = 0; i < dl.length; i++) {
-        const d = dl[i]
+  deviceStore.devices.forEach(d => {
+    if (d.software == 'Gravitymon') {
+      var s =
+        d.mdns != ''
+          ? d.mdns
+          : d.url != ''
+            ? d.url
+            : d.description != ''
+              ? d.description
+              : d.software
 
-        if (d.software != 'Brewpi' && d.software != 'Kegmon') {
-          var s =
-            d.mdns != ''
-              ? d.mdns
-              : d.url != ''
-                ? d.url
-                : d.description != ''
-                  ? d.description
-                  : d.software
+      gravityDeviceOptions.value.push({
+        value: d.chipId,
+        label: d.chipId + ' (' + s + ')'
+      })
+    }
 
-          gravityDeviceOptions.value.push({
-            value: dl[i].chipId,
-            label: dl[i].chipId + ' (' + s + ')'
-          })
-        }
+    if (d.software == 'Brewpi') {
+      s = d.mdns != '' ? d.mdns : d.url != '' ? d.url : d.description
 
-        if (d.software == 'Brewpi' || d.chipId == '000000') {
-          s = d.mdns != '' ? d.mdns : d.url != '' ? d.url : d.description
-
-          if (d.url != '') {
-            tempControlDeviceOptions.value.push({
-              value: dl[i].id,
-              label: 'Brewpi (' + s + ')'
-            })
-          }
-        }
+      if (d.url != '') {
+        tempControlDeviceOptions.value.push({
+          value: d.id,
+          label: 'Brewpi (' + s + ')'
+        })
       }
-
-      logDebug('BatchView.updateDeviceOptions()', gravityDeviceOptions.value)
-      logDebug('BatchView.updateDeviceOptions()', tempControlDeviceOptions.value)
-    } else {
-      global.messageError = 'Failed to load device list'
     }
   })
+
+  logDebug('BatchView.updateDeviceOptions()', gravityDeviceOptions.value)
+  logDebug('BatchView.updateDeviceOptions()', tempControlDeviceOptions.value)
 }
 
 const save = () => {

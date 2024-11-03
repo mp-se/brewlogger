@@ -353,9 +353,7 @@ async function proxyRequest(url, header) {
   return json
 }
 
-/*
- * Fetch config from a device with API V1.x that uses /api/auth and /api/config (with auth)
- */
+// Fetch config from a device with API V1.x that uses /api/auth and /api/config (with auth)
 async function fetchConfigEspFwkV1() {
   try {
     var data = {}
@@ -437,10 +435,7 @@ const save = () => {
       logDebug('DeviceView.addDevice()', 'Add device', success)
       device.value = d
       if (success) {
-        deviceStore.getDeviceList((success) => {
-          logDebug('DeviceView.addDevice()', 'Change to editor', success, device.value)
-          router.push({ name: 'device', params: { id: device.value.id } })
-        })
+        router.push({ name: 'device', params: { id: device.value.id } })
       } else {
         global.messageError = 'Failed to add device'
       }

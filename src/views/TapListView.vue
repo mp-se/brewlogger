@@ -92,13 +92,15 @@ const batchList = ref(null)
 const { updatedBatchData } = storeToRefs(global)
 
 watch(updatedBatchData, () => {
-  updateBatchList()
+  filterBatchList()
+  applySortList(batchList.value)
 })
 
 onMounted(() => {
   logDebug('TapListView.onMounted()')
   setSortingDefault('brewDate', 'date', false)
-  updateBatchList()
+  filterBatchList()
+  applySortList(batchList.value)
 })
 
 function calculateProgress(b) {
@@ -113,20 +115,6 @@ function filterBatchList() {
   batchList.value = []
   batchStore.batchList.forEach((b) => {
     if (b.tapList) batchList.value.push(b)
-  })
-
-  applySortList(batchList.value)
-}
-
-function updateBatchList() {
-  logDebug('TapListView.updateBatchList()')
-
-  batchStore.getBatchList((success) => {
-    if (success) {
-      filterBatchList()
-    } else {
-      global.messageError = 'Failed to load batch list'
-    }
   })
 }
 </script>

@@ -173,7 +173,8 @@ const deviceList = ref(null)
 const { updatedDeviceData, deviceListFilterSoftware } = storeToRefs(global)
 
 watch(updatedDeviceData, () => {
-  updateDeviceList()
+  filterDeviceList()
+  applySortList(deviceList.value)
 })
 
 const softwareOptions = ref([
@@ -192,8 +193,8 @@ const searchSelected = ref('')
 onMounted(() => {
   logDebug('DeviceListView.onMounted()')
   setSortingDefault('mdns', 'str', false)
-  deviceList.value = deviceStore.deviceList
-  updateDeviceList()
+  filterDeviceList()
+  applySortList(deviceList.value)
 })
 
 function filterDeviceList() {
@@ -207,27 +208,13 @@ function filterDeviceList() {
       if (d.software == global.deviceListFilterSoftware) deviceList.value.push(d)
     }
   })
-
-  applySortList(deviceList.value)
 }
 
 watch(deviceListFilterSoftware, async (selected) => {
   logDebug('DeviceListView.watch(filterSoftware)', selected)
   filterDeviceList()
+  applySortList(deviceList.value)
 })
-
-function updateDeviceList() {
-  logDebug('DeviceListView.updateDeviceList()')
-
-  deviceStore.getDeviceList((success, dl) => {
-    if (success) {
-      deviceList.value = dl
-      filterDeviceList()
-    } else {
-      global.messageError = 'Failed to load device list'
-    }
-  })
-}
 
 const confirmDeleteCallback = (result) => {
   logDebug('DeviceListView.confirmDeleteCallback()', result)

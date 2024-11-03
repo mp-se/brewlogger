@@ -180,7 +180,8 @@ const { batchListFilterDevice, batchListFilterActive, batchListFilterData } = st
 const { updatedBatchData } = storeToRefs(global)
 
 watch(updatedBatchData, () => {
-  updateBatchList()
+  filterBatchList()
+  applySortList(batchList.value)
 })
 
 onMounted(() => {
@@ -194,7 +195,8 @@ onMounted(() => {
     global.batchListFilterDevice = query.chipId
   }
 
-  updateBatchList()
+  filterBatchList()
+  applySortList(batchList.value)
 
   deviceList.value.push({ label: 'All', value: '*' })
   deviceStore.deviceList.forEach((d) => {
@@ -273,37 +275,25 @@ function filterBatchList() {
 
     if (include) batchList.value.push(b)
   })
-
-  applySortList(batchList.value)
 }
 
 watch(batchListFilterDevice, async (selected) => {
   logDebug('BatchListView.watch(filterDevice)', selected)
   filterBatchList()
+  applySortList(batchList.value)
 })
 
 watch(batchListFilterActive, async (selected) => {
   logDebug('BatchListView.watch(filterActive)', selected)
   filterBatchList()
+  applySortList(batchList.value)
 })
 
 watch(batchListFilterData, async (selected) => {
   logDebug('BatchListView.watch(filterData)', selected)
+  applySortList(batchList.value)
   filterBatchList()
 })
-
-async function updateBatchList() {
-  logDebug('BatchListView.updateBatchList()')
-
-  batchStore.getBatchList((success, bl) => {
-    if (success) {
-      batchList.value = bl
-      filterBatchList()
-    } else {
-      global.messageError = 'Failed to load batch list'
-    }
-  })
-}
 
 const confirmDeleteCallback = (result) => {
   logDebug('BatchListView.confirmDeleteCallback()', result)
