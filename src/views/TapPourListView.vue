@@ -15,6 +15,9 @@
               </a>
             </div>
           </th>
+          <th scope="col" class="col-sm-1">            
+            Active
+          </th>
           <th scope="col" class="col-sm-2">
             <div :class="sortedClass('pour')">
               Pour ({{ config.isVolumeMetric ? 'cl' : 'fl. oz.' }})&nbsp;
@@ -40,6 +43,16 @@
       <tbody :key="forceRender">
         <tr v-for="p in pourList" :key="p.id">
           <td class="fs-5">{{ p.created.substring(0, 10) }} {{ p.created.substring(11, 19) }}</td>
+          <td>
+            <div class="form-check">
+              <input
+                class="form-check-input"
+                v-model="p.active"
+                type="checkbox"
+                @click="updatePour(p.id)"
+              />
+            </div>
+          </td>
           <td class="fs-5">{{ convertCL(p.pour) }}</td>
           <td class="fs-5">{{ convertL(p.volume) }}</td>
           <td class="fs-5">{{ convertL(p.maxVolume) }}</td>
@@ -60,7 +73,7 @@
 
 <script setup>
 import { onMounted, ref } from 'vue'
-import { pourStore, batchStore, config } from '@/modules/pinia'
+import { pourStore, batchStore, config, global } from '@/modules/pinia'
 import router from '@/modules/router'
 import { logDebug, logError } from '@/modules/logger'
 import {
@@ -92,6 +105,25 @@ function convertL(v) {
   return Number(
     config.isVolumeMetric ? v : config.isVolumeUk ? volumeLtoUKGallon(v) : volumeLtoUSGallon(v)
   ).toFixed(2)
+}
+
+async function updatePour(id) {
+  logDebug('TapPourListView.updatePour()', id)
+
+  pourList.value.forEach((p) => {
+    if (p.id == id) {
+      logDebug('TapPourListView.updatePour()', 'Found Record', p)
+
+      p.active = !p.active
+      pourStore.updatePour(p, (success) => {
+        if (success) {
+          logDebug('BatchGravityListView.updatePour()', 'Success')
+        } else {
+          global.messageError = 'Failed to load pour ' + id
+        }
+      })
+    }
+  })
 }
 
 onMounted(() => {

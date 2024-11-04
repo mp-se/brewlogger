@@ -104,8 +104,8 @@ onMounted(() => {
 })
 
 function calculateProgress(b) {
+  logDebug('TapListView.calculateProgress()', b.name, b.lastPourMaxVolume, b.lastPourVolume)
   if (b.lastPourMaxVolume === undefined || b.lastPourVolume === undefined) return 0
-
   return Number((b.lastPourVolume / b.lastPourMaxVolume) * 100).toFixed(0)
 }
 
