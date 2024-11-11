@@ -65,8 +65,8 @@ services:
       - 5050:80
     volumes:
       - pgadmin-data:/var/lib/pgadmin
-
- brew_mdns:
+ 
+  brew_mdns:
     build: service-mdns2
     hostname: brew_mdns
     restart: always
