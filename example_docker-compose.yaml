@@ -66,20 +66,17 @@ services:
     volumes:
       - pgadmin-data:/var/lib/pgadmin
 
-  brew_mdns:
-    build: service-mdns
+ brew_mdns:
+    build: service-mdns2
     hostname: brew_mdns
-    container_name: mdns
     restart: always
     network_mode: host
     privileged: true
     environment:
-      - USE_MDNS_REPEATER=1
-      - EXTERNAL_INTERFACE=en0
-      - DOCKER_NETWORK_NAME=brewnet
-      - OPTIONS=
+     - REDIS_URL=brew_cache
     volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
+      - /var/run/dbus:/var/run/dbus
+      - /var/run/avahi-daemon/socket:/var/run/avahi-daemon/socket
 
   brew_ble:
     build: service-ble
