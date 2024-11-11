@@ -15,9 +15,7 @@
               </a>
             </div>
           </th>
-          <th scope="col" class="col-sm-1">            
-            Active
-          </th>
+          <th scope="col" class="col-sm-1">Active</th>
           <th scope="col" class="col-sm-2">
             <div :class="sortedClass('pour')">
               Pour ({{ config.isVolumeMetric ? 'cl' : 'fl. oz.' }})&nbsp;
