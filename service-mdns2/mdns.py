@@ -1,24 +1,32 @@
 import asyncio
 import logging
 import time
+import os
+import redis
+import json
+from json import JSONDecodeError
 from typing import Optional, cast
 
 from zeroconf import DNSQuestionType, IPVersion, ServiceStateChange, Zeroconf
 from zeroconf.asyncio import AsyncServiceBrowser, AsyncServiceInfo, AsyncZeroconf
 
 ALL_SERVICES = [
-    "_pressuremon._tcp.local.",
-    "_gravitymon._tcp.local.",
-    "_gravitymon-gateway._tcp.local.",
-    "_kegmon._tcp.local.",
-    "_brewpi._tcp.local.",
+    # "_pressuremon._tcp.local.",
+    # "_gravitymon._tcp.local.",
+    # "_gravitymon-gateway._tcp.local.",
+    # "_kegmon._tcp.local.",
+    # "_brewpi._tcp.local.",
     # "_http._tcp.local.",
     # "_espfwk._tcp.local."
+    "_airplay._tcp.local."
 ]
 
 logger = logging.getLogger(__name__)
 scan_result = []
 
+# Configuration
+redis_url = ""
+redis_pool = None
 
 async def scan_for_mdns(timeout):
     logger.info(f"Scanning for mdns devices, timout {timeout}")
@@ -86,11 +94,47 @@ class AsyncDeviceScanner:
         await self.aiozc.async_close()
 
 
-async def test():
-    result = await scan_for_mdns(10)
-    for r in result:
-        print(r)
+def writeKey(key, value, ttl):
+    if redis_pool is None:
+        return True
 
+    logger.info(f"Writing key {key} = {value} ttl:{ttl}.")
+    try:
+        r = redis.Redis(connection_pool=redis_pool)
+        r.set(name=key, value=str(value), ex=ttl)
+        return True
+    except redis.exceptions.ConnectionError as e:
+        logger.error(f"Failed to connect with redis {e}.")
+    return False
+
+
+async def task_scan_mdns():
+    logger.info("Scanning for mdns devices")
+
+    mdns_list = await scan_for_mdns(20)
+
+    for mdns in mdns_list:
+        try:
+            key = mdns["host"] + mdns["type"]
+            writeKey(key, json.dumps(mdns), ttl=900)
+        except JSONDecodeError:
+            logger.error(f"Unable to parse JSON response {mdns}")
+
+
+async def main():
+    while(True):
+        await task_scan_mdns()
 
 if __name__ == "__main__":
-    asyncio.run(test())
+    logging.basicConfig(
+        level=logging.INFO,
+        format="%(asctime)-15s %(name)-8s %(levelname)s: %(message)s",
+    )
+
+    redis_url = os.getenv("REDIS_URL")
+    if redis_url is None:
+        logger.error("No REDIS URL is defined, cannot start program")
+        exit(-1)
+
+    redis_pool = redis.ConnectionPool(host=redis_url, port=6379, db=0)
+    asyncio.run(main())

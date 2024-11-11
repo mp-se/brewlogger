@@ -1,14 +1,12 @@
 import logging
 import httpx
 import json
-from json import JSONDecodeError
 from datetime import datetime
 from api.db.session import create_session
 from api.services import BrewLoggerService, DeviceService
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from .config import get_settings
 from .cache import writeKey, findKey, readKey, deleteKey
-from .mdns import scan_for_mdns
 from .fermentationcontrol import fermentation_controller_run
 from .brewpi import brewpi_temps
 from .log import system_log_scheduler, system_log_purge
@@ -94,20 +92,6 @@ async def task_forward_gravity():
             logger.error(f"Unknown exception {e}")
 
 
-async def task_scan_mdns():
-    logger.info(f"Task: task_scan_mdns is running at {datetime.now()}")
-
-    mdns_list = await scan_for_mdns(20)
-
-    for mdns in mdns_list:
-        try:
-            key = mdns["host"] + mdns["type"]
-            writeKey(key, json.dumps(mdns), ttl=900)
-        except JSONDecodeError:
-            system_log_scheduler(f"Failed parse JSON from mdns scanner {mdns}", 0)
-            logger.error(f"Unable to parse JSON response {mdns}")
-
-
 async def task_fermentation_control():
     logger.info(f"Task: task_fermentation_control is running at {datetime.now()}")
     await fermentation_controller_run(datetime.now())
@@ -131,9 +115,6 @@ def scheduler_setup(app):
 
         # Setting up task to forward gravity data to remove endpoint from redis cache
         scheduler.add_job(task_forward_gravity, "interval", minutes=15, max_instances=1)
-
-        # Setting up task to scan for mdns data
-        scheduler.add_job(task_scan_mdns, "interval", minutes=1, max_instances=1)
 
         # Setting up task to scan for mdns data
         scheduler.add_job(task_check_database, "interval", hours=6, max_instances=1)

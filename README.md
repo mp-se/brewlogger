@@ -31,6 +31,17 @@ This is a short list of features that has been implemented into the Brewlogger s
 
 - 0.7.0 First stable testing version
 
+- 0.8.0 Updated with new features
+  - Feature: Refactored user interface to avoid data fetching, this will also allow for multiple devices interacting with the API's
+  - Feature: Added support for pour data from Kegmon as well as fetching batches from Brewlogger (a must if pour storing is used)
+  - Feature: Added sorting of lists in UI to easier find what you are looking for.
+  - Bug: Caching of data from brewfather was invalidated to quickly
+  - Feature: Adding option to disable individual pour records
+  - Bug: Fixed problem with not beeing able to create a batch without connected gravity device.
+  - Feature: Refactor mDNS repeater to use AVAHI driver instead. mDNS container will now scan and store results in the Redis Cache.
+  - Bug: Not able to store changes when a record has just been created. 
+
+
 ## Installation
 
 Installation requires a docker runtime (or k8s) where a stack can be deployed (a stack is a set of docker containers). I personally use portainer which is an excellent management software for containers.
@@ -41,7 +52,7 @@ It consists of the following containers.
 - **brewlogger-api**; Server with the API's for the web interface
 - **brewlogger-cache**; Redis cache for temporary data storage
 - **brewlogger-db**; Postgres Database for persistent storage
-- **brewlogger-mdns** [Optional]; Propages mDNS reqeusts to the internal brewlogger network, if not deployed then the scanning for devices will not work.
+- **brewlogger-mdns** [Optional]; Scans for mDNS devices on the local network and stores these in the Redis Cache for consumption by the API. If not deployed discovery of brewing devices will not work.
 - **brewlogger-ble** [Optional]; BLE scanner that forwards data to the Server API's. If not deployed BLE data from GravityMon will not be captured. An option is to use GravityMon-Gatway instead.
 - **brewlogger-pgadmin** [Optional]; Postgres Admin application. Only needed if you want to interact directly with the postgres application
 
