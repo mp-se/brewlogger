@@ -240,8 +240,8 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           builder: ${{ steps.buildx.outputs.name }}
-          context: ./service-mdns
-          file: ./service-mdns/Dockerfile
+          context: ./service-mdns2
+          file: ./service-mdns2/Dockerfile
           platforms: linux/amd64, linux/arm64/v8
           push: true
           tags: ${{ steps.prep.outputs.tags }}
