@@ -611,7 +611,7 @@ function applyLTD(input, points) {
   // Map data back to chart format
   data = []
   downsampled.forEach((d) => {
-    logDebug(d)
+    // logDebug(d)
     data.push({ x: d[0].toISOString(), y: d[1] })
   })
 

@@ -538,7 +538,7 @@ onMounted(() => {
   batch.value = null
 
   brewfatherStore.getBatchList((success) => {
-    logDebug(success)
+    logDebug('BatchView.onMounted()', success)
 
     brewfatherStore.batches.forEach((b) => {
       brewfatherOptions.value.push({
@@ -557,7 +557,7 @@ onMounted(() => {
         if (success) {
           batchSaved.value = Batch.fromJson(b.toJson())
           batch.value = b
-          logDebug(batch.value)
+          // logDebug(batch.value)
         } else {
           global.messageError = 'Failed to load batch ' + router.currentRoute.value.params.id
         }
@@ -590,7 +590,7 @@ function updateDeviceOptions() {
       })
     }
 
-    if (d.software == 'Brewpi' || d.software == 'Chamber-Controller') {
+    if (d.software == 'Brewpi' || d.software == 'Chamber-Controller') {
       s = d.mdns != '' ? d.mdns : d.url != '' ? d.url : d.description
 
       if (d.url != '') {

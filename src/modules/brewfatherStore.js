@@ -125,7 +125,7 @@ export const useBrewfatherStore = defineStore('brewfatherStore', {
           return res.json()
         })
         .then((json) => {
-          logDebug(json)
+          // logDebug(json)
           this.batches = []
 
           json.forEach((b) => {

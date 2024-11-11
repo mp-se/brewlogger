@@ -235,7 +235,7 @@ function fetchTempConfig() {
         fridgeSet: res.cs.fridgeSet
       }
 
-      logDebug(tempControl.value)
+      // logDebug(tempControl.value)
     }
   )
 }

@@ -54,7 +54,7 @@ export class Batch {
         return p.active
       })
       pour.sort((a, b) => Date.parse(b.created) - Date.parse(a.created))
-      logDebug(pour)
+      // logDebug(pour)
       if (pour.length) {
         this.lastPourVolume = pour[0].volume
         this.lastPourMaxVolume = pour[0].maxVolume

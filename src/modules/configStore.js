@@ -84,7 +84,7 @@ export const useConfigStore = defineStore('config', {
         version: ''
       }
 
-      logDebug(data)
+      // logDebug(data)
 
       fetch(global.baseURL + 'api/config/' + this.id, {
         method: 'PATCH',
