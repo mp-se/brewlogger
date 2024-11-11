@@ -221,6 +221,7 @@ const softwareOptions = ref([
   { label: 'Gravitymon', value: 'Gravitymon' },
   { label: 'Gravitymon Gateway', value: 'Gravitymon-Gateway' },
   { label: 'Kegmon', value: 'Kegmon' },
+  { label: 'Chamber Controller', value: 'Chamber-Controller' },
   { label: 'Brewpi', value: 'Brewpi' }
   // { label: 'Pressuremon', value: 'Pressuremon' },
   // { label: 'iSpindel', value: 'iSpindel' }
@@ -359,7 +360,7 @@ async function fetchConfigEspFwkV1() {
     var data = {}
 
     const status = await proxyRequest(device.value.url + 'api/status', '')
-    logDebug('DeviceView.fetchConfigV2()', status)
+    logDebug('DeviceView.fetchConfigEspFwkV1()', status)
     data.status = status
 
     // Gravitymon, Kegmon etc
@@ -372,16 +373,25 @@ async function fetchConfigEspFwkV1() {
 
     // Gravitymon
     if (status.gravity_format !== undefined) {
+      // Could also be Gravitymon-Gateway, unable to identify
       device.value.software = 'Gravitymon'
+    }
+
+    if (status.pid_mode !== undefined) {
+      device.value.software = 'Chamber-Controller'
+    }
+
+    if (status.keg_volume1 !== undefined) {
+      device.value.software = 'Kegmon'
     }
 
     const header = 'Authorization: Basic ' + btoa('username:password')
     const auth = await proxyRequest(device.value.url + 'api/auth', header)
-    logDebug('DeviceView.fetchConfigV2()', auth)
+    logDebug('DeviceView.fetchConfigEspFwkV1()', auth)
 
     const header2 = 'Authorization: Bearer ' + auth.token
     const config = await proxyRequest(device.value.url + 'api/config', header2)
-    logDebug('DeviceView.fetchConfigV2()', config)
+    logDebug('DeviceView.fetchConfigEspFwkV1()', config)
     data.config = config
 
     // Gravitymon
@@ -391,14 +401,14 @@ async function fetchConfigEspFwkV1() {
 
     if (device.value.software == 'Gravitymon') {
       const format = await proxyRequest(device.value.url + 'api/format', header2)
-      logDebug('DeviceView.fetchConfigV2()', format)
+      logDebug('DeviceView.fetchConfigEspFwkV1()', format)
       data.format = format
     }
 
     device.value.config = JSON.stringify(data)
     return true
   } catch (err) {
-    logError('DeviceView.fetchConfigV2()', err)
+    logError('DeviceView.fetchConfigEspFwkV1()', err)
     global.messageError = 'Error when trying to retrive data from device'
   }
 

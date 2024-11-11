@@ -181,6 +181,8 @@ const softwareOptions = ref([
   { label: '(All)', value: '*' },
   { label: '(Blank)', value: '' },
   { label: 'Gravitymon', value: 'Gravitymon' },
+  { label: 'Gravitymon Gateway', value: 'Gravitymon-Gateway' },
+  { label: 'Chamber Controller', value: 'Chamber-Controller' },
   { label: 'Kegmon', value: 'Kegmon' },
   // { label: 'Pressuremon', value: 'Pressuremon' },
   { label: 'Brewpi', value: 'Brewpi' }
@@ -289,7 +291,7 @@ const confirmSearchCallback = (result, value) => {
       searchOptions.value.forEach((e) => {
         if (e.value == value) {
           logDebug('DeviceListView.confirmSearchCallback()', e)
-          detectDeviceType('http://' + e.name)
+          detectDeviceType('http://' + e.value)
         }
       })
     }

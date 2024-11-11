@@ -573,7 +573,7 @@ function updateDeviceOptions() {
   gravityDeviceOptions.value = [{ value: '', label: '-- Disabled --' }]
   tempControlDeviceOptions.value = [{ value: 0, label: '-- Disabled --' }]
 
-  deviceStore.devices.forEach(d => {
+  deviceStore.devices.forEach((d) => {
     if (d.software == 'Gravitymon') {
       var s =
         d.mdns != ''
@@ -590,13 +590,13 @@ function updateDeviceOptions() {
       })
     }
 
-    if (d.software == 'Brewpi') {
+    if (d.software == 'Brewpi' || d.software == 'Chamber-Controller') {
       s = d.mdns != '' ? d.mdns : d.url != '' ? d.url : d.description
 
       if (d.url != '') {
         tempControlDeviceOptions.value.push({
           value: d.id,
-          label: 'Brewpi (' + s + ')'
+          label: d.software + '(' + s + ')'
         })
       }
     }
