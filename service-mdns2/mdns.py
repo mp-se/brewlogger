@@ -11,14 +11,15 @@ from zeroconf import DNSQuestionType, IPVersion, ServiceStateChange, Zeroconf
 from zeroconf.asyncio import AsyncServiceBrowser, AsyncServiceInfo, AsyncZeroconf
 
 ALL_SERVICES = [
-    # "_pressuremon._tcp.local.",
-    # "_gravitymon._tcp.local.",
-    # "_gravitymon-gateway._tcp.local.",
-    # "_kegmon._tcp.local.",
-    # "_brewpi._tcp.local.",
+    "_pressuremon._tcp.local.",
+    "_gravitymon._tcp.local.",
+    "_gravitymon-gateway._tcp.local.",
+    "_kegmon._tcp.local.",
+    "_brewpi._tcp.local.",
+    "_chamberctl._tcp.local.",
     # "_http._tcp.local.",
     # "_espfwk._tcp.local."
-    "_airplay._tcp.local."
+    # "_airplay._tcp.local."
 ]
 
 logger = logging.getLogger(__name__)
