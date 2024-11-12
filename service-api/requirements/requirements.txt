@@ -73,7 +73,7 @@ tzlocal==5.2
     # via apscheduler
 uvicorn==0.32.0
     # via brewlogger_api (setup.py)
-websockets==13.1
+websockets==14.0
     # via brewlogger_api (setup.py)
 zeroconf==0.136.0
     # via brewlogger_api (setup.py)
