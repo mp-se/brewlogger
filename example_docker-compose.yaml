@@ -1,5 +1,7 @@
 version: "3.8"
 
+# Simplified version, see brewlogger project for complete setup
+
 services:
   brew_web:
     build: .
@@ -7,7 +9,7 @@ services:
     restart: always
     environment:
      - API_KEY=mykey
-     - API_URL=brew_api
+     - API_HOST=brew_api
     networks:
       - brew_net
     ports:
@@ -43,47 +45,6 @@ services:
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=password
       - POSTGRES_DB=app
-
-  brew_pgadmin:
-    image: dpage/pgadmin4
-    hostname: brew_pgadmin
-    restart: always
-    networks:
-      - brew_net
-    environment:
-      PGADMIN_DEFAULT_EMAIL: admin@admin.com
-      PGADMIN_DEFAULT_PASSWORD: root
-    ports:
-      - "5050:80"
-    volumes:
-      - pgadmin-data:/var/lib/pgadmin
-
-  brew_mdns:
-    image: mpse2/brewlogger-mdns
-    hostname: brew_mdns
-    restart: always
-    network_mode: "host"
-    privileged: true
-    environment:
-      USE_MDNS_REPEATER: 1
-      EXTERNAL_INTERFACE: eth0
-      DOCKER_NETWORK_NAME: brew_net
-      OPTIONS: ""
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
-
-  brew_ble:
-    image: mpse2/brewlogger-ble
-    hostname: brew_ble
-    networks:
-      - brew_net
-    restart: always
-    privileged: true
-    environment:
-      MIN_INTERVAL: 300
-    volumes:
-      - /dev:/dev
-      - /var/run/dbus:/var/run/dbus
 
 networks:
   brew_net:
