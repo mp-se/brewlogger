@@ -21,6 +21,7 @@
     "downsample": "^1.4.0",
     "kalman-filter": "^2.3.0",
     "pinia": "^2.1.7",
+    "trendline": "^1.0.0",
     "vue": "^3.4.29",
     "vue-router": "^4.3.3"
   },

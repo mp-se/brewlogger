@@ -11,6 +11,7 @@ import BatchListView from '@/views/BatchListView.vue'
 import TapListView from '@/views/TapListView.vue'
 import TapPourListView from '@/views/TapPourListView.vue'
 import BatchGravityListView from '@/views/BatchGravityListView.vue'
+import BatchGravityTestView from '@/views/BatchGravityTestView.vue'
 import BatchGravityGraphView from '@/views/BatchGravityGraphView.vue'
 import BatchFermentationControlView from '@/views/BatchFermentationControlView.vue'
 import BatchPressureView from '@/views/BatchPressureView.vue'
@@ -72,6 +73,11 @@ const routes = [
     path: '/batch/:id/gravity',
     name: 'batch-gravity-list',
     component: BatchGravityListView
+  },
+  {
+    path: '/batch/:id/gravity/test',
+    name: 'batch-gravity-test-list',
+    component: BatchGravityTestView
   },
   {
     path: '/batch/:id/pressure',
