@@ -208,11 +208,11 @@ async def create_gravity_using_ispindel_format(
 
         # If there is a tagged brewpi device lets use the value from that
         if chamberId is not None and chamberId > 1:
-            key = "brewpi_" + str(chamberId) + "_beer_temp"
+            key = "chamber_" + str(chamberId) + "_beer_temp"
             if existKey(key):
                 beerTemp = readKey(key)
                 gravity.beer_temperature = float(beerTemp)
-            key = "brewpi_" + str(chamberId) + "_fridge_temp"
+            key = "chamber_" + str(chamberId) + "_fridge_temp"
             if existKey(key):
                 chamberTemp = readKey(key)
                 gravity.chamber_temperature = float(chamberTemp)
