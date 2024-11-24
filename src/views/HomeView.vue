@@ -69,6 +69,8 @@ const fermentationControlList = ref([])
 
 function prettySchedulerName(n) {
   switch (n) {
+    case 'task_fetch_chamberctrl_temps':
+      return 'Fetch ChamberControl Temps'
     case 'task_fetch_brewpi_temps':
       return 'Fetch Brewpi Temps'
     case 'task_fermentation_control':
