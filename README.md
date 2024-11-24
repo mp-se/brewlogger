@@ -52,7 +52,7 @@ It consists of the following containers.
 - **brewlogger-api**; Server with the API's for the web interface
 - **brewlogger-cache**; Redis cache for temporary data storage
 - **brewlogger-db**; Postgres Database for persistent storage
-- **brewlogger-mdns** [Optional]; Scans for mDNS devices on the local network and stores these in the Redis Cache for consumption by the API. If not deployed discovery of brewing devices will not work.
+- **brewlogger-mdns** [Optional]; Scans for mDNS devices on the local network and stores these in the Redis Cache for consumption by the API. If not deployed discovery of brewing devices will not work. This container will need to run on the host networks and will update the cache via the web/api server.
 - **brewlogger-ble** [Optional]; BLE scanner that forwards data to the Server API's. If not deployed BLE data from GravityMon will not be captured. An option is to use GravityMon-Gatway instead.
 - **brewlogger-pgadmin** [Optional]; Postgres Admin application. Only needed if you want to interact directly with the postgres application
 
@@ -134,7 +134,7 @@ services:
     network_mode: host
     privileged: true
     environment:
-      - WEB_URL=http://[your published ip or host name]
+      - WEB_HOST=[your published ip or host name]
       - API_KEY=[your API key for securing access to brew_api]
     volumes:
       - /var/run/dbus:/var/run/dbus
