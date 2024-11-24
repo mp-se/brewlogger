@@ -1,2 +1,2 @@
-redis==5.2.0
+requests
 zeroconf==0.136.0

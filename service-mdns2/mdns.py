@@ -1,10 +1,9 @@
 import asyncio
 import logging
 import time
-import os
-import redis
 import json
-from json import JSONDecodeError
+import os
+import requests
 from typing import Optional, cast
 
 from zeroconf import DNSQuestionType, IPVersion, ServiceStateChange, Zeroconf
@@ -26,8 +25,8 @@ logger = logging.getLogger(__name__)
 scan_result = []
 
 # Configuration
-redis_url = ""
-redis_pool = None
+web_host = ""
+api_key = ""
 
 async def scan_for_mdns(timeout):
     logger.info(f"Scanning for mdns devices, timout {timeout}")
@@ -58,7 +57,7 @@ async def _async_show_service_info(
         type = info.type
         adresses = ", ".join(addresses)
         host = info.server
-        logger.info(f"Endpoint: {type} {adresses} {host}")
+        logger.info(f"Found: {type} {adresses} {host}")
         mdns = {"type": type, "host": str(adresses), "name": host.strip(".")}
         scan_result.append(mdns)
 
@@ -95,31 +94,24 @@ class AsyncDeviceScanner:
         await self.aiozc.async_close()
 
 
-def writeKey(key, value, ttl):
-    if redis_pool is None:
-        return True
-
-    logger.info(f"Writing key {key} = {value} ttl:{ttl}.")
-    try:
-        r = redis.Redis(connection_pool=redis_pool)
-        r.set(name=key, value=str(value), ex=ttl)
-        return True
-    except redis.exceptions.ConnectionError as e:
-        logger.error(f"Failed to connect with redis {e}.")
-    return False
-
-
 async def task_scan_mdns():
     logger.info("Scanning for mdns devices")
 
     mdns_list = await scan_for_mdns(20)
 
+    endpoint = "http://" + web_host + "/api/system/mdns"
+    headers = {
+        "Content-Type": "application/json",
+        "Authorization": "Bearer " + api_key 
+    }
+
     for mdns in mdns_list:
         try:
-            key = mdns["host"] + mdns["type"]
-            writeKey(key, json.dumps(mdns), ttl=900)
-        except JSONDecodeError:
-            logger.error(f"Unable to parse JSON response {mdns}")
+            logger.info(f"Posting data {endpoint} {mdns}.")
+            r = requests.post(endpoint, json=mdns, headers=headers)
+            logger.info(f"Response {r}.")
+        except Exception as e:
+            logger.error(f"Failed to post data, Error: {e}")
 
 
 async def main():
@@ -132,10 +124,14 @@ if __name__ == "__main__":
         format="%(asctime)-15s %(name)-8s %(levelname)s: %(message)s",
     )
 
-    redis_url = os.getenv("REDIS_URL")
-    if redis_url is None:
-        logger.error("No REDIS URL is defined, cannot start program")
+    web_host = os.getenv("WEB_HOST")
+    if web_host is None:
+        logger.error("WEB_HOST is defined, cannot start program")
         exit(-1)
 
-    redis_pool = redis.ConnectionPool(host=redis_url, port=6379, db=0)
+    api_key = os.getenv("API_KEY")
+    if api_key is None:
+        logger.error("API_KEY is defined, cannot start program")
+        exit(-1)
+
     asyncio.run(main())

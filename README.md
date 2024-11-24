@@ -66,7 +66,7 @@ services:
     restart: always
     environment:
      - API_KEY=[your API key for securing access to brew_api]
-     - API_URL=brew_api
+     - API_HOST=brew_api
     networks:
       - brew_net
     ports:
@@ -83,7 +83,7 @@ services:
     environment:
      - API_KEY=[your API key for securing access to brew_api]
      - DATABASE_URL=postgresql://[postgres user]:[postgres password]@brew_db:5432/app
-     - REDIS_URL=brew_cache
+     - REDIS_HOST=brew_cache
      - BREWFATHER_API_KEY=[your brewfather API key]
      - BREWFATHER_USER_KEY=[your brewfather USER key]
     depends_on:
@@ -134,12 +134,11 @@ services:
     network_mode: host
     privileged: true
     environment:
-      - USE_MDNS_REPEATER=1
-      - EXTERNAL_INTERFACE=[Host server interface of your network, eg: en0]
-      - DOCKER_NETWORK_NAME=brewnet
-      - OPTIONS=
+      - WEB_URL=http://[your published ip or host name]
+      - API_KEY=[your API key for securing access to brew_api]
     volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
+      - /var/run/dbus:/var/run/dbus
+      - /var/run/avahi-daemon/socket:/var/run/avahi-daemon/socket
 
   brew_ble:
     image: mpse2/brewlogger-ble
@@ -149,7 +148,7 @@ services:
     restart: always
     privileged: true
     environment:
-      - API_URL=brew_api
+      - API_HOST=brew_api
       - MIN_INTERVAL=[Minimum time in seconds between sending data to API, ie. 300]
     volumes:
       - /dev:/dev

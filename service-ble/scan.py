@@ -16,7 +16,7 @@ from bleak.backends.scanner import AdvertisementData
 logger = logging.getLogger("tilt")
 
 
-endpoint = "http://" + os.getenv("API_URL") + "/api/gravity/public"
+endpoint = "http://" + os.getenv("API_HOST") + "/api/gravity/public"
 headers = {
     "Content-Type": "application/json",
 }

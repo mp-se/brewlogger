@@ -21,7 +21,7 @@ class Settings(BaseSettings):
     database_url: str = config(
         "DATABASE_URL", cast=str, default="sqlite:///./brewlogger.sqlite"
     )
-    redis_url: str = config("REDIS_URL", cast=str, default="redis://localhost")
+    redis_host: str = config("REDIS_HOST", cast=str, default="localhost")
     api_key: str = config("API_KEY", cast=str, default="")
     api_key_enabled: bool = config("API_KEY_ENABLED", cast=bool, default=True)
     scheduler_enabled: bool = config("SCHEDULER_ENABLED", cast=bool, default=True)
@@ -33,7 +33,7 @@ class Settings(BaseSettings):
         api_key = generate_api_key(20)
 
     logger.info(f"db_url: {database_url}")
-    logger.info(f"redis_url: {redis_url}")
+    logger.info(f"redis_host: {redis_host}")
     logger.info(f"api_key: {api_key}")
     logger.info(f"api_key_enabled: {api_key_enabled}")
     logger.info(f"scheduler_enabled: {scheduler_enabled}")

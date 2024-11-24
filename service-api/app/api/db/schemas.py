@@ -21,6 +21,12 @@ class ProxyRequest(BaseModel):
     header: Optional[str]
 
 
+class Mdns(BaseModel):
+    type: str
+    host: str
+    name: str
+
+
 class Job(BaseModel):
     name: str
     nextRunIn: int

@@ -5,13 +5,13 @@ from .config import get_settings
 logger = logging.getLogger(__name__)
 
 logger.info(
-    f"Creating connection pool to redis using redis://{get_settings().redis_url}:6379."
+    f"Creating connection pool to redis using redis://{get_settings().redis_host}:6379."
 )
 
 pool = None
 
 if get_settings().cache_enabled:
-    pool = redis.ConnectionPool(host=get_settings().redis_url, port=6379, db=0)
+    pool = redis.ConnectionPool(host=get_settings().redis_host, port=6379, db=0)
 
 
 def deleteKey(key):

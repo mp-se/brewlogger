@@ -218,3 +218,4 @@ async def delete_fermentation_step_by_device_id(
 ):
     logger.info(f"Endpoint DELETE /api/fermentation_step/{device_id}")
     fermentation_step_service.delete_by_deviceId(device_id)
+
