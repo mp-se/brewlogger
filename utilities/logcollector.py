@@ -3,7 +3,7 @@
 #
 # Requires the following environment variables 
 #
-#   API_URL: Name of host (eg. localhost:8000)
+#   API_URL: Name of base URL (eg. http://localhost:8000)
 #   API_KEY: API Key for server
 #
 # Options:
@@ -104,7 +104,7 @@ if __name__ == "__main__":
         logging.error("Environment variables API_URL and API_KEY needs to be set")
         exit(-1)
     
-    endpoint = "http://" + apiUrl + "/api/device/"
+    endpoint = apiUrl + "/api/device/"
     headers = {
         "Content-Type": "application/json",
         "Authorization": "Bearer " + apiKey,

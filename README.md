@@ -32,7 +32,7 @@ This is a short list of features that has been implemented into the Brewlogger s
 - 0.7.0 First stable testing version
 
 - 0.8.0 Updated with new features
-  - Feature: Refactored user interface to avoid data fetching, this will also allow for multiple devices interacting with the API's
+  - Feature: Refactored user interface to avoid data fetching, this will also allow for multiple devices interacting with the API's and data updated in background.
   - Feature: Added support for pour data from Kegmon as well as fetching batches from Brewlogger (a must if pour storing is used)
   - Feature: Added sorting of lists in UI to easier find what you are looking for.
   - Bug: Caching of data from brewfather was invalidated to quickly
@@ -134,7 +134,7 @@ services:
     network_mode: host
     privileged: true
     environment:
-      - WEB_HOST=[your published ip or host name]
+      - WEB_HOST=[your published url]
       - API_KEY=[your API key for securing access to brew_api]
     volumes:
       - /var/run/dbus:/var/run/dbus
