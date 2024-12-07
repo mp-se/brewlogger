@@ -24,7 +24,6 @@
 
       <div class="col-md-4" v-for="(d, index) in fermentationControlList" :key="index">
         <BsCard :header="'Fermentation: ' + d.mdns + ', ' + d.description" color="info" title="">
-          <BrewpiDisplayFragment :url="d.url" refresh="5"></BrewpiDisplayFragment>
           <div class="text-center">Controller has assigned profile</div>
         </BsCard>
       </div>
@@ -60,7 +59,6 @@ import { onMounted, onUnmounted, ref, computed } from 'vue'
 import { config, global, batchStore, deviceStore } from '@/modules/pinia'
 import { gravityToPlato, tempToF, formatTime } from '@/modules/utils'
 import { logDebug, logError } from '@/modules/logger'
-import BrewpiDisplayFragment from '@/fragments/BrewpiDisplayFragment.vue'
 
 const activeBatchList = ref([])
 const schedulerStatus = ref(null)
@@ -71,10 +69,8 @@ function prettySchedulerName(n) {
   switch (n) {
     case 'task_fetch_chamberctrl_temps':
       return 'Fetch ChamberControl Temps'
-    case 'task_fetch_brewpi_temps':
-      return 'Fetch Brewpi Temps'
     case 'task_fermentation_control':
-      return 'Brewpi Control'
+      return 'Chamber Control'
     case 'task_forward_gravity':
       return 'Forward gravity'
     case 'task_check_database':
@@ -208,7 +204,7 @@ onMounted(() => {
   })
 
   deviceStore.deviceList.forEach((device) => {
-    if (device.software == 'Brewpi') {
+    if (device.software == 'Chamber-Controller') {
       deviceStore.getDevice(device.id, (success, d, fs) => {
         if (success && fs.length > 0) {
           d.fermentationSteps = fs

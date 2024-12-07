@@ -78,11 +78,11 @@
               :disabled="disableTilt"
             ></BsInputRadio>
           </div>
-          <div class="col-md-11" v-if="device.software != 'Brewpi'">
+          <div class="col-md-11">
             <BsInputText v-model="device.config" label="Configuration" width="11" help="" disabled>
             </BsInputText>
           </div>
-          <div class="col-md-1" v-if="device.software != 'Brewpi'">
+          <div class="col-md-1">
             <BsInputBase label="&nbsp;">
               <button
                 type="button"
@@ -222,7 +222,6 @@ const softwareOptions = ref([
   { label: 'Gravitymon Gateway', value: 'Gravitymon-Gateway' },
   { label: 'Kegmon', value: 'Kegmon' },
   { label: 'Chamber Controller', value: 'Chamber-Controller' },
-  { label: 'Brewpi', value: 'Brewpi' }
   // { label: 'Pressuremon', value: 'Pressuremon' },
   // { label: 'iSpindel', value: 'iSpindel' }
 ])
@@ -297,11 +296,6 @@ onMounted(() => {
 function validateChipId() {
   logDebug('DeviceView.validateChipId()')
 
-  if (device.value.software == 'Brewpi') {
-    device.value.chipId = '000000'
-    return true
-  }
-
   const regex = new RegExp(/^([0-9,a-f]){6}$/)
 
   if (regex.test(device.value.chipId)) {
@@ -331,35 +325,12 @@ async function fetchConfigFromDevice() {
   global.disabled = false
 }
 
-async function proxyRequest(url, header) {
-  var body = { url: url, method: 'GET', body: '', header: header }
-  logDebug('DeviceView.proxyRequest()', body)
-
-  const res = await fetch(global.baseURL + 'api/device/proxy_fetch/', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', Authorization: global.token },
-    body: JSON.stringify(body),
-    signal: AbortSignal.timeout(20000)
-  }).catch((err) => {
-    logError('DeviceView.proxyRequest()', err)
-    throw new Error('Fetch error ' + err)
-  })
-
-  if (!res.ok) {
-    logError('BackupView.getBatchList()', res.status)
-    throw new Error('Failed to perform proxy request' + res.status)
-  }
-
-  const json = await res.json()
-  return json
-}
-
 // Fetch config from a device with API V1.x that uses /api/auth and /api/config (with auth)
 async function fetchConfigEspFwkV1() {
   try {
     var data = {}
 
-    const status = await proxyRequest(device.value.url + 'api/status', '')
+    const status = await deviceStore.proxyRequestWaitable("GET", device.value.url + 'api/status', '')
     logDebug('DeviceView.fetchConfigEspFwkV1()', status)
     data.status = status
 
@@ -386,11 +357,11 @@ async function fetchConfigEspFwkV1() {
     }
 
     const header = 'Authorization: Basic ' + btoa('username:password')
-    const auth = await proxyRequest(device.value.url + 'api/auth', header)
+    const auth = await deviceStore.proxyRequestWaitable("GET", device.value.url + 'api/auth', header)
     logDebug('DeviceView.fetchConfigEspFwkV1()', auth)
 
     const header2 = 'Authorization: Bearer ' + auth.token
-    const config = await proxyRequest(device.value.url + 'api/config', header2)
+    const config = await deviceStore.proxyRequestWaitable("GET", device.value.url + 'api/config', header2)
     logDebug('DeviceView.fetchConfigEspFwkV1()', config)
     data.config = config
 
@@ -400,7 +371,7 @@ async function fetchConfigEspFwkV1() {
     }
 
     if (device.value.software == 'Gravitymon') {
-      const format = await proxyRequest(device.value.url + 'api/format', header2)
+      const format = await deviceStore.proxyRequestWaitable("GET", device.value.url + 'api/format', header2)
       logDebug('DeviceView.fetchConfigEspFwkV1()', format)
       data.format = format
     }

@@ -84,15 +84,7 @@
               >
                 <i class="bi bi-file-x"></i></button
               >&nbsp;
-
-              <template v-if="d.software == 'Brewpi'">
-                <router-link :to="{ name: 'device-brewpi', params: { id: d.id } }">
-                  <button type="button" class="btn btn-info btn-sm">
-                    <i class="bi bi-thermometer-snow"></i>
-                  </button> </router-link
-                >&nbsp;
-              </template>
-
+  
               <template v-if="batchStore.anyBatchesForDevice(d.chipId)">
                 <router-link :to="{ name: 'batch-list', query: { chipId: d.chipId } }">
                   <button type="button" class="btn btn-success btn-sm">
@@ -185,7 +177,6 @@ const softwareOptions = ref([
   { label: 'Chamber Controller', value: 'Chamber-Controller' },
   { label: 'Kegmon', value: 'Kegmon' },
   // { label: 'Pressuremon', value: 'Pressuremon' },
-  { label: 'Brewpi', value: 'Brewpi' }
   // { label: 'iSpindel', value: 'iSpindel' }
 ])
 
@@ -302,57 +293,50 @@ async function detectDeviceType(url) {
   logDebug('DeviceListView.detectDeviceType()', url)
 
   // This should detect the GravityMon, KegMon and PressureMon software
-  await fetch(url + '/api/status', {
-    method: 'GET',
-    signal: AbortSignal.timeout(global.fetchTimout)
-  })
-    .then((res) => {
-      logDebug('DeviceListView.detectDeviceType()', res.status)
-      if (!res.ok) throw res
-      return res.json()
-    })
-    .then((json) => {
-      logDebug('DeviceListView.detectDeviceType()', json)
+  const status = await deviceStore.proxyRequestWaitable("GET", url + '/api/status', "")
+  logDebug('DeviceView.fetchConfigEspFwkV1()', status)
 
-      var device = new Device(0, '', '', '', '', '', '', url, '')
+  var device = new Device(0, '', '', '', '', '', '', url, '')
 
-      if (Object.prototype.hasOwnProperty.call(json, 'id')) {
-        logDebug('DeviceListView.detectDeviceType()', 'ID found', json.id)
-        device.chipId = json.id
-      }
+  if (Object.prototype.hasOwnProperty.call(status, 'id')) {
+    logDebug('DeviceListView.detectDeviceType()', 'ID found', status.id)
+    device.chipId = status.id
+  }
 
-      if (Object.prototype.hasOwnProperty.call(json, 'mdns')) {
-        logDebug('DeviceListView.detectDeviceType()', 'mDNS found', json.mdns)
-        device.mdns = json.mdns
-      }
+  if (Object.prototype.hasOwnProperty.call(status, 'mdns')) {
+    logDebug('DeviceListView.detectDeviceType()', 'mDNS found', status.mdns)
+    device.mdns = status.mdns
+  }
 
-      if (Object.prototype.hasOwnProperty.call(json, 'platform')) {
-        logDebug('DeviceListView.detectDeviceType()', 'Platform found', json.platform.split(' ')[0])
-        device.chipFamily = json.platform.split(' ')[0]
-      }
+  if (Object.prototype.hasOwnProperty.call(status, 'platform')) {
+    logDebug('DeviceListView.detectDeviceType()', 'Platform found', status.platform.split(' ')[0])
+    device.chipFamily = status.platform.split(' ')[0]
+  }
 
-      if (Object.prototype.hasOwnProperty.call(json, 'scale-raw1')) {
-        logDebug('DeviceListView.detectDeviceType()', 'Software Kegmon')
-        device.software = 'Kegmon'
-      }
+  if (Object.prototype.hasOwnProperty.call(status, 'scale-raw1')) {
+    logDebug('DeviceListView.detectDeviceType()', 'Software Kegmon')
+    device.software = 'Kegmon'
+  }  
 
-      // TODO: Add detection of gravitymon
-      // TODO: Add detection of pressuremon
+  if (Object.prototype.hasOwnProperty.call(status, 'pid_mode')) {
+    logDebug('DeviceListView.detectDeviceType()', 'Software Chamber Controller')
+    device.software = 'Chamber-Controller'
+  }  
 
-      if (device.chipId != '') {
-        deviceStore.addDevice(device, (success) => {
-          if (success) {
-            global.messageSuccess = 'Saved device ' + device.mdns
-          } else {
-            global.messageError = 'Failed to save device'
-          }
-        })
+  // TODO: Add detection of gravitymon
+  // TODO: Add detection of pressuremon
+  // TODO: Add detection of gravitymon-gateway
+
+  if (device.chipId != '') {
+    deviceStore.addDevice(device, (success) => {
+      if (success) {
+        global.messageSuccess = 'Saved device ' + device.mdns
       } else {
-        global.messageError = 'Unable to detect device type for ' + device.mdns
+        global.messageError = 'Failed to save device, it might already exist.'
       }
     })
-    .catch((err) => {
-      logDebug('DeviceListView.detectDeviceType()', err)
-    })
+  } else {
+    global.messageError = 'Unable to detect device type for ' + device.mdns
+  }
 }
 </script>

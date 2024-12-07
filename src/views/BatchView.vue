@@ -590,7 +590,7 @@ function updateDeviceOptions() {
       })
     }
 
-    if (d.software == 'Brewpi' || d.software == 'Chamber-Controller') {
+    if (d.software == 'Chamber-Controller') {
       s = d.mdns != '' ? d.mdns : d.url != '' ? d.url : d.description
 
       if (d.url != '') {

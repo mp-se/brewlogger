@@ -544,6 +544,29 @@ export const useDeviceStore = defineStore('deviceStore', {
           callback(false, null)
         })
     },
+    async proxyRequestWaitable(method, url, header) {
+      var body = { url: url, method: method, body: '', header: header }
+      logDebug('deviceStore.proxyRequestWaitable()', body)
+
+      const res = await fetch(global.baseURL + 'api/device/proxy_fetch/', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: global.token },
+        body: JSON.stringify(body),
+        signal: AbortSignal.timeout(20000)
+      }).catch((err) => {
+        logError('deviceStore.proxyRequestWaitable()', err)
+        throw new Error('Fetch error ' + err)
+      })
+
+      if (!res.ok) {
+        logError('deviceStore.proxyRequestWaitable()', res.status)
+        throw new Error('Failed to perform proxy request' + res.status)
+      }
+
+      const json = await res.json()
+      return json
+    },
+
     searchNetwork(callback) {
       // callback => (success, json_response)
       // mdns = { "type": type, "host": adresses, "name": host }

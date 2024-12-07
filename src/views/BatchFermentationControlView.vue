@@ -20,10 +20,6 @@
       <div class="col-md-3">
         <BsInputReadonly v-model="device.url" label="URL"></BsInputReadonly>
       </div>
-
-      <div class="col-md-3">
-        <BrewpiDisplayFragment :url="device.url" refresh="3"></BrewpiDisplayFragment>
-      </div>
     </div>
 
     <div class="row" v-if="activeFermentationSteps != null && activeFermentationSteps.length > 0">
@@ -73,7 +69,6 @@
 import { onMounted, ref } from 'vue'
 import { batchStore, deviceStore, global } from '@/modules/pinia'
 import { FermentationStep } from '@/modules/deviceStore'
-import BrewpiDisplayFragment from '@/fragments/BrewpiDisplayFragment.vue'
 import FermentationStepFragment from '@/fragments/FermentationStepFragment.vue'
 import router from '@/modules/router'
 import { logDebug, logInfo, logError } from '@/modules/logger'
@@ -170,7 +165,7 @@ function startSteps() {
 function addSteps() {
   logInfo('BatchFermentationControlView.addSteps()')
 
-  // TODO: Some more validation is needed, check that controller is brewpi device, check if steps alreay exist for this device => replace
+  // TODO: Some more validation is needed, check that controller is chamber controller device, check if steps alreay exist for this device => replace
   // TODO: This should not be accessible if device and steps are not loaded correctly
 
   deviceStore.addDeviceFermentationSteps(device.value.id, fermentationSteps.value, (success) => {
