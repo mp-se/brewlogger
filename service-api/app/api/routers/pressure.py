@@ -156,6 +156,7 @@ async def create_pressure_using_json(
                 bleColor="",
                 url="",
                 description="",
+                collectLogs=False,
             )
             device_service.create(device)
 

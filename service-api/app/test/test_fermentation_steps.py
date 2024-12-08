@@ -23,6 +23,7 @@ def test_init(app_client):
         "url": "http://test.home.arpa",
         "bleColor": "f7",
         "description": "f8",
+        "collectLogs": False,
     }
 
     # Add new

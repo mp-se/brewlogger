@@ -50,6 +50,7 @@ class Device(Base):
     config = Column(Text, nullable=False)
     url = Column(String(80), nullable=False)
     description = Column(String(150), nullable=False)
+    collect_logs = Column(Boolean, nullable=False)
 
     # Gravitymon specific
     ble_color = Column(String(15), nullable=False)

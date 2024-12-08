@@ -182,6 +182,9 @@ class DeviceBase(BaseModel):
     ble_color: str = Field(
         min_length=0, max_length=15, description="Bluetooth color (Gravitymon)"
     )
+    collect_logs: bool = Field(
+        description="Collect logs from device"
+    )
 
 
 class DeviceUpdate(DeviceBase):

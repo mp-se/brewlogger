@@ -75,6 +75,9 @@ def migrate_database():
         "UPDATE brewlogger SET volume_format = 'L' WHERE volume_format IS NULL",
         "ALTER TABLE brewlogger ALTER COLUMN volume_format SET NOT NULL",
         "ALTER TABLE systemlog ALTER COLUMN message TYPE varchar(300)",
+        "ALTER TABLE device ADD COLUMN collect_logs BOOLEAN",
+        "UPDATE device SET collect_logs = false WHERE collect_logs IS NULL",
+        "ALTER TABLE device ALTER COLUMN collect_logs SET NOT NULL",
     ]
 
     with engine.connect() as con:
