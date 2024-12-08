@@ -13,12 +13,12 @@ software as a complement to Brewfather which I use for recepie design and tracki
 
 This is a short list of features that has been implemented into the Brewlogger software
 
-- Keeping a registry of devices, currently supports: GravityMon, KegMon, GravityMon Gateway, Brewpi (ESP version by Thorrak)
+- Keeping a registry of devices, currently supports: GravityMon, KegMon, GravityMon Gateway, ChamberController
 - Keeping track of batches that contains Gravity data.
-- Visualing data collected from GravityMon (Gravity, Angle, Battery, Temperature, RSSI) and Brewpi (Frige Temperature)
+- Visualing data collected from GravityMon (Gravity, Angle, Battery, Temperature, RSSI) and ChamberController (Frige Temperature)
 - Analysing, Visulizing and Creating gravity formulas for GravityMon
 - Importing data from Brewfather and connect that to batches
-- Controlling Brewpi fermentation chamber according to scheule from Brewfather
+- Controlling ChamberController according to scheule from Brewfather
 - Importing data via HTTP or Bluetooth
 
 ### Features on the wish list
