@@ -200,6 +200,7 @@ import FermentationStepFragment from '@/fragments/FermentationStepFragment.vue'
 import router from '@/modules/router'
 import { logDebug, logError, logInfo } from '@/modules/logger'
 import BsInputBase from '@/components/BsInputBase.vue'
+import { detectMdns, detectPlatform, detectSoftware } from '@/modules/detect'
 
 const render = ref('')
 const device = ref(null)
@@ -320,8 +321,6 @@ async function fetchConfigFromDevice() {
   global.disabled = true
   validateUrl()
   await fetchConfigEspFwkV1() // Applies to Kegmon 1.x and Gravitymon 2.x
-  // TODO: Validate fetch from old Gravitymon 1.x and Kegmon 0.x
-  // TODO: Validate fetch from BrewPi
   global.disabled = false
 }
 
@@ -334,27 +333,9 @@ async function fetchConfigEspFwkV1() {
     logDebug('DeviceView.fetchConfigEspFwkV1()', status)
     data.status = status
 
-    // Gravitymon, Kegmon etc
-    if (status.platform !== undefined) {
-      device.value.chipFamily = status.platform
-    }
-    if (status.mdns !== undefined) {
-      device.value.mdns = status.mdns
-    }
-
-    // Gravitymon
-    if (status.gravity_format !== undefined) {
-      // Could also be Gravitymon-Gateway, unable to identify
-      device.value.software = 'Gravitymon'
-    }
-
-    if (status.pid_mode !== undefined) {
-      device.value.software = 'Chamber-Controller'
-    }
-
-    if (status.keg_volume1 !== undefined) {
-      device.value.software = 'Kegmon'
-    }
+    device.value.mdns = detectMdns(status)
+    device.value.chipFamily = detectPlatform(status)
+    device.value.software = detectSoftware(status)
 
     const header = 'Authorization: Basic ' + btoa('username:password')
     const auth = await deviceStore.proxyRequestWaitable("GET", device.value.url + 'api/auth', header)

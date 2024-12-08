@@ -157,6 +157,7 @@ import {
   sortList,
   applySortList
 } from '@/modules/ui'
+import { detectId, detectMdns, detectPlatform, detectSoftware } from '@/modules/detect'
 
 const confirmDeleteMessage = ref(null)
 const confirmDeleteId = ref(null)
@@ -298,35 +299,11 @@ async function detectDeviceType(url) {
 
   var device = new Device(0, '', '', '', '', '', '', url, '')
 
-  if (Object.prototype.hasOwnProperty.call(status, 'id')) {
-    logDebug('DeviceListView.detectDeviceType()', 'ID found', status.id)
-    device.chipId = status.id
-  }
-
-  if (Object.prototype.hasOwnProperty.call(status, 'mdns')) {
-    logDebug('DeviceListView.detectDeviceType()', 'mDNS found', status.mdns)
-    device.mdns = status.mdns
-  }
-
-  if (Object.prototype.hasOwnProperty.call(status, 'platform')) {
-    logDebug('DeviceListView.detectDeviceType()', 'Platform found', status.platform.split(' ')[0])
-    device.chipFamily = status.platform.split(' ')[0]
-  }
-
-  if (Object.prototype.hasOwnProperty.call(status, 'scale-raw1')) {
-    logDebug('DeviceListView.detectDeviceType()', 'Software Kegmon')
-    device.software = 'Kegmon'
-  }  
-
-  if (Object.prototype.hasOwnProperty.call(status, 'pid_mode')) {
-    logDebug('DeviceListView.detectDeviceType()', 'Software Chamber Controller')
-    device.software = 'Chamber-Controller'
-  }  
-
-  // TODO: Add detection of gravitymon
-  // TODO: Add detection of pressuremon
-  // TODO: Add detection of gravitymon-gateway
-
+  device.chipId = detectId(status)
+  device.mdns = detectMdns(status)
+  device.chipFamily = detectPlatform(status)
+  device.software = detectSoftware(status)
+  
   if (device.chipId != '') {
     deviceStore.addDevice(device, (success) => {
       if (success) {
