@@ -3,7 +3,7 @@ import { global } from '@/modules/pinia'
 import { logDebug, logError } from '@/modules/logger'
 
 export class Device {
-  constructor(id, chipId, chipFamily, software, mdns, config, bleColor, url, description) {
+  constructor(id, chipId, chipFamily, software, mdns, config, bleColor, url, description, collectLogs) {
     this.id = id === undefined ? 0 : id
     this.chipId = chipId === undefined ? '' : chipId
     this.chipFamily = chipFamily === undefined ? '' : chipFamily
@@ -13,6 +13,7 @@ export class Device {
     this.bleColor = bleColor === undefined ? '' : bleColor
     this.description = description === undefined ? '' : description
     this.url = url === undefined ? '' : url
+    this.collectLogs = collectLogs === undefined ? '' : collectLogs
 
     if (this.url === 'http://' || this.url === 'https://') this.url = ''
   }
@@ -26,7 +27,8 @@ export class Device {
       d1.config == d2.config &&
       d1.bleColor == d2.bleColor &&
       d1.url == d2.url &&
-      d1.description == d2.description
+      d1.description == d2.description &&
+      d1.collectLogs == d2.collectLogs
     )
   }
 
@@ -40,7 +42,8 @@ export class Device {
       d.config,
       d.bleColor,
       d.url,
-      d.description
+      d.description,
+      d.collectLogs
     )
   }
 
@@ -54,6 +57,7 @@ export class Device {
       bleColor: this.bleColor,
       url: this.url,
       description: this.description,
+      collectLogs: this.collectLogs,
       fermentationSteps: []
     }
   }
@@ -85,6 +89,9 @@ export class Device {
   get description() {
     return this._description
   }
+  get collectLogs() {
+    return this._collectLogs
+  }
 
   set id(id) {
     this._id = id
@@ -112,6 +119,9 @@ export class Device {
   }
   set description(description) {
     this._description = description
+  }
+  set collectLogs(collectLogs) {
+    this._collectLogs = collectLogs
   }
 }
 

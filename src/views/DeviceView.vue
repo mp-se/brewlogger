@@ -51,7 +51,7 @@
             >
             </BsInputText>
           </div>
-          <div class="col-md-12">
+          <div class="col-md-8">
             <BsInputRadio
               v-model="device.chipFamily"
               :options="chipFamilyOptions"
@@ -60,6 +60,17 @@
               :disabled="global.disabled"
             ></BsInputRadio>
           </div>
+
+          <div class="col-md-4">
+            <BsInputSwitch
+              v-model="device.collectLogs"
+              label="Collect logs"
+              help=""
+              :disabled="global.disabled"
+            >
+            </BsInputSwitch>
+          </div>
+
           <div class="col-md-12">
             <BsInputRadio
               v-model="device.software"
