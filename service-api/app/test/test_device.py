@@ -16,7 +16,7 @@ def test_add(app_client):
     data = {
         "chipId": "000000",
         "chipFamily": "f2",
-        "software": "f3",
+        "software": "Chamber-Controller",
         "mdns": "f4",
         "config": "",
         "url": "f6",
@@ -61,23 +61,6 @@ def test_list(app_client):
     assert len(data) == 2
 
 
-def test_brewpi(app_client):
-    data = {
-        "chipId": "000000",
-        "chipFamily": "",
-        "software": "Brewpi",
-        "mdns": "",
-        "config": "",
-        "url": "http://localhost",
-        "bleColor": "",
-        "description": "",
-    }
-
-    # Add new
-    r = app_client.post("/api/device/", json=data, headers=headers)
-    assert r.status_code == 201
-
-
 def test_update(app_client):
     data = {
         "chipId": "01234568",
@@ -116,7 +99,7 @@ def test_update(app_client):
 
 def test_search(app_client):
     # Do a search for devices with software
-    r = app_client.get("/api/device/?software=Brewpi", headers=headers)
+    r = app_client.get("/api/device/?software=Chamber-Controller", headers=headers)
     assert r.status_code == 200
     data = json.loads(r.text)
     assert len(data) == 1
@@ -131,7 +114,7 @@ def test_delete(app_client):
     r = app_client.get("/api/device", headers=headers)
     assert r.status_code == 200
     data = json.loads(r.text)
-    assert len(data) == 2
+    assert len(data) == 1
 
 
 def test_validation(app_client):

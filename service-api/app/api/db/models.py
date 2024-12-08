@@ -33,7 +33,7 @@ class SystemLog(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     timestamp = Column(DateTime(timezone=True), default=datetime.now())
-    message = Column(String(100), nullable=False)
+    message = Column(String(300), nullable=False)
     module = Column(String(20), nullable=False)
     error_code = Column(Integer, nullable=False)
     log_level = Column(Integer, nullable=False)
@@ -94,10 +94,10 @@ class Batch(Base):
 
     brewfather_id = Column(String(30), nullable=False)
 
-    # Brewpi specific
+    # Chamber controller specific
     fermentation_chamber = Column(
         Integer, nullable=True
-    )  # Device ID for connected brewpi
+    )  # Device ID for connected chamber controller
     fermentation_steps = Column(Text, nullable=False)
 
     gravity = relationship("Gravity", back_populates="batch", cascade="all,delete")
@@ -118,9 +118,9 @@ class Gravity(Base):
     corr_gravity = Column(Float, nullable=False)
     run_time = Column(Float, nullable=False)
 
-    # Data from brewpi
-    beer_temperature = Column(Float, nullable=True)  # Temperature from brewpi
-    chamber_temperature = Column(Float, nullable=True)  # Temperature from brewpi
+    # Data from chamber controller
+    beer_temperature = Column(Float, nullable=True)  # Temperature from chamber controller
+    chamber_temperature = Column(Float, nullable=True)  # Temperature from chamber controller
 
     # Internal
     created = Column(DateTime, nullable=False)

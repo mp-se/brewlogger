@@ -206,7 +206,7 @@ async def create_gravity_using_ispindel_format(
             active=True,
         )
 
-        # If there is a tagged brewpi device lets use the value from that
+        # If there is a tagged chamber controller device lets use the value from that
         if chamberId is not None and chamberId > 1:
             key = "chamber_" + str(chamberId) + "_beer_temp"
             if existKey(key):

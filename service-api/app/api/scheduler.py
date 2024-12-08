@@ -8,7 +8,6 @@ from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from .config import get_settings
 from .cache import writeKey, findKey, readKey, deleteKey
 from .fermentationcontrol import fermentation_controller_run
-from .brewpi import brewpi_temps
 from .chamberctrl import chamberctrl_temps
 from .log import system_log_scheduler, system_log_purge
 
@@ -25,23 +24,6 @@ def scheduler_shutdown():
     scheduler.shutdown()
 
 
-async def task_fetch_brewpi_temps():
-    logger.info(f"Task: fetch_brewpi_temps is running at {datetime.now()}")
-
-    devices = DeviceService(create_session()).search_software("Brewpi")
-    for device in devices:
-        logger.info(f"Processing brewpi device {device.id}, {device.url}")
-        url = device.url
-
-        if url != "":
-            res = await brewpi_temps(url)
-            if res is not None:
-                key = "chamber_" + str(device.id) + "_beer_temp"
-                writeKey(key, res["BeerTemp"], ttl=300)
-                key = "chamber_" + str(device.id) + "_fridge_temp"
-                writeKey(key, res["FridgeTemp"], ttl=300)
-
-
 async def task_fetch_chamberctrl_temps():
     logger.info(f"Task: fetch_chamberctrl_temps is running at {datetime.now()}")
 
@@ -53,6 +35,7 @@ async def task_fetch_chamberctrl_temps():
         if url != "":
             res = await chamberctrl_temps(url)
             if res is not None:
+                logger.info(f'Chamber controller temps, beer={res["pid_beer_temp"]}, chamber={res["pid_fridge_temp"]}')
                 key = "chamber_" + str(device.id) + "_beer_temp"
                 writeKey(key, res["pid_beer_temp"], ttl=300)
                 key = "chamber_" + str(device.id) + "_fridge_temp"
@@ -126,11 +109,6 @@ def scheduler_setup(app):
     app_client = app
 
     if get_settings().scheduler_enabled:
-        # Setting up task to fetch brewpi temperatures and store these in redis cache
-        scheduler.add_job(
-            task_fetch_brewpi_temps, "interval", minutes=5, max_instances=1
-        )
-
         # Setting up task to fetch chamber controller temperatures and store these in redis cache
         scheduler.add_job(
             task_fetch_chamberctrl_temps, "interval", minutes=5, max_instances=1

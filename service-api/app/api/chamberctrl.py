@@ -66,11 +66,13 @@ async def chamberctrl_temps(url):
     return None
 
 
-async def chamberctrl_set_fridge_temp(url, temp, id):
+async def chamberctrl_set_fridge_temp(url, temp, chipid):
+    logger.info(f"Set fridge temperature {url}, {temp}, {chipid}")
+
     timeout = httpx.Timeout(10.0, connect=10.0, read=10.0)
     headers = {
         "Content-Type": "application/json",
-        "Authorization": "Token " + id
+        "Authorization": "Bearer " + chipid
     }
 
     if url != "http://" and url != "https://" and url != "":
