@@ -20,12 +20,13 @@ This is a short list of features that has been implemented into the Brewlogger s
 - Importing data from Brewfather and connect that to batches
 - Controlling ChamberController according to scheule from Brewfather
 - Importing data via HTTP or Bluetooth
+- Collecting logs from devices (using websocket interface)
+- Collect tap information from KegMon
+- Taplist for showing whats serving and what is available
 
 ### Features on the wish list
 
-- Keeping track of batches that contain pour data (KegMon)
 - Keeping track of batches that contain pressure data (PressureMon)
-- Taplist for showing whats serving and what is available (Might be a separate application using the common API's)
 
 ### Release history
 
@@ -40,7 +41,8 @@ This is a short list of features that has been implemented into the Brewlogger s
   - Bug: Fixed problem with not beeing able to create a batch without connected gravity device.
   - Feature: Refactor mDNS repeater to use AVAHI driver instead. mDNS container will now scan and store results in the Redis Cache.
   - Bug: Not able to store changes when a record has just been created. 
-
+  - Feature: Adding log collection and presentation using websocket interface
+  - Feature: Supporting Chamber Controller project and fermentation profiles from brewfather
 
 ## Installation
 
@@ -55,6 +57,7 @@ It consists of the following containers.
 - **brewlogger-mdns** [Optional]; Scans for mDNS devices on the local network and stores these in the Redis Cache for consumption by the API. If not deployed discovery of brewing devices will not work. This container will need to run on the host networks and will update the cache via the web/api server.
 - **brewlogger-ble** [Optional]; BLE scanner that forwards data to the Server API's. If not deployed BLE data from GravityMon will not be captured. An option is to use GravityMon-Gatway instead.
 - **brewlogger-pgadmin** [Optional]; Postgres Admin application. Only needed if you want to interact directly with the postgres application
+- **brewlogger-log** [Optional]; Used for collecting logs from devices 
 
 ### Docker-compose.yaml
 
@@ -86,9 +89,25 @@ services:
      - REDIS_HOST=brew_cache
      - BREWFATHER_API_KEY=[your brewfather API key]
      - BREWFATHER_USER_KEY=[your brewfather USER key]
+    volumes:
+      - log:/app/log
     depends_on:
      - brew_db
      - brew_cache
+
+  brew_log:
+    image: mpse2/brewlogger-log
+    hostname: brew_log
+    restart: always
+    environment:
+     - API_HOST=brew_api
+     - API_KEY=[your API key for securing access to brew_api]
+    volumes:
+      - log:/app/log
+    networks:
+      - brew_net
+    depends_on:
+     - brew_api
 
   brew_cache:
     image: redis:7
@@ -160,6 +179,7 @@ networks:
 volumes:
   pg-data:
   pgadmin-data:
+  logs:
 
 ```
 

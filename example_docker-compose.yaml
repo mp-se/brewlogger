@@ -26,6 +26,8 @@ services:
      - REDIS_HOST=brew_cache
      - BREWFATHER_API_KEY=
      - BREWFATHER_USER_KEY=
+    volumes:
+      - log:/app/log
     depends_on:
      - brew_db
      - brew_cache
@@ -66,6 +68,20 @@ services:
     volumes:
       - pgadmin-data:/var/lib/pgadmin
  
+  brew_log:
+    build: service-log
+    hostname: brew_log
+    restart: always
+    environment:
+     - API_HOST=brew_api
+     - API_KEY=akljnv13bvi2vfo0b0bw789jlljsdf
+    volumes:
+      - log:/app/log
+    networks:
+      - brew_net
+    depends_on:
+     - brew_api
+
   brew_mdns:
     build: service-mdns2
     hostname: brew_mdns
@@ -78,6 +94,8 @@ services:
     volumes:
       - /var/run/dbus:/var/run/dbus
       - /var/run/avahi-daemon/socket:/var/run/avahi-daemon/socket
+    depends_on:
+      - brew_api
 
   brew_ble:
     build: service-ble
@@ -99,3 +117,4 @@ networks:
 volumes:
   pg-data:
   pgadmin-data:
+  logs:

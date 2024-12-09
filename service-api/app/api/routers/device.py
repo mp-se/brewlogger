@@ -1,6 +1,7 @@
 import httpx
 import logging
 import json
+import os
 from json import JSONDecodeError
 from typing import List, Optional
 from fastapi import Depends, BackgroundTasks
@@ -42,10 +43,21 @@ async def list_devices(
     dependencies=[Depends(api_key_auth)],
 )
 async def get_device_by_id(
-    device_id: int, devices_service: DeviceService = Depends(get_device_service)
+    device_id: int, devices_service: DeviceService  = Depends(get_device_service)
 ) -> Optional[models.Device]:
     logger.info("Endpoint GET /api/device/%d", device_id)
     return devices_service.get(device_id)
+
+
+@router.get(
+    "/logs/",
+    dependencies=[Depends(api_key_auth)],
+)
+async def get_device_logs(
+) -> List[str]:
+    logger.info("Endpoint GET /api/device/logs/")
+    files = [f for f in os.listdir(path='log') if os.path.isfile('log/' + f)]
+    return files
 
 
 @router.post(

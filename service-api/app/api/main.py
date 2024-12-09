@@ -11,6 +11,7 @@ from fastapi import FastAPI, Request, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from fastapi.exceptions import RequestValidationError
+from fastapi.staticfiles import StaticFiles
 from .config import get_settings
 from .scheduler import scheduler_shutdown, scheduler_setup
 from .utils import load_settings
@@ -72,7 +73,6 @@ def register_handlers(app):
             content=content, status_code=status.HTTP_422_UNPROCESSABLE_ENTITY
         )
 
-
 logger.info("Creating FastAPI application and registering routers.")
 settings = get_settings()
 app = FastAPI(
@@ -82,6 +82,8 @@ app = FastAPI(
     version=settings.version,
     lifespan=lifespan,
 )
+
+app.mount("/logs", StaticFiles(directory="log"), name="logs")
 
 register_handlers(app)
 scheduler_setup(app)
