@@ -3,6 +3,7 @@ import { createRouter, createWebHistory } from 'vue-router'
 import { global } from '@/modules/pinia'
 import HomeView from '@/views/HomeView.vue'
 import DeviceView from '@/views/DeviceView.vue'
+import DeviceLogView from '@/views/DeviceLogView.vue'
 import DeviceListView from '@/views/DeviceListView.vue'
 import DeviceBatchView from '@/views/DeviceBatchView.vue'
 import BatchView from '@/views/BatchView.vue'
@@ -32,6 +33,11 @@ const routes = [
     path: '/device',
     name: 'device-list',
     component: DeviceListView
+  },
+  {
+    path: '/device/log',
+    name: 'device-log',
+    component: DeviceLogView
   },
   {
     path: '/device/:id',

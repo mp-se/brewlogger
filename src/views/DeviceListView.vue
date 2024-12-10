@@ -112,6 +112,11 @@
           <button @click="search()" type="button" class="btn btn-secondary">
             Search for Devices</button
           >&nbsp;
+
+          <router-link :to="{ name: 'device-log' }">
+            <button type="button" class="btn btn-secondary">Device Logs</button> </router-link
+          >&nbsp;
+
         </div>
       </div>
     </template>
