@@ -60,6 +60,24 @@ async def get_device_logs(
     return files
 
 
+@router.delete(
+    "/logs/{chip_id}",
+    dependencies=[Depends(api_key_auth)],
+)
+async def delete_device_log_for_chip_id(
+    chip_id: str
+) -> None:
+    logger.info(f"Endpoint DEL /api/device/logs/{chip_id}")
+    try:
+        os.remove('log/' + chip_id + ".log")
+    except Exception:
+        pass
+    try:
+        os.remove('log/' + chip_id + ".log.1")
+    except Exception:
+        pass
+
+
 @router.post(
     "/",
     response_model=schemas.Device,
