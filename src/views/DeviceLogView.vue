@@ -5,7 +5,7 @@
         <p></p>
         <p class="h3">Device Logs</p>
       </div>
-      <div class="col-md-5">
+      <div class="col-md-4">
         <BsSelect
           v-model="deviceSelected"
           :options="deviceOptions"
@@ -16,12 +16,14 @@
         </BsSelect>
       </div>
 
-      <div class="col-md-3 align-bottom"><p>&nbsp;</p>
+      <div class="col-md-4"><p>&nbsp;</p>
         <button @click="fetchLogs()" type="button" class="btn btn-secondary" :disabled="deviceSelected == ''">Refresh</button>
         &nbsp;
         <button @click="deleteLogs()" type="button" class="btn btn-secondary" :disabled="deviceSelected == ''">Delete</button>
         &nbsp;
         <button @click="hideInfo()" type="button" class="btn btn-secondary" :disabled="deviceSelected == ''">Hide Info</button>
+        &nbsp;
+        <button @click="hideWarn()" type="button" class="btn btn-secondary" :disabled="deviceSelected == ''">Hide Warn</button>
       </div>
 
     </div>
@@ -77,6 +79,19 @@ function hideInfo() {
 
   deviceLog.value.forEach(e => {
     if(e.search(' I: ') == -1)
+      l.push(e)
+  })
+
+  deviceLog.value = l
+}
+
+function hideWarn() {
+  hideInfo()
+
+  var l = []
+
+  deviceLog.value.forEach(e => {
+    if(e.search(' W: ') == -1)
       l.push(e)
   })
 
