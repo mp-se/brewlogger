@@ -62,7 +62,7 @@ def websocket_collector(url, chipId):
                 line += websocket.recv()            
                 if line.endswith("\n") or len(line) > 200:
                     f = open(fileName, "a")
-                    f.write(f"< {line}")
+                    f.write(line)
                     line = ""
                     f.close()
 
