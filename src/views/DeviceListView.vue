@@ -73,7 +73,7 @@
             <td class="fs-5">{{ d.software }}</td>
             <td>
               <router-link :to="{ name: 'device', params: { id: d.id } }">
-                <button type="button" class="btn btn-primary btn-sm">
+                <button type="button" class="btn btn-primary btn-sm" :disabled="global.disabled">
                   <i class="bi bi-pencil-square"></i>
                 </button> </router-link
               >&nbsp;
@@ -81,20 +81,20 @@
                 type="button"
                 class="btn btn-danger btn-sm"
                 @click.prevent="deleteDevice(d.id, d.mdns)"
-              >
+                :disabled="global.disabled">
                 <i class="bi bi-file-x"></i></button
               >&nbsp;
   
               <template v-if="batchStore.anyBatchesForDevice(d.chipId)">
                 <router-link :to="{ name: 'batch-list', query: { chipId: d.chipId } }">
-                  <button type="button" class="btn btn-success btn-sm">
+                  <button type="button" class="btn btn-success btn-sm" :disabled="global.disabled">
                     <i class="bi bi-boxes"></i>
                   </button> </router-link
                 >&nbsp;
               </template>
 
               <template v-if="d.url.length > 7">
-                <button @click="openUrl(d.url)" type="button" class="btn btn-secondary btn-sm">
+                <button @click="openUrl(d.url)" type="button" class="btn btn-secondary btn-sm" :disabled="global.disabled">
                   <i class="bi bi-link"></i></button
                 >&nbsp;
               </template>
@@ -106,15 +106,15 @@
       <div class="row">
         <div class="col-md-12">
           <router-link :to="{ name: 'device', params: { id: 'new' } }">
-            <button type="button" class="btn btn-secondary">Add Device</button> </router-link
+            <button type="button" class="btn btn-secondary" :disabled="global.disabled">Add Device</button> </router-link
           >&nbsp;
 
-          <button @click="search()" type="button" class="btn btn-secondary">
+          <button @click="search()" type="button" class="btn btn-secondary" :disabled="global.disabled">
             Search for Devices</button
           >&nbsp;
 
           <router-link :to="{ name: 'device-log' }">
-            <button type="button" class="btn btn-secondary">Device Logs</button> </router-link
+            <button type="button" class="btn btn-secondary" :disabled="global.disabled">Device Logs</button> </router-link
           >&nbsp;
 
         </div>
@@ -297,28 +297,34 @@ const confirmSearchCallback = (result, value) => {
 
 async function detectDeviceType(url) {
   logDebug('DeviceListView.detectDeviceType()', url)
+  global.disabled = true
 
   // This should detect the GravityMon, KegMon and PressureMon software
-  const status = await deviceStore.proxyRequestWaitable("GET", url + '/api/status', "")
-  logDebug('DeviceView.fetchConfigEspFwkV1()', status)
+  try {
+    const status = await deviceStore.proxyRequestWaitable("GET", url + '/api/status', "")
+    logDebug('DeviceView.fetchConfigEspFwkV1()', status)
 
-  var device = new Device(0, '', '', '', '', '', '', url, '', false)
+    var device = new Device(0, '', '', '', '', '', '', url, '', false)
+    device.chipId = detectId(status)
+    device.mdns = detectMdns(status)
+    device.chipFamily = detectPlatform(status)
+    device.software = detectSoftware(status)
 
-  device.chipId = detectId(status)
-  device.mdns = detectMdns(status)
-  device.chipFamily = detectPlatform(status)
-  device.software = detectSoftware(status)
-  
-  if (device.chipId != '') {
-    deviceStore.addDevice(device, (success) => {
-      if (success) {
-        global.messageSuccess = 'Saved device ' + device.mdns
-      } else {
-        global.messageError = 'Failed to save device, it might already exist.'
-      }
-    })
-  } else {
-    global.messageError = 'Unable to detect device type for ' + device.mdns
+    if (device.chipId != '') {
+      deviceStore.addDevice(device, (success) => {
+        if (success) {
+          global.messageSuccess = 'Saved device ' + device.mdns
+        } else {
+          global.messageError = 'Failed to save device, it might already exist.'
+        }
+      })
+    } else {
+      global.messageError = 'Unable to detect device type for ' + device.mdns
+    }
+  } catch(e) {
+    global.messageError = "Failed to fetch data from device, is it turned on ?"
   }
+
+  global.disabled = false
 }
 </script>
