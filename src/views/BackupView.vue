@@ -272,6 +272,10 @@ async function restoreDevices(dl) {
 
       if (d.fermentationSteps === undefined) d.fermentationSteps = []
 
+      if (d.collectLogs === undefined || d.collectLogs === null)
+        // New in 0.8
+        d.collectLogs = false
+
       const res = await fetch(global.baseURL + 'api/device/', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: global.token },
