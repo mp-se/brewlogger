@@ -3,7 +3,18 @@ import { global } from '@/modules/pinia'
 import { logDebug, logError } from '@/modules/logger'
 
 export class Device {
-  constructor(id, chipId, chipFamily, software, mdns, config, bleColor, url, description, collectLogs) {
+  constructor(
+    id,
+    chipId,
+    chipFamily,
+    software,
+    mdns,
+    config,
+    bleColor,
+    url,
+    description,
+    collectLogs
+  ) {
     this.id = id === undefined ? 0 : id
     this.chipId = chipId === undefined ? '' : chipId
     this.chipFamily = chipFamily === undefined ? '' : chipFamily

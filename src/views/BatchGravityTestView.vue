@@ -7,7 +7,6 @@
     <p>Testing page for gravity related development</p>
 
     <p v-for="d in data" :key="d.id">{{ d.date }} {{ d.value1 }} {{ d.value2 }}</p>
-
   </div>
 </template>
 
@@ -38,24 +37,24 @@ onMounted(() => {
       gravityList.value = gl
 
       // Sort the gravity data into arrays per day ------------------------------------------------
-      
+
       const map = new Map()
-      gl.forEach(g => {
+      gl.forEach((g) => {
         var dt = g.created.substring(0, 10)
         var arr = map.has(dt) ? map.get(dt) : new Array()
-        arr.push(g)           
+        arr.push(g)
         map.set(dt, arr)
       })
 
       // logDebug("KEYS", map.keys())
 
-      for(const k of map.keys()) {
+      for (const k of map.keys()) {
         var d = []
         var y = []
 
-        map.get(k).forEach(g => {
-          y.push( g.gravity)
-          d.push( { x: new Date(g.created).valueOf(), y: g.gravity})
+        map.get(k).forEach((g) => {
+          y.push(g.gravity)
+          d.push({ x: new Date(g.created).valueOf(), y: g.gravity })
         })
 
         // Option 1 using linear library
@@ -63,12 +62,16 @@ onMounted(() => {
         // console.log(trend)
 
         // Option 2 using min()/max() to see the difference over one day (Simple test, should look at direction of slope to see +/-)
-        let minValue = Math.min(...y);
-        let maxValue = Math.max(...y);
+        let minValue = Math.min(...y)
+        let maxValue = Math.max(...y)
 
-        data.value.push( { date: k, value1: trend.slope, value2: Number((minValue - maxValue) * 1000).toFixed(2)  })
+        data.value.push({
+          date: k,
+          value1: trend.slope,
+          value2: Number((minValue - maxValue) * 1000).toFixed(2)
+        })
       }
-      
+
       // -------------------------------------------------------------------------------------------
 
       // logDebug('BatchGravityTestView.onMounted()', gravityList.value)

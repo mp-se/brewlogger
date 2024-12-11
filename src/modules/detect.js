@@ -6,7 +6,7 @@ export function detectId(status) {
     return status.id
   }
 
-  return ""
+  return ''
 }
 
 export function detectMdns(status) {
@@ -15,7 +15,7 @@ export function detectMdns(status) {
     return status.mdns
   }
 
-  return ""
+  return ''
 }
 
 export function detectPlatform(status) {
@@ -24,31 +24,31 @@ export function detectPlatform(status) {
     return status.platform.split(' ')[0]
   }
 
-  return ""
+  return ''
 }
 
 export function detectSoftware(status) {
   if (Object.prototype.hasOwnProperty.call(status, 'scale_raw1')) {
     logDebug('DeviceListView.detectSoftware()', 'Software Kegmon')
     return 'Kegmon'
-  }  
+  }
 
   if (Object.prototype.hasOwnProperty.call(status, 'pid_mode')) {
     logDebug('DeviceListView.detectSoftware()', 'Software Chamber Controller')
     return 'Chamber-Controller'
-  }  
+  }
 
   if (Object.prototype.hasOwnProperty.call(status, 'gravity_device')) {
     logDebug('DeviceListView.detectSoftware()', 'Software Gravitymon Gateway')
     return 'Gravitymon-Gateway'
-  }  
+  }
 
   if (Object.prototype.hasOwnProperty.call(status, 'gravity_format')) {
     logDebug('DeviceListView.detectSoftware()', 'Software Gravitymon')
     return 'Gravitymon'
-  }  
+  }
 
   // TODO: Add detection of pressuremon
 
-  return ""
+  return ''
 }

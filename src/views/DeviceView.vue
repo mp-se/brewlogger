@@ -233,7 +233,7 @@ const softwareOptions = ref([
   { label: 'Gravitymon', value: 'Gravitymon' },
   { label: 'Gravitymon Gateway', value: 'Gravitymon-Gateway' },
   { label: 'Kegmon', value: 'Kegmon' },
-  { label: 'Chamber Controller', value: 'Chamber-Controller' },
+  { label: 'Chamber Controller', value: 'Chamber-Controller' }
   // { label: 'Pressuremon', value: 'Pressuremon' },
   // { label: 'iSpindel', value: 'iSpindel' }
 ])
@@ -340,7 +340,11 @@ async function fetchConfigEspFwkV1() {
   try {
     var data = {}
 
-    const status = await deviceStore.proxyRequestWaitable("GET", device.value.url + 'api/status', '')
+    const status = await deviceStore.proxyRequestWaitable(
+      'GET',
+      device.value.url + 'api/status',
+      ''
+    )
     logDebug('DeviceView.fetchConfigEspFwkV1()', status)
     data.status = status
 
@@ -349,11 +353,19 @@ async function fetchConfigEspFwkV1() {
     device.value.software = detectSoftware(status)
 
     const header = 'Authorization: Basic ' + btoa('username:password')
-    const auth = await deviceStore.proxyRequestWaitable("GET", device.value.url + 'api/auth', header)
+    const auth = await deviceStore.proxyRequestWaitable(
+      'GET',
+      device.value.url + 'api/auth',
+      header
+    )
     logDebug('DeviceView.fetchConfigEspFwkV1()', auth)
 
     const header2 = 'Authorization: Bearer ' + auth.token
-    const config = await deviceStore.proxyRequestWaitable("GET", device.value.url + 'api/config', header2)
+    const config = await deviceStore.proxyRequestWaitable(
+      'GET',
+      device.value.url + 'api/config',
+      header2
+    )
     logDebug('DeviceView.fetchConfigEspFwkV1()', config)
     data.config = config
 
@@ -363,7 +375,11 @@ async function fetchConfigEspFwkV1() {
     }
 
     if (device.value.software == 'Gravitymon') {
-      const format = await deviceStore.proxyRequestWaitable("GET", device.value.url + 'api/format', header2)
+      const format = await deviceStore.proxyRequestWaitable(
+        'GET',
+        device.value.url + 'api/format',
+        header2
+      )
       logDebug('DeviceView.fetchConfigEspFwkV1()', format)
       data.format = format
     }

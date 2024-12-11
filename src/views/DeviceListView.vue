@@ -60,9 +60,7 @@
                 </a>
               </div>
             </th>
-            <th scope="col" class="col-sm-1">
-              Logging
-            </th>
+            <th scope="col" class="col-sm-1">Logging</th>
             <th scope="col" class="col-sm-2">Action</th>
           </tr>
         </thead>
@@ -94,10 +92,11 @@
                 type="button"
                 class="btn btn-danger btn-sm"
                 @click.prevent="deleteDevice(d.id, d.mdns)"
-                :disabled="global.disabled">
+                :disabled="global.disabled"
+              >
                 <i class="bi bi-file-x"></i></button
               >&nbsp;
-  
+
               <template v-if="batchStore.anyBatchesForDevice(d.chipId)">
                 <router-link :to="{ name: 'batch-list', query: { chipId: d.chipId } }">
                   <button type="button" class="btn btn-success btn-sm" :disabled="global.disabled">
@@ -107,7 +106,12 @@
               </template>
 
               <template v-if="d.url.length > 7">
-                <button @click="openUrl(d.url)" type="button" class="btn btn-secondary btn-sm" :disabled="global.disabled">
+                <button
+                  @click="openUrl(d.url)"
+                  type="button"
+                  class="btn btn-secondary btn-sm"
+                  :disabled="global.disabled"
+                >
                   <i class="bi bi-link"></i></button
                 >&nbsp;
               </template>
@@ -119,17 +123,25 @@
       <div class="row">
         <div class="col-md-12">
           <router-link :to="{ name: 'device', params: { id: 'new' } }">
-            <button type="button" class="btn btn-secondary" :disabled="global.disabled">Add Device</button> </router-link
+            <button type="button" class="btn btn-secondary" :disabled="global.disabled">
+              Add Device
+            </button> </router-link
           >&nbsp;
 
-          <button @click="search()" type="button" class="btn btn-secondary" :disabled="global.disabled">
+          <button
+            @click="search()"
+            type="button"
+            class="btn btn-secondary"
+            :disabled="global.disabled"
+          >
             Search for Devices</button
           >&nbsp;
 
           <router-link :to="{ name: 'device-log' }">
-            <button type="button" class="btn btn-secondary" :disabled="global.disabled">Device Logs</button> </router-link
+            <button type="button" class="btn btn-secondary" :disabled="global.disabled">
+              Device Logs
+            </button> </router-link
           >&nbsp;
-
         </div>
       </div>
     </template>
@@ -194,7 +206,7 @@ const softwareOptions = ref([
   { label: 'Gravitymon', value: 'Gravitymon' },
   { label: 'Gravitymon Gateway', value: 'Gravitymon-Gateway' },
   { label: 'Chamber Controller', value: 'Chamber-Controller' },
-  { label: 'Kegmon', value: 'Kegmon' },
+  { label: 'Kegmon', value: 'Kegmon' }
   // { label: 'Pressuremon', value: 'Pressuremon' },
   // { label: 'iSpindel', value: 'iSpindel' }
 ])
@@ -333,7 +345,7 @@ async function detectDeviceType(url) {
 
   // This should detect the GravityMon, KegMon and PressureMon software
   try {
-    const status = await deviceStore.proxyRequestWaitable("GET", url + '/api/status', "")
+    const status = await deviceStore.proxyRequestWaitable('GET', url + '/api/status', '')
     logDebug('DeviceView.fetchConfigEspFwkV1()', status)
 
     var device = new Device(0, '', '', '', '', '', '', url, '', false)
@@ -353,8 +365,8 @@ async function detectDeviceType(url) {
     } else {
       global.messageError = 'Unable to detect device type for ' + device.mdns
     }
-  } catch(e) {
-    global.messageError = "Failed to fetch data from device, is it turned on ?"
+  } catch (e) {
+    global.messageError = 'Failed to fetch data from device, is it turned on ?'
   }
 
   global.disabled = false
