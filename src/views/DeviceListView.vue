@@ -302,7 +302,7 @@ async function detectDeviceType(url) {
   const status = await deviceStore.proxyRequestWaitable("GET", url + '/api/status', "")
   logDebug('DeviceView.fetchConfigEspFwkV1()', status)
 
-  var device = new Device(0, '', '', '', '', '', '', url, '')
+  var device = new Device(0, '', '', '', '', '', '', url, '', false)
 
   device.chipId = detectId(status)
   device.mdns = detectMdns(status)
