@@ -38,7 +38,7 @@
                 </a>
               </div>
             </th>
-            <th scope="col" class="col-sm-1">
+            <th scope="col" class="col-sm-2">
               <div :class="sortedClass('chipFamily')">
                 Chip Family&nbsp;
                 <a
@@ -60,6 +60,9 @@
                 </a>
               </div>
             </th>
+            <th scope="col" class="col-sm-1">
+              Logging
+            </th>
             <th scope="col" class="col-sm-2">Action</th>
           </tr>
         </thead>
@@ -71,6 +74,16 @@
             </td>
             <td class="fs-5">{{ d.chipFamily }}</td>
             <td class="fs-5">{{ d.software }}</td>
+            <td>
+              <div class="form-check">
+                <input
+                  class="form-check-input"
+                  v-model="d.collectLogs"
+                  type="checkbox"
+                  @click="toggleDeviceLogging(d.id)"
+                />
+              </div>
+            </td>
             <td>
               <router-link :to="{ name: 'device', params: { id: d.id } }">
                 <button type="button" class="btn btn-primary btn-sm" :disabled="global.disabled">
@@ -205,6 +218,25 @@ function filterDeviceList() {
       deviceList.value.push(d)
     } else {
       if (d.software == global.deviceListFilterSoftware) deviceList.value.push(d)
+    }
+  })
+}
+
+async function toggleDeviceLogging(id) {
+  logDebug('DeviceListView.toggleDeviceLogging()', id)
+
+  deviceList.value.forEach((d) => {
+    if (d.id == id) {
+      logDebug('DeviceListView.toggleDeviceLogging()', 'Found Record', d)
+
+      d.collectLogs = !d.collectLogs
+      deviceStore.updateDevice(d, (success) => {
+        if (success) {
+          logDebug('DeviceListView.toggleDeviceLogging()', 'Success')
+        } else {
+          global.messageError = 'Failed to load device ' + id
+        }
+      })
     }
   })
 }
