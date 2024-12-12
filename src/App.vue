@@ -80,8 +80,18 @@ const {
   batchListFilterDevice,
   batchListFilterActive,
   batchListFilterData,
-  deviceListFilterSoftware
+  deviceListFilterSoftware,
+  showChamberTemps,
+  showKegmonTaps,
 } = storeToRefs(global)
+
+watch(showChamberTemps, () => {
+  localStorage.setItem('showChamberTemps', global.showChamberTemps)
+})
+
+watch(showKegmonTaps, () => {
+  localStorage.setItem('showKegmonTaps', global.showKegmonTaps)
+})
 
 watch(batchListFilterDevice, () => {
   localStorage.setItem('batchListFilterDevice', global.batchListFilterDevice)
@@ -166,18 +176,24 @@ onMounted(() => {
     localStorage.getItem('batchListFilterActive') == 'true' ? true : false
   global.batchListFilterData = localStorage.getItem('batchListFilterData') == 'true' ? true : false
   global.deviceListFilterSoftware = localStorage.getItem('deviceListFilterSoftware')
+  global.showChamberTemps = localStorage.getItem('showChamberTemps') == 'true' ? true : false
+  global.showKegmonTaps = localStorage.getItem('showKegmonTaps') == 'true' ? true : false
 
   if (global.batchListFilterDevice === null) global.batchListFilterDevice = '*'
   if (global.batchListFilterActive === null) global.batchListFilterActive = false
   if (global.batchListFilterData === null) global.batchListFilterData = false
   if (global.deviceListFilterSoftware === null) global.deviceListFilterSoftware = '*'
+  if (global.showChamberTemps === null) global.showChamberTemps = false
+  if (global.showKegmonTaps === null) global.showKegmonTaps = false
 
   logDebug(
     'App.onMounted()',
     global.batchListFilterDevice,
     global.batchListFilterActive,
     global.batchListFilterData,
-    global.deviceListFilterSoftware
+    global.deviceListFilterSoftware,
+    global.showChamberTemps,
+    global.showKegmonTaps,
   )
 
   // Load from API's

@@ -1,8 +1,31 @@
 <template>
   <div class="container">
-    <p></p>
-    <p class="h3">Home - Overview</p>
-    <hr />
+
+    <div class="row gy-4">
+      <div class="col-md-8">
+        <p>&nbsp;</p>
+        <p class="h3">Home - Overview</p>
+      </div>
+    <div class="col-md-2">
+        <BsInputSwitch
+          v-model="global.showChamberTemps"
+          label="Chamber"
+          help=""
+          :disabled="global.disabled"
+        >
+        </BsInputSwitch>
+      </div>
+      <div class="col-md-2">
+        <BsInputSwitch
+          v-model="global.showKegmonTaps"
+          label="Kegmon"
+          help=""
+          :disabled="global.disabled"
+        >
+        </BsInputSwitch>
+      </div>
+      <hr />
+    </div>
 
     <div class="row gy-4">
       <div class="col-md-4" v-for="b in activeBatchList" :key="b.id">
@@ -19,6 +42,26 @@
           </p>
           <div class="text-center">Gravity: {{ getGravityOG(b) }} - {{ getLastGravity(b) }}</div>
           <div class="text-center">Temperature {{ getLastTemperature(b) }}</div>
+        </BsCard>
+      </div>
+
+      <div class="col-md-4" v-for="(d, index) in chamberTemps" :key="index">
+        <BsCard :header="'Chamber: ' + d.mdns" color="info" title="">
+          <div class="text-center" v-if="d.pid_fridge_temp_connected">Fridge temp: {{ d.pid_fridge_temp }} °{{ d.pid_temp_format }}</div>
+          <div class="text-center" v-if="d.pid_beer_temp_connected">Beer temp: {{ d.pid_beer_temp }} °{{ d.pid_temp_format }}</div>
+          <div class="text-center" v-if="d.pid_mode == 'b'">Mode: Beer target => {{ d.pid_beer_target_temp }} °{{ d.pid_temp_format }}</div>
+          <div class="text-center" v-if="d.pid_mode == 'f'">Mode: Fridge target => {{ d.pid_fridge_target_temp }} °{{ d.pid_temp_format }}</div>
+          <div class="text-center" v-if="d.pid_mode == 'o'">Mode: Off</div>         
+          <div class="text-center">Version: {{ d.app_ver }} ({{ d.app_build }})</div>         
+        </BsCard>
+      </div>
+
+      <div class="col-md-4" v-for="(d, index) in kegmonTaps" :key="index">
+        <BsCard :header="'Kegmon: ' + d.mdns" color="info" title="">
+          <div class="text-center">Tap1: {{ Number(d.beer_volume1/100).toFixed(1) }} L, ({{ d.glass1 }} glasses)</div>
+          <div class="text-center">Tap2: {{ Number(d.beer_volume2/100).toFixed(1) }} L, ({{ d.glass2 }} glasses)</div>
+          <div class="text-center">Temp: {{ d.temperature }} °{{ d.temp_format }}</div>
+          <div class="text-center">Version: {{ d.app_ver }} ({{ d.app_build }})</div>         
         </BsCard>
       </div>
 
@@ -216,10 +259,55 @@ onMounted(() => {
 
   ticker.value = setInterval(() => {
     fetchScheduler()
-  }, 2000)
+    fetchChamber()
+    fetchKegmon()
+  }, 5000)
 })
 
-function fetchScheduler() {
+const chamberTemps = ref([])
+const kegmonTaps = ref([])
+
+async function fetchChamber() {
+  logDebug('HomeView.fetchChamber()')
+
+  if(!global.showChamberTemps) {
+    chamberTemps.value = []
+    return
+  }
+
+  var chamberList = deviceStore.deviceList.filter((d) => { return d.software == "Chamber-Controller" })
+
+  await Promise.all(
+    chamberList.map(async (device) => {
+      return deviceStore.proxyRequestWaitable("GET", device.url + "api/status", 'Content-Type: application/json')
+    })).then((values) => {
+      logDebug('HomeView.fetchChamber()', values)
+      chamberTemps.value = values
+    }).catch((err) => {
+      logError('HomeView.fetchChamber()', err)
+    })
+}
+
+async function fetchKegmon() {
+  logDebug('HomeView.fetchKegmon()')
+
+  if(!global.showKegmonTaps) {
+    kegmonTaps.value = []
+    return
+  }
+  var chamberList = deviceStore.deviceList.filter((d) => { return d.software == "Kegmon" })
+
+  await Promise.all(
+    chamberList.map(async (device) => {
+      return deviceStore.proxyRequestWaitable("GET", device.url + "api/status", 'Content-Type: application/json')
+    })).then((values) => {
+      kegmonTaps.value = values
+    }).catch((err) => {
+      logError('HomeView.fetchKegmon()', err)
+    })
+}
+
+async function fetchScheduler() {
   logDebug('HomeView.fetchScheduler()')
 
   fetch(global.baseURL + 'api/system/scheduler/', {

@@ -25,6 +25,10 @@ export const useGlobalStore = defineStore('global', {
 
       deviceListFilterSoftware: '*',
 
+      // Global variables (filters - home)
+      showChamberTemps: false,
+      showKegmonTaps: false,
+
       // Global variables (notification)
       updatedDeviceData: 0,
       updatedBatchData: 0,
