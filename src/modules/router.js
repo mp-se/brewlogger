@@ -35,7 +35,7 @@ const routes = [
     component: DeviceListView
   },
   {
-    path: '/device/log',
+    path: '/device/log/:id',
     name: 'device-log',
     component: DeviceLogView
   },

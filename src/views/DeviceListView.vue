@@ -115,6 +115,17 @@
                   <i class="bi bi-link"></i></button
                 >&nbsp;
               </template>
+              <template v-if="devicesWithLog.includes(d.chipId, 0)">
+                <router-link :to="{ name: 'device-log', params: { id:  d.chipId } }">
+                  <button
+                  type="button"
+                  class="btn btn-secondary btn-sm"
+                  :disabled="global.disabled"
+                >
+                <i class="bi bi-file-earmark-richtext"></i></button>
+                </router-link>
+                &nbsp;
+              </template>
             </td>
           </tr>
         </tbody>
@@ -136,8 +147,7 @@
           >
             Search for Devices</button
           >&nbsp;
-
-          <router-link :to="{ name: 'device-log' }">
+          <router-link :to="{ name: 'device-log', params: { id: '*' } }">
             <button type="button" class="btn btn-secondary" :disabled="global.disabled">
               Device Logs
             </button> </router-link
@@ -179,7 +189,7 @@ import { onMounted, ref, watch } from 'vue'
 import { storeToRefs } from 'pinia'
 import { Device } from '@/modules/deviceStore'
 import { global, deviceStore, batchStore } from '@/modules/pinia'
-import { logDebug } from '@/modules/logger'
+import { logDebug, logInfo, logError } from '@/modules/logger'
 import {
   sortedIconClass,
   setSortingDefault,
@@ -213,13 +223,49 @@ const softwareOptions = ref([
 
 const searchOptions = ref(null)
 const searchSelected = ref('')
+const devicesWithLog = ref([])
 
 onMounted(() => {
   logDebug('DeviceListView.onMounted()')
   setSortingDefault('mdns', 'str', false)
   filterDeviceList()
+  fetchDeviceLogList()
   applySortList(deviceList.value)
 })
+
+function fetchDeviceLogList() {
+  logDebug('DeviceListView.fetchDeviceLogList()')
+
+  devicesWithLog.value = []
+
+  global.disabled = true
+  fetch(global.baseURL + 'api/device/logs/', {
+    method: 'GET',
+    headers: { Authorization: global.token },
+    signal: AbortSignal.timeout(global.fetchTimout)
+  })
+    .then((res) => {
+      logDebug('DeviceListView.fetchDeviceLogList()', res.status)
+      if (!res.ok) throw res
+      return res.json()
+    })
+    .then((json) => {
+      json.forEach((chipId) => {
+        if (!chipId.endsWith('.log.1')) {
+          chipId = chipId.replace('.log', '')
+          devicesWithLog.value.push(chipId)
+        }
+      })
+
+      logInfo('DeviceListView.fetchDeviceLogList()', devicesWithLog.value)
+      global.disabled = false
+    })
+    .catch(() => {
+      global.disabled = false
+      logError('DeviceListView.fetchDeviceLogList()', "Failed to fetch list of devices with logs")
+    })
+}
+
 
 function filterDeviceList() {
   logDebug('DeviceListView.filterDeviceList', global.deviceListFilterSoftware)

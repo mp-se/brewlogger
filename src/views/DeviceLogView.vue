@@ -95,6 +95,7 @@
 import { computed, onMounted, ref, watch } from 'vue'
 import { global, deviceStore } from '@/modules/pinia'
 import { logDebug } from '@/modules/logger'
+import router from '@/modules/router'
 
 const deviceSelected = ref('')
 const deviceOptions = ref([])
@@ -204,6 +205,9 @@ function fetchLogs() {
 onMounted(() => {
   logDebug('DeviceLogView.onMounted()')
   updateDeviceLogList()
+
+  if( router.currentRoute.value.params.id != '*' )
+    deviceSelected.value = router.currentRoute.value.params.id
 })
 
 function updateDeviceLogList() {
