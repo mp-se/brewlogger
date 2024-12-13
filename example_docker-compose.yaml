@@ -5,7 +5,7 @@ services:
     hostname: brew_web
     restart: always
     environment:
-     - API_KEY=akljnv13bvi2vfo0b0bw789jlljsdf
+     - API_KEY=key
      - API_HOST=brew_api
     networks:
       - brew_net
@@ -21,7 +21,7 @@ services:
     networks:
       - brew_net
     environment:
-     - API_KEY=akljnv13bvi2vfo0b0bw789jlljsdf
+     - API_KEY=key
      - DATABASE_URL=postgresql://postgres:password@brew_db:5432/app
      - REDIS_HOST=brew_cache
      - BREWFATHER_API_KEY=
@@ -74,7 +74,7 @@ services:
     restart: always
     environment:
      - API_HOST=brew_api
-     - API_KEY=akljnv13bvi2vfo0b0bw789jlljsdf
+     - API_KEY=key
     volumes:
       - log:/app/log
     networks:
@@ -90,7 +90,7 @@ services:
     privileged: true
     environment:
      - WEB_HOSTlocalhost
-      - API_KEY=d779ec8f-dc64-416f-b79f-e1fde10effe6
+      - API_KEY=key
     volumes:
       - /var/run/dbus:/var/run/dbus
       - /var/run/avahi-daemon/socket:/var/run/avahi-daemon/socket
@@ -117,4 +117,4 @@ networks:
 volumes:
   pg-data:
   pgadmin-data:
-  logs:
+  log:
