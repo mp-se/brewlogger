@@ -1,0 +1,12 @@
+{
+    "name": "Gateway (Waveshare)",
+    "version": "0.5.0",
+    "builds": [
+      {
+        "chipFamily": "ESP32-S3",
+        "parts": [
+          { "path": "merged_firmware32s3w.bin", "offset": 0 }
+        ]
+      }
+    ]
+  }
