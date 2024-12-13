@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia'
-import { logDebug } from '@/modules/logger'
+import { logDebug, logInfo } from '@/modules/logger'
 
 export const useGlobalStore = defineStore('global', {
   state: () => {
@@ -17,6 +17,7 @@ export const useGlobalStore = defineStore('global', {
       messageInfo: '',
 
       fetchTimout: 30000,
+      url: undefined,
 
       // Global variables (filters)
       batchListFilterDevice: '*',
@@ -50,13 +51,17 @@ export const useGlobalStore = defineStore('global', {
       return this.messageInfo != '' ? true : false
     },
     baseURL() {
+      if (this.url !== undefined) return this.url
+
       if (import.meta.env.VITE_APP_HOST === undefined) {
-        logDebug('globalStore.baseURL()', 'Using base URL from browser', window.location.href)
-        return window.location.href
+        logInfo('configStore:baseURL()', 'Using base URL from env', window.location.href)
+        this.url = window.location.href
+      } else {
+        logInfo('configStore:baseURL()', 'Using base URL from env', import.meta.env.VITE_APP_HOST)
+        this.url = import.meta.env.VITE_APP_HOST
       }
 
-      logDebug('globalStore.baseURL()', 'Using base URL from env', import.meta.env.VITE_APP_HOST)
-      return import.meta.env.VITE_APP_HOST
+      return this.url
     },
     token() {
       logDebug(

@@ -116,13 +116,14 @@
                 >&nbsp;
               </template>
               <template v-if="devicesWithLog.includes(d.chipId, 0)">
-                <router-link :to="{ name: 'device-log', params: { id:  d.chipId } }">
+                <router-link :to="{ name: 'device-log', params: { id: d.chipId } }">
                   <button
-                  type="button"
-                  class="btn btn-secondary btn-sm"
-                  :disabled="global.disabled"
-                >
-                <i class="bi bi-file-earmark-richtext"></i></button>
+                    type="button"
+                    class="btn btn-secondary btn-sm"
+                    :disabled="global.disabled"
+                  >
+                    <i class="bi bi-file-earmark-richtext"></i>
+                  </button>
                 </router-link>
                 &nbsp;
               </template>
@@ -147,6 +148,13 @@
           >
             Search for Devices</button
           >&nbsp;
+
+          <router-link :to="{ name: 'device-flash' }">
+            <button type="button" class="btn btn-secondary" :disabled="global.disabled">
+              Flash device
+            </button> </router-link
+          >&nbsp;
+
           <router-link :to="{ name: 'device-log', params: { id: '*' } }">
             <button type="button" class="btn btn-secondary" :disabled="global.disabled">
               Device Logs
@@ -262,10 +270,9 @@ function fetchDeviceLogList() {
     })
     .catch(() => {
       global.disabled = false
-      logError('DeviceListView.fetchDeviceLogList()', "Failed to fetch list of devices with logs")
+      logError('DeviceListView.fetchDeviceLogList()', 'Failed to fetch list of devices with logs')
     })
 }
-
 
 function filterDeviceList() {
   logDebug('DeviceListView.filterDeviceList', global.deviceListFilterSoftware)

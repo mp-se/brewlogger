@@ -206,7 +206,7 @@ onMounted(() => {
   logDebug('DeviceLogView.onMounted()')
   updateDeviceLogList()
 
-  if( router.currentRoute.value.params.id != '*' )
+  if (router.currentRoute.value.params.id != '*')
     deviceSelected.value = router.currentRoute.value.params.id
 })
 

@@ -82,7 +82,7 @@ const {
   batchListFilterData,
   deviceListFilterSoftware,
   showChamberTemps,
-  showKegmonTaps,
+  showKegmonTaps
 } = storeToRefs(global)
 
 watch(showChamberTemps, () => {
@@ -193,7 +193,7 @@ onMounted(() => {
     global.batchListFilterData,
     global.deviceListFilterSoftware,
     global.showChamberTemps,
-    global.showKegmonTaps,
+    global.showKegmonTaps
   )
 
   // Load from API's

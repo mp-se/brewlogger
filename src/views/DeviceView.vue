@@ -77,7 +77,7 @@
               :options="softwareOptions"
               label="Software"
               help=""
-              :disabled="global.disabled || device.chipId == '000000'"
+              :disabled="global.disabled"
             ></BsInputRadio>
           </div>
           <div class="col-md-12" v-if="device.software == 'Gravitymon'">
@@ -414,7 +414,7 @@ const save = () => {
   if (isNew()) {
     // Check if a device with the current chipId already exist
     for (var i = 0; i < deviceStore.devices.length; i++) {
-      if (deviceStore.devices[i].chipId == device.value.chipId && device.value.chipId != '000000') {
+      if (deviceStore.devices[i].chipId == device.value.chipId) {
         global.messageWarning = 'A device with this chip ID already exists'
         return
       }
