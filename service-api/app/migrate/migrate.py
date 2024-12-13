@@ -1,9 +1,11 @@
+import time
 from sqlalchemy import text
 from sqlalchemy.exc import OperationalError, ProgrammingError, InternalError
 from pydantic_settings import BaseSettings
 from starlette.config import Config
 from sqlalchemy import create_engine
 from sqlalchemy.orm import scoped_session, sessionmaker
+from psycopg2.errors import UndefinedTable
 
 config = Config()
 
@@ -32,7 +34,32 @@ def migrate_database():
         print("Running on sqlite so we skip trying to migrate")
         return
 
+    connectionReady = False
+
+    while not connectionReady:
+        with engine.connect() as con:
+            try:
+                print(f"Checking for database to update")
+                con.execute(text("SELECT * FROM brewlogger"))
+                con.commit()
+                connectionReady = True
+            except OperationalError as e:
+                con.rollback()
+            except UndefinedTable as e:
+                con.rollback()
+                print("Table does not exist, database not initialized yet, exiting.")
+                return
+            except Exception as e:
+                con.rollback()
+                print("Unable to search database, probably not created so there is nothing to update.")
+                return
+
+        print("Waiting for database to become available.")
+        time.sleep(1)
+
+
     print("Running postgres sql commands to migrate database from v0.5 to v0.7")
+    return
 
     db_updates = [
         # Changes from v0.4
@@ -94,7 +121,7 @@ def migrate_database():
 
 
 if __name__ == "__main__":
-    print("Migrating postgres database structure to v0.7.")
+    print("Checking postgres database.")
 
     # Init database sessions
     db_url = get_settings().database_url
@@ -103,5 +130,4 @@ if __name__ == "__main__":
         print("This migration script will only work for Postgresx exiting...")
     else:
         engine = create_engine(db_url, pool_pre_ping=True)  # POSTGRES
-
         migrate_database()
