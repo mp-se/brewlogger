@@ -4,6 +4,7 @@
     "builds": [
       {
         "chipFamily": "ESP32-S3",
+        "board": "Waveshare ESP32 S3 2.8 TFT",
         "parts": [
           { "path": "merged_firmware32s3w.bin", "offset": 0 }
         ]
