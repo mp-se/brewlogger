@@ -49,7 +49,6 @@
         <li class="fw-normal" v-for="(b, index) in supportedBoards" :key="index">{{ b }}</li>
       </ul>
     </div>
-
   </div>
 </template>
 
@@ -76,14 +75,13 @@ watch(disabled, () => {
 watch(software, () => {
   if (software.value == 'gravitymon-gateway' || software.value == 'victron-receiver') {
     variant.value = '_lolin'
-  }
-  else {
+  } else {
     variant.value = ''
     softwareVer.value = ''
     supportedBoards.value = []
   }
 
-  parseManifest()  
+  parseManifest()
 })
 
 const manifestUrl = computed(() => {
@@ -93,11 +91,11 @@ const manifestUrl = computed(() => {
 })
 
 watch(variant, () => {
-  parseManifest()  
+  parseManifest()
 })
 
 async function parseManifest() {
-  logDebug("App.parseManifest()", manifestUrl.value)
+  logDebug('App.parseManifest()', manifestUrl.value)
 
   fetch(manifestUrl.value, {
     method: 'GET',
@@ -116,7 +114,7 @@ async function parseManifest() {
       softwareVer.value = json.version
       supportedBoards.value = []
 
-      json.builds.forEach(b => {
+      json.builds.forEach((b) => {
         supportedBoards.value.push(b.board)
       })
     })
