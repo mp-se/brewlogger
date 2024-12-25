@@ -21,7 +21,7 @@
           <th scope="col" class="col-sm-1">Delta last</th>
           <th scope="col" class="col-sm-1">Velocity</th>
           <th scope="col" class="col-sm-1">Min/Max</th>
-<!-- 
+          <!-- 
           <th scope="col" class="col-sm-3">Linear formula</th>
 -->
         </tr>
@@ -37,11 +37,11 @@
           <td>{{ new Number(item.linearFirst).toFixed(4) }}</td>
           <td>{{ new Number(item.linearLast).toFixed(4) }}</td>
 
-          <td>{{ new Number(Math.abs(item.linearFirst-item.first)).toFixed(4) }}</td>
-          <td>{{ new Number(Math.abs(item.linearLast-item.last)).toFixed(4) }}</td>
+          <td>{{ new Number(Math.abs(item.linearFirst - item.first)).toFixed(4) }}</td>
+          <td>{{ new Number(Math.abs(item.linearLast - item.last)).toFixed(4) }}</td>
 
-          <td>{{ new Number((item.linearLast-item.linearFirst)).toFixed(4) }}</td>
-          <td>{{ new Number((item.min-item.max)).toFixed(4) }}</td>
+          <td>{{ new Number(item.linearLast - item.linearFirst).toFixed(4) }}</td>
+          <td>{{ new Number(item.min - item.max).toFixed(4) }}</td>
           <!-- 
           <td>{{ item.linear }}</td>
 -->
@@ -90,8 +90,7 @@ function test(gList, window) {
 
   const map = new Map()
 
-  if(window === undefined)
-    window = 96  // assume 15 minutes per day 
+  if (window === undefined) window = 96 // assume 15 minutes per day
 
   // Prepare data for gravity velocity, one array per day
   gList.forEach((g) => {
@@ -117,12 +116,12 @@ function test(gList, window) {
       day: day,
       first: linear[0][1],
       last: linear[linear.length - 1][1],
-      min: Math.min(...linear.map(point => point[1])),
-      max: Math.max(...linear.map(point => point[1])),
+      min: Math.min(...linear.map((point) => point[1])),
+      max: Math.max(...linear.map((point) => point[1])),
       points: linear.length,
       linear: linearResult.string,
       linearFirst: linearResult.predict(0)[1],
-      linearLast: linearResult.predict(96)[1],
+      linearLast: linearResult.predict(96)[1]
     })
   })
 
