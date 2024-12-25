@@ -24,6 +24,24 @@
             :disabled="global.disabled"
           ></BsInputNumber>
         </div>
+
+        <!-- For testing gravity velocity 
+
+        <div class="col-md-2">
+          <BsInputNumber
+            v-model="pointsPerDay"
+            label="Points per day"
+            :disabled="global.disabled"
+          ></BsInputNumber>
+        </div>
+        <div class="col-md-2">
+          <BsInputNumber
+            v-model="window"
+            label="Window"
+            :disabled="global.disabled"
+          ></BsInputNumber>
+        </div>-->
+
         <div class="col-md-1">
           <BsInputBase label="&nbsp;"
             ><button
@@ -42,80 +60,39 @@
         <canvas id="gravityChart"></canvas>
       </div>
       <div class="col-md-1" v-if="gravityList != null">
-        <div class="row p-2">Time</div>
+
+        <!-- Right toolbar for controlling contents -->
+
         <div class="row p-2">
-          <button
-            @click="filterAll()"
-            type="button"
-            class="btn btn-secondary btn-sm"
-            :disabled="global.disabled"
-          >
-            All
-          </button>
+          <p class="fw-bold">Data</p>
+          <div class="btn-group-vertical" role="group" aria-label="Vertical button group">
+            <button @click="filterGravity()" type="button" class="btn btn-outline-secondary btn-sm" :disabled="global.disabled">Gravity</button>
+            <button @click="filterTemp()" type="button" class="btn btn-outline-secondary btn-sm" :disabled="global.disabled">Temp</button>
+            <button @click="filterDevice()" type="button" class="btn btn-outline-secondary btn-sm" :disabled="global.disabled">Device</button>
+            <button @click="filterVelocity()" type="button" class="btn btn-outline-secondary btn-sm" :disabled="global.disabled">Velocity</button>
+          </div>
+        </div>
+
+        <div class="row p-2">
+          <p class="fw-bold">Time</p>
+          <div class="btn-group-vertical" role="group" aria-label="Vertical button group">
+            <button @click="filterAll()" type="button" class="btn btn-outline-secondary btn-sm" :disabled="global.disabled">All</button>
+            <button @click="filter24h()" type="button" class="btn btn-outline-secondary btn-sm" :disabled="global.disabled">24h</button>
+            <button @click="filter48h()" type="button" class="btn btn-outline-secondary btn-sm" :disabled="global.disabled">48h</button>
+            <button @click="filter7d()" type="button" class="btn btn-outline-secondary btn-sm" :disabled="global.disabled">7d</button>
+          </div>
+      </div>
+        <div class="row p-2">
+          <p class="fw-bold">Filters</p>
+          <div class="btn-group-vertical" role="group" aria-label="Vertical button group">
+            <button @click="filterDownsampleLTTB()" type="button" class="btn btn-outline-secondary btn-sm" :disabled="global.disabled">LTTB</button>
+            <button @click="filterDownsampleLTD()" type="button" class="btn btn-outline-secondary btn-sm" :disabled="global.disabled">LTD</button>
+            <button @click="filterKalman()" type="button" class="btn btn-outline-secondary btn-sm" :disabled="global.disabled">Kalman</button>
+          </div>
         </div>
         <div class="row p-2">
-          <button
-            @click="filter24h()"
-            type="button"
-            class="btn btn-secondary btn-sm"
-            :disabled="global.disabled"
-          >
-            24h
-          </button>
-        </div>
-        <div class="row p-2">
-          <button
-            @click="filter48h()"
-            type="button"
-            class="btn btn-secondary btn-sm"
-            :disabled="global.disabled"
-          >
-            48h
-          </button>
-        </div>
-        <div class="row p-2">
-          <button
-            @click="filter7d()"
-            type="button"
-            class="btn btn-secondary btn-sm"
-            :disabled="global.disabled"
-          >
-            7d
-          </button>
-        </div>
-        <div class="row p-2">Filters</div>
-        <div class="row p-2">
-          <button
-            @click="filterDownsampleLTTB()"
-            type="button"
-            class="btn btn-secondary btn-sm"
-            :disabled="global.disabled"
-          >
-            LTTB
-          </button>
-        </div>
-        <div class="row p-2">
-          <button
-            @click="filterDownsampleLTD()"
-            type="button"
-            class="btn btn-secondary btn-sm"
-            :disabled="global.disabled"
-          >
-            LTD
-          </button>
-        </div>
-        <div class="row p-2">
-          <button
-            @click="filterKalman()"
-            type="button"
-            class="btn btn-secondary btn-sm"
-            :disabled="global.disabled"
-          >
-            Kalman
-          </button>
-        </div>
-        <div class="row p-2">
-          <p>Points: {{ currentDataCount }}</p>
+          <p class="fw-bold">Points</p>
+          <p>{{ currentDataCount }}</p>
         </div>
       </div>
     </div>
@@ -133,12 +110,6 @@
     </template>
 
     <template v-else>
-      <!-- 
-      <BsMessage
-        :dismissable="false"
-        :message="'Unable to find gravity for batch with id ' + $route.params.id"
-        alert="danger"
-      />-->
       <div class="row gy-2">
         <div class="col-md-12"></div>
         <div class="col-md-12">
@@ -182,6 +153,10 @@ const infoFG = ref(null)
 const currentDataCount = ref(0)
 const batchName = ref('')
 
+// For testing gravity velocity
+const window = ref(30) 
+const pointsPerDay = ref(0) 
+
 watch(infoFirstDay, async (selected) => {
   logDebug('BatchGravityGraphView.watch(infoFirstDay)', selected)
   chart.options.scales.x.min = selected
@@ -204,6 +179,67 @@ const alcoholData = ref([])
 const batteryData = ref([])
 const temperatureData = ref([])
 const chamberData = ref([])
+
+const graphOptions = ref({
+    gravity: true,
+    temperature: true,
+    battery: false,
+    alcohol: true,
+    chamber: false,
+    velocity: false
+  })
+
+function filterGravity() {
+  logDebug('BatchGravityGraphView.filterGravity()')
+  graphOptions.value = {
+    gravity: true,
+    temperature: true,
+    battery: false,
+    alcohol: true,
+    chamber: false,
+    velocity: false
+  }
+  apply()
+}
+
+function filterTemp() {
+  logDebug('BatchGravityGraphView.filterTemp()')
+  graphOptions.value = {
+    gravity: true,
+    temperature: true,
+    battery: false,
+    alcohol: false,
+    chamber: true,
+    velocity: false
+  }
+  apply()
+}
+
+function filterDevice() {
+  logDebug('BatchGravityGraphView.filterDevice()')
+  graphOptions.value = {
+    gravity: false,
+    temperature: false,
+    battery: true,
+    alcohol: false,
+    chamber: false,
+    velocity: false
+  }
+  apply()
+}
+
+function filterVelocity() {
+  logDebug('BatchGravityGraphView.filterVelocity()')
+  graphOptions.value = {
+    gravity: true,
+    temperature: false,
+    battery: false,
+    alcohol: false,
+    chamber: false,
+    velocity: true
+  }
+  apply()
+}
 
 const chartOptions = ref({
   type: 'line',
@@ -372,36 +408,39 @@ function mapChamberData(gList) {
   return result
 }
 
-function mapGravityVelocityData(gList) {
+function mapGravityVelocityData(gList, pointsPerDay, window) {
   var result = []
 
-  const map = new Map()
+  for(var i = 0; i < (gList.length - pointsPerDay); i += 1) {
+    var list = gList.slice(i, i + pointsPerDay)
+    var data = []
+    var j = 0
 
-  // Prepare data for gravity velocity, one array per day
-  gList.forEach((g) => {
-    const dateStr = g.created.substring(0, 10)
-    if (!map.has(dateStr)) map.set(dateStr, [])
-    map.get(dateStr).push(g)
-  })
-
-  // Calculate the velocity for each day
-  map.keys().forEach((day) => {
-    var linear = []
-    var i = 0
-
-    map.get(day).forEach((g) => {
-      linear.push([(i * 300) / 3600, g.gravity])
-      i++
+    list.forEach(g => {
+      data.push([j, g.gravity])
+      j++      
     })
 
-    const linearResult = regression.linear(linear, { precision: 4 })
-    logDebug(linearResult.equation[0])
-
+    /*
+    const linearResult = regression.linear(data.slice(-window), { precision: 12 })
     result.push({
-      x: new Date(day),
-      y: -linearResult.equation[0] * 1000
+      x: new Date(gList[i + pointsPerDay].created),
+      y: linearResult.predict(pointsPerDay)[1] - linearResult.predict(0)[1],
+    })*/
+
+
+    /*const exponentialResult = regression.exponential(data.slice(-window), { precision: 12 })
+    result.push({
+      x: new Date(gList[i + pointsPerDay].created),
+      y: exponentialResult.predict(pointsPerDay)[1] - exponentialResult.predict(0)[1]
+    })*/
+
+    const polynomialResult = regression.polynomial(data.slice(-window), { order: 1, precision: 12 })
+    result.push({
+      x: new Date(gList[i + pointsPerDay].created),
+      y: polynomialResult.predict(pointsPerDay)[1] - polynomialResult.predict(0)[1]
     })
-  })
+  }
 
   return result
 }
@@ -419,24 +458,22 @@ function updateDataSet() {
     (g) => g.active && g.gravity > infoFG.value && g.gravity < infoOG.value
   )
 
+  gravityStats.value = getGravityDataAnalytics(filteredGravityList)
+
   gravityData.value = mapGravityData(filteredGravityList)
   batteryData.value = mapBatteryData(filteredGravityList)
   temperatureData.value = mapTemperatureData(filteredGravityList)
   alcoholData.value = mapAlcoholData(filteredGravityList)
   chamberData.value = mapChamberData(filteredGravityList)
-  gravityVelocityData.value = mapGravityVelocityData(filteredGravityList)
 
-  gravityStats.value = getGravityDataAnalytics(filteredGravityList)
+  if(pointsPerDay.value === 0)
+    pointsPerDay.value = Math.round((3600*24) / gravityStats.value.averageInterval)
+
+  gravityVelocityData.value = mapGravityVelocityData(filteredGravityList, pointsPerDay.value, window.value)
+
   currentDataCount.value = gravityData.value.length
 
-  configureChart({
-    gravity: true,
-    temperature: true,
-    battery: true,
-    alcohol: true,
-    chamber: false,
-    velocity: false
-  })
+  configureChart(graphOptions.value)
 }
 
 function configureChart(config) {
@@ -453,7 +490,9 @@ function configureChart(config) {
       cubicInterpolationMode: 'monotone',
       tension: 0.4
     })
+  }
 
+  if (config.gravity) {
     chart.config.options.scales.yGravity = {
       type: 'linear',
       position: 'left',
@@ -461,6 +500,10 @@ function configureChart(config) {
         display: true,
         text: 'Gravity'
       }
+    }
+  } else {
+    if (chart.config.options.scales.yGravity) {
+      delete chart.config.options.scales.yGravity;
     }
   }
 
@@ -475,59 +518,6 @@ function configureChart(config) {
       cubicInterpolationMode: 'monotone',
       tension: 0.4
     })
-
-    chart.config.options.scales.yTemp = {
-      type: 'linear',
-      position: 'right',
-      title: {
-        display: true,
-        text: 'Temperataure'
-      }
-    }
-  }
-
-  if (config.battery) {
-    chart.data.datasets.push({
-      label: 'Battery',
-      data: batteryData.value,
-      borderColor: 'orange',
-      backgroundColor: 'orange',
-      yAxisID: 'yVolt',
-      pointRadius: 0,
-      cubicInterpolationMode: 'monotone',
-      tension: 0.4
-    })
-
-    chart.config.options.scales.yVolt = {
-      type: 'linear',
-      position: 'right',
-      title: {
-        display: true,
-        text: 'Voltage'
-      }
-    }
-  }
-
-  if (config.alcohol) {
-    chart.data.datasets.push({
-      label: 'Alcohol',
-      data: alcoholData.value,
-      borderColor: 'red',
-      backgroundColor: 'red',
-      yAxisID: 'yAlcohol',
-      pointRadius: 0,
-      cubicInterpolationMode: 'monotone',
-      tension: 0.4
-    })
-
-    chart.config.options.scales.yAlcohol = {
-      type: 'linear',
-      position: 'left',
-      title: {
-        display: true,
-        text: 'Alcohol'
-      }
-    }
   }
 
   if (config.chamber) {
@@ -543,6 +533,77 @@ function configureChart(config) {
     })
   }
 
+  if (config.temperature || config.chamber) {
+    chart.config.options.scales.yTemp = {
+      type: 'linear',
+      position: 'right',
+      title: {
+        display: true,
+        text: 'Temperataure'
+      }
+    }
+  } else {
+    if (chart.config.options.scales.yTemp) {
+      delete chart.config.options.scales.yTemp;
+    }
+  }
+
+  if (config.battery) {
+    chart.data.datasets.push({
+      label: 'Battery',
+      data: batteryData.value,
+      borderColor: 'orange',
+      backgroundColor: 'orange',
+      yAxisID: 'yVolt',
+      pointRadius: 0,
+      cubicInterpolationMode: 'monotone',
+      tension: 0.4
+    })
+  }
+
+  if (config.battery) {
+    chart.config.options.scales.yVolt = {
+      type: 'linear',
+      position: 'right',
+      title: {
+        display: true,
+        text: 'Voltage'
+      }
+    }
+  } else {
+    if (chart.config.options.scales.yVolt) {
+      delete chart.config.options.scales.yVolt;
+    }
+  }
+
+  if (config.alcohol) {
+    chart.data.datasets.push({
+      label: 'Alcohol',
+      data: alcoholData.value,
+      borderColor: 'red',
+      backgroundColor: 'red',
+      yAxisID: 'yAlcohol',
+      pointRadius: 0,
+      cubicInterpolationMode: 'monotone',
+      tension: 0.4
+    })
+  }
+
+  if (config.alcohol) {
+    chart.config.options.scales.yAlcohol = {
+      type: 'linear',
+      position: 'left',
+      title: {
+        display: true,
+        text: 'Alcohol'
+      }
+    }
+  } else {
+    if (chart.config.options.scales.yAlcohol) {
+      delete chart.config.options.scales.yAlcohol;
+    }
+  }
+
   if (config.velocity) {
     chart.data.datasets.push({
       label: 'Gravity Velocity',
@@ -554,16 +615,22 @@ function configureChart(config) {
       cubicInterpolationMode: 'monotone',
       tension: 0.4
     })
+  }
 
+  if (config.velocity) {
     chart.config.options.scales.yVelocity = {
       type: 'linear',
-      position: 'left',
+      position: 'right',
       title: {
         display: true,
         text: 'Gravity velocity'
       }
     }
-  }
+  } else {
+    if (chart.config.options.scales.yVelocity) {
+      delete chart.config.options.scales.yVelocity;
+    }
+  }  
 }
 
 function filter24h() {
