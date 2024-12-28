@@ -85,12 +85,36 @@ onMounted(() => {
   })
 })
 
+function filterOutliers(data, limit) {
+  var count = 0
+  var newList = []
+
+  newList.push(data[0])
+
+  for (let i = 1; i < data.length; i++) {
+    const p = data[i - 1]
+    const g = data[i]
+
+    if (Math.abs(g.gravity - p.gravity) > limit) {
+      logDebug('Current: ' + g.gravity + ' Previous: ' + p.gravity)
+      count++
+    } else {
+      newList.push(g)
+    }
+  }
+
+  logDebug('Outliers removed: ' + count)
+  return newList
+}
+
 function test(gList, window) {
   var result = []
 
   const map = new Map()
 
   if (window === undefined) window = 96 // assume 15 minutes per day
+
+  gList = filterOutliers(gList, 0.002)
 
   // Prepare data for gravity velocity, one array per day
   gList.forEach((g) => {

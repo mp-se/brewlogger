@@ -25,22 +25,22 @@
           ></BsInputNumber>
         </div>
 
-        <!-- For testing gravity velocity 
-
-        <div class="col-md-2">
+        <div class="col-md-2" v-if="graphOptions.velocity">
           <BsInputNumber
-            v-model="pointsPerDay"
-            label="Points per day"
+            v-model="window"
+            label="Vecolicy window"
             :disabled="global.disabled"
           ></BsInputNumber>
         </div>
-        <div class="col-md-2">
+
+        <div class="col-md-2" v-if="graphOptions.velocity">
           <BsInputNumber
-            v-model="window"
-            label="Window"
+            v-model="outlierLimit"
+            label="Outlier limit"
+            step="0.0001"
             :disabled="global.disabled"
           ></BsInputNumber>
-        </div>-->
+        </div>
 
         <div class="col-md-1">
           <BsInputBase label="&nbsp;"
@@ -232,6 +232,7 @@ const batchName = ref('')
 // For testing gravity velocity
 const window = ref(30)
 const pointsPerDay = ref(0)
+const outlierLimit = ref(0.001)
 
 watch(infoFirstDay, async (selected) => {
   logDebug('BatchGravityGraphView.watch(infoFirstDay)', selected)
@@ -487,6 +488,8 @@ function mapChamberData(gList) {
 function mapGravityVelocityData(gList, pointsPerDay, window) {
   var result = []
 
+  gList = filterOutliers(gList, outlierLimit.value)
+
   for (var i = 0; i < gList.length - pointsPerDay; i += 1) {
     var list = gList.slice(i, i + pointsPerDay)
     var data = []
@@ -520,6 +523,27 @@ function mapGravityVelocityData(gList, pointsPerDay, window) {
   return result
 }
 
+function filterOutliers(data, limit) {
+  var count = 0
+  var newList = []
+
+  newList.push(data[0])
+
+  for (let i = 1; i < data.length; i++) {
+    const p = data[i - 1]
+    const g = data[i]
+
+    if (Math.abs(g.gravity - p.gravity) > limit) {
+      count++
+    } else {
+      newList.push(g)
+    }
+  }
+
+  logDebug('BatchGravityGraphView.apply()', 'Outliers removed: ' + count)
+  return newList
+}
+
 function apply() {
   logDebug('BatchGravityGraphView.apply()')
   updateDataSet()
@@ -529,8 +553,11 @@ function apply() {
 function updateDataSet() {
   logDebug('BatchGravityGraphView.updateDataSet()')
 
+  // const filteredOutliers = filterOutliers(gravityList.value, outlierLimit.value)
+
   const filteredGravityList = gravityList.value.filter(
-    (g) => g.active && g.gravity > infoFG.value && g.gravity < infoOG.value
+  // const filteredGravityList = filteredOutliers.filter(
+      (g) => g.active && g.gravity > infoFG.value && g.gravity < infoOG.value
   )
 
   gravityStats.value = getGravityDataAnalytics(filteredGravityList)
