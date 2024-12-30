@@ -5,7 +5,7 @@
     <hr />
 
     <p>Testing page for gravity related development</p>
-
+ 
     <table>
       <thead>
         <tr>
@@ -21,9 +21,6 @@
           <th scope="col" class="col-sm-1">Delta last</th>
           <th scope="col" class="col-sm-1">Velocity</th>
           <th scope="col" class="col-sm-1">Min/Max</th>
-          <!-- 
-          <th scope="col" class="col-sm-3">Linear formula</th>
--->
         </tr>
       </thead>
       <tbody>
@@ -42,9 +39,6 @@
 
           <td>{{ new Number(item.linearLast - item.linearFirst).toFixed(4) }}</td>
           <td>{{ new Number(item.min - item.max).toFixed(4) }}</td>
-          <!-- 
-          <td>{{ item.linear }}</td>
--->
         </tr>
       </tbody>
     </table>

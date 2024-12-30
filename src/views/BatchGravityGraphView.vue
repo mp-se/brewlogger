@@ -27,17 +27,17 @@
 
         <div class="col-md-2" v-if="graphOptions.velocity">
           <BsInputNumber
-            v-model="window"
-            label="Vecolicy window"
+            v-model="outlierLimit"
+            label="Outlier limit"
+            step="0.0001"
             :disabled="global.disabled"
           ></BsInputNumber>
         </div>
 
         <div class="col-md-2" v-if="graphOptions.velocity">
           <BsInputNumber
-            v-model="outlierLimit"
-            label="Outlier limit"
-            step="0.0001"
+            v-model="window"
+            label="Vecolicy window"
             :disabled="global.disabled"
           ></BsInputNumber>
         </div>
@@ -164,6 +164,14 @@
             >
               Kalman
             </button>
+            <button
+              @click="filterOutlier()"
+              type="button"
+              class="btn btn-outline-secondary btn-sm"
+              :disabled="global.disabled"
+            >
+              Outliers
+            </button>
           </div>
         </div>
         <div class="row p-2">
@@ -200,18 +208,10 @@
 
 <script setup>
 import { onMounted, ref, watch } from 'vue'
-import {
-  Chart as ChartJS,
-  Legend,
-  LineController,
-  LinearScale,
-  TimeScale,
-  PointElement,
-  LineElement
-} from 'chart.js'
+import { Chart, registerables } from 'chart.js'
+import zoomPlugin from 'chartjs-plugin-zoom'
 import 'date-fns'
 import 'chartjs-adapter-date-fns'
-import zoomPlugin from 'chartjs-plugin-zoom'
 import { config, gravityStore, batchStore, global } from '@/modules/pinia'
 import router from '@/modules/router'
 import { gravityToPlato, tempToF, getGravityDataAnalytics, abv } from '@/modules/utils'
@@ -222,6 +222,8 @@ import regression from 'regression'
 
 var chart = null // Do not use ref for this, will cause stack overflow...
 
+Chart.register(...registerables, zoomPlugin)
+
 const infoFirstDay = ref(null)
 const infoLastDay = ref(null)
 const infoOG = ref(null)
@@ -230,7 +232,7 @@ const currentDataCount = ref(0)
 const batchName = ref('')
 
 // For testing gravity velocity
-const window = ref(30)
+const window = ref(20)
 const pointsPerDay = ref(0)
 const outlierLimit = ref(0.001)
 
@@ -282,7 +284,7 @@ function filterGravity() {
 function filterTemp() {
   logDebug('BatchGravityGraphView.filterTemp()')
   graphOptions.value = {
-    gravity: true,
+    gravity: false,
     temperature: true,
     battery: false,
     alcohol: false,
@@ -318,60 +320,8 @@ function filterVelocity() {
   apply()
 }
 
-const chartOptions = ref({
-  type: 'line',
-  data: { datasets: [] },
-  options: {
-    scales: {
-      x: {
-        type: 'time',
-        time: {
-          unit: 'hour',
-          displayFormats: {
-            hour: 'E HH:mm',
-            day: 'HH:mm',
-            week: 'E HH:mm',
-            month: 'd HH:mm'
-          }
-        },
-        min: 0,
-        max: 0
-      }
-    },
-    animation: false
-  },
-  plugins: {
-    tooltip: {
-      enabled: false
-    },
-    zoom: {
-      pan: {
-        enabled: true,
-        mode: 'xy',
-        modifierKey: 'ctrl'
-      },
-      zoom: {
-        drag: {
-          enabled: true
-        },
-        mode: 'xy'
-      }
-    }
-  }
-})
-
 onMounted(() => {
   logDebug('BatchGravityGraphView.onMounted()')
-
-  ChartJS.register(
-    Legend,
-    LinearScale,
-    TimeScale,
-    PointElement,
-    LineController,
-    LineElement,
-    zoomPlugin
-  )
 
   gravityList.value = null
 
@@ -398,17 +348,71 @@ onMounted(() => {
       gravityList.value.sort((a, b) => Date.parse(a.created) - Date.parse(b.created))
 
       try {
-        logDebug('BatchGravityGraphView.onMounted()', chartOptions.value)
+        const chartOptions = {
+          type: 'line',
+          data: { datasets: [] },
+          options: {
+            scales: {
+              x: {
+                type: 'time',
+                time: {
+                  unit: 'hour',
+                  displayFormats: {
+                    hour: 'E HH:mm',
+                    day: 'HH:mm',
+                    week: 'E HH:mm',
+                    month: 'd HH:mm'
+                  }
+                },
+                min: 0,
+                max: 0
+              },
+              yGravity: {
+                type: 'linear',
+                position: 'left',
+                title: {
+                  display: true,
+                  text: 'Gravity'
+                }
+              }
+            },
+            animation: false,
+            plugins: {
+              tooltip: {
+                enabled: true
+              },
+              zoom: {
+                pan: {
+                  enabled: true,
+                  mode: 'xy'
+                },
+                zoom: {
+                  wheel: {
+                    enabled: true
+                  },
+                  pinch: {
+                    enabled: true
+                  },
+                  mode: 'xy'
+                }
+              }
+            }
+          },
+        }
+
+        logDebug('BatchGravityGraphView.onMounted()', 'Creating chart')
 
         if (document.getElementById('gravityChart') == null) {
           logError('BatchGravityGraphView.onMounted()', 'Unable to find the chart canvas')
         } else {
           // Create the chart
-          chart = new ChartJS(document.getElementById('gravityChart'), chartOptions.value)
+          chart = new Chart(document.getElementById('gravityChart').getContext('2d'), chartOptions)
           chart.config.options.scales.x.min = infoFirstDay.value
           chart.config.options.scales.x.max = infoLastDay.value
           updateDataSet()
           chart.update()
+          logDebug('BatchGravityGraphView.onMounted()', chart)
+          
         }
       } catch (err) {
         logDebug('BatchGravityGraphView.onMounted()', err)
@@ -423,7 +427,7 @@ function mapGravityData(gList) {
   gList.forEach((g) => {
     result.push({
       x: g.created,
-      y: config.isGravitySG ? g.gravity : gravityToPlato(g.gravity)
+      y: parseFloat(new Number(config.isGravitySG ? g.gravity : gravityToPlato(g.gravity)).toFixed(4))
     })
   })
 
@@ -436,7 +440,7 @@ function mapBatteryData(gList) {
   gList.forEach((g) => {
     result.push({
       x: g.created,
-      y: g.battery
+      y: parseFloat(new Number(g.battery).toFixed(2))
     })
   })
 
@@ -449,7 +453,7 @@ function mapTemperatureData(gList) {
   gList.forEach((g) => {
     result.push({
       x: g.created,
-      y: config.isTempC ? g.temperature : tempToF(g.temperature)
+      y: parseFloat(new Number(config.isTempC ? g.temperature : tempToF(g.temperature)).toFixed(2))
     })
   })
 
@@ -458,12 +462,12 @@ function mapTemperatureData(gList) {
 
 function mapAlcoholData(gList) {
   var result = []
-  var og = Math.max(...gList.map((g) => g.gravity))
+  const og = Math.max(...gList.map((g) => g.gravity))
 
   gList.forEach((g) => {
     result.push({
       x: g.created,
-      y: abv(og, g.gravity)
+      y: parseFloat(new Number(abv(og, g.gravity)).toFixed(2))
     })
   })
 
@@ -478,20 +482,24 @@ function mapChamberData(gList) {
     .forEach((g) => {
       result.push({
         x: g.created,
-        y: config.isTempC ? g.chamberTemperature : tempToF(g.chamberTemperature)
+        y: new Number(config.isTempC ? g.chamberTemperature : tempToF(g.chamberTemperature)).toFixed(2)
       })
     })
 
   return result
 }
 
+function calculateMean(data) {
+  const sum = data.reduce((acc, value) => acc + value, 0)
+  return sum / data.length
+}
+
 function mapGravityVelocityData(gList, pointsPerDay, window) {
   var result = []
-
-  gList = filterOutliers(gList, outlierLimit.value)
+  var skipped = 0
 
   for (var i = 0; i < gList.length - pointsPerDay; i += 1) {
-    var list = gList.slice(i, i + pointsPerDay)
+    const list = gList.slice(i, i + pointsPerDay)
     var data = []
     var j = 0
 
@@ -500,48 +508,30 @@ function mapGravityVelocityData(gList, pointsPerDay, window) {
       j++
     })
 
-    /*
-    const linearResult = regression.linear(data.slice(-window), { precision: 12 })
-    result.push({
-      x: new Date(gList[i + pointsPerDay].created),
-      y: linearResult.predict(pointsPerDay)[1] - linearResult.predict(0)[1],
-    })*/
+    // Check the data within the window and remove any outliers
+    const dataSubset = data.slice(-window)
+    const gravityValues = dataSubset.map((point) => point[1])
+    const meanGravity = calculateMean(gravityValues)
+ 
+    var dataFiltered = []
 
-    /*const exponentialResult = regression.exponential(data.slice(-window), { precision: 12 })
-    result.push({
-      x: new Date(gList[i + pointsPerDay].created),
-      y: exponentialResult.predict(pointsPerDay)[1] - exponentialResult.predict(0)[1]
-    })*/
+    dataSubset.forEach((data) => {
+      if (Math.abs(data[1] - meanGravity) < outlierLimit.value) {
+        dataFiltered.push(data)
+      } else {
+        skipped++
+      }
+    })
 
-    const polynomialResult = regression.polynomial(data.slice(-window), { order: 1, precision: 12 })
+    const polynomialResult = regression.polynomial(dataFiltered, { order: 1, precision: 12 })
     result.push({
       x: new Date(gList[i + pointsPerDay].created),
       y: polynomialResult.predict(pointsPerDay)[1] - polynomialResult.predict(0)[1]
     })
   }
 
+  logDebug('Skipped', skipped, 'outliers')
   return result
-}
-
-function filterOutliers(data, limit) {
-  var count = 0
-  var newList = []
-
-  newList.push(data[0])
-
-  for (let i = 1; i < data.length; i++) {
-    const p = data[i - 1]
-    const g = data[i]
-
-    if (Math.abs(g.gravity - p.gravity) > limit) {
-      count++
-    } else {
-      newList.push(g)
-    }
-  }
-
-  logDebug('BatchGravityGraphView.apply()', 'Outliers removed: ' + count)
-  return newList
 }
 
 function apply() {
@@ -553,11 +543,8 @@ function apply() {
 function updateDataSet() {
   logDebug('BatchGravityGraphView.updateDataSet()')
 
-  // const filteredOutliers = filterOutliers(gravityList.value, outlierLimit.value)
-
   const filteredGravityList = gravityList.value.filter(
-  // const filteredGravityList = filteredOutliers.filter(
-      (g) => g.active && g.gravity > infoFG.value && g.gravity < infoOG.value
+    (g) => g.active && g.gravity > infoFG.value && g.gravity < infoOG.value
   )
 
   gravityStats.value = getGravityDataAnalytics(filteredGravityList)
@@ -578,7 +565,6 @@ function updateDataSet() {
   )
 
   currentDataCount.value = gravityData.value.length
-
   configureChart(graphOptions.value)
 }
 
@@ -615,7 +601,7 @@ function configureChart(config) {
 
   if (config.temperature) {
     chart.data.datasets.push({
-      label: 'Device Temp',
+      label: 'Temperature',
       data: temperatureData.value,
       borderColor: 'blue',
       backgroundColor: 'blue',
@@ -628,7 +614,7 @@ function configureChart(config) {
 
   if (config.chamber) {
     chart.data.datasets.push({
-      label: 'Chamber Temp',
+      label: 'Chamber',
       data: chamberData.value,
       borderColor: 'pink',
       backgroundColor: 'pink',
@@ -712,7 +698,7 @@ function configureChart(config) {
 
   if (config.velocity) {
     chart.data.datasets.push({
-      label: 'Gravity Velocity',
+      label: 'Velocity',
       data: gravityVelocityData.value,
       borderColor: 'silver',
       backgroundColor: 'silver',
@@ -779,7 +765,7 @@ function filterAll() {
 function filterDownsampleLTTB() {
   logDebug('BatchGravityGraphView.filterDownsampleLTTB()')
 
-  var count = Math.round(chart.data.datasets[0].data.length * 0.7)
+  const count = Math.round(chart.data.datasets[0].data.length * 0.7)
 
   for (var i = 0; i < chart.data.datasets.length; i++) {
     chart.data.datasets[i].data = applyLTTB(chart.data.datasets[i].data, count)
@@ -792,7 +778,7 @@ function filterDownsampleLTTB() {
 function filterDownsampleLTD() {
   logDebug('BatchGravityGraphView.filterDownsampleLTD()')
 
-  var count = Math.round(chart.data.datasets[0].data.length * 0.7)
+  const count = Math.round(chart.data.datasets[0].data.length * 0.7)
 
   for (var i = 0; i < chart.data.datasets.length; i++) {
     chart.data.datasets[i].data = applyLTD(chart.data.datasets[i].data, count)
@@ -813,12 +799,39 @@ function filterKalman() {
   chart.update()
 }
 
+function filterOutlier() {
+  logDebug('BatchGravityGraphView.filterOutlier()', chart.data.datasets)
+
+  for (var i = 0; i < chart.data.datasets.length; i++) {
+    switch(chart.data.datasets[i].label) {
+      case 'Gravity':
+        chart.data.datasets[i].data = applyOutlier(chart.data.datasets[i].data, 20, 0.002) // Data, Window, Max Deviation limit
+        break;
+      case 'Chamber':
+      case 'Temperature':
+        chart.data.datasets[i].data = applyOutlier(chart.data.datasets[i].data, 20, 0.4) // Data, Window, Max Deviation limit
+        break;
+      case 'Velocity':
+        // Dont filter this.
+        break;
+      case 'Battery':
+        chart.data.datasets[i].data = applyOutlier(chart.data.datasets[i].data, 20, 0.1) // Data, Window, Max Deviation limit
+        break;
+      case 'Alcohol':
+        chart.data.datasets[i].data = applyOutlier(chart.data.datasets[i].data, 20, 0.1) // Data, Window, Max Deviation limit
+        break;
+    }
+  }
+
+  currentDataCount.value = chart.data.datasets[0].data.length
+  chart.update()
+}
+
 function applyLTTB(input, points) {
   logDebug('BatchGravityGraphView.applyLTTB()')
 
-  var data = []
-
   // Map data to a format that can be handled by the library
+  var data = []
   input.forEach((i) => {
     data.push([new Date(i.x), i.y])
   })
@@ -837,9 +850,8 @@ function applyLTTB(input, points) {
 function applyLTD(input, points) {
   logDebug('BatchGravityGraphView.applyLTD()')
 
-  var data = []
-
   // Map data to a format that can be handled by the library
+  var data = []
   input.forEach((i) => {
     data.push([new Date(i.x), i.y])
   })
@@ -859,9 +871,8 @@ function applyLTD(input, points) {
 function applyKalman(input) {
   logDebug('BatchGravityGraphView.applyKalman()')
 
-  var data = []
-
   // Map data to a format that can be handled by the library
+  var data = []
   input.forEach((i) => {
     data.push([Date.parse(i.x), i.y])
   })
@@ -875,5 +886,37 @@ function applyKalman(input) {
   })
 
   return data
+}
+
+// function calculateStandardDeviation(data, mean) {
+//   const variance = data.reduce((acc, value) => acc + Math.pow(value - mean, 2), 0) / data.length;
+//   return Math.sqrt(variance);
+// }
+
+function applyOutlier(input, window, limit) {
+  logDebug('BatchGravityGraphView.applyOutlier()', input.length, window, limit, input)
+
+  var result = []
+  var skipped = 0
+
+  for (var i = 0; i < input.length - window; i += window) {
+    const dataSubset = input.slice(i, i + window)
+   
+    const dataValues = dataSubset.map((p) => p.y)
+    const dataMean = calculateMean(dataValues)  
+    // const dataStd = calculateStandardDeviation(dataValues, dataMean);
+    // logDebug('Mean:', dataMean, "Std:", dataStd)
+
+    dataSubset.forEach((data) => {
+      if (Math.abs(data.y - dataMean) < limit) {
+        result.push(data)
+      } else {
+        skipped++
+      }
+    })
+  }
+
+  logDebug('BatchGravityGraphView.applyOutlier()', "Removed no outlsers", skipped)
+  return result
 }
 </script>
