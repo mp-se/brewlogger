@@ -102,7 +102,7 @@ export function getGravityDataAnalytics(gravityList) {
       firstDate: '',
       lastDate: '',
       firstTime: '',
-      lastTime: ''
+      lastTime: '',      
     },
     readings: 0,
     averageInterval: 0,

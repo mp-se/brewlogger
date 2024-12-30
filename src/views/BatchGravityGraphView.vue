@@ -353,28 +353,6 @@ onMounted(() => {
           data: { datasets: [] },
           options: {
             scales: {
-              x: {
-                type: 'time',
-                time: {
-                  unit: 'hour',
-                  displayFormats: {
-                    hour: 'E HH:mm',
-                    day: 'HH:mm',
-                    week: 'E HH:mm',
-                    month: 'd HH:mm'
-                  }
-                },
-                min: 0,
-                max: 0
-              },
-              yGravity: {
-                type: 'linear',
-                position: 'left',
-                title: {
-                  display: true,
-                  text: 'Gravity'
-                }
-              }
             },
             animation: false,
             plugins: {
@@ -407,12 +385,9 @@ onMounted(() => {
         } else {
           // Create the chart
           chart = new Chart(document.getElementById('gravityChart').getContext('2d'), chartOptions)
-          chart.config.options.scales.x.min = infoFirstDay.value
-          chart.config.options.scales.x.max = infoLastDay.value
           updateDataSet()
           chart.update()
-          logDebug('BatchGravityGraphView.onMounted()', chart)
-          
+          setTimeout(() => { filterAll() }, 100)  // Quick fix so that data is always shown
         }
       } catch (err) {
         logDebug('BatchGravityGraphView.onMounted()', err)
@@ -723,6 +698,24 @@ function configureChart(config) {
       delete chart.config.options.scales.yVelocity
     }
   }
+
+  chart.config.options.scales.x = {
+    type: 'time',
+    time: {
+      unit: 'hour',
+      displayFormats: {
+        hour: 'E HH:mm',
+        day: 'HH:mm',
+        week: 'E HH:mm',
+        month: 'd HH:mm'
+      }
+    },
+    min: gravityStats.value.date.first,
+    max: gravityStats.value.date.last,
+  }
+
+  logDebug("AAAA:", chart.getInitialScaleBounds())
+  logDebug("AAAA:", chart.getZoomedScaleBounds(), chart.isZoomedOrPanned())
 }
 
 function filter24h() {
@@ -730,7 +723,7 @@ function filter24h() {
 
   var d = Date.parse(gravityStats.value.date.last.substring(0, 10)) - 86400000 * 1
   infoFirstDay.value = new Date(d).toISOString().substring(0, 10)
-  chart.options.scales.x.max = Date.parse(gravityStats.value.date.last)
+  updateDataSet()
   chart.update()
 }
 
@@ -739,7 +732,7 @@ function filter48h() {
 
   var d = Date.parse(gravityStats.value.date.last.substring(0, 10)) - 86400000 * 2
   infoFirstDay.value = new Date(d).toISOString().substring(0, 10)
-  chart.options.scales.x.max = Date.parse(gravityStats.value.date.last)
+  updateDataSet()
   chart.update()
 }
 
@@ -749,6 +742,7 @@ function filter7d() {
   var d = Date.parse(gravityStats.value.date.last.substring(0, 10)) - 86400000 * 7
   infoFirstDay.value = new Date(d).toISOString().substring(0, 10)
   infoLastDay.value = gravityStats.value.date.last.substring(0, 10)
+  updateDataSet()
   chart.update()
 }
 
@@ -757,7 +751,6 @@ function filterAll() {
 
   infoFirstDay.value = gravityStats.value.date.first.substring(0, 10)
   infoLastDay.value = gravityStats.value.date.last.substring(0, 10)
-
   updateDataSet()
   chart.update()
 }

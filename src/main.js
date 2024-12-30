@@ -76,3 +76,4 @@ app.mount('#app')
 
 import '@popperjs/core/dist/umd/popper.min.js'
 import 'bootstrap/dist/js/bootstrap.bundle.js'
+import 'hammerjs/hammer.js'
