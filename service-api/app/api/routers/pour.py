@@ -2,12 +2,13 @@ import logging
 from json.decoder import JSONDecodeError
 from datetime import datetime
 from typing import List, Optional
-from fastapi import Depends, Request
+from fastapi import Depends, Request, BackgroundTasks
 from fastapi.routing import APIRouter
 from starlette.exceptions import HTTPException
 from api.db import models, schemas
 from api.services import PourService, get_pour_service, BatchService, get_batch_service
 from ..security import api_key_auth
+from ..ws import notifyClients
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/api/pour")
@@ -47,13 +48,17 @@ async def get_pour_by_id(
     dependencies=[Depends(api_key_auth)],
 )
 async def create_pour(
-    pour: schemas.PourCreate, pour_service: PourService = Depends(get_pour_service)
+    pour: schemas.PourCreate, 
+    background_tasks: BackgroundTasks,
+    pour_service: PourService = Depends(get_pour_service)
 ) -> models.Pour:
     logger.info("Endpoint POST /api/pour/")
     if pour.created is None:
         pour.created = datetime.now()
         logger.info(f"Added timestamp to pour record {pour.created}")
-    return pour_service.create(pour)
+    pour =pour_service.create(pour)
+    background_tasks.add_task(notifyClients, "batch", "update", pour.batch_id)    
+    return pour 
 
 
 @router.post(
@@ -65,11 +70,13 @@ async def create_pour(
 )
 async def create_pour_list(
     pour_list: List[schemas.PourCreate],
+    background_tasks: BackgroundTasks,
     pour_service: PourService = Depends(get_pour_service),
 ) -> List[models.Pour]:
     logger.info("Endpoint POST /api/pour/list/")
-    return pour_service.createList(pour_list)
-
+    pour_list = pour_service.createList(pour_list)
+    background_tasks.add_task(notifyClients, "batch", "update", pour_list[0].batch_id)    
+    return pour_list 
 
 @router.patch(
     "/{pour_id}", response_model=schemas.Pour, dependencies=[Depends(api_key_auth)]
@@ -77,17 +84,24 @@ async def create_pour_list(
 async def update_pour_by_id(
     pour_id: int,
     gravity: schemas.PourUpdate,
+    background_tasks: BackgroundTasks,
     pour_service: PourService = Depends(get_pour_service),
 ) -> Optional[models.Pour]:
     logger.info(f"Endpoint PATCH /api/pour/{pour_id}")
-    return pour_service.update(pour_id, gravity)
+    pour = pour_service.update(pour_id, gravity)
+    background_tasks.add_task(notifyClients, "batch", "update", pour.batch_id)    
+    return pour 
 
 
 @router.delete("/{pour_id}", status_code=204, dependencies=[Depends(api_key_auth)])
 async def delete_pour_by_id(
-    pour_id: int, pour_service: PourService = Depends(get_pour_service)
+    pour_id: int, 
+    background_tasks: BackgroundTasks,
+    pour_service: PourService = Depends(get_pour_service)
 ):
     logger.info(f"Endpoint DELETE /api/pour/{pour_id}")
+    pour = pour_service.get(pour_id)
+    background_tasks.add_task(notifyClients, "batch", "update", pour.batch_id)    
     pour_service.delete(pour_id)
 
 
@@ -96,6 +110,7 @@ async def delete_pour_by_id(
     status_code=200)
 async def create_pour_using_kegmon_format(
     request: Request,
+    background_tasks: BackgroundTasks,
     pour_service: PourService = Depends(get_pour_service),
     batch_service: BatchService = Depends(get_batch_service),
 )-> models.Pour:
@@ -143,7 +158,9 @@ async def create_pour_using_kegmon_format(
             active=True,
         )
 
-        return pour_service.create(pour)
+        pour = pour_service.create(pour)
+        background_tasks.add_task(notifyClients, "batch", "update", pour.batch_id)    
+        return pour 
 
     except KeyError as e:
         logging.error(e)
