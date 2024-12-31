@@ -25,7 +25,8 @@ export class Pour {
       volume: this.volume,
       maxVolume: this.maxVolume,
       created: this.created,
-      active: this.active
+      active: this.active,
+      batchId: this.batchId
     }
 
     return j
@@ -135,6 +136,32 @@ export const usePourStore = defineStore('pourStore', {
         })
         .catch((err) => {
           logError('pourStore.updatePour()', err)
+          callback(false)
+          global.disabled = false
+        })
+    },
+    addPour(p, callback) {
+      // callback => (success)
+
+      logDebug('pourStore.addPour()', JSON.stringify(p.toJson()))
+      global.disabled = true
+      fetch(global.baseURL + 'api/pour/', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: global.token },
+        body: JSON.stringify(p.toJson()),
+        signal: AbortSignal.timeout(global.fetchTimout)
+      })
+        .then((res) => {
+          global.disabled = false
+          logDebug('pourStore.addPour()', res.status)
+          if (res.status != 201) {
+            callback(false)
+          } else {
+            callback(true)
+          }
+        })
+        .catch((err) => {
+          logError('pourStore.addPour()', err)
           callback(false)
           global.disabled = false
         })

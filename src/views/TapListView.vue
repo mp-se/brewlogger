@@ -19,7 +19,7 @@
               </a>
             </div>
           </th>
-          <th scope="col" class="col-sm-3">
+          <th scope="col" class="col-sm-4">
             <div :class="sortedClass('name')">
               Name&nbsp;
               <a class="icon-link icon-link-hover" @click="sortList(batchList, 'name', 'str')">
@@ -27,6 +27,7 @@
               </a>
             </div>
           </th>
+          <!-- 
           <th scope="col" class="col-sm-3">
             <div :class="sortedClass('style')">
               Style‹&nbsp;
@@ -35,15 +36,18 @@
               </a>
             </div>
           </th>
-          <th scope="col" class="col-sm-3">Volume</th>
-          <th scope="col" class="col-sm-1"></th>
+          -->
+          <th scope="col" class="col-sm-4">Volume</th>
+          <th scope="col" class="col-sm-2"></th>
         </tr>
       </thead>
       <tbody>
         <tr v-for="b in batchList" :key="b.id">
           <td class="fs-5">{{ b.brewDate }}</td>
           <td class="fs-5">{{ b.name }}</td>
+          <!-- 
           <td class="fs-5">{{ b.style }}</td>
+          -->
           <td class="fs-5">
             <BsProgress :progress="calculateProgress(b)" style="height: 26px"></BsProgress>
           </td>
@@ -60,6 +64,12 @@
                 </button> </router-link
               >&nbsp;
             </template>
+            <template v-if="calculateProgress(b) > 0">
+                <button type="button" class="btn btn-success btn-sm"
+                @click.prevent="emptyBatch(b.id)">
+                  <i class="bi bi-chevron-bar-down"></i>
+                </button> &nbsp;
+            </template>
           </td>
         </tr>
       </tbody>
@@ -71,12 +81,20 @@
         </div>
       </div>
     </template>
-  </div>
+
+    <BsModalConfirm
+      :callback="confirmEmptyCallback"
+      message="Do you want to mark this batch as empty?"
+      id="emptyBatch"
+      title="Empty batch"
+      :disabled="global.disabled"
+    />
+</div>
 </template>
 
 <script setup>
 import { onMounted, ref, watch } from 'vue'
-import { global, batchStore } from '@/modules/pinia'
+import { global, batchStore, pourStore } from '@/modules/pinia'
 import { storeToRefs } from 'pinia'
 import { logDebug } from '@/modules/logger'
 import {
@@ -86,10 +104,13 @@ import {
   sortList,
   applySortList
 } from '@/modules/ui'
+import { Pour } from '@/modules/pourStore'
 
 const batchList = ref(null)
 
 const { updatedBatchData } = storeToRefs(global)
+
+const confirmEmptyId = ref(null)
 
 watch(updatedBatchData, () => {
   filterBatchList()
@@ -105,7 +126,7 @@ onMounted(() => {
 
 function calculateProgress(b) {
   logDebug('TapListView.calculateProgress()', b.name, b.lastPourMaxVolume, b.lastPourVolume)
-  if (b.lastPourMaxVolume === undefined || b.lastPourVolume === undefined) return 0
+  if (b.lastPourMaxVolume === undefined || b.lastPourMaxVolume == 0 || b.lastPourVolume === undefined) return 0
   return Number((b.lastPourVolume / b.lastPourMaxVolume) * 100).toFixed(0)
 }
 
@@ -116,5 +137,26 @@ function filterBatchList() {
   batchStore.batchList.forEach((b) => {
     if (b.tapList) batchList.value.push(b)
   })
+}
+
+const confirmEmptyCallback = (result) => {
+  logDebug('TapListView.confirmEmptyCallback()', result)
+
+  if (result) {
+    global.clearMessages()
+
+    const pour = new Pour(0, 0, 0, 0, new Date().toISOString(), confirmEmptyId.value, true) 
+
+    pourStore.addPour(pour, (success) => {
+      if (success) global.messageSuccess = 'Marked batch as empty'
+      else global.messageError = 'Failed to update pour data'
+    })
+  }
+}
+
+const emptyBatch = (id) => {
+  logDebug('TapListView.emptyBatch()', id)
+  confirmEmptyId.value = id
+  document.getElementById('emptyBatch').click()
 }
 </script>
