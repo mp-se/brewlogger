@@ -4,7 +4,7 @@
     <hr />
     <p class="fw-normal">
       Here you can flash your devices using the ESP Web Flasher. Note that flashing will do a FULL
-      ERASE!
+      ERASE! This feature requires internet access for downloading firmware.
     </p>
 
     <div class="row">
@@ -35,12 +35,10 @@
         Some devices might need to be put in flash mode before flashing will work. Hold in EN and
         then do a reset and release EN should put the device in flashing mode.
       </p>
+<!-- 
       <p class="fw-normal">Using manfifest: {{ manifestUrl }}</p>
-      <p class="fw-normal">Powered by <b>ESP Web Tools</b></p>
-    </div>
-
-    <div class="col-md-12" v-if="softwareVer != ''">
-      <p class="fw-normal">Software Version: {{ softwareVer }}</p>
+-->
+      <p class="fw-normal">Software version: {{ softwareVersion }}</p>
     </div>
 
     <div class="col-md-12" v-if="supportedBoards.length">
@@ -48,6 +46,9 @@
       <ul>
         <li class="fw-normal" v-for="(b, index) in supportedBoards" :key="index">{{ b }}</li>
       </ul>
+    </div>
+    <div class="col-md-12">
+      <p class="fw-normal">Powered by <b>ESP Web Tools</b></p>
     </div>
   </div>
 </template>
@@ -61,9 +62,9 @@ import { logDebug, logError } from '@/modules/logger'
 const { disabled } = storeToRefs(global)
 
 const software = ref('')
-const softwareVer = ref('')
 const variant = ref('')
 const supportedBoards = ref([])
+const softwareVersion = ref('')
 
 watch(disabled, () => {
   logDebug('App.watch(disabled)')
@@ -73,11 +74,11 @@ watch(disabled, () => {
 })
 
 watch(software, () => {
-  if (software.value == 'gravitymon-gateway' || software.value == 'victron-receiver') {
+  if (software.value == 'gravitymon-gateway') {
     variant.value = '_lolin'
   } else {
     variant.value = ''
-    softwareVer.value = ''
+    softwareVersion.value = ''
     supportedBoards.value = []
   }
 
@@ -86,7 +87,7 @@ watch(software, () => {
 
 const manifestUrl = computed(() => {
   return (
-    window.location.origin + '/firmware/' + software.value + '/manifest' + variant.value + '.json'
+    'https://gravitymon.com/flasher/' + software.value + '/manifest' + variant.value + '.json'
   )
 })
 
@@ -111,12 +112,13 @@ async function parseManifest() {
     .then((json) => {
       logDebug('App.parseManifest()', json)
 
-      softwareVer.value = json.version
       supportedBoards.value = []
 
       json.builds.forEach((b) => {
         supportedBoards.value.push(b.board)
       })
+
+      softwareVersion.value = json.version
     })
     .catch((err) => {
       logError('App.parseManifest()', err)
