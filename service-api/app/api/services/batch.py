@@ -22,6 +22,16 @@ class BatchService(BaseService[models.Batch, schemas.BatchCreate, schemas.BatchU
         )
         return objs
 
+    def search_tapList(self) -> List[models.Batch]:
+        filters = {"tap_list": True}
+        objs: List[self.model] = self.db_session.scalars(
+            select(self.model).filter_by(**filters)
+        ).all()
+        logger.info(
+            "Fetched batches based on taplist=true, records found %d", len(objs)
+        )
+        return objs
+
     def search_active(self, active: bool) -> List[models.Batch]:
         filters = {"active": active}
         objs: List[self.model] = self.db_session.scalars(

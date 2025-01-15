@@ -1,0 +1,3 @@
+requests
+zeroconf==0.136.0
+websockets==14.1

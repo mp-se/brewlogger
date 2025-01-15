@@ -17,14 +17,13 @@ def test_init(app_client):
     data = {
         "chipId": "000000",
         "chipFamily": "f2",
-        "software": "Brewpi",
+        "software": "Chamber-Controller",
         "mdns": "f4",
         "config": "",
         "url": "http://test.home.arpa",
         "bleColor": "f7",
         "description": "f8",
-        "gravityFormula": "",
-        "gravityPoly": "",
+        "collectLogs": False,
     }
 
     # Add new

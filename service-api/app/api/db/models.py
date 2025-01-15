@@ -23,6 +23,7 @@ class BrewLogger(Base):
     temperature_format = Column(String(3), nullable=False)
     pressure_format = Column(String(3), nullable=False)
     gravity_format = Column(String(3), nullable=False)
+    volume_format = Column(String(3), nullable=False)
     gravity_forward_url = Column(String(100), nullable=False)
     dark_mode = Column(Boolean, nullable=False)
 
@@ -32,7 +33,7 @@ class SystemLog(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     timestamp = Column(DateTime(timezone=True), default=datetime.now())
-    message = Column(String(100), nullable=False)
+    message = Column(String(300), nullable=False)
     module = Column(String(20), nullable=False)
     error_code = Column(Integer, nullable=False)
     log_level = Column(Integer, nullable=False)
@@ -49,11 +50,10 @@ class Device(Base):
     config = Column(Text, nullable=False)
     url = Column(String(80), nullable=False)
     description = Column(String(150), nullable=False)
+    collect_logs = Column(Boolean, nullable=False)
 
     # Gravitymon specific
     ble_color = Column(String(15), nullable=False)
-    gravity_formula = Column(String(100), nullable=False)
-    gravity_poly = Column(Text, nullable=False)
 
     fermentation_step = relationship(
         "FermentationStep", back_populates="device", cascade="all,delete"
@@ -83,6 +83,7 @@ class Batch(Base):
     chip_id = Column(String(6), nullable=False)
     description = Column(String(80), nullable=False)
     active = Column(Boolean, nullable=False)
+    tap_list = Column(Boolean, nullable=False)
 
     brew_date = Column(String, nullable=False)
     description = Column(String, nullable=False)
@@ -94,10 +95,10 @@ class Batch(Base):
 
     brewfather_id = Column(String(30), nullable=False)
 
-    # Brewpi specific
+    # Chamber controller specific
     fermentation_chamber = Column(
         Integer, nullable=True
-    )  # Device ID for connected brewpi
+    )  # Device ID for connected chamber controller
     fermentation_steps = Column(Text, nullable=False)
 
     gravity = relationship("Gravity", back_populates="batch", cascade="all,delete")
@@ -118,9 +119,9 @@ class Gravity(Base):
     corr_gravity = Column(Float, nullable=False)
     run_time = Column(Float, nullable=False)
 
-    # Data from brewpi
-    beer_temperature = Column(Float, nullable=True)  # Temperature from brewpi
-    chamber_temperature = Column(Float, nullable=True)  # Temperature from brewpi
+    # Data from chamber controller
+    beer_temperature = Column(Float, nullable=True)  # Temperature from chamber controller
+    chamber_temperature = Column(Float, nullable=True)  # Temperature from chamber controller
 
     # Internal
     created = Column(DateTime, nullable=False)
@@ -152,6 +153,7 @@ class Pour(Base):
     id = Column(Integer, primary_key=True, index=True, nullable=False)
     pour = Column(Float, nullable=False)
     volume = Column(Float, nullable=False)
+    max_volume = Column(Float, nullable=False)
     created = Column(DateTime, nullable=False)
     active = Column(Boolean, nullable=False)
 

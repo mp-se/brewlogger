@@ -12,7 +12,7 @@ install_requires = [
     "zeroconf",
     "apscheduler",
     "redis",
-    "scipy",
+    # "scipy",
     "websockets",
 ]
 

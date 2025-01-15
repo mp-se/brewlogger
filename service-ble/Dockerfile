@@ -9,3 +9,4 @@ RUN mkdir -p /var/log/supervisor
 COPY ./scan.py /app/
 COPY supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 CMD ["/usr/bin/supervisord"]
+ 

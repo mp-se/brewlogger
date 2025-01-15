@@ -13,23 +13,36 @@ software as a complement to Brewfather which I use for recepie design and tracki
 
 This is a short list of features that has been implemented into the Brewlogger software
 
-- Keeping a registry of devices, currently supports: GravityMon, KegMon, GravityMon Gateway, Brewpi (ESP version by Thorrak)
+- Keeping a registry of devices, currently supports: GravityMon, KegMon, GravityMon Gateway, ChamberController
 - Keeping track of batches that contains Gravity data.
-- Visualing data collected from GravityMon (Gravity, Angle, Battery, Temperature, RSSI) and Brewpi (Frige Temperature)
+- Visualing data collected from GravityMon (Gravity, Angle, Battery, Temperature, RSSI) and ChamberController (Frige Temperature)
 - Analysing, Visulizing and Creating gravity formulas for GravityMon
 - Importing data from Brewfather and connect that to batches
-- Controlling Brewpi fermentation chamber according to scheule from Brewfather
+- Controlling ChamberController according to scheule from Brewfather
 - Importing data via HTTP or Bluetooth
+- Collecting logs from devices (using websocket interface)
+- Collect tap information from KegMon
+- Taplist for showing whats serving and what is available
 
 ### Features on the wish list
 
-- Keeping track of batches that contain pour data (KegMon)
 - Keeping track of batches that contain pressure data (PressureMon)
-- Taplist for showing whats serving and what is available (Might be a separate application using the common API's)
 
 ### Release history
 
 - 0.7.0 First stable testing version
+
+- 0.8.0 Updated with new features
+  - Feature: Refactored user interface to avoid data fetching, this will also allow for multiple devices interacting with the API's and data updated in background.
+  - Feature: Added support for pour data from Kegmon as well as fetching batches from Brewlogger (a must if pour storing is used)
+  - Feature: Added sorting of lists in UI to easier find what you are looking for.
+  - Bug: Caching of data from brewfather was invalidated to quickly
+  - Feature: Adding option to disable individual pour records
+  - Bug: Fixed problem with not beeing able to create a batch without connected gravity device.
+  - Feature: Refactor mDNS repeater to use AVAHI driver instead. mDNS container will now scan and store results in the Redis Cache.
+  - Bug: Not able to store changes when a record has just been created. 
+  - Feature: Adding log collection and presentation using websocket interface
+  - Feature: Supporting Chamber Controller project and fermentation profiles from brewfather
 
 ## Installation
 
@@ -41,9 +54,10 @@ It consists of the following containers.
 - **brewlogger-api**; Server with the API's for the web interface
 - **brewlogger-cache**; Redis cache for temporary data storage
 - **brewlogger-db**; Postgres Database for persistent storage
-- **brewlogger-mdns** [Optional]; Propages mDNS reqeusts to the internal brewlogger network, if not deployed then the scanning for devices will not work.
+- **brewlogger-mdns** [Optional]; Scans for mDNS devices on the local network and stores these in the Redis Cache for consumption by the API. If not deployed discovery of brewing devices will not work. This container will need to run on the host networks and will update the cache via the web/api server.
 - **brewlogger-ble** [Optional]; BLE scanner that forwards data to the Server API's. If not deployed BLE data from GravityMon will not be captured. An option is to use GravityMon-Gatway instead.
 - **brewlogger-pgadmin** [Optional]; Postgres Admin application. Only needed if you want to interact directly with the postgres application
+- **brewlogger-log** [Optional]; Used for collecting logs from devices 
 
 ### Docker-compose.yaml
 
@@ -55,7 +69,7 @@ services:
     restart: always
     environment:
      - API_KEY=[your API key for securing access to brew_api]
-     - API_URL=brew_api
+     - API_HOST=brew_api
     networks:
       - brew_net
     ports:
@@ -72,12 +86,28 @@ services:
     environment:
      - API_KEY=[your API key for securing access to brew_api]
      - DATABASE_URL=postgresql://[postgres user]:[postgres password]@brew_db:5432/app
-     - REDIS_URL=brew_cache
+     - REDIS_HOST=brew_cache
      - BREWFATHER_API_KEY=[your brewfather API key]
      - BREWFATHER_USER_KEY=[your brewfather USER key]
+    volumes:
+      - log:/app/log
     depends_on:
      - brew_db
      - brew_cache
+
+  brew_log:
+    image: mpse2/brewlogger-log
+    hostname: brew_log
+    restart: always
+    environment:
+     - API_HOST=brew_api
+     - API_KEY=[your API key for securing access to brew_api]
+    volumes:
+      - log:/app/log
+    networks:
+      - brew_net
+    depends_on:
+     - brew_api
 
   brew_cache:
     image: redis:7
@@ -123,12 +153,11 @@ services:
     network_mode: host
     privileged: true
     environment:
-      - USE_MDNS_REPEATER=1
-      - EXTERNAL_INTERFACE=[Host server interface of your network, eg: en0]
-      - DOCKER_NETWORK_NAME=brewnet
-      - OPTIONS=
+      - WEB_HOST=[your published url]
+      - API_KEY=[your API key for securing access to brew_api]
     volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
+      - /var/run/dbus:/var/run/dbus
+      - /var/run/avahi-daemon/socket:/var/run/avahi-daemon/socket
 
   brew_ble:
     image: mpse2/brewlogger-ble
@@ -138,7 +167,7 @@ services:
     restart: always
     privileged: true
     environment:
-      - API_URL=brew_api
+      - API_HOST=brew_api
       - MIN_INTERVAL=[Minimum time in seconds between sending data to API, ie. 300]
     volumes:
       - /dev:/dev
@@ -150,6 +179,7 @@ networks:
 volumes:
   pg-data:
   pgadmin-data:
+  logs:
 
 ```
 
@@ -159,4 +189,3 @@ When posting data from Gravitymon use the following URL's which points to the sa
 
 - http://[your name or ip]/ispindel
 - http://[your name or ip]/gravity
-

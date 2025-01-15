@@ -1,6 +1,9 @@
 import asyncio
 import logging
 import time
+import json
+import os
+import requests
 from typing import Optional, cast
 
 from zeroconf import DNSQuestionType, IPVersion, ServiceStateChange, Zeroconf
@@ -11,14 +14,18 @@ ALL_SERVICES = [
     "_gravitymon._tcp.local.",
     "_gravitymon-gateway._tcp.local.",
     "_kegmon._tcp.local.",
-    "_brewpi._tcp.local.",
+    "_chamberctl._tcp.local.",
     # "_http._tcp.local.",
-    # "_espfwk._tcp.local."
+    # "_espfwk._tcp.local." 
+    # "_airplay._tcp.local."
 ]
 
 logger = logging.getLogger(__name__)
 scan_result = []
 
+# Configuration
+web_host = ""
+api_key = ""
 
 async def scan_for_mdns(timeout):
     logger.info(f"Scanning for mdns devices, timout {timeout}")
@@ -49,7 +56,7 @@ async def _async_show_service_info(
         type = info.type
         adresses = ", ".join(addresses)
         host = info.server
-        logger.info(f"Endpoint: {type} {adresses} {host}")
+        logger.info(f"Found: {type} {adresses} {host}")
         mdns = {"type": type, "host": str(adresses), "name": host.strip(".")}
         scan_result.append(mdns)
 
@@ -86,11 +93,44 @@ class AsyncDeviceScanner:
         await self.aiozc.async_close()
 
 
-async def test():
-    result = await scan_for_mdns(10)
-    for r in result:
-        print(r)
+async def task_scan_mdns():
+    logger.info("Scanning for mdns devices")
 
+    mdns_list = await scan_for_mdns(20)
+
+    endpoint = "http://" + web_host + "/api/system/mdns"
+    headers = {
+        "Content-Type": "application/json",
+        "Authorization": "Bearer " + api_key 
+    }
+
+    for mdns in mdns_list:
+        try:
+            logger.info(f"Posting data {endpoint} {mdns}.")
+            r = requests.post(endpoint, json=mdns, headers=headers)
+            logger.info(f"Response {r}.")
+        except Exception as e:
+            logger.error(f"Failed to post data, Error: {e}")
+
+
+async def main():
+    while(True):
+        await task_scan_mdns()
 
 if __name__ == "__main__":
-    asyncio.run(test())
+    logging.basicConfig(
+        level=logging.INFO,
+        format="%(asctime)-15s %(name)-8s %(levelname)s: %(message)s",
+    )
+
+    web_host = os.getenv("WEB_HOST")
+    if web_host is None:
+        logger.error("WEB_HOST is defined, cannot start program")
+        exit(-1)
+
+    api_key = os.getenv("API_KEY")
+    if api_key is None:
+        logger.error("API_KEY is defined, cannot start program")
+        exit(-1)
+
+    asyncio.run(main())

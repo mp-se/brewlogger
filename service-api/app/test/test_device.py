@@ -16,14 +16,13 @@ def test_add(app_client):
     data = {
         "chipId": "000000",
         "chipFamily": "f2",
-        "software": "f3",
+        "software": "Chamber-Controller",
         "mdns": "f4",
         "config": "",
         "url": "f6",
         "bleColor": "f7",
         "description": "f8",
-        "gravityFormula": "",
-        "gravityPoly": "",
+        "collectLogs": False,
     }
 
     # Add new
@@ -50,8 +49,7 @@ def test_add(app_client):
     assert data["url"] == data2["url"]
     assert data["bleColor"] == data2["bleColor"]
     assert data["description"] == data2["description"]
-    assert data["gravityFormula"] == data2["gravityFormula"]
-    assert data["gravityPoly"] == data2["gravityPoly"]
+    assert data["collectLogs"] == data2["collectLogs"]
 
     # Not using a number for index
     r2 = app_client.get("/api/device/hello", headers=headers)
@@ -65,25 +63,6 @@ def test_list(app_client):
     assert len(data) == 2
 
 
-def test_brewpi(app_client):
-    data = {
-        "chipId": "000000",
-        "chipFamily": "",
-        "software": "Brewpi",
-        "mdns": "",
-        "config": "",
-        "url": "http://localhost",
-        "bleColor": "",
-        "description": "",
-        "gravityFormula": "",
-        "gravityPoly": "",
-    }
-
-    # Add new
-    r = app_client.post("/api/device/", json=data, headers=headers)
-    assert r.status_code == 201
-
-
 def test_update(app_client):
     data = {
         "chipId": "01234568",
@@ -94,8 +73,7 @@ def test_update(app_client):
         "url": "ff6",
         "bleColor": "ff7",
         "description": "ff8",
-        "gravityFormula": "ff9",
-        "gravityPoly": "{ 'key': 'value' }",
+        "collectLogs": False,
     }
 
     # Update existing
@@ -116,8 +94,7 @@ def test_update(app_client):
     assert data["url"] == data2["url"]
     assert data["bleColor"] == data2["bleColor"]
     assert data["description"] == data2["description"]
-    assert data["gravityFormula"] == data2["gravityFormula"]
-    assert data["gravityPoly"] == data2["gravityPoly"]
+    assert data["collectLogs"] == data2["collectLogs"]
 
     # Update missing entity
     r = app_client.patch("/api/device/10", json=data, headers=headers)
@@ -126,7 +103,7 @@ def test_update(app_client):
 
 def test_search(app_client):
     # Do a search for devices with software
-    r = app_client.get("/api/device/?software=Brewpi", headers=headers)
+    r = app_client.get("/api/device/?software=Chamber-Controller", headers=headers)
     assert r.status_code == 200
     data = json.loads(r.text)
     assert len(data) == 1
@@ -141,7 +118,7 @@ def test_delete(app_client):
     r = app_client.get("/api/device", headers=headers)
     assert r.status_code == 200
     data = json.loads(r.text)
-    assert len(data) == 2
+    assert len(data) == 1
 
 
 def test_validation(app_client):
@@ -154,8 +131,7 @@ def test_validation(app_client):
         "url": "",
         "bleColor": "",
         "description": "",
-        "gravityFormula": "",
-        "gravityPoly": "",
+        "collectLogs": False,
     }
     r = app_client.post("/api/device/", json=data, headers=headers)
     assert r.status_code == 422
@@ -169,8 +145,7 @@ def test_validation(app_client):
         "url": "",
         "bleColor": "",
         "description": "",
-        "gravityFormula": "",
-        "gravityPoly": "",
+        "collectLogs": False,
     }
     r = app_client.post("/api/device/", json=data, headers=headers)
     assert r.status_code == 422
@@ -184,8 +159,7 @@ def test_validation(app_client):
         "url": "",
         "bleColor": "",
         "description": "",
-        "gravityFormula": "",
-        "gravityPoly": "",
+        "collectLogs": False,
     }
     r = app_client.post("/api/device/", json=data, headers=headers)
     assert r.status_code == 422
@@ -199,8 +173,7 @@ def test_validation(app_client):
         "url": "",
         "bleColor": "",
         "description": "",
-        "gravityFormula": "",
-        "gravityPoly": "",
+        "collectLogs": False,
     }
     r = app_client.post("/api/device/", json=data, headers=headers)
     assert r.status_code == 422
@@ -214,8 +187,7 @@ def test_validation(app_client):
         "url": "012345678901234567890012345678901234567890123456789012345678901234567890123456789012345678901",
         "bleColor": "",
         "description": "",
-        "gravityFormula": "",
-        "gravityPoly": "",
+        "collectLogs": False,
     }
     r = app_client.post("/api/device/", json=data, headers=headers)
     assert r.status_code == 422

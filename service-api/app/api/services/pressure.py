@@ -26,6 +26,13 @@ class PressureService(
         return super(PressureService, self).create(obj)
 
     def createList(self, lst: List[schemas.PressureCreate]) -> List[models.Pressure]:
+        logger.info("Adding %d pressure records for batch", len(lst))
+        if len(lst) == 0:
+            raise HTTPException(
+                status_code=400,
+                detail="No pressure readings in request.",
+            )
+
         batch = self.db_session.get(models.Batch, lst[0].batch_id)
         logger.info("Searching for batch with id=%s %s", lst[0].batch_id, batch)
         if batch is None:

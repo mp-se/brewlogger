@@ -1,5 +1,6 @@
 import json
 from api.config import get_settings
+from .conftest import truncate_database
 
 headers = {
     "Authorization": "Bearer " + get_settings().api_key,
@@ -8,6 +9,8 @@ headers = {
 
 
 def test_init(app_client):
+    truncate_database()
+
     data = {
         "name": "f1",
         "chipId": "DDDDDD",
@@ -22,6 +25,7 @@ def test_init(app_client):
         "ibu": 0.3,
         "fermentationChamber": 0,
         "fermentationSteps": "",
+        "tapList": True,
     }
 
     # Add new
@@ -30,7 +34,7 @@ def test_init(app_client):
 
 
 def test_add(app_client):
-    data = {"pour": 0.1, "volume": 0.2, "batchId": 1, "active": True}
+    data = {"pour": 0.1, "volume": 0.2, "maxVolume": 1, "batchId": 1, "active": True}
 
     # Add new
     r = app_client.post("/api/pour/", json=data, headers=headers)
@@ -44,6 +48,7 @@ def test_add(app_client):
     data2 = json.loads(r.text)
     assert data["pour"] == data2["pour"]
     assert data["volume"] == data2["volume"]
+    assert data["maxVolume"] == data2["maxVolume"]
     assert data["active"] == data2["active"]
 
     # Not using a number for index
@@ -62,6 +67,7 @@ def test_update(app_client):
     data = {
         "pour": 1.1,
         "volume": 1.2,
+        "maxVolume": 2,
         "batchId": 1,
         "active": True,
     }
@@ -81,3 +87,51 @@ def test_delete(app_client):
     assert r.status_code == 200
     data = json.loads(r.text)
     assert len(data) == 0
+
+
+def test_public(app_client):
+    data = {"pour": 0.1, "id": "1"}
+
+    # Add new
+    r = app_client.post("/api/pour/public", json=data, headers=headers)
+    assert r.status_code == 200
+    res = json.loads(r.text)
+
+    r2 = app_client.get(f"/api/pour/{res['id']}", headers=headers)
+    assert r2.status_code == 200
+    data2 = json.loads(r.text)
+    assert data["pour"] == data2["pour"]
+    assert True == data2["active"]
+
+    data = {"pour": 0.1, "id": "2"}
+
+    # Add new
+    r = app_client.post("/api/pour/public", json=data, headers=headers)
+    assert r.status_code == 404
+
+    data = {"volume": 0.1, "maxVolume": 1, "id": "1"}
+
+    # Add new
+    r = app_client.post("/api/pour/public", json=data, headers=headers)
+    assert r.status_code == 200
+    res = json.loads(r.text)
+
+    r2 = app_client.get(f"/api/pour/{res['id']}", headers=headers)
+    assert r2.status_code == 200
+    data2 = json.loads(r.text)
+    assert data["volume"] == data2["volume"]
+    assert data["maxVolume"] == data2["maxVolume"]
+
+    data = {"pour": 0.1, "volume": 10, "maxVolume": 20, "id": "1"}
+
+    # Add new
+    r = app_client.post("/api/pour/public", json=data, headers=headers)
+    assert r.status_code == 200
+    res = json.loads(r.text)
+
+    r2 = app_client.get(f"/api/pour/{res['id']}", headers=headers)
+    assert r2.status_code == 200
+    data2 = json.loads(r.text)
+    assert data["pour"] == data2["pour"]
+    assert data["volume"] == data2["volume"]
+    assert data["maxVolume"] == data2["maxVolume"]

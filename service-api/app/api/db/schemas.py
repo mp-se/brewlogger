@@ -1,6 +1,6 @@
 from datetime import datetime
 from typing import List, Optional
-from pydantic import BaseModel, Field, ConfigDict
+from pydantic import BaseModel, Field, ConfigDict, field_validator
 
 
 def to_camel(string: str) -> str:
@@ -21,16 +21,10 @@ class ProxyRequest(BaseModel):
     header: Optional[str]
 
 
-class Formula(BaseModel):
-    poly1: str
-    poly2: str
-    poly3: str
-    poly4: str
-
-
-class FormulaPoint(BaseModel):
-    a: float  # Angle
-    g: float  # Gravity
+class Mdns(BaseModel):
+    type: str
+    host: str
+    name: str
 
 
 class Job(BaseModel):
@@ -56,6 +50,17 @@ class BrewfatherBatch(BaseModel):
     fermentationSteps: str
 
 
+class TapListBatch(BaseModel):
+    name: str
+    brewDate: str
+    style: str
+    abv: float
+    ebc: float
+    ibu: float
+    id: int
+    brewfatherId: str
+
+
 ################################################################################
 
 
@@ -70,6 +75,9 @@ class BrewLoggerBase(BaseModel):
     )
     gravity_format: str = Field(
         min_length=0, max_length=2, description="Gravity format for presentation"
+    )
+    volume_format: str = Field(
+        min_length=0, max_length=2, description="Volume format for presentation"
     )
     version: str = Field(
         min_length=0, max_length=10, description="Database software version"
@@ -174,12 +182,8 @@ class DeviceBase(BaseModel):
     ble_color: str = Field(
         min_length=0, max_length=15, description="Bluetooth color (Gravitymon)"
     )
-    gravity_formula: str = Field(
-        min_length=0, max_length=100, description="Gravity formula (Gravitymon)"
-    )
-    gravity_poly: str = Field(
-        default="",
-        description="JSON document with gravity poly information (Gravitymon)",
+    collect_logs: bool = Field(
+        description="Collect logs from device"
     )
 
 
@@ -219,10 +223,10 @@ class GravityBase(BaseModel):
         description="If the gravity is active or not, active = shown in graphs"
     )
     chamber_temperature: Optional[float] = Field(
-        None, description="Chamber Temperature from Brewpi, value in C"
+        None, description="Chamber Temperature from Chamber Controller, value in C"
     )
     beer_temperature: Optional[float] = Field(
-        None, description="Beer Temperature from Brewpi, value in C"
+        None, description="Beer Temperature from Chamber Controller, value in C"
     )
 
 
@@ -276,8 +280,11 @@ class Pressure(PressureCreate):
 
 class PourBase(BaseModel):
     model_config = ConfigDict(alias_generator=to_camel, populate_by_name=True)
-    pour: float = Field(description="How much was poured from the device")
-    volume: float = Field(description="Total volume left in the device")
+    pour: float = Field(description="How much was poured from the device in liters")
+    volume: float = Field(description="Volume left in the device in liters")
+    max_volume: float = Field(
+        description="Total volume the container can hold in liters"
+    )
     created: Optional[datetime] | None = Field(
         default=None, description="If undefined the current time will be used"
     )
@@ -311,11 +318,20 @@ class BatchBase(BaseModel):
         min_length=0, max_length=80, description="Longer description of the batch"
     )
     chip_id: str = Field(
-        min_length=6, max_length=6, description="Chip id, must be 6 characters"
+        min_length=0, max_length=6, description="Chip id, 6 characters or empty"
     )
+
+    @field_validator("chip_id")
+    @classmethod
+    def validate_chip_id(cls, v: str) -> str:
+        if len(v) != 0 and len(v) != 6:
+            raise ValueError("chip_id must be zero or 6 characters long")
+        return v
+
     active: bool = Field(
         description="If the batch is active or not, active = can recive new gravity data"
     )
+    tap_list: bool = Field(description="If the batch should be visible in the tap list")
     brew_date: str = Field(
         min_length=0, max_length=20, description="When the brew date was"
     )
@@ -328,10 +344,10 @@ class BatchBase(BaseModel):
         min_length=0, max_length=30, description="ID used in brewfather"
     )
     fermentation_chamber: Optional[int] = Field(
-        None, description="Device Index of the fermentation chamber (Brewpi)"
+        None, description="Device Index of the fermentation chamber (Chamber Controller)"
     )
     fermentation_steps: Optional[str] = Field(
-        None, description="JSON document with fermentation steps (Brewpi)"
+        None, description="JSON document with fermentation steps (Chamber Controller)"
     )
 
 

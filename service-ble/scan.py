@@ -16,7 +16,7 @@ from bleak.backends.scanner import AdvertisementData
 logger = logging.getLogger("tilt")
 
 
-endpoint = "http://" + os.getenv("API_URL") + "/api/gravity/public"
+endpoint = "http://" + os.getenv("API_HOST") + "/api/gravity/public"
 headers = {
     "Content-Type": "application/json",
 }
@@ -165,9 +165,7 @@ async def parse_gravitymon(device: BLEDevice):
                                         )
                                         logger.info(f"Response {r}.")
                                     except Exception as e:
-                                        logger.error(
-                                            f"Failed to post data, Error: {e}"
-                                        )
+                                        logger.error(f"Failed to post data, Error: {e}")
 
                             except Exception as e:
                                 logger.error(f"Failed to read data, Error: {e}")

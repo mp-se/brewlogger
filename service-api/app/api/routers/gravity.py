@@ -3,7 +3,7 @@ import json
 from datetime import datetime
 from json.decoder import JSONDecodeError
 from typing import List, Optional
-from fastapi import Depends, Request
+from fastapi import Depends, Request, BackgroundTasks
 from fastapi.routing import APIRouter
 from starlette.exceptions import HTTPException
 from api.db import models, schemas
@@ -17,7 +17,7 @@ from api.services import (
 )
 from ..security import api_key_auth
 from ..cache import existKey, readKey, writeKey
-from ..poly import create_formula
+from ..ws import notifyClients
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/api/gravity")
@@ -59,13 +59,16 @@ async def get_gravity_by_id(
 )
 async def create_gravity(
     gravity: schemas.GravityCreate,
+    background_tasks: BackgroundTasks,
     gravity_service: GravityService = Depends(get_gravity_service),
 ) -> models.Gravity:
     logger.info("Endpoint POST /api/gravity/")
     if gravity.created is None:
         gravity.created = datetime.now()
         logger.info(f"Added timestamp to gravity record {gravity.created}")
-    return gravity_service.create(gravity)
+    gravity = gravity_service.create(gravity)
+    background_tasks.add_task(notifyClients, "batch", "update", gravity.batch_id)
+    return gravity
 
 
 @router.post(
@@ -77,10 +80,13 @@ async def create_gravity(
 )
 async def create_gravity_list(
     gravity_list: List[schemas.GravityCreate],
+    background_tasks: BackgroundTasks,
     gravity_service: GravityService = Depends(get_gravity_service),
 ) -> List[models.Gravity]:
     logger.info("Endpoint GET /api/gravity/list/")
-    return gravity_service.createList(gravity_list)
+    gravity_list = gravity_service.createList(gravity_list)
+    background_tasks.add_task(notifyClients, "batch", "update", gravity_list[0].batch_id)
+    return gravity_list
 
 
 @router.patch(
@@ -91,23 +97,31 @@ async def create_gravity_list(
 async def update_gravity_by_id(
     gravity_id: int,
     gravity: schemas.GravityUpdate,
+    background_tasks: BackgroundTasks,
     gravity_service: GravityService = Depends(get_gravity_service),
 ) -> Optional[models.Gravity]:
     logger.info(f"Endpoint PATCH /api/gravity/{gravity_id}")
-    return gravity_service.update(gravity_id, gravity)
+    gravity = gravity_service.update(gravity_id, gravity)
+    background_tasks.add_task(notifyClients, "batch", "update", gravity.batch_id)
+    return gravity
 
 
 @router.delete("/{gravity_id}", status_code=204, dependencies=[Depends(api_key_auth)])
 async def delete_gravity_by_id(
-    gravity_id: int, gravity_service: GravityService = Depends(get_gravity_service)
+    gravity_id: int, 
+    background_tasks: BackgroundTasks,
+    gravity_service: GravityService = Depends(get_gravity_service)
 ):
     logger.info(f"Endpoint DELETE /api/gravity/{gravity_id}")
+    gravity = gravity_service.get(gravity_id)
+    background_tasks.add_task(notifyClients, "batch", "update", gravity.batch_id)
     gravity_service.delete(gravity_id)
 
 
 @router.post("/public", status_code=200)
 async def create_gravity_using_ispindel_format(
     request: Request,
+    background_tasks: BackgroundTasks,
     gravity_service: GravityService = Depends(get_gravity_service),
     batch_service: BatchService = Depends(get_batch_service),
     device_service: DeviceService = Depends(get_device_service),
@@ -164,9 +178,11 @@ async def create_gravity_using_ispindel_format(
                 ibu=0.0,
                 # fermentation_chamber=None, # This is optional and should be assigned in UI
                 fermentation_steps="",
+                tap_list=True,
             )
-            batch_service.create(batch)
+            batch = batch_service.create(batch)
             batchList = batch_service.search_chipId_active(req_json["ID"], True)
+            background_tasks.add_task(notifyClients, "batch", "create", batch.id)
 
         if len(batchList) == 0:
             raise HTTPException(status_code=409, detail="No batch found")
@@ -184,10 +200,10 @@ async def create_gravity_using_ispindel_format(
                 bleColor="",
                 url="",
                 description="",
-                gravityFormula="",
-                gravityPoly="",
+                collectLogs=False,
             )
-            device_service.create(device)
+            device = device_service.create(device)
+            background_tasks.add_task(notifyClients, "device", "create", device.id)
 
         chamberId = batchList[0].fermentation_chamber
 
@@ -208,13 +224,13 @@ async def create_gravity_using_ispindel_format(
             active=True,
         )
 
-        # If there is a tagged brewpi device lets use the value from that
+        # If there is a tagged chamber controller device lets use the value from that
         if chamberId is not None and chamberId > 1:
-            key = "brewpi_" + str(chamberId) + "_beer_temp"
+            key = "chamber_" + str(chamberId) + "_beer_temp"
             if existKey(key):
                 beerTemp = readKey(key)
                 gravity.beer_temperature = float(beerTemp)
-            key = "brewpi_" + str(chamberId) + "_fridge_temp"
+            key = "chamber_" + str(chamberId) + "_fridge_temp"
             if existKey(key):
                 chamberTemp = readKey(key)
                 gravity.chamber_temperature = float(chamberTemp)
@@ -230,6 +246,7 @@ async def create_gravity_using_ispindel_format(
             )  # SG = 1+ (plato / (258.6 – ((plato/258.2) *227.1)))
 
         g = gravity_service.create(gravity)
+        background_tasks.add_task(notifyClients, "batch", "update", g.batch_id)
 
         # Save the record in redis for background job to forward
         if len(deviceList) > 0:
@@ -245,26 +262,3 @@ async def create_gravity_using_ispindel_format(
     except JSONDecodeError as e:
         logging.error(e)
         raise HTTPException(status_code=422, detail="Unable to parse request")
-
-
-@router.post(
-    "/calculate/",
-    response_model=schemas.Formula,
-    status_code=200,
-    dependencies=[Depends(api_key_auth)],
-)
-async def create_gravity_formula(
-    point_list: List[schemas.FormulaPoint],
-):
-    logger.info("Endpoint GET /api/gravity/calculate/")
-
-    if len(point_list) < 2:
-        raise HTTPException(
-            status_code=400, detail="Too few values to calculate formula"
-        )
-
-    poly1 = create_formula(1, point_list)
-    poly2 = create_formula(2, point_list)
-    poly3 = create_formula(3, point_list)
-    poly4 = create_formula(4, point_list)
-    return schemas.Formula(poly1=poly1, poly2=poly2, poly3=poly3, poly4=poly4)

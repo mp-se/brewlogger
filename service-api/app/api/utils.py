@@ -33,6 +33,7 @@ def load_settings():
                     temperature_format="C",
                     pressure_format="PSI",
                     gravity_format="SG",
+                    volume_format="L",
                     dark_mode=False,
                     gravityForwardUrl="",
                 )
