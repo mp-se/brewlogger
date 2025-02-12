@@ -2,7 +2,7 @@ import logging
 from datetime import datetime
 from json.decoder import JSONDecodeError
 from typing import List, Optional
-from fastapi import Depends, Request
+from fastapi import Depends, Request, BackgroundTasks
 from fastapi.routing import APIRouter
 from starlette.exceptions import HTTPException
 from api.db import models, schemas
@@ -15,6 +15,7 @@ from api.services import (
     get_device_service,
 )
 from ..security import api_key_auth
+from ..ws import notifyClients
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/api/pressure")
@@ -55,14 +56,16 @@ async def get_pressure_by_id(
 )
 async def create_pressure(
     pressure: schemas.PressureCreate,
+    background_tasks: BackgroundTasks,
     pressure_service: PressureService = Depends(get_pressure_service),
 ) -> models.Pressure:
     logger.info("Endpoint POST /api/pressure/")
     if pressure.created is None:
         pressure.created = datetime.now()
         logger.info("Added timestamp to pressure record %s", pressure.created)
-    return pressure_service.create(pressure)
-
+    pressure = pressure_service.create(pressure)
+    background_tasks.add_task(notifyClients, "batch", "update", pressure.batch_id)
+    return pressure 
 
 @router.post(
     "/list/",
@@ -73,10 +76,13 @@ async def create_pressure(
 )
 async def create_pressure_list(
     pressure_list: List[schemas.PressureCreate],
+    background_tasks: BackgroundTasks,
     pressure_service: PressureService = Depends(get_pressure_service),
 ) -> List[models.Pressure]:
     logger.info("Endpoint POST /api/pressure/list/")
-    return pressure_service.createList(pressure_list)
+    pressure_list = pressure_service.createList(pressure_list)
+    background_tasks.add_task(notifyClients, "batch", "update", pressure_list[0].batch_id)
+    return pressure_list 
 
 
 @router.patch(
@@ -87,17 +93,24 @@ async def create_pressure_list(
 async def update_pressure_by_id(
     pressure_id: int,
     pressure: schemas.PressureUpdate,
+    background_tasks: BackgroundTasks,
     pressure_service: PressureService = Depends(get_pressure_service),
 ) -> Optional[models.Pressure]:
     logger.info("Endpoint PATCH /api/pressure/%d", pressure_id)
-    return pressure_service.update(pressure_id, pressure)
+    pressure = pressure_service.update(pressure_id, pressure)
+    background_tasks.add_task(notifyClients, "batch", "update", pressure.batch_id)
+    return pressure 
 
 
 @router.delete("/{pressure_id}", status_code=204, dependencies=[Depends(api_key_auth)])
 async def delete_pressure_by_id(
-    pressure_id: int, pressure_service: PressureService = Depends(get_pressure_service)
+    pressure_id: int, 
+    background_tasks: BackgroundTasks,
+    pressure_service: PressureService = Depends(get_pressure_service)
 ):
     logger.info("Endpoint DELETE /api/pressure/%d", pressure_id)
+    pressure = pressure_service.get(pressure_id)
+    background_tasks.add_task(notifyClients, "batch", "update", pressure.batch_id)
     pressure_service.delete(pressure_id)
 
 
@@ -106,6 +119,7 @@ async def delete_pressure_by_id(
              status_code=200)
 async def create_pressure_using_json(
     request: Request,
+    background_tasks: BackgroundTasks,
     pressure_service: PressureService = Depends(get_pressure_service),
     batch_service: BatchService = Depends(get_batch_service),
     device_service: DeviceService = Depends(get_device_service),
@@ -137,7 +151,8 @@ async def create_pressure_using_json(
                 # fermentation_chamber=None, # This is optional and should be assigned in UI
                 tapList=True,
             )
-            batch_service.create(batch)
+            batch = batch_service.create(batch)
+            background_tasks.add_task(notifyClients, "batch", "create", batch.id)
             batchList = batch_service.search_chipId_active(chipId, True)
 
         if len(batchList) == 0:
@@ -158,7 +173,8 @@ async def create_pressure_using_json(
                 description="",
                 collectLogs=False,
             )
-            device_service.create(device)
+            device = device_service.create(device)
+            background_tasks.add_task(notifyClients, "device", "create", device.id)
 
         """ Example payload from pressuremon v0.4
         {
@@ -197,7 +213,9 @@ async def create_pressure_using_json(
         if json["pressure_units"] == "HPA":
             pressure.pressure = pressure.pressure / 68.947572932
 
-        return pressure_service.create(pressure)
+        pressure = pressure_service.create(pressure)
+        background_tasks.add_task(notifyClients, "batch", "update", pressure.batch_id)
+        return pressure 
 
     except JSONDecodeError:
         raise HTTPException(status_code=422, detail="Unable to parse request")
