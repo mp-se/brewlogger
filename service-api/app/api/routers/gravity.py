@@ -85,7 +85,9 @@ async def create_gravity_list(
 ) -> List[models.Gravity]:
     logger.info("Endpoint GET /api/gravity/list/")
     gravity_list = gravity_service.createList(gravity_list)
-    background_tasks.add_task(notifyClients, "batch", "update", gravity_list[0].batch_id)
+    background_tasks.add_task(
+        notifyClients, "batch", "update", gravity_list[0].batch_id
+    )
     return gravity_list
 
 
@@ -108,9 +110,9 @@ async def update_gravity_by_id(
 
 @router.delete("/{gravity_id}", status_code=204, dependencies=[Depends(api_key_auth)])
 async def delete_gravity_by_id(
-    gravity_id: int, 
+    gravity_id: int,
     background_tasks: BackgroundTasks,
-    gravity_service: GravityService = Depends(get_gravity_service)
+    gravity_service: GravityService = Depends(get_gravity_service),
 ):
     logger.info(f"Endpoint DELETE /api/gravity/{gravity_id}")
     gravity = gravity_service.get(gravity_id)
@@ -235,14 +237,18 @@ async def create_gravity_using_ispindel_format(
                 chamberTemp = readKey(key)
                 gravity.chamber_temperature = float(chamberTemp)
 
-        if req_json["temp_units"] == "F":
-            gravity.temperature = (
-                (gravity.temperature - 32) * 5 / 9
+        if req_json["temp_units"].upper() == "F":
+            gravity.temperature = float(
+                "%.2f" % ((gravity.temperature - 32) * 5 / 9)
             )  # °C = (°F − 32) x 5/9
 
-        if gravity_units == "P":
-            gravity.gravity = 1 + (
-                gravity.gravity / (258.6 - ((gravity.gravity / 258.2) * 227.1))
+        if gravity_units.upper() == "P":
+            gravity.gravity = float(
+                "%.4f"
+                % (
+                    1
+                    + (gravity.gravity / (258.6 - ((gravity.gravity / 258.2) * 227.1)))
+                )
             )  # SG = 1+ (plato / (258.6 – ((plato/258.2) *227.1)))
 
         g = gravity_service.create(gravity)

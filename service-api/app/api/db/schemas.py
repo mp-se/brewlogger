@@ -182,9 +182,7 @@ class DeviceBase(BaseModel):
     ble_color: str = Field(
         min_length=0, max_length=15, description="Bluetooth color (Gravitymon)"
     )
-    collect_logs: bool = Field(
-        description="Collect logs from device"
-    )
+    collect_logs: bool = Field(description="Collect logs from device")
 
 
 class DeviceUpdate(DeviceBase):
@@ -250,7 +248,8 @@ class PressureBase(BaseModel):
     model_config = ConfigDict(alias_generator=to_camel, populate_by_name=True)
 
     temperature: float = Field(description="Temperature value in C")
-    pressure: float = Field(description="Measured pressure in hPA")
+    pressure: float = Field(description="Measured pressure in kPa")
+    pressure1: float = Field(description="Measured pressure1 in kPa")
     battery: float = Field(description="Battery voltage")
     rssi: float = Field(description="WIFI signal strenght")
     run_time: float = Field(description="Number of seconds the execution took")
@@ -344,7 +343,8 @@ class BatchBase(BaseModel):
         min_length=0, max_length=30, description="ID used in brewfather"
     )
     fermentation_chamber: Optional[int] = Field(
-        None, description="Device Index of the fermentation chamber (Chamber Controller)"
+        None,
+        description="Device Index of the fermentation chamber (Chamber Controller)",
     )
     fermentation_steps: Optional[str] = Field(
         None, description="JSON document with fermentation steps (Chamber Controller)"

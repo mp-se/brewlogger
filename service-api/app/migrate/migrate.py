@@ -39,24 +39,25 @@ def migrate_database():
     while not connectionReady:
         with engine.connect() as con:
             try:
-                print(f"Checking for database to update")
+                print("Checking for database to update")
                 con.execute(text("SELECT * FROM brewlogger"))
                 con.commit()
                 connectionReady = True
-            except OperationalError as e:
+            except OperationalError:
                 con.rollback()
-            except UndefinedTable as e:
+            except UndefinedTable:
                 con.rollback()
                 print("Table does not exist, database not initialized yet, exiting.")
                 return
-            except Exception as e:
+            except Exception:
                 con.rollback()
-                print("Unable to search database, probably not created so there is nothing to update.")
+                print(
+                    "Unable to search database, probably not created so there is nothing to update."
+                )
                 return
 
         print("Waiting for database to become available.")
         time.sleep(1)
-
 
     print("Running postgres sql commands to migrate database from v0.5 to v0.7")
     return
@@ -105,6 +106,10 @@ def migrate_database():
         "ALTER TABLE device ADD COLUMN collect_logs BOOLEAN",
         "UPDATE device SET collect_logs = false WHERE collect_logs IS NULL",
         "ALTER TABLE device ALTER COLUMN collect_logs SET NOT NULL",
+        # Changes from v0.8 -> v0.9
+        "ALTER TABLE pressure ADD COLUMN pressure1 FLOAT",
+        "UPDATE pressure SET pressure1 = 0 WHERE pressure1 IS NULL",
+        "ALTER TABLE pressure ALTER COLUMN pressure1 SET NOT NULL",
     ]
 
     with engine.connect() as con:

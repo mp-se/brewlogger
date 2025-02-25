@@ -112,14 +112,18 @@ async def websocket_endpoint(websocket: WebSocket):
         logger.info("Client disconnected")
 
 
-@router.post("/mdns",status_code=201, dependencies=[Depends(api_key_auth)])
+@router.post("/mdns", status_code=201, dependencies=[Depends(api_key_auth)])
 async def add_mdns_to_cache(mdns: schemas.Mdns) -> None:
     logger.info("Endpoint POST /api/system/mdns")
 
     try:
         logger.info(f"Caching mdns for {mdns.name}")
         key = mdns.host + mdns.type
-        writeKey(key, json.dumps({ "type": mdns.type, "host": mdns.host, "name": mdns.name }), ttl=900)
+        writeKey(
+            key,
+            json.dumps({"type": mdns.type, "host": mdns.host, "name": mdns.name}),
+            ttl=900,
+        )
     except JSONDecodeError:
         logger.error(f"Unable to parse JSON response {mdns}")
 

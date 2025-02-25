@@ -73,6 +73,7 @@ def register_handlers(app):
             content=content, status_code=status.HTTP_422_UNPROCESSABLE_ENTITY
         )
 
+
 logger.info("Creating FastAPI application and registering routers.")
 settings = get_settings()
 app = FastAPI(

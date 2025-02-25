@@ -101,7 +101,7 @@ def test_public(app_client):
     assert r2.status_code == 200
     data2 = json.loads(r.text)
     assert data["pour"] == data2["pour"]
-    assert True == data2["active"]
+    assert data2["active"] is True
 
     data = {"pour": 0.1, "id": "2"}
 

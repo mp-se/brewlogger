@@ -39,7 +39,8 @@ async def chamberctrl_temps(url):
 
         except JSONDecodeError:
             system_log_fermentationcontrol(
-                f"Failed to parse temps from chamber controller {url}, JSONDecodeError", 0
+                f"Failed to parse temps from chamber controller {url}, JSONDecodeError",
+                0,
             )
             logger.error(f"Unable to parse JSON response {url}")
         except httpx.ReadTimeout:
@@ -59,9 +60,12 @@ async def chamberctrl_temps(url):
             logger.error(f"Unable to connect to device {url}")
     else:
         system_log_fermentationcontrol(
-            "chamber controller device has no defined URL, unable to fetch temperatures", 0
+            "chamber controller device has no defined URL, unable to fetch temperatures",
+            0,
         )
-        logger.error("chamber controller device has no defined url, unable to fetch temperatures.")
+        logger.error(
+            "chamber controller device has no defined url, unable to fetch temperatures."
+        )
 
     return None
 
@@ -70,10 +74,7 @@ async def chamberctrl_set_fridge_temp(url, temp, chipid):
     logger.info(f"Set fridge temperature {url}, {temp}, {chipid}")
 
     timeout = httpx.Timeout(10.0, connect=10.0, read=10.0)
-    headers = {
-        "Content-Type": "application/json",
-        "Authorization": "Bearer " + chipid
-    }
+    headers = {"Content-Type": "application/json", "Authorization": "Bearer " + chipid}
 
     if url != "http://" and url != "https://" and url != "":
         if not url.endswith("/"):
@@ -104,7 +105,8 @@ async def chamberctrl_set_fridge_temp(url, temp, chipid):
 
         except JSONDecodeError:
             system_log_fermentationcontrol(
-                f"Failed to parse temps from chamber controller {url}, JSONDecodeError", 0
+                f"Failed to parse temps from chamber controller {url}, JSONDecodeError",
+                0,
             )
             logger.error(f"Unable to parse JSON response {url}")
         except httpx.ReadTimeout:
@@ -124,8 +126,11 @@ async def chamberctrl_set_fridge_temp(url, temp, chipid):
             logger.error(f"Unable to connect to device {url}")
     else:
         system_log_fermentationcontrol(
-            "Chamber controller device has no defined URL, unable to fetch temperatures", 0
+            "Chamber controller device has no defined URL, unable to fetch temperatures",
+            0,
         )
-        logger.error("Chamber controller device has no defined url, unable to fetch temperatures.")
+        logger.error(
+            "Chamber controller device has no defined url, unable to fetch temperatures."
+        )
 
     return False

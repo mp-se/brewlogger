@@ -200,6 +200,12 @@ def test_public(app_client):
     data2 = json.loads(r.text)
     print(data2)
     assert len(data2) == 1
+    assert data2[0]["gravity"][0]["gravity"] == 1.05
+    assert data2[0]["gravity"][0]["angle"] == 34.45
+    assert data2[0]["gravity"][0]["battery"] == 3.85
+    assert data2[0]["gravity"][0]["rssi"] == -76.2
+    assert data2[0]["gravity"][0]["runTime"] == 0.0
+    assert data2[0]["gravity"][0]["temperature"] == 20.2
 
     data["ID"] = "AAAAA2"
     r = app_client.post("/api/gravity/public", json=data)
@@ -219,7 +225,7 @@ def test_public(app_client):
         "interval": 1,
         "temperature": 56.2,
         "temp_units": "F",
-        "gravity": 5.0,
+        "gravity": 5,
         "angle": 34.45,
         "gravity_units": "P",
         "battery": 3.85,
@@ -227,6 +233,12 @@ def test_public(app_client):
     }
     r = app_client.post("/api/gravity/public", json=data)
     assert r.status_code == 200
+    assert data2[0]["gravity"][0]["gravity"] == 1.05
+    assert data2[0]["gravity"][0]["angle"] == 34.45
+    assert data2[0]["gravity"][0]["battery"] == 3.85
+    assert data2[0]["gravity"][0]["rssi"] == -76.2
+    assert data2[0]["gravity"][0]["runTime"] == 0.0
+    assert data2[0]["gravity"][0]["temperature"] == 20.2
 
 
 def test_public2(app_client):

@@ -38,6 +38,7 @@ def test_add(app_client):
         "batchId": 1,
         "temperature": 0,
         "pressure": 0.3,
+        "pressure1": 0.4,
         "battery": 0.5,
         "rssi": 0.6,
         "runTime": 0.8,
@@ -56,6 +57,7 @@ def test_add(app_client):
     data2 = json.loads(r.text)
     assert data["temperature"] == data2["temperature"]
     assert data["pressure"] == data2["pressure"]
+    assert data["pressure1"] == data2["pressure1"]
     assert data["battery"] == data2["battery"]
     assert data["rssi"] == data2["rssi"]
     assert data["runTime"] == data2["runTime"]
@@ -77,6 +79,7 @@ def test_update(app_client):
     data = {
         "temperature": 0,
         "pressure": 1.3,
+        "pressure1": 2.3,
         "battery": 1.5,
         "rssi": 1.6,
         "runTime": 1.8,
@@ -93,6 +96,7 @@ def test_update(app_client):
     data2 = json.loads(r.text)
     assert data["temperature"] == data2["temperature"]
     assert data["pressure"] == data2["pressure"]
+    assert data["pressure1"] == data2["pressure1"]
     assert data["battery"] == data2["battery"]
     assert data["rssi"] == data2["rssi"]
     assert data["runTime"] == data2["runTime"]
@@ -120,6 +124,7 @@ def test_pressure_batch(app_client):
         "batchId": 1,
         "temperature": 0,
         "pressure": 0.3,
+        "pressure1": 0.5,
         "battery": 0.5,
         "rssi": 0.6,
         "runTime": 0.8,
@@ -146,10 +151,10 @@ def test_public(app_client):
         "token": "",
         "interval": 0,
         "id": "EEEEE1",
-        "temp": 0,
-        "temp_units": "C",
+        "temperature": 0,
+        "temp_unit": "C",
         "pressure": 1.05,
-        "pressure_units": "hpa",
+        "pressure_unit": "kPa",
         "battery": 3.85,
         "rssi": -76.2,
         "run-time": 1.0,
@@ -162,6 +167,13 @@ def test_public(app_client):
     assert r.status_code == 200
     data2 = json.loads(r.text)
     assert len(data2) == 1
+    print(data2)
+    assert data2[0]["pressure"][0]["pressure"] == 1.05
+    assert data2[0]["pressure"][0]["pressure1"] == 0.0
+    assert data2[0]["pressure"][0]["battery"] == 3.85
+    assert data2[0]["pressure"][0]["rssi"] == -76.2
+    assert data2[0]["pressure"][0]["runTime"] == 1.0
+    assert data2[0]["pressure"][0]["temperature"] == 0.0
 
     data["id"] = "EEEEE2"
     r = app_client.post("/api/pressure/public", json=data)
@@ -172,6 +184,66 @@ def test_public(app_client):
     assert r.status_code == 200
     data2 = json.loads(r.text)
     assert len(data2) == 1
+
+    data = {
+        "name": "012345",
+        "token": "",
+        "interval": 0,
+        "id": "EEEEE3",
+        "temperature": 10,
+        "temp_unit": "C",
+        "pressure": 1.15,
+        "pressure1": 1.25,
+        "pressure_unit": "PSI",
+        "battery": 3.85,
+        "rssi": -72.2,
+        "run-time": 1.1,
+    }
+    r = app_client.post("/api/pressure/public", json=data)
+    assert r.status_code == 200
+
+    # Check relation to batch
+    r = app_client.get("/api/batch/?chipId=EEEEE3", headers=headers)
+    assert r.status_code == 200
+    data2 = json.loads(r.text)
+    assert len(data2) == 1
+    print(data2)
+    assert data2[0]["pressure"][0]["pressure"] == 7.929
+    assert data2[0]["pressure"][0]["pressure1"] == 8.6184
+    assert data2[0]["pressure"][0]["battery"] == 3.85
+    assert data2[0]["pressure"][0]["rssi"] == -72.2
+    assert data2[0]["pressure"][0]["runTime"] == 1.1
+    assert data2[0]["pressure"][0]["temperature"] == 10.0
+
+    data = {
+        "name": "012345",
+        "token": "",
+        "interval": 0,
+        "id": "EEEEE4",
+        "temperature": 10,
+        "temp_unit": "F",
+        "pressure": 1.15,
+        "pressure1": 1.25,
+        "pressure_unit": "Bar",
+        "battery": 3.85,
+        "rssi": -72.2,
+        "run-time": 1.1,
+    }
+    r = app_client.post("/api/pressure/public", json=data)
+    assert r.status_code == 200
+
+    # Check relation to batch
+    r = app_client.get("/api/batch/?chipId=EEEEE4", headers=headers)
+    assert r.status_code == 200
+    data2 = json.loads(r.text)
+    assert len(data2) == 1
+    print(data2)
+    assert data2[0]["pressure"][0]["pressure"] == 1150
+    assert data2[0]["pressure"][0]["pressure1"] == 1250
+    assert data2[0]["pressure"][0]["battery"] == 3.85
+    assert data2[0]["pressure"][0]["rssi"] == -72.2
+    assert data2[0]["pressure"][0]["runTime"] == 1.1
+    assert data2[0]["pressure"][0]["temperature"] == -12.22
 
 
 def test_validation(app_client):

@@ -120,8 +120,12 @@ class Gravity(Base):
     run_time = Column(Float, nullable=False)
 
     # Data from chamber controller
-    beer_temperature = Column(Float, nullable=True)  # Temperature from chamber controller
-    chamber_temperature = Column(Float, nullable=True)  # Temperature from chamber controller
+    beer_temperature = Column(
+        Float, nullable=True
+    )  # Temperature from chamber controller
+    chamber_temperature = Column(
+        Float, nullable=True
+    )  # Temperature from chamber controller
 
     # Internal
     created = Column(DateTime, nullable=False)
@@ -137,6 +141,7 @@ class Pressure(Base):
     id = Column(Integer, primary_key=True, index=True, nullable=False)
     temperature = Column(Float, nullable=False)
     pressure = Column(Float, nullable=False)
+    pressure1 = Column(Float, nullable=False)
     battery = Column(Float, nullable=False)
     rssi = Column(Float, nullable=False)
     run_time = Column(Float, nullable=False)

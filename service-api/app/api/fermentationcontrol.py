@@ -40,4 +40,6 @@ async def fermentation_controller_run(curr_date):
                         logger.info(
                             f"Setting new target temperature to {step.temp}, current {res['pid_fridge_target_temp']}"
                         )
-                        await chamberctrl_set_fridge_temp(url, step.temp, device.chip_id)
+                        await chamberctrl_set_fridge_temp(
+                            url, step.temp, device.chip_id
+                        )

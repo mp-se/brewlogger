@@ -1,7 +1,6 @@
 import asyncio
 import logging
 import time
-import json
 import os
 import requests
 from typing import Optional, cast
@@ -16,7 +15,7 @@ ALL_SERVICES = [
     "_kegmon._tcp.local.",
     "_chamberctl._tcp.local.",
     # "_http._tcp.local.",
-    # "_espfwk._tcp.local." 
+    # "_espfwk._tcp.local."
     # "_airplay._tcp.local."
 ]
 
@@ -26,6 +25,7 @@ scan_result = []
 # Configuration
 web_host = ""
 api_key = ""
+
 
 async def scan_for_mdns(timeout):
     logger.info(f"Scanning for mdns devices, timout {timeout}")
@@ -99,10 +99,7 @@ async def task_scan_mdns():
     mdns_list = await scan_for_mdns(20)
 
     endpoint = "http://" + web_host + "/api/system/mdns"
-    headers = {
-        "Content-Type": "application/json",
-        "Authorization": "Bearer " + api_key 
-    }
+    headers = {"Content-Type": "application/json", "Authorization": "Bearer " + api_key}
 
     for mdns in mdns_list:
         try:
@@ -114,8 +111,9 @@ async def task_scan_mdns():
 
 
 async def main():
-    while(True):
+    while True:
         await task_scan_mdns()
+
 
 if __name__ == "__main__":
     logging.basicConfig(

@@ -40,9 +40,12 @@ This is a short list of features that has been implemented into the Brewlogger s
   - Feature: Adding option to disable individual pour records
   - Bug: Fixed problem with not beeing able to create a batch without connected gravity device.
   - Feature: Refactor mDNS repeater to use AVAHI driver instead. mDNS container will now scan and store results in the Redis Cache.
-  - Bug: Not able to store changes when a record has just been created. 
+  - Bug: Not able to store changes when a record has just been created.
   - Feature: Adding log collection and presentation using websocket interface
   - Feature: Supporting Chamber Controller project and fermentation profiles from brewfather
+
+- 0.9.0 Updated with new features
+  - Feature: Added support for pressuremon and new post format
 
 ## Installation
 
@@ -57,7 +60,7 @@ It consists of the following containers.
 - **brewlogger-mdns** [Optional]; Scans for mDNS devices on the local network and stores these in the Redis Cache for consumption by the API. If not deployed discovery of brewing devices will not work. This container will need to run on the host networks and will update the cache via the web/api server.
 - **brewlogger-ble** [Optional]; BLE scanner that forwards data to the Server API's. If not deployed BLE data from GravityMon will not be captured. An option is to use GravityMon-Gatway instead.
 - **brewlogger-pgadmin** [Optional]; Postgres Admin application. Only needed if you want to interact directly with the postgres application
-- **brewlogger-log** [Optional]; Used for collecting logs from devices 
+- **brewlogger-log** [Optional]; Used for collecting logs from devices
 
 ### Docker-compose.yaml
 

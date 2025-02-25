@@ -209,7 +209,7 @@ def test_validation(app_client):
 
     data = {
         "name": "f1",
-        "chipId": "23", # Failure point
+        "chipId": "23",  # Failure point
         "description": "f3",
         "brewDate": "f4",
         "style": "f5",

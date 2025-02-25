@@ -35,7 +35,9 @@ async def task_fetch_chamberctrl_temps():
         if url != "":
             res = await chamberctrl_temps(url)
             if res is not None:
-                logger.info(f'Chamber controller temps, beer={res["pid_beer_temp"]}, chamber={res["pid_fridge_temp"]}')
+                logger.info(
+                    f'Chamber controller temps, beer={res["pid_beer_temp"]}, chamber={res["pid_fridge_temp"]}'
+                )
                 key = "chamber_" + str(device.id) + "_beer_temp"
                 writeKey(key, res["pid_beer_temp"], ttl=300)
                 key = "chamber_" + str(device.id) + "_fridge_temp"
