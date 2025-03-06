@@ -128,9 +128,11 @@ async def create_pressure_using_json(
     logger.info("Endpoint POST /api/pressure/public")
 
     try:
-        json = await request.json()
+        req_json = await request.json()
 
-        chipId = json["id"]
+        logger.info(f"Payload: {req_json}")
+
+        chipId = req_json["id"]
 
         # Check if there is an active batch
         batchList = batch_service.search_chipId_active(chipId, True)
@@ -195,31 +197,31 @@ async def create_pressure_using_json(
 
         pressure1 = 0.0
 
-        if "pressure1" in json:  # Pressure 1 is optional
-            pressure1 = json["pressure1"]
+        if "pressure1" in req_json:  # Pressure 1 is optional
+            pressure1 = req_json["pressure1"]
 
         pressure = schemas.PressureCreate(
-            temperature=json["temperature"],
-            pressure=json["pressure"],
+            temperature=req_json["temperature"],
+            pressure=req_json["pressure"],
             pressure1=pressure1,
-            battery=json["battery"],
-            rssi=json["rssi"],
-            run_time=json["run-time"],
+            battery=req_json["battery"],
+            rssi=req_json["rssi"],
+            run_time=req_json["run-time"],
             batch_id=batchList[0].id,
             created=datetime.now(),
             active=True,
         )
 
-        if json["temp_unit"].upper() == "F":
+        if req_json["temperature-unit"].upper() == "F":
             pressure.temperature = float(
                 "%.2f" % ((pressure.temperature - 32) * 5 / 9)
             )  # °C = (°F − 32) x 5/9
 
-        if json["pressure_unit"].upper() == "BAR":
+        if req_json["pressure-unit"].upper() == "BAR":
             pressure.pressure = float("%.4f" % (pressure.pressure * 1000))
             pressure.pressure1 = float("%.4f" % (pressure.pressure1 * 1000))
 
-        if json["pressure_unit"].upper() == "PSI":
+        if req_json["pressure-unit"].upper() == "PSI":
             pressure.pressure = float("%.4f" % (pressure.pressure * 6.89476))
             pressure.pressure1 = float("%.4f" % (pressure.pressure1 * 6.89476))
 

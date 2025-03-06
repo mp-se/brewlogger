@@ -59,8 +59,8 @@ def migrate_database():
         print("Waiting for database to become available.")
         time.sleep(1)
 
-    print("Running postgres sql commands to migrate database from v0.5 to v0.7")
-    return
+    print("Running postgres sql commands to migrate database from v0.5 to v0.9")
+    # return
 
     db_updates = [
         # Changes from v0.4
