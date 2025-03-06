@@ -316,15 +316,25 @@ class BatchBase(BaseModel):
     description: str = Field(
         min_length=0, max_length=80, description="Longer description of the batch"
     )
-    chip_id: str = Field(
+    chip_id_gravity: str = Field(
+        min_length=0, max_length=6, description="Chip id, 6 characters or empty"
+    )
+    chip_id_pressure: str = Field(
         min_length=0, max_length=6, description="Chip id, 6 characters or empty"
     )
 
-    @field_validator("chip_id")
+    @field_validator("chip_id_gravity")
     @classmethod
-    def validate_chip_id(cls, v: str) -> str:
+    def validate_gravity_chip_id(cls, v: str) -> str:
         if len(v) != 0 and len(v) != 6:
-            raise ValueError("chip_id must be zero or 6 characters long")
+            raise ValueError("chip_id_gravity must be zero or 6 characters long")
+        return v
+
+    @field_validator("chip_id_pressure")
+    @classmethod
+    def validate_pressure_chip_id(cls, v: str) -> str:
+        if len(v) != 0 and len(v) != 6:
+            raise ValueError("chip_id_gravity must be zero or 6 characters long")
         return v
 
     active: bool = Field(
@@ -375,7 +385,10 @@ class BatchDashboard(BaseModel):
     name: str = Field(
         min_length=0, max_length=40, description="Short name of the batch"
     )
-    chip_id: str = Field(
+    chip_id_gravity: str = Field(
+        min_length=6, max_length=6, description="Chip id, must be 6 characters"
+    )
+    chip_id_pressure: str = Field(
         min_length=6, max_length=6, description="Chip id, must be 6 characters"
     )
     active: bool = Field(

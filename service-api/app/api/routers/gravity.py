@@ -170,7 +170,8 @@ async def create_gravity_using_ispindel_format(
         if len(batchList) == 0:
             batch = schemas.BatchCreate(
                 name="Batch for " + req_json["ID"],
-                chipId=req_json["ID"],
+                chipIdGravity=req_json["ID"],
+                chipIdPressure="",
                 description="Automatically created",
                 brewDate=datetime.today().strftime("%Y-%m-%d"),
                 style="",

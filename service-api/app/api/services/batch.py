@@ -1,5 +1,5 @@
 from typing import List
-from sqlalchemy import select
+from sqlalchemy import select, or_, and_
 from sqlalchemy.orm import Session
 from api.db import models, schemas
 from .base import BaseService
@@ -13,9 +13,9 @@ class BatchService(BaseService[models.Batch, schemas.BatchCreate, schemas.BatchU
         super(BatchService, self).__init__(models.Batch, db_session)
 
     def search_chipId(self, chipId: str) -> List[models.Batch]:
-        filters = {"chip_id": chipId}
+        filters = or_(self.model.chip_id_gravity == chipId, self.model.chip_id_pressure == chipId)
         objs: List[self.model] = self.db_session.scalars(
-            select(self.model).filter_by(**filters)
+            select(self.model).filter(filters)
         ).all()
         logger.info(
             "Fetched batches based on chipId=%s, records found %d", chipId, len(objs)
@@ -43,9 +43,12 @@ class BatchService(BaseService[models.Batch, schemas.BatchCreate, schemas.BatchU
         return objs
 
     def search_chipId_active(self, chipId: str, active: bool) -> List[models.Batch]:
-        filters = {"chip_id": chipId, "active": active}
+        filters = and_(
+            or_(self.model.chip_id_gravity == chipId, self.model.chip_id_pressure == chipId),
+            self.model.active == active
+        )
         objs: List[self.model] = self.db_session.scalars(
-            select(self.model).filter_by(**filters)
+            select(self.model).filter(filters)
         ).all()
         logger.info(
             "Fetched batches based on active=%s + chipId=%s, records found %d",

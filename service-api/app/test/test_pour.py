@@ -13,7 +13,8 @@ def test_init(app_client):
 
     data = {
         "name": "f1",
-        "chipId": "DDDDDD",
+        "chipIdGravity": "DDDDDD",
+        "chipIdPressure": "",
         "description": "f3",
         "brewDate": "f4",
         "style": "f5",

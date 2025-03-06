@@ -80,7 +80,8 @@ class Batch(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String(40), nullable=False)
-    chip_id = Column(String(6), nullable=False)
+    chip_id_gravity = Column(String(6), nullable=False)
+    chip_id_pressure = Column(String(6), nullable=False) 
     description = Column(String(80), nullable=False)
     active = Column(Boolean, nullable=False)
     tap_list = Column(Boolean, nullable=False)

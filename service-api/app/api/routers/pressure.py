@@ -140,7 +140,8 @@ async def create_pressure_using_json(
         if len(batchList) == 0:
             batch = schemas.BatchCreate(
                 name="Batch for " + chipId,
-                chipId=chipId,
+                chipIdGravity="",
+                chipIdPressure=chipId,
                 description="Automatically created",
                 brewDate=datetime.today().strftime("%Y-%m-%d"),
                 style="",
