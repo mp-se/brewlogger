@@ -118,6 +118,8 @@ async def create_pour_using_kegmon_format(
     try:
         req_json = await request.json()
 
+        logger.info(f"Payload: {req_json}")
+
         pourVal = 0
         volumeVal = 0
         maxVolumeVal = 0

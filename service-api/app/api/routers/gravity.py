@@ -133,6 +133,8 @@ async def create_gravity_using_ispindel_format(
     try:
         req_json = await request.json()
 
+        logger.info(f"Payload: {req_json}")
+
         # This means the post is in TILT format so we need to look up the correct device and add the missing data.
         if "color" in req_json:
             logger.info(
