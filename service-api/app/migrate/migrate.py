@@ -122,7 +122,7 @@ def migrate_database():
         "ALTER TABLE batch RENAME COLUMN chip_id TO chip_id_gravity",
 
         "ALTER TABLE batch ADD COLUMN chip_id_pressure VARCHAR(6)",
-        "UPDATE batch SET chip_id_pressure = "" WHERE chip_id_pressure IS NULL",
+        "UPDATE batch SET chip_id_pressure = '' WHERE chip_id_pressure IS NULL",
         "ALTER TABLE batch ALTER COLUMN chip_id_pressure SET NOT NULL",
     ]
 
