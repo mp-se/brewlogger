@@ -8,14 +8,14 @@ annotated-types==0.7.0
     # via
     #   -r /Users/magnus.persson6/dev/brewlogger/service-api/requirements/requirements.txt
     #   pydantic
-anyio==4.6.2.post1
+anyio==4.8.0
     # via
     #   -r /Users/magnus.persson6/dev/brewlogger/service-api/requirements/requirements.txt
     #   httpx
     #   starlette
-apscheduler==3.10.4
+apscheduler==3.11.0
     # via -r /Users/magnus.persson6/dev/brewlogger/service-api/requirements/requirements.txt
-certifi==2024.8.30
+certifi==2025.1.31
     # via
     #   -r /Users/magnus.persson6/dev/brewlogger/service-api/requirements/requirements.txt
     #   httpcore
@@ -25,7 +25,7 @@ cfgv==3.4.0
     # via pre-commit
 charset-normalizer==3.2.0
     # via requests
-click==8.1.7
+click==8.1.8
     # via
     #   -r /Users/magnus.persson6/dev/brewlogger/service-api/requirements/requirements.txt
     #   uvicorn
@@ -33,7 +33,7 @@ coverage[toml]==7.2.7
     # via pytest-cov
 distlib==0.3.7
     # via virtualenv
-fastapi==0.115.5
+fastapi==0.115.11
     # via -r /Users/magnus.persson6/dev/brewlogger/service-api/requirements/requirements.txt
 filelock==3.12.4
     # via virtualenv
@@ -46,7 +46,7 @@ httpcore==1.0.7
     # via
     #   -r /Users/magnus.persson6/dev/brewlogger/service-api/requirements/requirements.txt
     #   httpx
-httpx==0.27.2
+httpx==0.28.1
     # via -r /Users/magnus.persson6/dev/brewlogger/service-api/requirements/requirements.txt
 identify==2.5.30
     # via pre-commit
@@ -74,16 +74,16 @@ pre-commit==3.4.0
     # via -r service-api/requirements/test-requirements.in
 psycopg2==2.9.10
     # via -r /Users/magnus.persson6/dev/brewlogger/service-api/requirements/requirements.txt
-pydantic==2.10.1
+pydantic==2.10.6
     # via
     #   -r /Users/magnus.persson6/dev/brewlogger/service-api/requirements/requirements.txt
     #   fastapi
     #   pydantic-settings
-pydantic-core==2.27.1
+pydantic-core==2.27.2
     # via
     #   -r /Users/magnus.persson6/dev/brewlogger/service-api/requirements/requirements.txt
     #   pydantic
-pydantic-settings==2.6.1
+pydantic-settings==2.8.1
     # via -r /Users/magnus.persson6/dev/brewlogger/service-api/requirements/requirements.txt
 pytest==7.4.0
     # via
@@ -95,53 +95,45 @@ python-dotenv==1.0.1
     # via
     #   -r /Users/magnus.persson6/dev/brewlogger/service-api/requirements/requirements.txt
     #   pydantic-settings
-pytz==2024.2
-    # via
-    #   -r /Users/magnus.persson6/dev/brewlogger/service-api/requirements/requirements.txt
-    #   apscheduler
 pyyaml==6.0.2
     # via
     #   -r /Users/magnus.persson6/dev/brewlogger/service-api/requirements/requirements.txt
     #   pre-commit
-redis==5.2.0
+redis==5.2.1
     # via -r /Users/magnus.persson6/dev/brewlogger/service-api/requirements/requirements.txt
 requests==2.32.0
     # via -r service-api/requirements/test-requirements.in
-six==1.16.0
-    # via
-    #   -r /Users/magnus.persson6/dev/brewlogger/service-api/requirements/requirements.txt
-    #   apscheduler
 sniffio==1.3.1
     # via
     #   -r /Users/magnus.persson6/dev/brewlogger/service-api/requirements/requirements.txt
     #   anyio
-    #   httpx
-sqlalchemy==2.0.36
+sqlalchemy==2.0.38
     # via -r /Users/magnus.persson6/dev/brewlogger/service-api/requirements/requirements.txt
-starlette==0.41.3
+starlette==0.46.0
     # via
     #   -r /Users/magnus.persson6/dev/brewlogger/service-api/requirements/requirements.txt
     #   fastapi
 typing-extensions==4.12.2
     # via
     #   -r /Users/magnus.persson6/dev/brewlogger/service-api/requirements/requirements.txt
+    #   anyio
     #   fastapi
     #   pydantic
     #   pydantic-core
     #   sqlalchemy
-tzlocal==5.2
+tzlocal==5.3.1
     # via
     #   -r /Users/magnus.persson6/dev/brewlogger/service-api/requirements/requirements.txt
     #   apscheduler
 urllib3==2.0.7
     # via requests
-uvicorn==0.32.1
+uvicorn==0.34.0
     # via -r /Users/magnus.persson6/dev/brewlogger/service-api/requirements/requirements.txt
 virtualenv==20.24.5
     # via pre-commit
-websockets==14.1
+websockets==15.0.1
     # via -r /Users/magnus.persson6/dev/brewlogger/service-api/requirements/requirements.txt
-zeroconf==0.136.2
+zeroconf==0.146.1
     # via -r /Users/magnus.persson6/dev/brewlogger/service-api/requirements/requirements.txt
 
 # The following packages are considered to be unsafe in a requirements file:
