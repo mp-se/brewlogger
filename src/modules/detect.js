@@ -48,7 +48,10 @@ export function detectSoftware(status) {
     return 'Gravitymon'
   }
 
-  // TODO: Add detection of pressuremon
+  if (Object.prototype.hasOwnProperty.call(status, 'pressure')) {
+    logDebug('DeviceListView.detectSoftware()', 'Software Pressuremon')
+    return 'Pressuremon'
+  }
 
   return ''
 }

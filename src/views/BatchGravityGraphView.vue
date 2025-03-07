@@ -352,8 +352,7 @@ onMounted(() => {
           type: 'line',
           data: { datasets: [] },
           options: {
-            scales: {
-            },
+            scales: {},
             animation: false,
             plugins: {
               tooltip: {
@@ -375,7 +374,7 @@ onMounted(() => {
                 }
               }
             }
-          },
+          }
         }
 
         logDebug('BatchGravityGraphView.onMounted()', 'Creating chart')
@@ -387,7 +386,9 @@ onMounted(() => {
           chart = new Chart(document.getElementById('gravityChart').getContext('2d'), chartOptions)
           updateDataSet()
           chart.update()
-          setTimeout(() => { filterAll() }, 100)  // Quick fix so that data is always shown
+          setTimeout(() => {
+            filterAll()
+          }, 100) // Quick fix so that data is always shown
         }
       } catch (err) {
         logDebug('BatchGravityGraphView.onMounted()', err)
@@ -402,7 +403,9 @@ function mapGravityData(gList) {
   gList.forEach((g) => {
     result.push({
       x: g.created,
-      y: parseFloat(new Number(config.isGravitySG ? g.gravity : gravityToPlato(g.gravity)).toFixed(4))
+      y: parseFloat(
+        new Number(config.isGravitySG ? g.gravity : gravityToPlato(g.gravity)).toFixed(4)
+      )
     })
   })
 
@@ -457,7 +460,9 @@ function mapChamberData(gList) {
     .forEach((g) => {
       result.push({
         x: g.created,
-        y: new Number(config.isTempC ? g.chamberTemperature : tempToF(g.chamberTemperature)).toFixed(2)
+        y: new Number(
+          config.isTempC ? g.chamberTemperature : tempToF(g.chamberTemperature)
+        ).toFixed(2)
       })
     })
 
@@ -487,7 +492,7 @@ function mapGravityVelocityData(gList, pointsPerDay, window) {
     const dataSubset = data.slice(-window)
     const gravityValues = dataSubset.map((point) => point[1])
     const meanGravity = calculateMean(gravityValues)
- 
+
     var dataFiltered = []
 
     dataSubset.forEach((data) => {
@@ -711,11 +716,11 @@ function configureChart(config) {
       }
     },
     min: gravityStats.value.date.first,
-    max: gravityStats.value.date.last,
+    max: gravityStats.value.date.last
   }
 
-  logDebug("AAAA:", chart.getInitialScaleBounds())
-  logDebug("AAAA:", chart.getZoomedScaleBounds(), chart.isZoomedOrPanned())
+  logDebug('AAAA:', chart.getInitialScaleBounds())
+  logDebug('AAAA:', chart.getZoomedScaleBounds(), chart.isZoomedOrPanned())
 }
 
 function filter24h() {
@@ -796,23 +801,23 @@ function filterOutlier() {
   logDebug('BatchGravityGraphView.filterOutlier()', chart.data.datasets)
 
   for (var i = 0; i < chart.data.datasets.length; i++) {
-    switch(chart.data.datasets[i].label) {
+    switch (chart.data.datasets[i].label) {
       case 'Gravity':
         chart.data.datasets[i].data = applyOutlier(chart.data.datasets[i].data, 20, 0.002) // Data, Window, Max Deviation limit
-        break;
+        break
       case 'Chamber':
       case 'Temperature':
         chart.data.datasets[i].data = applyOutlier(chart.data.datasets[i].data, 20, 0.4) // Data, Window, Max Deviation limit
-        break;
+        break
       case 'Velocity':
         // Dont filter this.
-        break;
+        break
       case 'Battery':
         chart.data.datasets[i].data = applyOutlier(chart.data.datasets[i].data, 20, 0.1) // Data, Window, Max Deviation limit
-        break;
+        break
       case 'Alcohol':
         chart.data.datasets[i].data = applyOutlier(chart.data.datasets[i].data, 20, 0.1) // Data, Window, Max Deviation limit
-        break;
+        break
     }
   }
 
@@ -894,9 +899,9 @@ function applyOutlier(input, window, limit) {
 
   for (var i = 0; i < input.length - window; i += window) {
     const dataSubset = input.slice(i, i + window)
-   
+
     const dataValues = dataSubset.map((p) => p.y)
-    const dataMean = calculateMean(dataValues)  
+    const dataMean = calculateMean(dataValues)
     // const dataStd = calculateStandardDeviation(dataValues, dataMean);
     // logDebug('Mean:', dataMean, "Std:", dataStd)
 
@@ -909,7 +914,7 @@ function applyOutlier(input, window, limit) {
     })
   }
 
-  logDebug('BatchGravityGraphView.applyOutlier()', "Removed no outlsers", skipped)
+  logDebug('BatchGravityGraphView.applyOutlier()', 'Removed no outlsers', skipped)
   return result
 }
 </script>

@@ -7,7 +7,8 @@ export class Batch {
     id,
     name,
     description,
-    chipId,
+    chipIdGravity,
+    chipIdPressure,
     active,
     brewDate,
     style,
@@ -26,7 +27,8 @@ export class Batch {
     this.id = id === undefined ? 0 : id
     this.name = name === undefined ? '' : name
     this.description = description === undefined ? '' : description
-    this.chipId = chipId === undefined ? '' : chipId
+    this.chipIdGravity = chipIdGravity === undefined ? '' : chipIdGravity
+    this.chipIdPressure = chipIdPressure === undefined ? '' : chipIdPressure
     this.active = active === undefined ? true : active
     this.tapList = tapList === undefined ? true : tapList
     this.brewDate = brewDate === undefined ? '' : brewDate
@@ -66,7 +68,8 @@ export class Batch {
     return (
       b1.name == b2.name &&
       b1.description == b2.description &&
-      b1.chipId == b2.chipId &&
+      b1.chipIdGravity == b2.chipIdGravity &&
+      b1.chipIdPressure == b2.chipIdPressure &&
       b1.active == b2.active &&
       b1.tapList == b2.tapList &&
       b1.brewDate == b2.brewDate &&
@@ -85,7 +88,8 @@ export class Batch {
       b.id,
       b.name,
       b.description,
-      b.chipId,
+      b.chipIdGravity,
+      b.chipIdPressure,
       b.active,
       b.brewDate,
       b.style,
@@ -108,7 +112,8 @@ export class Batch {
       bd.id,
       bd.name,
       '',
-      bd.chipId,
+      bd.chipIdGravity,
+      bd.chipIdPressure,
       bd.active,
       '',
       '',
@@ -134,7 +139,8 @@ export class Batch {
     var j = {
       name: this.name,
       description: this.description,
-      chipId: this.chipId,
+      chipIdGravity: this.chipIdGravity,
+      chipIdPressure: this.chipIdPressure,
       active: this.active,
       tapList: this.tapList,
       brewDate: this.brewDate,
@@ -164,8 +170,11 @@ export class Batch {
   get description() {
     return this._description
   }
-  get chipId() {
-    return this._chipId
+  get chipIdGravity() {
+    return this._chipIdGravity
+  }
+  get chipIdPressure() {
+    return this._chipIdPressure
   }
   get active() {
     return this._active
@@ -234,8 +243,11 @@ export class Batch {
   set description(description) {
     this._description = description
   }
-  set chipId(chipId) {
-    this._chipId = chipId
+  set chipIdGravity(chipIdGravity) {
+    this._chipIdGravity = chipIdGravity
+  }
+  set chipIdPressure(chipIdPressure) {
+    this._chipIdPressure = chipIdPressure
   }
   set active(active) {
     this._active = active
@@ -341,7 +353,7 @@ export const useBatchStore = defineStore('batchStore', {
       var found = false
 
       this.batches.forEach((b) => {
-        if (b.chipId == chipId) found = true
+        if (b.chipIdGravity == chipId || b.chipIdPressure == chipId) found = true
       })
       return found
     },

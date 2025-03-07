@@ -24,7 +24,7 @@ export class Device {
     this.bleColor = bleColor === undefined ? '' : bleColor
     this.description = description === undefined ? '' : description
     this.url = url === undefined ? '' : url
-    this.collectLogs = collectLogs === undefined ? '' : collectLogs
+    this.collectLogs = collectLogs === undefined ? false : collectLogs
 
     if (this.url === 'http://' || this.url === 'https://') this.url = ''
   }

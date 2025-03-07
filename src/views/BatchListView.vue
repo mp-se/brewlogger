@@ -103,24 +103,43 @@
               >
                 <i class="bi bi-file-x"></i></button
               >&nbsp;
-              <template v-if="b.gravityCount > 0">
+              <template v-if="b.gravityCount > 0 || b.pressureCount > 0">
                 <router-link :to="{ name: 'batch-gravity-graph', params: { id: b.id } }">
-                  <button type="button" class="btn btn-success btn-sm">
+                  <button type="button" class="btn btn-info btn-sm">
                     <i class="bi bi-graph-down"></i>
                   </button> </router-link
                 >&nbsp;
+              </template>
+
+              <template v-if="b.gravityCount > 0">
                 <router-link :to="{ name: 'batch-gravity-list', params: { id: b.id } }">
                   <button type="button" class="btn btn-success btn-sm">
                     <i class="bi bi-list"></i>
                   </button> </router-link
                 >&nbsp;
+                <button @click="exportBatchJSON(b.id)" type="button" class="btn btn-success btn-sm">
+                  <i class="bi bi-filetype-json"></i></button
+                >&nbsp;
+                <button @click="exportBatchCSV(b.id)" type="button" class="btn btn-success btn-sm">
+                  <i class="bi bi-filetype-csv"></i></button
+                >&nbsp;
+              </template>
+
+              <template v-if="b.pressureCount > 0">
+                <router-link :to="{ name: 'batch-pressure-list', params: { id: b.id } }">
+                  <button type="button" class="btn btn-warning btn-sm">
+                    <i class="bi bi-list"></i>
+                  </button> </router-link
+                >&nbsp;
+                <!-- 
                 <button @click="exportBatchJSON(b.id)" type="button" class="btn btn-info btn-sm">
                   <i class="bi bi-filetype-json"></i></button
                 >&nbsp;
                 <button @click="exportBatchCSV(b.id)" type="button" class="btn btn-info btn-sm">
                   <i class="bi bi-filetype-csv"></i></button
-                >&nbsp;
+                >&nbsp;-->
               </template>
+
             </td>
           </tr>
         </tbody>
@@ -254,8 +273,18 @@ function filterBatchList() {
   batchStore.batchList.forEach((b) => {
     var include = true
 
-    if (global.batchListFilterDevice != '*' && global.batchListFilterDevice != b.chipId) {
-      logDebug('BatchListView.filterBatchList()', 'exclude device: ', b.id, b.chipId)
+    if (
+      global.batchListFilterDevice != '*' &&
+      global.batchListFilterDevice != b.chipIdGravity &&
+      global.batchListFilterDevice != b.chipIdPressure
+    ) {
+      logDebug(
+        'BatchListView.filterBatchList()',
+        'exclude device: ',
+        b.id,
+        b.chipIdGravity,
+        b.chipIdPressure
+      )
       include = false
     }
 

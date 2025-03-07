@@ -30,16 +30,17 @@
       <div class="col-md-4" v-for="b in activeBatchList" :key="b.id">
         <BsCard :header="'Batch: ' + b.name" color="info" title="">
           <p class="text-center">
-            <template v-if="b.gravityCount > 0">
+            <template v-if="b.gravityCount > 0 || b.pressureCount > 0">
               <router-link :to="{ name: 'batch-gravity-graph', params: { id: b.id } }">
                 <button type="button" class="btn btn-success btn-sm">
                   <i class="bi bi-graph-down"></i>
                 </button> </router-link
               >&nbsp;
             </template>
-            Age: {{ getGravityReadingAge(b) }}
+            Age: {{ b.gravityCount>0 ? getGravityReadingAge(b) : getPressureReadingAge(b) }}
           </p>
           <div class="text-center">Gravity: {{ getGravityOG(b) }} - {{ getLastGravity(b) }}</div>
+          <div class="text-center">Pressure {{ getLastPressure(b) }}</div>
           <div class="text-center">Temperature {{ getLastTemperature(b) }}</div>
         </BsCard>
       </div>
@@ -111,7 +112,7 @@
 <script setup>
 import { onMounted, onUnmounted, ref, computed } from 'vue'
 import { config, global, batchStore, deviceStore } from '@/modules/pinia'
-import { gravityToPlato, tempToF, formatTime } from '@/modules/utils'
+import { gravityToPlato, tempToF, formatTime, pressureToKPA, pressureToBAR } from '@/modules/utils'
 import { logDebug, logError } from '@/modules/logger'
 
 const activeBatchList = ref([])
@@ -194,6 +195,18 @@ function getGravityReadingAge(batch) {
   return ''
 }
 
+function getPressureReadingAge(batch) {
+  logDebug('HomeView.getPressureReadingAge()')
+
+  if (batch.pressureCount == 2) {
+    var last = Date.parse(batch.pressure[1].created)
+    var now = new Date()
+    return formatTime(Math.floor((now - last) / 1000))
+  }
+
+  return ''
+}
+
 function getGravityOG(batch) {
   logDebug('HomeView.getGravityOG()')
 
@@ -231,6 +244,32 @@ function getLastTemperature(batch) {
     if (config.isTempF) return new Number(tempToF(t)).toFixed(2) + ' F'
 
     return new Number(t).toFixed(2) + ' C'
+  }
+
+  else if (batch.pressureCount == 2) {
+    var t2 = batch.pressure[1].temperature
+
+    if (config.isTempF) return new Number(tempToF(t2)).toFixed(2) + ' F'
+
+    return new Number(t2).toFixed(2) + ' C'
+  }
+
+  return 'N/A'
+}
+
+function getLastPressure(batch) {
+  logDebug('HomeView.getLastPressure()')
+
+  if (batch.pressureCount == 2) {
+    var t = batch.pressure[1].pressure
+
+    if (config.isPressurePSI) 
+      return new Number(t).toFixed(2) + ' PSI'
+
+    if (config.isPressureKPA) 
+      return new Number(pressureToKPA(t)).toFixed(2) + ' kPa'
+
+    return new Number(pressureToBAR(t)).toFixed(2) + ' Bar'
   }
 
   return 'N/A'

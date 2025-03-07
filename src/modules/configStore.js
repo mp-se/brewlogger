@@ -12,7 +12,7 @@ export const useConfigStore = defineStore('config', {
       volumeFormat: '',
       appVersion: 0,
       gravityForwardUrl: '',
-      dark_mode: false // TODO: Name used in components
+      dark_mode: false 
     }
   },
   getters: {
@@ -39,6 +39,15 @@ export const useConfigStore = defineStore('config', {
     },
     isVolumeUk() {
       return this.volumeFormat == 'UK' ? true : false
+    },
+    isPressureBAR() {
+      return this.pressureFormat == 'BAR' ? true : false
+    },
+    isPressureKPA() {
+      return this.pressureFormat == 'KPA' ? true : false
+    },
+    isPressureP() {
+      return this.pressureFormat == 'PSI' ? true : false
     }
   },
   actions: {

@@ -3,10 +3,11 @@ import { global } from '@/modules/pinia'
 import { logDebug, logError } from '@/modules/logger'
 
 export class Pressure {
-  constructor(id, temperature, pressure, battery, rssi, runTime, created, batchId, active) {
+  constructor(id, temperature, pressure, pressure1, battery, rssi, runTime, created, batchId, active) {
     this.id = id === undefined ? 0 : id
     this.temperature = temperature === undefined ? 0.0 : temperature
     this.pressure = pressure === undefined ? 0.0 : pressure
+    this.pressure1 = pressure1 === undefined ? 0.0 : pressure1
     this.battery = battery === undefined ? 0.0 : battery
     this.rssi = rssi === undefined ? 0 : rssi
     this.runTime = runTime === undefined ? 0 : runTime
@@ -20,6 +21,7 @@ export class Pressure {
       p.id,
       p.temperature,
       p.pressure,
+      p.pressure1,
       p.battery,
       p.rssi,
       p.runTime,
@@ -35,6 +37,7 @@ export class Pressure {
       //"batchId": this.batchId,
       temperature: this.temperature,
       pressure: this.pressure,
+      pressure1: this.pressure1,
       battery: this.battery,
       rssi: this.rssi,
       runTime: this.runTime,
@@ -53,6 +56,9 @@ export class Pressure {
   }
   get pressure() {
     return this._pressure
+  }
+  get pressure1() {
+    return this._pressure1
   }
   get battery() {
     return this._battery
@@ -81,6 +87,9 @@ export class Pressure {
   }
   set pressure(pressure) {
     this._pressure = pressure
+  }
+  set pressure1(pressure1) {
+    this._pressure1 = pressure1
   }
   set battery(battery) {
     this._battery = battery

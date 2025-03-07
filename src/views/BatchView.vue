@@ -13,9 +13,18 @@
           </div>
           <div class="col-md-3">
             <BsSelect
-              v-model="batch.chipId"
-              label="Device"
+              v-model="batch.chipIdGravity"
+              label="Gravity Device"
               :options="gravityDeviceOptions"
+              help=""
+              :disabled="global.disabled"
+            ></BsSelect>
+          </div>
+          <div class="col-md-3">
+            <BsSelect
+              v-model="batch.chipIdPressure"
+              label="Pressure Device"
+              :options="pressureDeviceOptions"
               help=""
               :disabled="global.disabled"
             ></BsSelect>
@@ -213,6 +222,7 @@ const batch = ref(null)
 const batchSaved = ref(null)
 
 const gravityDeviceOptions = ref([])
+const pressureDeviceOptions = ref([])
 const tempControlDeviceOptions = ref([])
 
 const activeOptions = ref([
@@ -571,11 +581,12 @@ function updateDeviceOptions() {
 
   gravityDeviceOptions.value = []
   gravityDeviceOptions.value = [{ value: '', label: '-- Disabled --' }]
+  pressureDeviceOptions.value = [{ value: '', label: '-- Disabled --' }]
   tempControlDeviceOptions.value = [{ value: 0, label: '-- Disabled --' }]
 
   deviceStore.devices.forEach((d) => {
     if (d.software == 'Gravitymon') {
-      var s =
+      var sg =
         d.mdns != ''
           ? d.mdns
           : d.url != ''
@@ -586,24 +597,41 @@ function updateDeviceOptions() {
 
       gravityDeviceOptions.value.push({
         value: d.chipId,
-        label: d.chipId + ' (' + s + ')'
+        label: d.chipId + ' (' + sg + ')'
       })
     }
 
-    if (d.software == 'Chamber-Controller') {
-      s = d.mdns != '' ? d.mdns : d.url != '' ? d.url : d.description
+    else if (d.software == 'Pressuremon') {
+      var sp =
+        d.mdns != ''
+          ? d.mdns
+          : d.url != ''
+            ? d.url
+            : d.description != ''
+              ? d.description
+              : d.software
+
+      pressureDeviceOptions.value.push({
+        value: d.chipId,
+        label: d.chipId + ' (' + sp + ')'
+      })
+    }
+
+    else if (d.software == 'Chamber-Controller') {
+      var sc = d.mdns != '' ? d.mdns : d.url != '' ? d.url : d.description
 
       if (d.url != '') {
         tempControlDeviceOptions.value.push({
           value: d.id,
-          label: d.software + '(' + s + ')'
+          label: d.software + '(' + sc + ')'
         })
       }
     }
   })
 
-  logDebug('BatchView.updateDeviceOptions()', gravityDeviceOptions.value)
-  logDebug('BatchView.updateDeviceOptions()', tempControlDeviceOptions.value)
+  logDebug('BatchView.updateDeviceOptions()', "Gravity", gravityDeviceOptions.value)
+  logDebug('BatchView.updateDeviceOptions()', "Pressure", pressureDeviceOptions.value)
+  logDebug('BatchView.updateDeviceOptions()', "Chamber", tempControlDeviceOptions.value)
 }
 
 const save = () => {

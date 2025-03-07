@@ -35,7 +35,7 @@
         Some devices might need to be put in flash mode before flashing will work. Hold in EN and
         then do a reset and release EN should put the device in flashing mode.
       </p>
-<!-- 
+      <!-- 
       <p class="fw-normal">Using manfifest: {{ manifestUrl }}</p>
 -->
       <p class="fw-normal">Software version: {{ softwareVersion }}</p>
@@ -86,9 +86,7 @@ watch(software, () => {
 })
 
 const manifestUrl = computed(() => {
-  return (
-    'https://gravitymon.com/flasher/' + software.value + '/manifest' + variant.value + '.json'
-  )
+  return 'https://gravitymon.com/flasher/' + software.value + '/manifest' + variant.value + '.json'
 })
 
 watch(variant, () => {

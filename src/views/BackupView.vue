@@ -301,6 +301,12 @@ async function restoreBatches(bl) {
         // New in 0.8
         b.tapList = true
 
+      if (b.chipIdGravity === undefined) {
+        // New in 0.9
+        b.chipIdGravity = b.chipId
+        b.chipIdPressure = ""
+      }
+
       b.fermentationChamber = 0
 
       const res = await fetch(global.baseURL + 'api/batch/', {

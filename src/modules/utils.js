@@ -46,6 +46,14 @@ export function volumeCLtoUKOZ(v) {
   return v == 0.0 ? 0.0 : v / 2.84
 }
 
+export function pressureToKPA(p) {
+  return p * 6.8947572932
+}
+
+export function pressureToBAR(p) {
+  return p * 0.0689475729
+}
+
 export function isValidJson(s) {
   try {
     JSON.stringify(JSON.parse(s))
@@ -76,6 +84,102 @@ export function download(content, mimeType, filename) {
   a.click()
 }
 
+export function getPressureDataAnalytics(pressureList) {
+  logDebug('utils.getPressureDataAnalytics()')
+
+  var pList = []
+
+  var stats = {
+    pressure: {
+      min: 2.0,
+      max: 0, 
+      minString: '',
+      maxString: ''
+    },
+    temperature: {
+      min: 100,
+      max: -100,
+      minString: '',
+      maxString: ''
+    },
+    date: {
+      first: '',
+      last: '',
+      firstDate: '',
+      lastDate: '',
+      firstTime: '',
+      lastTime: ''
+    },
+    readings: 0,
+    averageInterval: 0,
+    averageIntervalString: ''
+  }
+
+  // Sort the pressure data so its in date order
+  pressureList.sort((a, b) => Date.parse(a.created) - Date.parse(b.created))
+
+  // Process the pressure readings
+  pressureList.forEach((p) => {
+    if (p.active) {
+      pList.push(p)
+
+      // Calculate some statistics for pressure and temperature
+      if (p.pressure > stats.pressure.max) stats.pressure.max = p.pressure
+      if (p.pressure < stats.pressure.min) stats.pressure.min = p.pressure
+
+      if (p.temperature > stats.temperature.max) stats.temperature.max = p.temperature
+      if (p.temperature < stats.temperature.min) stats.temperature.min = p.temperature
+    }
+  })
+
+  // TODO: Fix conversion to proper formats
+
+  // stats.abv = abv(stats.gravity.max, stats.gravity.min)
+  // stats.gravity.min = config.isGravitySG ? stats.gravity.min : gravityToPlato(stats.gravity.min)
+  // stats.gravity.max = config.isGravitySG ? stats.gravity.max : gravityToPlato(stats.gravity.max)
+  stats.temperature.min = config.isTempC ? stats.temperature.min : tempToF(stats.temperature.min)
+  stats.temperature.max = config.isTempC ? stats.temperature.max : tempToF(stats.temperature.max)
+
+    // TODO: Fix conversion to proper formats
+
+  // stats.pressure.minString =
+  //   new Number(stats.pressure.min).toFixed(3) + (config.isGravitySG ? ' SG' : ' P')
+  // stats.pressure.maxString =
+  //   new Number(stats.pressure.max).toFixed(3) + (config.isGravitySG ? ' SG' : ' P')
+  stats.temperature.minString =
+    new Number(stats.temperature.min).toFixed(2) + (config.isTempC ? ' C' : ' F')
+  stats.temperature.maxString =
+    new Number(stats.temperature.max).toFixed(2) + (config.isTempC ? ' C' : ' F')
+
+  if (pList.length) {
+    stats.date.first = pList[0].created
+    stats.date.last = pList[pList.length - 1].created
+
+    stats.date.firstDate = stats.date.first.substring(0, 10)
+    stats.date.lastDate = stats.date.last.substring(0, 10)
+
+    stats.date.firstTime = stats.date.first.substring(11, 19)
+    stats.date.lastTime = stats.date.last.substring(11, 19)
+
+    stats.averageInterval = new Number(
+      (Date.parse(stats.date.last) - Date.parse(stats.date.first)) / pList.length / 1000
+    ).toFixed(0)
+
+    if (stats.averageInterval < 60) stats.averageIntervalString = stats.averageInterval + ' s'
+    else
+      stats.averageIntervalString =
+        new Number(stats.averageInterval / 60).toFixed(0) +
+        ' m ' +
+        new Number(stats.averageInterval % 60).toFixed(0) +
+        ' s'
+  }
+
+  stats.readings = pList.length
+
+  logDebug('utils.getPressureDataAnalytics()', stats)
+  return stats
+}
+
 export function getGravityDataAnalytics(gravityList) {
   logDebug('utils.getGravityDataAnalytics()')
 
@@ -102,7 +206,7 @@ export function getGravityDataAnalytics(gravityList) {
       firstDate: '',
       lastDate: '',
       firstTime: '',
-      lastTime: '',      
+      lastTime: ''
     },
     readings: 0,
     averageInterval: 0,
