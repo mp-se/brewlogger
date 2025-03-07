@@ -89,8 +89,10 @@ async def get_batch_dashboard_by_id(
     b = batch_service.get(batch_id)
     if b.active:
         dash = schemas.BatchDashboard(
-            id=b.id, name=b.name, chip_id=b.chip_id, active=b.active
+            id=b.id, name=b.name, chip_id_gravity=b.chip_id_gravity, chip_id_pressure=b.chip_id_pressure, active=b.active
         )
+
+        # Add gravity
         dash.gravity = []
 
         b.gravity = list(filter(lambda x: x.active, b.gravity))
@@ -101,6 +103,31 @@ async def get_batch_dashboard_by_id(
             dash.gravity.append(b.gravity[0])
         if len(b.gravity) > 2:
             dash.gravity.append(b.gravity[len(b.gravity) - 1])
+
+        # Add pressure
+        dash.pressure = []
+
+        b.pressure = list(filter(lambda x: x.active, b.pressure))
+        b.pressure.sort(key=lambda x: x.created, reverse=False)
+
+        # Just return the first and last reading
+        if len(b.pressure) > 1:
+            dash.pressure.append(b.pressure[0])
+        if len(b.pressure) > 2:
+            dash.pressure.append(b.pressure[len(b.pressure) - 1])
+
+        # Add pour
+        dash.pour = []
+
+        b.pour = list(filter(lambda x: x.active, b.pour))
+        b.pour.sort(key=lambda x: x.created, reverse=False)
+
+        # Just return the first and last reading
+        if len(b.pour) > 1:
+            dash.pour.append(b.pour[0])
+        if len(b.pour) > 2:
+            dash.pour.append(b.pour[len(b.pour) - 1])
+
         return dash
 
     raise HTTPException(status_code=404, detail="Batch not found or not active batch.")

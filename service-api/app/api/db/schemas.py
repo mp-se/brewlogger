@@ -386,11 +386,26 @@ class BatchDashboard(BaseModel):
         min_length=0, max_length=40, description="Short name of the batch"
     )
     chip_id_gravity: str = Field(
-        min_length=6, max_length=6, description="Chip id, must be 6 characters"
+        min_length=0, max_length=6, description="Chip id, must be 6 characters"
     )
     chip_id_pressure: str = Field(
-        min_length=6, max_length=6, description="Chip id, must be 6 characters"
+        min_length=0, max_length=6, description="Chip id, must be 6 characters"
     )
+
+    @field_validator("chip_id_gravity")
+    @classmethod
+    def validate_gravity_chip_id(cls, v: str) -> str:
+        if len(v) != 0 and len(v) != 6:
+            raise ValueError("chip_id_gravity must be zero or 6 characters long")
+        return v
+
+    @field_validator("chip_id_pressure")
+    @classmethod
+    def validate_pressure_chip_id(cls, v: str) -> str:
+        if len(v) != 0 and len(v) != 6:
+            raise ValueError("chip_id_gravity must be zero or 6 characters long")
+        return v
+
     active: bool = Field(
         description="If the batch is active or not, active = can recive new gravity data"
     )
