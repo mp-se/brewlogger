@@ -304,7 +304,7 @@ async function restoreBatches(bl) {
       if (b.chipIdGravity === undefined) {
         // New in 0.9
         b.chipIdGravity = b.chipId
-        b.chipIdPressure = ""
+        b.chipIdPressure = ''
       }
 
       b.fermentationChamber = 0

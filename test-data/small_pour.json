@@ -61,7 +61,7 @@
     },
     {
       "chipFamily": "esp32s2",
-      "software": "Brewpi",
+      "software": "Chamber-Controller",
       "mdns": "fridge",
       "config": "",
       "url": "http://192.168.0.2/",

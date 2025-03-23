@@ -225,7 +225,7 @@ const softwareOptions = ref([
   { label: 'Gravitymon Gateway', value: 'Gravitymon-Gateway' },
   { label: 'Chamber Controller', value: 'Chamber-Controller' },
   { label: 'Kegmon', value: 'Kegmon' },
-  { label: 'Pressuremon', value: 'Pressuremon' },
+  { label: 'Pressuremon', value: 'Pressuremon' }
   // { label: 'iSpindel', value: 'iSpindel' }
 ])
 
@@ -418,7 +418,7 @@ async function detectDeviceType(url) {
     } else {
       global.messageError = 'Unable to detect device type for ' + device.mdns
     }
-  } catch (e) {
+  } catch {
     global.messageError = 'Failed to fetch data from device, is it turned on ?'
   }
 

@@ -58,7 +58,7 @@ export function isValidJson(s) {
   try {
     JSON.stringify(JSON.parse(s))
     return true
-  } catch (e) {
+  } catch {
     logDebug('utils.isValidJson()')
   }
 
@@ -92,7 +92,7 @@ export function getPressureDataAnalytics(pressureList) {
   var stats = {
     pressure: {
       min: 2.0,
-      max: 0, 
+      max: 0,
       minString: '',
       maxString: ''
     },
@@ -140,7 +140,7 @@ export function getPressureDataAnalytics(pressureList) {
   stats.temperature.min = config.isTempC ? stats.temperature.min : tempToF(stats.temperature.min)
   stats.temperature.max = config.isTempC ? stats.temperature.max : tempToF(stats.temperature.max)
 
-    // TODO: Fix conversion to proper formats
+  // TODO: Fix conversion to proper formats
 
   // stats.pressure.minString =
   //   new Number(stats.pressure.min).toFixed(3) + (config.isGravitySG ? ' SG' : ' P')

@@ -3,7 +3,18 @@ import { global } from '@/modules/pinia'
 import { logDebug, logError } from '@/modules/logger'
 
 export class Pressure {
-  constructor(id, temperature, pressure, pressure1, battery, rssi, runTime, created, batchId, active) {
+  constructor(
+    id,
+    temperature,
+    pressure,
+    pressure1,
+    battery,
+    rssi,
+    runTime,
+    created,
+    batchId,
+    active
+  ) {
     this.id = id === undefined ? 0 : id
     this.temperature = temperature === undefined ? 0.0 : temperature
     this.pressure = pressure === undefined ? 0.0 : pressure

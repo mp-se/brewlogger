@@ -12,7 +12,7 @@ export const useConfigStore = defineStore('config', {
       volumeFormat: '',
       appVersion: 0,
       gravityForwardUrl: '',
-      dark_mode: false 
+      dark_mode: false
     }
   },
   getters: {

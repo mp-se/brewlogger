@@ -37,7 +37,7 @@
                 </button> </router-link
               >&nbsp;
             </template>
-            Age: {{ b.gravityCount>0 ? getGravityReadingAge(b) : getPressureReadingAge(b) }}
+            Age: {{ b.gravityCount > 0 ? getGravityReadingAge(b) : getPressureReadingAge(b) }}
           </p>
           <div class="text-center">Gravity: {{ getGravityOG(b) }} - {{ getLastGravity(b) }}</div>
           <div class="text-center">Pressure {{ getLastPressure(b) }}</div>
@@ -244,9 +244,7 @@ function getLastTemperature(batch) {
     if (config.isTempF) return new Number(tempToF(t)).toFixed(2) + ' F'
 
     return new Number(t).toFixed(2) + ' C'
-  }
-
-  else if (batch.pressureCount == 2) {
+  } else if (batch.pressureCount == 2) {
     var t2 = batch.pressure[1].temperature
 
     if (config.isTempF) return new Number(tempToF(t2)).toFixed(2) + ' F'
@@ -263,11 +261,9 @@ function getLastPressure(batch) {
   if (batch.pressureCount == 2) {
     var t = batch.pressure[1].pressure
 
-    if (config.isPressurePSI) 
-      return new Number(t).toFixed(2) + ' PSI'
+    if (config.isPressurePSI) return new Number(t).toFixed(2) + ' PSI'
 
-    if (config.isPressureKPA) 
-      return new Number(pressureToKPA(t)).toFixed(2) + ' kPa'
+    if (config.isPressureKPA) return new Number(pressureToKPA(t)).toFixed(2) + ' kPa'
 
     return new Number(pressureToBAR(t)).toFixed(2) + ' Bar'
   }

@@ -69,7 +69,9 @@
             <th scope="col" class="col-sm-1">Active</th>
             <th scope="col" class="col-sm-2">
               <div :class="sortedClass('pressure')">
-                Pressure ({{ config.isPressurePSI ? 'PSI' : config.isPressureBAR ? 'Bar' : 'kPa' }})&nbsp;
+                Pressure ({{
+                  config.isPressurePSI ? 'PSI' : config.isPressureBAR ? 'Bar' : 'kPa'
+                }})&nbsp;
                 <a
                   class="icon-link icon-link-hover"
                   @click="sortList(pressureList, 'pressure', 'num')"
@@ -110,9 +112,13 @@
             </td>
             <td class="fs-5">
               {{
-                new Number( config.isPressurePSI
-                  ? p.pressure
-                  : (config.isPressureBAR ? pressureToBAR(p.pressure) : pressureToKPA(p.pressure)) ).toFixed(2)
+                new Number(
+                  config.isPressurePSI
+                    ? p.pressure
+                    : config.isPressureBAR
+                      ? pressureToBAR(p.pressure)
+                      : pressureToKPA(p.pressure)
+                ).toFixed(2)
               }}
             </td>
             <td class="fs-5">

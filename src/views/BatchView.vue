@@ -599,9 +599,7 @@ function updateDeviceOptions() {
         value: d.chipId,
         label: d.chipId + ' (' + sg + ')'
       })
-    }
-
-    else if (d.software == 'Pressuremon') {
+    } else if (d.software == 'Pressuremon') {
       var sp =
         d.mdns != ''
           ? d.mdns
@@ -615,9 +613,7 @@ function updateDeviceOptions() {
         value: d.chipId,
         label: d.chipId + ' (' + sp + ')'
       })
-    }
-
-    else if (d.software == 'Chamber-Controller') {
+    } else if (d.software == 'Chamber-Controller') {
       var sc = d.mdns != '' ? d.mdns : d.url != '' ? d.url : d.description
 
       if (d.url != '') {
@@ -629,9 +625,9 @@ function updateDeviceOptions() {
     }
   })
 
-  logDebug('BatchView.updateDeviceOptions()', "Gravity", gravityDeviceOptions.value)
-  logDebug('BatchView.updateDeviceOptions()', "Pressure", pressureDeviceOptions.value)
-  logDebug('BatchView.updateDeviceOptions()', "Chamber", tempControlDeviceOptions.value)
+  logDebug('BatchView.updateDeviceOptions()', 'Gravity', gravityDeviceOptions.value)
+  logDebug('BatchView.updateDeviceOptions()', 'Pressure', pressureDeviceOptions.value)
+  logDebug('BatchView.updateDeviceOptions()', 'Chamber', tempControlDeviceOptions.value)
 }
 
 const save = () => {

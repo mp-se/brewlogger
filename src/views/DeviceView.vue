@@ -234,7 +234,7 @@ const softwareOptions = ref([
   { label: 'Gravitymon Gateway', value: 'Gravitymon-Gateway' },
   { label: 'Kegmon', value: 'Kegmon' },
   { label: 'Chamber Controller', value: 'Chamber-Controller' },
-  { label: 'Pressuremon', value: 'Pressuremon' },
+  { label: 'Pressuremon', value: 'Pressuremon' }
   // { label: 'iSpindel', value: 'iSpindel' }
 ])
 
