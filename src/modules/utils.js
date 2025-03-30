@@ -127,25 +127,33 @@ export function getPressureDataAnalytics(pressureList) {
       if (p.pressure > stats.pressure.max) stats.pressure.max = p.pressure
       if (p.pressure < stats.pressure.min) stats.pressure.min = p.pressure
 
-      if (p.temperature > stats.temperature.max) stats.temperature.max = p.temperature
-      if (p.temperature < stats.temperature.min) stats.temperature.min = p.temperature
+      // -273 means invalid temperature or not sensor attached
+      if (p.temperature > -270) {
+        if (p.temperature > stats.temperature.max) stats.temperature.max = p.temperature
+        if (p.temperature < stats.temperature.min) stats.temperature.min = p.temperature
+      }
     }
   })
 
-  // TODO: Fix conversion to proper formats
-
-  // stats.abv = abv(stats.gravity.max, stats.gravity.min)
-  // stats.gravity.min = config.isGravitySG ? stats.gravity.min : gravityToPlato(stats.gravity.min)
-  // stats.gravity.max = config.isGravitySG ? stats.gravity.max : gravityToPlato(stats.gravity.max)
+  stats.pressure.min = config.isPressurePSI
+    ? stats.pressure.min
+    : config.isPressureBAR
+      ? pressureToBAR(stats.pressure.min)
+      : pressureToKPA(stats.pressure.min)
+  stats.pressure.max = config.isPressurePSI
+    ? stats.pressure.max
+    : config.isPressureBAR
+      ? pressureToBAR(stats.pressure.max)
+      : pressureToKPA(stats.pressure.max)
   stats.temperature.min = config.isTempC ? stats.temperature.min : tempToF(stats.temperature.min)
   stats.temperature.max = config.isTempC ? stats.temperature.max : tempToF(stats.temperature.max)
 
-  // TODO: Fix conversion to proper formats
-
-  // stats.pressure.minString =
-  //   new Number(stats.pressure.min).toFixed(3) + (config.isGravitySG ? ' SG' : ' P')
-  // stats.pressure.maxString =
-  //   new Number(stats.pressure.max).toFixed(3) + (config.isGravitySG ? ' SG' : ' P')
+  stats.pressure.minString =
+    new Number(stats.pressure.min).toFixed(3) +
+    (config.isPressurePSI ? ' Psi' : config.isPressureBAR ? ' Bar' : ' kPa')
+  stats.pressure.maxString =
+    new Number(stats.pressure.max).toFixed(3) +
+    (config.isPressurePSI ? ' Psi' : config.isPressureBAR ? ' Bar' : ' kPa')
   stats.temperature.minString =
     new Number(stats.temperature.min).toFixed(2) + (config.isTempC ? ' C' : ' F')
   stats.temperature.maxString =

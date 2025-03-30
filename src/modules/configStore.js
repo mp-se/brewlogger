@@ -46,7 +46,7 @@ export const useConfigStore = defineStore('config', {
     isPressureKPA() {
       return this.pressureFormat == 'KPA' ? true : false
     },
-    isPressureP() {
+    isPressurePSI() {
       return this.pressureFormat == 'PSI' ? true : false
     }
   },

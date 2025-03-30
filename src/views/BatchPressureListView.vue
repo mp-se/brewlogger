@@ -123,9 +123,11 @@
             </td>
             <td class="fs-5">
               {{
-                config.isTempC
-                  ? new Number(p.temperature).toFixed(2)
-                  : new Number(tempToF(p.temperature)).toFixed(2)
+                p.temperature > -270
+                  ? config.isTempC
+                    ? new Number(p.temperature).toFixed(2)
+                    : new Number(tempToF(p.temperature)).toFixed(2)
+                  : '-'
               }}
             </td>
             <td class="fs-5">{{ new Number(p.battery).toFixed(2) }}</td>

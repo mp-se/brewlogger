@@ -1,6 +1,6 @@
 {
-  "name": "BrewLogger",
-  "version": "0.8.0",
+  "name": "brewlogger",
+  "version": "0.9.0",
   "private": true,
   "type": "module",
   "scripts": {

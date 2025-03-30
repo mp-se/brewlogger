@@ -5,7 +5,7 @@
     <hr />
 
     <div class="row">
-      <GravityStats v-model="gravityStats"></GravityStats>
+      <GravityStatsFragment v-model="gravityStats"></GravityStatsFragment>
 
       <div class="row" v-if="gravityList != null">
         <div class="col-md-2">

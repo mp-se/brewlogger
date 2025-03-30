@@ -28,7 +28,8 @@ import BsModalConfirm from '@/components/BsModalConfirm.vue'
 import BsModalSelect from '@/components/BsModalSelect.vue'
 import BsInputDate from '@/components/BsInputDate.vue'
 
-import GravityStats from '@/views/GravityStats.vue'
+import GravityStatsFragment from '@/fragments/GravityStatsFragment.vue'
+import PressureStatsFragment from '@/fragments/PressureStatsFragment.vue'
 import LifeEstimates from '@/views/LifeEstimates.vue'
 
 app.component('BsMessage', BsMessage)
@@ -50,7 +51,8 @@ app.component('BsModalConfirm', BsModalConfirm)
 app.component('BsModalSelect', BsModalSelect)
 app.component('BsInputDate', BsInputDate)
 
-app.component('GravityStats', GravityStats)
+app.component('GravityStatsFragment', GravityStatsFragment)
+app.component('PressureStatsFragment', PressureStatsFragment)
 app.component('LifeEstimates', LifeEstimates)
 
 import IconHome from './components/IconHome.vue'
