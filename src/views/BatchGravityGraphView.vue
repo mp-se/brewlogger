@@ -718,9 +718,6 @@ function configureChart(config) {
     min: gravityStats.value.date.first,
     max: gravityStats.value.date.last
   }
-
-  logDebug('AAAA:', chart.getInitialScaleBounds())
-  logDebug('AAAA:', chart.getZoomedScaleBounds(), chart.isZoomedOrPanned())
 }
 
 function filter24h() {
