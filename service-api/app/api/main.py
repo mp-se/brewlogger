@@ -7,6 +7,7 @@ from api.routers import pressure as apiPressure
 from api.routers import setting as apiSetting
 from api.routers import system as apiSystem
 from api.routers import brewfather as apiBrewfather
+from api.routers import dispatch as apiDispatch
 from fastapi import FastAPI, Request, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
@@ -61,6 +62,7 @@ def register_handlers(app):
     app.include_router(apiSetting.router)
     app.include_router(apiSystem.router)
     app.include_router(apiBrewfather.router)
+    app.include_router(apiDispatch.router)
 
     @app.exception_handler(RequestValidationError)
     async def validation_exception_handler(
