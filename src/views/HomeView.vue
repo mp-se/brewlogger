@@ -30,13 +30,22 @@
       <div class="col-md-4" v-for="b in activeBatchList" :key="b.id">
         <BsCard :header="'Batch: ' + b.name" color="info" title="">
           <p class="text-center">
-            <template v-if="b.gravityCount > 0 || b.pressureCount > 0">
+            <template v-if="b.gravityCount > 0">
               <router-link :to="{ name: 'batch-gravity-graph', params: { id: b.id } }">
                 <button type="button" class="btn btn-success btn-sm">
                   <i class="bi bi-graph-down"></i>
                 </button> </router-link
               >&nbsp;
             </template>
+
+            <template v-if="b.pressureCount > 0">
+              <router-link :to="{ name: 'batch-pressure-graph', params: { id: b.id } }">
+                <button type="button" class="btn btn-warning btn-sm">
+                  <i class="bi bi-graph-down"></i>
+                </button> </router-link
+              >&nbsp;
+            </template>
+
             Age: {{ b.gravityCount > 0 ? getGravityReadingAge(b) : getPressureReadingAge(b) }}
           </p>
           <div class="text-center">Gravity: {{ getGravityOG(b) }} - {{ getLastGravity(b) }}</div>
