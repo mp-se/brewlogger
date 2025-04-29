@@ -21,13 +21,15 @@ export function detectMdns(status) {
 export function detectPlatform(status) {
   if (Object.prototype.hasOwnProperty.call(status, 'platform')) {
     logDebug('DeviceListView.detectPlatform()', 'Platform found', status.platform.split(' ')[0])
-    return status.platform.split(' ')[0]
+    return status.platform.split(' ')[0].toLowerCase()
   }
 
   return ''
 }
 
 export function detectSoftware(status) {
+  logDebug('DeviceListView.detectSoftware()')
+
   if (Object.prototype.hasOwnProperty.call(status, 'scale_raw1')) {
     logDebug('DeviceListView.detectSoftware()', 'Software Kegmon')
     return 'Kegmon'
@@ -43,7 +45,7 @@ export function detectSoftware(status) {
     return 'Gravitymon-Gateway'
   }
 
-  if (Object.prototype.hasOwnProperty.call(status, 'gravity_format')) {
+  if (Object.prototype.hasOwnProperty.call(status, 'gravity'))  {
     logDebug('DeviceListView.detectSoftware()', 'Software Gravitymon')
     return 'Gravitymon'
   }
@@ -53,5 +55,6 @@ export function detectSoftware(status) {
     return 'Pressuremon'
   }
 
+  logDebug('DeviceListView.detectSoftware()', "Unknown software, can't detect")
   return ''
 }
