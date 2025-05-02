@@ -14,6 +14,7 @@ import TapPourListView from '@/views/TapPourListView.vue'
 import BatchGravityListView from '@/views/BatchGravityListView.vue'
 import BatchGravityTestView from '@/views/BatchGravityTestView.vue'
 import BatchGravityGraphView from '@/views/BatchGravityGraphView.vue'
+import BatchGravityGraphCompareView from '@/views/BatchGravityGraphCompareView.vue'
 import BatchPressureGraphView from '@/views/BatchPressureGraphView.vue'
 import BatchPressureListView from '@/views/BatchPressureListView.vue'
 import BatchFermentationControlView from '@/views/BatchFermentationControlView.vue'
@@ -61,6 +62,11 @@ const routes = [
     path: '/batch',
     name: 'batch-list',
     component: BatchListView
+  },
+  {
+    path: '/development/compare',
+    name: 'batch-compare-view',
+    component: BatchGravityGraphCompareView
   },
   {
     path: '/batch/:id',
