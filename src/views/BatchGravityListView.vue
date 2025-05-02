@@ -5,7 +5,7 @@
     <hr />
 
     <div class="row gy-2">
-      <GravityStats v-model="gravityStats"></GravityStats>
+      <GravityStatsFragment v-model="gravityStats"></GravityStatsFragment>
 
       <LifeEstimates v-model="gravityStats"></LifeEstimates>
 
