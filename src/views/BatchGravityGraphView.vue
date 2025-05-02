@@ -524,7 +524,7 @@ function updateDataSet() {
   logDebug('BatchGravityGraphView.updateDataSet()')
 
   const filteredGravityList = gravityList.value.filter(
-    (g) => g.active && g.gravity > infoFG.value && g.gravity < infoOG.value
+    (g) => g.active && g.gravity >= infoFG.value && g.gravity <= infoOG.value
   )
 
   gravityStats.value = getGravityDataAnalytics(filteredGravityList)
