@@ -449,7 +449,7 @@ function average(arr) {
 function mapGravityVelocityData(gList) {
   gravityVelocityData1.value = []
 
-  const pointsPerWindow = 4*4 // Assume 15 minute interval, window of 1 hour
+  const pointsPerWindow = 4*6 // Assume 15 minute interval, window of 1 hour
   // const pointsPerWindow = 4*4 // Assume 15 minute interval, window of 4 hour
   // const pointsPerWindow = 4*6 // Assume 15 minute interval, window of 6 hour
   var temp = []
@@ -463,22 +463,19 @@ function mapGravityVelocityData(gList) {
   // First get the average value per window
   for (var i = 0; i < gList.length - pointsPerWindow; i++) {
       const list = gList.slice(i, i + pointsPerWindow)
-      var lowpass = []
+      // var lowpass = []
 
       // Run the data through the lowpass filter
-      list.forEach(g => {
-        filter.putValue(g.gravity)
-        lowpass.push(filter.getFilteredValue())
-      })
+      // list.forEach(g => {
+      //   filter.putValue(g.gravity)
+      //   lowpass.push(filter.getFilteredValue())
+      // })
 
       temp.push({
       x: new Date(list[list.length - 1].created),
-      // y: parseFloat(new Number(average(list.map((g) => g.gravity)) * 1000).toFixed(2))
       y: average(list.map((g) => g.gravity))
       // y: average(lowpass)
     })      
-
-    // logDebug("Lowpass", average(lowpass), average(list.map((g) => g.gravity)))
   }
 
   // gravityVelocityData1.value = temp
@@ -490,11 +487,12 @@ function mapGravityVelocityData(gList) {
 
   for (i = 1; i < temp.length; i++) {
     filter.putValue(temp[i].y - temp[i - 1].y)
+    var val = filter.getFilteredValue() * 10000
 
     result.push({
       x: temp[i].x,
       // y: (temp[i].y - temp[i - 1].y) * 10000
-      y: filter.getFilteredValue() * 10000
+      y: val > 0 ? 0 : -val
     })      
   }
 
