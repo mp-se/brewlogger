@@ -25,23 +25,6 @@
           ></BsInputNumber>
         </div>
 
-        <div class="col-md-2" v-if="graphOptions.velocity">
-          <BsInputNumber
-            v-model="outlierLimit"
-            label="Outlier limit"
-            step="0.0001"
-            :disabled="global.disabled"
-          ></BsInputNumber>
-        </div>
-
-        <div class="col-md-2" v-if="graphOptions.velocity">
-          <BsInputNumber
-            v-model="window"
-            label="Vecolicy window"
-            :disabled="global.disabled"
-          ></BsInputNumber>
-        </div>
-
         <div class="col-md-1">
           <BsInputBase label="&nbsp;"
             ><button
@@ -141,37 +124,29 @@
           <p class="fw-bold">Filters</p>
           <div class="btn-group-vertical" role="group" aria-label="Vertical button group">
             <button
-              @click="filterDownsampleLTTB()"
+              @click="filterAll()"
               type="button"
               class="btn btn-outline-secondary btn-sm"
               :disabled="global.disabled"
             >
-              LTTB
+              Clear
             </button>
+
+            <input
+              v-model="lowpass"
+              class="form-control form-control-sm"
+              type="number"
+              :disabled="global.disabled"
+            />
+
             <button
-              @click="filterDownsampleLTD()"
+              @click="filterLowPass()"
               type="button"
               class="btn btn-outline-secondary btn-sm"
               :disabled="global.disabled"
             >
-              LTD
-            </button>
-            <button
-              @click="filterKalman()"
-              type="button"
-              class="btn btn-outline-secondary btn-sm"
-              :disabled="global.disabled"
-            >
-              Kalman
-            </button>
-            <button
-              @click="filterOutlier()"
-              type="button"
-              class="btn btn-outline-secondary btn-sm"
-              :disabled="global.disabled"
-            >
-              Outliers
-            </button>
+              Lowpass
+            </button>          
           </div>
         </div>
         <div class="row p-2">
@@ -216,9 +191,7 @@ import { config, gravityStore, batchStore, global } from '@/modules/pinia'
 import router from '@/modules/router'
 import { gravityToPlato, tempToF, getGravityDataAnalytics, abv } from '@/modules/utils'
 import { logDebug, logError } from '@/modules/logger'
-import { LTTB, LTD } from 'downsample'
-import { KalmanFilter } from 'kalman-filter'
-import regression from 'regression'
+import LowpassFilter from 'lowpassf'
 
 var chart = null // Do not use ref for this, will cause stack overflow...
 
@@ -231,10 +204,8 @@ const infoFG = ref(null)
 const currentDataCount = ref(0)
 const batchName = ref('')
 
-// For testing gravity velocity
-const window = ref(20)
-const pointsPerDay = ref(0)
-const outlierLimit = ref(0.001)
+// For testing lowpass
+const lowpass = ref(4)
 
 watch(infoFirstDay, async (selected) => {
   logDebug('BatchGravityGraphView.watch(infoFirstDay)', selected)
@@ -253,8 +224,8 @@ const gravityStats = ref(null)
 
 const gravityData = ref([])
 const gravityVelocityData = ref([])
+const gravityVelocityData1 = ref([])
 const alcoholData = ref([])
-//const pressureData = ref([])
 const batteryData = ref([])
 const temperatureData = ref([])
 const chamberData = ref([])
@@ -469,50 +440,67 @@ function mapChamberData(gList) {
   return result
 }
 
-function calculateMean(data) {
-  const sum = data.reduce((acc, value) => acc + value, 0)
-  return sum / data.length
+function average(arr) {
+  if (arr.length === 0) return 0; 
+  const sum = arr.reduce((acc, val) => acc + val, 0);
+  return sum / arr.length;
 }
 
-function mapGravityVelocityData(gList, pointsPerDay, window) {
+function mapGravityVelocityData(gList) {
+  gravityVelocityData1.value = []
+
+  const pointsPerWindow = 4*4 // Assume 15 minute interval, window of 1 hour
+  // const pointsPerWindow = 4*4 // Assume 15 minute interval, window of 4 hour
+  // const pointsPerWindow = 4*6 // Assume 15 minute interval, window of 6 hour
+  var temp = []
   var result = []
-  var skipped = 0
 
-  for (var i = 0; i < gList.length - pointsPerDay; i += 1) {
-    const list = gList.slice(i, i + pointsPerDay)
-    var data = []
-    var j = 0
+  var filter = new LowpassFilter()
+  // filter.setLogic(filter.LinearWeightAverage);
+  filter.setLogic(filter.SimpleAverage);
+  filter.setSamplingRange(4);
 
-    list.forEach((g) => {
-      data.push([j, g.gravity])
-      j++
-    })
+  // First get the average value per window
+  for (var i = 0; i < gList.length - pointsPerWindow; i++) {
+      const list = gList.slice(i, i + pointsPerWindow)
+      var lowpass = []
 
-    // Check the data within the window and remove any outliers
-    const dataSubset = data.slice(-window)
-    const gravityValues = dataSubset.map((point) => point[1])
-    const meanGravity = calculateMean(gravityValues)
+      // Run the data through the lowpass filter
+      list.forEach(g => {
+        filter.putValue(g.gravity)
+        lowpass.push(filter.getFilteredValue())
+      })
 
-    var dataFiltered = []
+      temp.push({
+      x: new Date(list[list.length - 1].created),
+      // y: parseFloat(new Number(average(list.map((g) => g.gravity)) * 1000).toFixed(2))
+      y: average(list.map((g) => g.gravity))
+      // y: average(lowpass)
+    })      
 
-    dataSubset.forEach((data) => {
-      if (Math.abs(data[1] - meanGravity) < outlierLimit.value) {
-        dataFiltered.push(data)
-      } else {
-        skipped++
-      }
-    })
-
-    const polynomialResult = regression.polynomial(dataFiltered, { order: 1, precision: 12 })
-    result.push({
-      x: new Date(gList[i + pointsPerDay].created),
-      y: polynomialResult.predict(pointsPerDay)[1] - polynomialResult.predict(0)[1]
-    })
+    // logDebug("Lowpass", average(lowpass), average(list.map((g) => g.gravity)))
   }
 
-  logDebug('Skipped', skipped, 'outliers')
+  // gravityVelocityData1.value = temp
+
+  // Calculate the average velocity
+  filter = new LowpassFilter()
+  filter.setLogic(filter.SimpleAverage);
+  filter.setSamplingRange(4);
+
+  for (i = 1; i < temp.length; i++) {
+    filter.putValue(temp[i].y - temp[i - 1].y)
+
+    result.push({
+      x: temp[i].x,
+      // y: (temp[i].y - temp[i - 1].y) * 10000
+      y: filter.getFilteredValue() * 10000
+    })      
+  }
+
   return result
 }
+
 
 function apply() {
   logDebug('BatchGravityGraphView.apply()')
@@ -535,13 +523,8 @@ function updateDataSet() {
   alcoholData.value = mapAlcoholData(filteredGravityList)
   chamberData.value = mapChamberData(filteredGravityList)
 
-  if (pointsPerDay.value === 0)
-    pointsPerDay.value = Math.round((3600 * 24) / gravityStats.value.averageInterval)
-
   gravityVelocityData.value = mapGravityVelocityData(
-    filteredGravityList,
-    pointsPerDay.value,
-    window.value
+    filteredGravityList
   )
 
   currentDataCount.value = gravityData.value.length
@@ -687,6 +670,16 @@ function configureChart(config) {
       cubicInterpolationMode: 'monotone',
       tension: 0.4
     })
+    chart.data.datasets.push({
+      label: 'Development',
+      data: gravityVelocityData1.value,
+      borderColor: 'red',
+      backgroundColor: 'red',
+      yAxisID: 'yGravity',
+      pointRadius: 0,
+      cubicInterpolationMode: 'monotone',
+      tension: 0.4
+    })
   }
 
   if (config.velocity) {
@@ -757,63 +750,44 @@ function filterAll() {
   chart.update()
 }
 
-function filterDownsampleLTTB() {
-  logDebug('BatchGravityGraphView.filterDownsampleLTTB()')
+function applyLowPass(input) {
+  logDebug('BatchGravityGraphView.applyLowPass()')
 
-  const count = Math.round(chart.data.datasets[0].data.length * 0.7)
+  var filter = new LowpassFilter()
+  filter.setLogic(filter.LinearWeightAverage);
+  filter.setSamplingRange(lowpass.value);
 
-  for (var i = 0; i < chart.data.datasets.length; i++) {
-    chart.data.datasets[i].data = applyLTTB(chart.data.datasets[i].data, count)
-  }
+  var data = []
 
-  currentDataCount.value = chart.data.datasets[0].data.length
-  chart.update()
+  // Run the data through the lowpass filter
+  input.forEach((i) => {
+    filter.putValue(i.y)
+    data.push({ x: i.x, y: filter.getFilteredValue() })
+  })
+
+  return data
 }
 
-function filterDownsampleLTD() {
-  logDebug('BatchGravityGraphView.filterDownsampleLTD()')
-
-  const count = Math.round(chart.data.datasets[0].data.length * 0.7)
-
-  for (var i = 0; i < chart.data.datasets.length; i++) {
-    chart.data.datasets[i].data = applyLTD(chart.data.datasets[i].data, count)
-  }
-
-  currentDataCount.value = chart.data.datasets[0].data.length
-  chart.update()
-}
-
-function filterKalman() {
-  logDebug('BatchGravityGraphView.filterKalman()')
-
-  for (var i = 0; i < chart.data.datasets.length; i++) {
-    chart.data.datasets[i].data = applyKalman(chart.data.datasets[i].data)
-  }
-
-  currentDataCount.value = chart.data.datasets[0].data.length
-  chart.update()
-}
-
-function filterOutlier() {
-  logDebug('BatchGravityGraphView.filterOutlier()', chart.data.datasets)
+function filterLowPass() {
+  logDebug('BatchGravityGraphView.filterLowPass()', chart.data.datasets)
 
   for (var i = 0; i < chart.data.datasets.length; i++) {
     switch (chart.data.datasets[i].label) {
       case 'Gravity':
-        chart.data.datasets[i].data = applyOutlier(chart.data.datasets[i].data, 20, 0.002) // Data, Window, Max Deviation limit
+        chart.data.datasets[i].data = applyLowPass(chart.data.datasets[i].data, 20, 0.002) // Data, Window, Max Deviation limit
         break
       case 'Chamber':
       case 'Temperature':
-        chart.data.datasets[i].data = applyOutlier(chart.data.datasets[i].data, 20, 0.4) // Data, Window, Max Deviation limit
+        chart.data.datasets[i].data = applyLowPass(chart.data.datasets[i].data, 20, 0.4) // Data, Window, Max Deviation limit
         break
       case 'Velocity':
         // Dont filter this.
         break
       case 'Battery':
-        chart.data.datasets[i].data = applyOutlier(chart.data.datasets[i].data, 20, 0.1) // Data, Window, Max Deviation limit
+        chart.data.datasets[i].data = applyLowPass(chart.data.datasets[i].data, 20, 0.1) // Data, Window, Max Deviation limit
         break
       case 'Alcohol':
-        chart.data.datasets[i].data = applyOutlier(chart.data.datasets[i].data, 20, 0.1) // Data, Window, Max Deviation limit
+        chart.data.datasets[i].data = applyLowPass(chart.data.datasets[i].data, 20, 0.1) // Data, Window, Max Deviation limit
         break
     }
   }
@@ -822,96 +796,4 @@ function filterOutlier() {
   chart.update()
 }
 
-function applyLTTB(input, points) {
-  logDebug('BatchGravityGraphView.applyLTTB()')
-
-  // Map data to a format that can be handled by the library
-  var data = []
-  input.forEach((i) => {
-    data.push([new Date(i.x), i.y])
-  })
-
-  const downsampled = LTTB(data, points)
-
-  // Map data back to chart format
-  data = []
-  downsampled.forEach((d) => {
-    data.push({ x: d[0].toISOString(), y: d[1] })
-  })
-
-  return data
-}
-
-function applyLTD(input, points) {
-  logDebug('BatchGravityGraphView.applyLTD()')
-
-  // Map data to a format that can be handled by the library
-  var data = []
-  input.forEach((i) => {
-    data.push([new Date(i.x), i.y])
-  })
-
-  const downsampled = LTD(data, points)
-
-  // Map data back to chart format
-  data = []
-  downsampled.forEach((d) => {
-    // logDebug(d)
-    data.push({ x: d[0].toISOString(), y: d[1] })
-  })
-
-  return data
-}
-
-function applyKalman(input) {
-  logDebug('BatchGravityGraphView.applyKalman()')
-
-  // Map data to a format that can be handled by the library
-  var data = []
-  input.forEach((i) => {
-    data.push([Date.parse(i.x), i.y])
-  })
-
-  const filtered = new KalmanFilter({ observation: 2, dynamic: 'constant-speed' }).filterAll(data)
-
-  // Map data back to chart format
-  data = []
-  filtered.forEach((f) => {
-    data.push({ x: new Date(f[0]).toISOString(), y: f[1] })
-  })
-
-  return data
-}
-
-// function calculateStandardDeviation(data, mean) {
-//   const variance = data.reduce((acc, value) => acc + Math.pow(value - mean, 2), 0) / data.length;
-//   return Math.sqrt(variance);
-// }
-
-function applyOutlier(input, window, limit) {
-  logDebug('BatchGravityGraphView.applyOutlier()', input.length, window, limit, input)
-
-  var result = []
-  var skipped = 0
-
-  for (var i = 0; i < input.length - window; i += window) {
-    const dataSubset = input.slice(i, i + window)
-
-    const dataValues = dataSubset.map((p) => p.y)
-    const dataMean = calculateMean(dataValues)
-    // const dataStd = calculateStandardDeviation(dataValues, dataMean);
-    // logDebug('Mean:', dataMean, "Std:", dataStd)
-
-    dataSubset.forEach((data) => {
-      if (Math.abs(data.y - dataMean) < limit) {
-        result.push(data)
-      } else {
-        skipped++
-      }
-    })
-  }
-
-  logDebug('BatchGravityGraphView.applyOutlier()', 'Removed no outlsers', skipped)
-  return result
-}
 </script>
