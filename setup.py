@@ -14,6 +14,8 @@ install_requires = [
     "redis",
     # "scipy",
     "websockets",
+    "virtualenv>=20.26.6",
+    "urllib3>=2.2.2",
 ]
 
 setup(

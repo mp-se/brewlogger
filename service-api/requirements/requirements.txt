@@ -18,8 +18,12 @@ certifi==2025.4.26
     #   httpx
 click==8.2.1
     # via uvicorn
+distlib==0.3.9
+    # via virtualenv
 fastapi==0.115.12
     # via brewlogger_api (setup.py)
+filelock==3.18.0
+    # via virtualenv
 h11==0.16.0
     # via
     #   httpcore
@@ -34,6 +38,8 @@ idna==3.10
     #   httpx
 ifaddr==0.2.0
     # via zeroconf
+platformdirs==4.3.8
+    # via virtualenv
 psycopg2==2.9.10
     # via brewlogger_api (setup.py)
 pydantic==2.11.5
@@ -71,7 +77,11 @@ typing-inspection==0.4.1
     #   pydantic-settings
 tzlocal==5.3.1
     # via apscheduler
+urllib3==2.4.0
+    # via brewlogger_api (setup.py)
 uvicorn==0.34.3
+    # via brewlogger_api (setup.py)
+virtualenv==20.31.2
     # via brewlogger_api (setup.py)
 websockets==15.0.1
     # via brewlogger_api (setup.py)

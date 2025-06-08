@@ -31,12 +31,16 @@ click==8.2.1
     #   uvicorn
 coverage[toml]==7.2.7
     # via pytest-cov
-distlib==0.3.7
-    # via virtualenv
+distlib==0.3.9
+    # via
+    #   -r /Users/magnus.persson6/dev/brewlogger/service-api/requirements/requirements.txt
+    #   virtualenv
 fastapi==0.115.12
     # via -r /Users/magnus.persson6/dev/brewlogger/service-api/requirements/requirements.txt
-filelock==3.12.4
-    # via virtualenv
+filelock==3.18.0
+    # via
+    #   -r /Users/magnus.persson6/dev/brewlogger/service-api/requirements/requirements.txt
+    #   virtualenv
 h11==0.16.0
     # via
     #   -r /Users/magnus.persson6/dev/brewlogger/service-api/requirements/requirements.txt
@@ -66,8 +70,10 @@ nodeenv==1.8.0
     # via pre-commit
 packaging==23.1
     # via pytest
-platformdirs==3.11.0
-    # via virtualenv
+platformdirs==4.3.8
+    # via
+    #   -r /Users/magnus.persson6/dev/brewlogger/service-api/requirements/requirements.txt
+    #   virtualenv
 pluggy==1.2.0
     # via pytest
 pre-commit==3.4.0
@@ -131,12 +137,16 @@ tzlocal==5.3.1
     # via
     #   -r /Users/magnus.persson6/dev/brewlogger/service-api/requirements/requirements.txt
     #   apscheduler
-urllib3==2.0.7
-    # via requests
+urllib3==2.4.0
+    # via
+    #   -r /Users/magnus.persson6/dev/brewlogger/service-api/requirements/requirements.txt
+    #   requests
 uvicorn==0.34.3
     # via -r /Users/magnus.persson6/dev/brewlogger/service-api/requirements/requirements.txt
-virtualenv==20.24.5
-    # via pre-commit
+virtualenv==20.31.2
+    # via
+    #   -r /Users/magnus.persson6/dev/brewlogger/service-api/requirements/requirements.txt
+    #   pre-commit
 websockets==15.0.1
     # via -r /Users/magnus.persson6/dev/brewlogger/service-api/requirements/requirements.txt
 zeroconf==0.147.0
