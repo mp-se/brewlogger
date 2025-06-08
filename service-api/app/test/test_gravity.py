@@ -39,6 +39,7 @@ def test_add(app_client):
         "batchId": 1,
         "temperature": 0.2,
         "gravity": 0.3,
+        "velocity": 0.1,
         "angle": 0.4,
         "battery": 0.5,
         "rssi": 0.6,
@@ -62,6 +63,7 @@ def test_add(app_client):
     data2 = json.loads(r.text)
     assert data["temperature"] == data2["temperature"]
     assert data["gravity"] == data2["gravity"]
+    assert data["velocity"] == data2["velocity"]
     assert data["angle"] == data2["angle"]
     assert data["battery"] == data2["battery"]
     assert data["rssi"] == data2["rssi"]
@@ -87,6 +89,7 @@ def test_update(app_client):
     data = {
         "temperature": 1.2,
         "gravity": 1.3,
+        "velocity": 1.1,
         "angle": 1.4,
         "battery": 1.5,
         "rssi": 1.6,
@@ -107,6 +110,7 @@ def test_update(app_client):
     data2 = json.loads(r.text)
     assert data["temperature"] == data2["temperature"]
     assert data["gravity"] == data2["gravity"]
+    assert data["velocity"] == data2["velocity"]
     assert data["angle"] == data2["angle"]
     assert data["battery"] == data2["battery"]
     assert data["rssi"] == data2["rssi"]
@@ -138,6 +142,7 @@ def test_gravity_batch(app_client):
         "batchId": 1,
         "temperature": 0.2,
         "gravity": 0.3,
+        "velocity": 0.1,
         "angle": 0.4,
         "battery": 0.5,
         "rssi": 0.6,
@@ -166,6 +171,7 @@ def test_gravity_batch(app_client):
         "temperature": 0.2,
         "gravity": 0.3,
         "angle": 0.4,
+        "velocity": 0.1,
         "battery": 0.5,
         "rssi": 0.6,
         "corrGravity": 0.7,
@@ -188,6 +194,7 @@ def test_public(app_client):
         "temperature": 20.2,
         "temp_units": "C",
         "gravity": 1.05,
+        "velocity": 0.1,
         "angle": 34.45,
         "battery": 3.85,
         "RSSI": -76.2,
@@ -202,6 +209,7 @@ def test_public(app_client):
     print(data2)
     assert len(data2) == 1
     assert data2[0]["gravity"][0]["gravity"] == 1.05
+    assert data2[0]["gravity"][0]["velocity"] == 0.1
     assert data2[0]["gravity"][0]["angle"] == 34.45
     assert data2[0]["gravity"][0]["battery"] == 3.85
     assert data2[0]["gravity"][0]["rssi"] == -76.2
@@ -216,7 +224,6 @@ def test_public(app_client):
     r = app_client.get("/api/batch/?chipId=AAAAA2", headers=headers)
     assert r.status_code == 200
     data2 = json.loads(r.text)
-    print(data2)
     assert len(data2) == 1
 
     data = {
@@ -227,6 +234,7 @@ def test_public(app_client):
         "temperature": 56.2,
         "temp_units": "F",
         "gravity": 5,
+        "velocity": 5.1,
         "angle": 34.45,
         "gravity_units": "P",
         "battery": 3.85,
@@ -234,13 +242,7 @@ def test_public(app_client):
     }
     r = app_client.post("/api/gravity/public", json=data)
     assert r.status_code == 200
-    assert data2[0]["gravity"][0]["gravity"] == 1.05
-    assert data2[0]["gravity"][0]["angle"] == 34.45
-    assert data2[0]["gravity"][0]["battery"] == 3.85
-    assert data2[0]["gravity"][0]["rssi"] == -76.2
-    assert data2[0]["gravity"][0]["runTime"] == 0.0
-    assert data2[0]["gravity"][0]["temperature"] == 20.2
-
+ 
 
 def test_public2(app_client):
     test_init(app_client)

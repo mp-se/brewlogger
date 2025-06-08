@@ -114,6 +114,7 @@ class Gravity(Base):
     id = Column(Integer, primary_key=True, index=True, nullable=False)
     temperature = Column(Float, nullable=False)
     gravity = Column(Float, nullable=False)
+    velocity = Column(Float, nullable=False)
     angle = Column(Float, nullable=False)
     battery = Column(Float, nullable=False)
     rssi = Column(Float, nullable=False)

@@ -209,6 +209,7 @@ class GravityBase(BaseModel):
 
     temperature: float = Field(description="Temperature value in C")
     gravity: float = Field(description="Calculated gravity in SG")
+    velocity: float = Field(description="Gravity velocity, points per day")
     angle: float = Field(description="Tilt or angle of the device")
     battery: float = Field(description="Battery voltage")
     rssi: float = Field(description="WIFI signal strenght")

@@ -124,6 +124,12 @@ def migrate_database():
         "ALTER TABLE batch ADD COLUMN chip_id_pressure VARCHAR(6)",
         "UPDATE batch SET chip_id_pressure = '' WHERE chip_id_pressure IS NULL",
         "ALTER TABLE batch ALTER COLUMN chip_id_pressure SET NOT NULL",
+
+        # Changes from v0.9 -> v0.10
+
+        "ALTER TABLE gravity ADD COLUMN velocity FLOAT",
+        "UPDATE gravity SET velocity = 0 WHERE velocity IS NULL",
+        "ALTER TABLE gravity ALTER COLUMN velocity SET NOT NULL",
     ]
 
     with engine.connect() as con:

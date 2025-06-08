@@ -156,6 +156,7 @@ async def create_gravity_using_ispindel_format(
         corr_gravity = 0
         gravity_units = "SG"
         run_time = 0
+        velocity = 0
 
         if "corr-gravity" in req_json:
             corr_gravity = req_json["corr-gravity"]
@@ -163,6 +164,8 @@ async def create_gravity_using_ispindel_format(
             gravity_units = req_json["gravity-unit"]
         if "run-time" in req_json:
             run_time = req_json["run-time"]
+        if "velocity" in req_json:
+            velocity = req_json["velocity"]
 
         # Check if there is an active batch
         batchList = batch_service.search_chipId_active(req_json["ID"], True)
@@ -219,6 +222,7 @@ async def create_gravity_using_ispindel_format(
         gravity = schemas.GravityCreate(
             temperature=req_json["temperature"],
             gravity=req_json["gravity"],
+            velocity=velocity,
             angle=req_json["angle"],
             battery=req_json["battery"],
             rssi=req_json["RSSI"],
