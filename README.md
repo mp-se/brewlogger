@@ -24,6 +24,14 @@ This is a short list of features that has been implemented into the Brewlogger s
 - Collect tap information from KegMon
 - Taplist for showing whats serving and what is available
 
+## Sending data to brewlogger
+
+There are a few public endpoints in brewlogger for receving data.
+
+- http://your-ip/gravity (Used for sending gravity data)
+- http://your-ip/pressure (Used for sending pressure data)
+- http://your-ip/post (Used for sending both pressure and gravity data)
+
 ### Features on the wish list
 
 - Keeping track of batches that contain pressure data (PressureMon)
