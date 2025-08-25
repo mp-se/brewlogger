@@ -146,7 +146,7 @@
               :disabled="global.disabled"
             >
               Lowpass
-            </button>          
+            </button>
           </div>
         </div>
         <div class="row p-2">
@@ -191,7 +191,24 @@ import { config, gravityStore, batchStore, global } from '@/modules/pinia'
 import router from '@/modules/router'
 import { gravityToPlato, tempToF, getGravityDataAnalytics, abv } from '@/modules/utils'
 import { logDebug, logError } from '@/modules/logger'
-import LowpassFilter from 'lowpassf'
+
+class LowPassFilter {
+  constructor(windowSize) {
+    this.windowSize = windowSize
+    this.data = []
+  }
+
+  process(newValue) {
+    this.data.push(newValue)
+
+    if (this.data.length > this.windowSize) {
+      this.data.shift()
+    }
+
+    const sum = this.data.reduce((acc, val) => acc + val, 0)
+    return sum / this.data.length
+  }
+}
 
 var chart = null // Do not use ref for this, will cause stack overflow...
 
@@ -440,65 +457,107 @@ function mapChamberData(gList) {
   return result
 }
 
-function average(arr) {
-  if (arr.length === 0) return 0; 
-  const sum = arr.reduce((acc, val) => acc + val, 0);
-  return sum / arr.length;
-}
+// function ave(arr) {
+//   if (arr.length === 0) return 0
+//   const sum = arr.reduce((acc, val) => acc + val, 0)
+//   return sum / arr.length
+// }
+
+// function min(arr) {
+//   if (arr.length === 0) return null
+//   return arr.reduce((minValue, current) => (current < minValue ? current : minValue), arr[0])
+// }
+
+// function max(arr) {
+//   if (arr.length === 0) return null
+//   return arr.reduce((maxValue, current) => (current > maxValue ? current : maxValue), arr[0])
+// }
 
 function mapGravityVelocityData(gList) {
   gravityVelocityData1.value = []
 
-  const pointsPerWindow = 4*6 // Assume 15 minute interval, window of 1 hour
-  // const pointsPerWindow = 4*4 // Assume 15 minute interval, window of 4 hour
-  // const pointsPerWindow = 4*6 // Assume 15 minute interval, window of 6 hour
-  var temp = []
+  const filter = new LowPassFilter(10)
+  const slotHours = 1
+  const slots = []
+  let currentSlot = { time: null, totalGravity: 0, count: 0 }
+
+  gList.forEach((g) => {
+    const createdTime = new Date(g.created).getTime()
+    const gravity = filter.process(g.gravity)
+
+    if (!currentSlot.time) {
+      currentSlot.time = createdTime
+    }
+
+    // Check if the current `created` time falls within the 4-hour window
+    if (createdTime - currentSlot.time < slotHours * 3600 * 1000) {
+      currentSlot.totalGravity += gravity
+      currentSlot.count++
+    } else {
+      // Push the completed group to the result and start a new group
+      slots.push(currentSlot)
+      currentSlot = { time: null, totalGravity: 0, count: 0 }
+    }
+
+    // For testing and showing the filtered gravity
+    gravityVelocityData1.value.push({
+      x: new Date(g.created),
+      // y: gravity
+      y: g.velocity
+    })
+  })
+
+  if (currentSlot.count > 0) slots.push(currentSlot)
+
+  // logDebug(slots)
+
   var result = []
 
-  var filter = new LowpassFilter()
-  // filter.setLogic(filter.LinearWeightAverage);
-  filter.setLogic(filter.SimpleAverage);
-  filter.setSamplingRange(4);
+  for (let i = 1; i < slots.length; i++) {
+    const avePrev = slots[i - 1].totalGravity / slots[i - 1].count
+    const aveCurr = slots[i].totalGravity / slots[i].count
+
+    const velocity = (aveCurr - avePrev) * (24 / slotHours) * 1000 // velocity over 24 hours
+
+    result.push({
+      x: new Date(slots[i].time),
+      y: velocity
+    })
+  }
+
+  /*
+  const pointsPerWindow = 4*6 // Assume 15 minute interval
+  var temp = []
+  var result = []
 
   // First get the average value per window
   for (var i = 0; i < gList.length - pointsPerWindow; i++) {
       const list = gList.slice(i, i + pointsPerWindow)
-      // var lowpass = []
-
-      // Run the data through the lowpass filter
-      // list.forEach(g => {
-      //   filter.putValue(g.gravity)
-      //   lowpass.push(filter.getFilteredValue())
-      // })
 
       temp.push({
       x: new Date(list[list.length - 1].created),
-      y: average(list.map((g) => g.gravity))
-      // y: average(lowpass)
+      y: ave(list.map((g) => g.gravity)),
+      max: max(list.map((g) => g.gravity)),
+      min: min(list.map((g) => g.gravity))
     })      
   }
 
-  // gravityVelocityData1.value = temp
+  gravityVelocityData1.value = temp
 
-  // Calculate the average velocity
-  filter = new LowpassFilter()
-  filter.setLogic(filter.SimpleAverage);
-  filter.setSamplingRange(4);
+  const filter = new LowPassFilter(5);
 
   for (i = 1; i < temp.length; i++) {
-    filter.putValue(temp[i].y - temp[i - 1].y)
-    var val = filter.getFilteredValue() * 10000
+    const val = filter.process((temp[i].min - temp[i - 1].max) * 1000)
 
     result.push({
       x: temp[i].x,
-      // y: (temp[i].y - temp[i - 1].y) * 10000
-      y: val > 0 ? 0 : -val
+      y: val
     })      
-  }
+  }  
+  */
 
   return result
 }
-
 
 function apply() {
   logDebug('BatchGravityGraphView.apply()')
@@ -521,9 +580,7 @@ function updateDataSet() {
   alcoholData.value = mapAlcoholData(filteredGravityList)
   chamberData.value = mapChamberData(filteredGravityList)
 
-  gravityVelocityData.value = mapGravityVelocityData(
-    filteredGravityList
-  )
+  gravityVelocityData.value = mapGravityVelocityData(filteredGravityList)
 
   currentDataCount.value = gravityData.value.length
   configureChart(graphOptions.value)
@@ -673,7 +730,8 @@ function configureChart(config) {
       data: gravityVelocityData1.value,
       borderColor: 'red',
       backgroundColor: 'red',
-      yAxisID: 'yGravity',
+      // yAxisID: 'yGravity',
+      yAxisID: 'yVelocity',
       pointRadius: 0,
       cubicInterpolationMode: 'monotone',
       tension: 0.4
@@ -751,16 +809,13 @@ function filterAll() {
 function applyLowPass(input) {
   logDebug('BatchGravityGraphView.applyLowPass()')
 
-  var filter = new LowpassFilter()
-  filter.setLogic(filter.LinearWeightAverage);
-  filter.setSamplingRange(lowpass.value);
+  var filter = new LowPassFilter(lowpass.value)
 
   var data = []
 
   // Run the data through the lowpass filter
   input.forEach((i) => {
-    filter.putValue(i.y)
-    data.push({ x: i.x, y: filter.getFilteredValue() })
+    data.push({ x: i.x, y: filter.process(i.y) })
   })
 
   return data
@@ -780,6 +835,7 @@ function filterLowPass() {
         break
       case 'Velocity':
         // Dont filter this.
+        // chart.data.datasets[i].data = applyLowPass(chart.data.datasets[i].data, 20, 0.4) // Data, Window, Max Deviation limit
         break
       case 'Battery':
         chart.data.datasets[i].data = applyLowPass(chart.data.datasets[i].data, 20, 0.1) // Data, Window, Max Deviation limit
@@ -793,5 +849,4 @@ function filterLowPass() {
   currentDataCount.value = chart.data.datasets[0].data.length
   chart.update()
 }
-
 </script>
