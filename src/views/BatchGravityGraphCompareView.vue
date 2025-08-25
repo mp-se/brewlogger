@@ -180,7 +180,6 @@ onMounted(() => {
       label: b.name
     })
   })
-
 })
 
 function mapGravityData(gList) {
@@ -197,5 +196,4 @@ function mapGravityData(gList) {
 
   return result
 }
-
 </script>
