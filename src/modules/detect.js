@@ -45,7 +45,7 @@ export function detectSoftware(status) {
     return 'Gravitymon-Gateway'
   }
 
-  if (Object.prototype.hasOwnProperty.call(status, 'gravity'))  {
+  if (Object.prototype.hasOwnProperty.call(status, 'gravity')) {
     logDebug('DeviceListView.detectSoftware()', 'Software Gravitymon')
     return 'Gravitymon'
   }
