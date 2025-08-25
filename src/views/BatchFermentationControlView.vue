@@ -60,6 +60,10 @@
         <router-link :to="{ name: 'batch', params: { id: router.currentRoute.value.params.id } }">
           <button type="button" class="btn btn-secondary w-3">Cancel</button> </router-link
         >&nbsp;
+
+        <router-link :to="{ name: 'batch', params: { id: router.currentRoute.value.params.id } }">
+          <button type="button" class="btn btn-secondary w-3">Back</button> </router-link
+        >&nbsp;
       </div>
     </div>
   </div>
