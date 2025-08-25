@@ -38,6 +38,13 @@
               :disabled="global.disabled"
             ></BsSelect>
           </div>
+          <div class="col-md-2" v-if="activeFermentationSteps.length > 0">
+            <BsInputBase label="&nbsp;">
+            <div class="input-group">
+              <p class="fs-5"><span class="badge text-bg-warning">Controller active</span></p>
+            </div>
+            </BsInputBase>
+          </div>
           <div class="col-md-12">
             <BsInputText
               v-model="batch.description"
@@ -192,6 +199,25 @@
                 </button> </router-link
               >&nbsp;
             </template>
+
+            <BsModalConfirm
+              :callback="deleteFermentationStepsCallback"
+              message="Do you reallu want to delete the fermentation steps"
+              id="deleteFermentationSteps"
+              title="Delete"
+              :disabled="global.disabled"
+            />
+
+            <template v-if="activeFermentationSteps.length > 0">
+              <button
+                type="button"
+                class="btn btn-secondary"
+                @click="deleteFermentationSteps()"
+                :disabled="global.disabled"
+              >
+                Delete steps</button
+              >&nbsp;
+            </template>
           </div>
         </div>
       </form>
@@ -216,14 +242,13 @@ import router from '@/modules/router'
 import { logDebug } from '@/modules/logger'
 import FermentationStepFragment from '@/fragments/FermentationStepFragment.vue'
 
-// TODO: Add date selector
-
 const batch = ref(null)
 const batchSaved = ref(null)
 
 const gravityDeviceOptions = ref([])
 const pressureDeviceOptions = ref([])
 const tempControlDeviceOptions = ref([])
+const activeFermentationSteps = ref('')
 
 const activeOptions = ref([
   { label: 'Active', value: true },
@@ -558,6 +583,7 @@ onMounted(() => {
     })
 
     updateDeviceOptions()
+    activeFermentationSteps.value = ''
 
     if (isNew()) {
       batchSaved.value = new Batch()
@@ -567,6 +593,19 @@ onMounted(() => {
         if (success) {
           batchSaved.value = Batch.fromJson(b.toJson())
           batch.value = b
+
+          if (b.fermentationChamber > 0 || b.fermentationChamber !== null) {
+            deviceStore.getDevice(b.fermentationChamber, (success, d, fs) => {
+              if (success) {
+                if (fs.length > 0) {
+                  activeFermentationSteps.value = fs
+                }
+              } else {
+                // global.messageError = "Failed to load device " + id
+              }
+            })
+          }
+
           // logDebug(batch.value)
         } else {
           global.messageError = 'Failed to load batch ' + router.currentRoute.value.params.id
@@ -657,5 +696,24 @@ const save = () => {
       else global.messageError = 'Failed to save batch'
     })
   }
+}
+
+function deleteFermentationSteps() {
+  logDebug('DeviceView.deleteFermentationSteps()')
+  document.getElementById('deleteFermentationSteps').click()
+}
+
+function deleteFermentationStepsCallback() {
+  logDebug('DeviceView.deleteFermentationStepsCallback()')
+
+  deviceStore.deleteDeviceFermentationSteps(batch.value.fermentationChamber, (success) => {
+    logDebug('DeviceView.deleteFermentationSteps()', success)
+    if (success) {
+      global.messageSuccess = 'Fermentation steps removed'
+      activeFermentationSteps.value = ''
+    } else {
+      global.messageError = 'Failed to remove fermentation steps'
+    }
+  })
 }
 </script>
