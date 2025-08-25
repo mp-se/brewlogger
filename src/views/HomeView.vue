@@ -11,6 +11,7 @@
           label="Chamber"
           help=""
           :disabled="global.disabled"
+          data-bs-toggle="tooltip" data-bs-placement="top" title="Show data from chamber controllers on dashboard" aria-label="Show data from chamber controllers on dashboard"
         >
         </BsInputSwitch>
       </div>
@@ -20,6 +21,7 @@
           label="Kegmon"
           help=""
           :disabled="global.disabled"
+          data-bs-toggle="tooltip" data-bs-placement="top" title="Show data from Kegmon taps on dashboard" aria-label="Show data from Kegmon taps on dashboard"
         >
         </BsInputSwitch>
       </div>
