@@ -40,6 +40,8 @@ There are a few public endpoints in brewlogger for receving data.
 
 - 0.9.0 Updated with new features
   - Feature: Added support for pressuremon and new post format
+  - Updated web flasher
+  - Various updates to UI to improve usability
 
 - 0.8.0 Updated with new features
   - Feature: Refactored user interface to avoid data fetching, this will also allow for multiple devices interacting with the API's and data updated in background.
