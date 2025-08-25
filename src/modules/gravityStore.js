@@ -7,6 +7,7 @@ export class Gravity {
     id,
     temperature,
     gravity,
+    velocity,
     angle,
     battery,
     rssi,
@@ -21,6 +22,7 @@ export class Gravity {
     this.id = id === undefined ? 0 : id
     this.temperature = temperature === undefined ? 0.0 : temperature
     this.gravity = gravity === undefined ? 0.0 : gravity
+    this.velocity = velocity === undefined ? 0.0 : velocity
     this.angle = angle === undefined ? 0.0 : angle
     this.battery = battery === undefined ? 0.0 : battery
     this.rssi = rssi === undefined ? 0 : rssi
@@ -42,6 +44,7 @@ export class Gravity {
       g.id,
       g.temperature,
       g.gravity,
+      g.velocity,
       g.angle,
       g.battery,
       g.rssi,
@@ -61,6 +64,7 @@ export class Gravity {
       //"batchId": this.batchId,
       temperature: this.temperature,
       gravity: this.gravity,
+      velocity: this.velocity,
       angle: this.angle,
       battery: this.battery,
       rssi: this.rssi,
@@ -86,6 +90,9 @@ export class Gravity {
   }
   get gravity() {
     return this._gravity
+  }
+  get velocity() {
+    return this._velocity
   }
   get angle() {
     return this._angle
@@ -126,6 +133,9 @@ export class Gravity {
   }
   set gravity(gravity) {
     this._gravity = gravity
+  }
+  set velocity(velocity) {
+    this._velocity = velocity
   }
   set angle(angle) {
     this._angle = angle
