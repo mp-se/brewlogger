@@ -79,6 +79,10 @@
                   v-model="d.collectLogs"
                   type="checkbox"
                   @click="toggleDeviceLogging(d.id)"
+                  data-bs-toggle="tooltip"
+                  data-bs-placement="top"
+                  title="Collect logs from device when active"
+                  aria-label="Collect logs from device when active"
                 />
               </div>
             </td>
