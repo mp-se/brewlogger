@@ -60,7 +60,7 @@
   <BsFooter
     v-if="global.initialized"
     :text="
-      '(c) 2023-2024 Magnus Persson, ui version ' + global.uiVersion + ' (' + global.uiBuild + ')'
+      '(c) 2023-2025 Magnus Persson, ui version ' + global.uiVersion + ' (' + global.uiBuild + ')'
     "
   />
 </template>
