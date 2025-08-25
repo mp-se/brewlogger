@@ -38,7 +38,8 @@ There are a few public endpoints in brewlogger for receving data.
 
 ### Release history
 
-- 0.7.0 First stable testing version
+- 0.9.0 Updated with new features
+  - Feature: Added support for pressuremon and new post format
 
 - 0.8.0 Updated with new features
   - Feature: Refactored user interface to avoid data fetching, this will also allow for multiple devices interacting with the API's and data updated in background.
@@ -52,8 +53,7 @@ There are a few public endpoints in brewlogger for receving data.
   - Feature: Adding log collection and presentation using websocket interface
   - Feature: Supporting Chamber Controller project and fermentation profiles from brewfather
 
-- 0.9.0 Updated with new features
-  - Feature: Added support for pressuremon and new post format
+- 0.7.0 First stable testing version
 
 ## Installation
 
@@ -198,5 +198,5 @@ volumes:
 
 When posting data from Gravitymon use the following URL's which points to the same API.
 
-- http://[your name or ip]/ispindel
-- http://[your name or ip]/gravity
+- http://[hostname or ip]/ispindel
+- http://[hostname or ip]/gravity
