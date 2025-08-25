@@ -53,13 +53,27 @@
           </td>
           <td>
             <router-link :to="{ name: 'batch', params: { id: b.id } }">
-              <button type="button" class="btn btn-primary btn-sm">
+              <button
+                type="button"
+                class="btn btn-primary btn-sm"
+                data-bs-toggle="tooltip"
+                data-bs-placement="top"
+                title="Edit batch"
+                aria-label="Edit batch"
+              >
                 <i class="bi bi-pencil-square"></i>
               </button> </router-link
             >&nbsp;
             <template v-if="b.pourCount > 0">
               <router-link :to="{ name: 'tap-pour-list', params: { id: b.id } }">
-                <button type="button" class="btn btn-success btn-sm">
+                <button
+                  type="button"
+                  class="btn btn-success btn-sm"
+                  data-bs-toggle="tooltip"
+                  data-bs-placement="top"
+                  title="Show pour data"
+                  aria-label="Show pour data"
+                >
                   <i class="bi bi-list"></i>
                 </button> </router-link
               >&nbsp;
@@ -69,6 +83,10 @@
                 type="button"
                 class="btn btn-success btn-sm"
                 @click.prevent="emptyBatch(b.id)"
+                data-bs-toggle="tooltip"
+                data-bs-placement="top"
+                title="Clear pour data for batch"
+                aria-label="Clear pour data for batch"
               >
                 <i class="bi bi-chevron-bar-down"></i>
               </button>

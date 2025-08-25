@@ -21,6 +21,10 @@
           label="Active"
           help=""
           :disabled="global.disabled"
+          data-bs-toggle="tooltip"
+          data-bs-placement="top"
+          title="Show only active batches"
+          aria-label="Show only active batches"
         >
         </BsInputSwitch>
       </div>
@@ -30,6 +34,10 @@
           label="Data"
           help=""
           :disabled="global.disabled"
+          data-bs-toggle="tooltip"
+          data-bs-placement="top"
+          title="Show only batches with data"
+          aria-label="Show only batches with data"
         >
         </BsInputSwitch>
       </div>
@@ -76,6 +84,10 @@
                   v-model="b.active"
                   type="checkbox"
                   @click="toggleBatchActive(b.id)"
+                  data-bs-toggle="tooltip"
+                  data-bs-placement="top"
+                  title="Active batch (shown on home)"
+                  aria-label="Active batch (shown on home)"
                 />
               </div>
             </td>
@@ -86,13 +98,24 @@
                   v-model="b.tapList"
                   type="checkbox"
                   @click="toggleBatchTapList(b.id)"
+                  data-bs-toggle="tooltip"
+                  data-bs-placement="top"
+                  title="Include in taplist"
+                  aria-label="Include in taplist"
                 />
               </div>
             </td>
             <td class="fs-5">{{ b.gravityCount }} / {{ b.pressureCount }} / {{ b.pourCount }}</td>
             <td>
               <router-link :to="{ name: 'batch', params: { id: b.id } }">
-                <button type="button" class="btn btn-primary btn-sm">
+                <button
+                  type="button"
+                  class="btn btn-primary btn-sm"
+                  data-bs-toggle="tooltip"
+                  data-bs-placement="top"
+                  title="Edit batch"
+                  aria-label="Edit batch"
+                >
                   <i class="bi bi-pencil-square"></i>
                 </button> </router-link
               >&nbsp;
@@ -100,18 +123,38 @@
                 type="button"
                 class="btn btn-danger btn-sm"
                 @click.prevent="deleteBatch(b.id, b.name)"
+                data-bs-toggle="tooltip"
+                data-bs-placement="top"
+                title="Delete batch"
+                aria-label="Delete batch"
               >
                 <i class="bi bi-file-x"></i></button
               >&nbsp;
 
+              <!-- Links to batch filter -->
+
               <template v-if="b.gravityCount > 0">
                 <router-link :to="{ name: 'batch-gravity-graph', params: { id: b.id } }">
-                  <button type="button" class="btn btn-success btn-sm">
+                  <button
+                    type="button"
+                    class="btn btn-success btn-sm"
+                    data-bs-toggle="tooltip"
+                    data-bs-placement="top"
+                    title="Show gravity graph"
+                    aria-label="Show gravity graph"
+                  >
                     <i class="bi bi-graph-down"></i>
                   </button> </router-link
                 >&nbsp;
                 <router-link :to="{ name: 'batch-gravity-list', params: { id: b.id } }">
-                  <button type="button" class="btn btn-success btn-sm">
+                  <button
+                    type="button"
+                    class="btn btn-success btn-sm"
+                    data-bs-toggle="tooltip"
+                    data-bs-placement="top"
+                    title="Show gravity data as list"
+                    aria-label="Show gravity data as list"
+                  >
                     <i class="bi bi-list"></i>
                   </button> </router-link
                 >&nbsp;
@@ -119,24 +162,73 @@
 
               <template v-if="b.pressureCount > 0">
                 <router-link :to="{ name: 'batch-pressure-graph', params: { id: b.id } }">
-                  <button type="button" class="btn btn-warning btn-sm">
+                  <button
+                    type="button"
+                    class="btn btn-warning btn-sm"
+                    data-bs-toggle="tooltip"
+                    data-bs-placement="top"
+                    title="Show pressure graph"
+                    aria-label="Show pressure graph"
+                  >
                     <i class="bi bi-graph-down"></i>
                   </button> </router-link
                 >&nbsp;
 
                 <router-link :to="{ name: 'batch-pressure-list', params: { id: b.id } }">
-                  <button type="button" class="btn btn-warning btn-sm">
+                  <button
+                    type="button"
+                    class="btn btn-warning btn-sm"
+                    data-bs-toggle="tooltip"
+                    data-bs-placement="top"
+                    title="Show pressure data as list"
+                    aria-label="Show pressure data as list"
+                  >
                     <i class="bi bi-list"></i>
                   </button> </router-link
                 >&nbsp;
               </template>
 
-              <template v-if="b.gravityCount > 0 || b.pressureCount > 0 || b.pourCount > 0">
-                <button @click="exportBatchJSON(b.id)" type="button" class="btn btn-info btn-sm">
-                  <i class="bi bi-filetype-json"></i></button
-                >&nbsp;
-                <button @click="exportBatchCSV(b.id)" type="button" class="btn btn-info btn-sm">
+              <!-- Export data -->
+
+              <template v-if="b.gravityCount">
+                <button
+                  @click="exportBatchGravityCSV(b.id)"
+                  type="button"
+                  class="btn btn-success btn-sm"
+                  data-bs-toggle="tooltip"
+                  data-bs-placement="top"
+                  title="Export gravity data as CSV"
+                  aria-label="Export gravity data as CSV"
+                >
                   <i class="bi bi-filetype-csv"></i></button
+                >&nbsp;
+              </template>
+
+              <template v-if="b.pressureCount">
+                <button
+                  @click="exportBatchPressureCSV(b.id)"
+                  type="button"
+                  class="btn btn-warning btn-sm"
+                  data-bs-toggle="tooltip"
+                  data-bs-placement="top"
+                  title="Export pressure data as CSV"
+                  aria-label="Export pressure data as CSV"
+                >
+                  <i class="bi bi-filetype-csv"></i></button
+                >&nbsp;
+              </template>
+
+              <template v-if="b.gravityCount > 0 || b.pressureCount > 0 || b.pourCount > 0">
+                <button
+                  @click="exportBatchJSON(b.id)"
+                  type="button"
+                  class="btn btn-info btn-sm"
+                  data-bs-toggle="tooltip"
+                  data-bs-placement="top"
+                  title="Export batch data as JSON"
+                  aria-label="Export batch data as JSON"
+                >
+                  <i class="bi bi-filetype-json"></i></button
                 >&nbsp;
               </template>
             </td>
@@ -362,14 +454,14 @@ function exportBatchJSON(id) {
   })
 }
 
-function exportBatchCSV(id) {
-  logDebug('BatchListView.exportBatchCSV()', id)
+function exportBatchGravityCSV(id) {
+  logDebug('BatchListView.exportBatchGravityCSV()', id)
 
   getBatch(id, (success, b) => {
     if (success) {
-      logDebug('BatchListView.exportBatchCSV()', 'Collected batch')
+      logDebug('BatchListView.exportBatchGravityCSV()', 'Collected batch')
       var s =
-        'Name,Created,Temperature,Gravity,Angle,Battery,RSSI,CorrGravity,RunTime,ChamberTemperature,BeerTemperature\n'
+        'Name,Created,Temperature,Gravity,Angle,Battery,RSSI,CorrGravity,RunTime,ChamberTemperature,BeerTemperature,GravityVelocity\n'
       b.gravity.forEach((g) => {
         s +=
           b.name +
@@ -390,13 +482,50 @@ function exportBatchCSV(id) {
           ',' +
           g.runTime +
           ',' +
-          g.chamberTemperature +
+          (g.chamberTemperature === null ? '' : g.chamberTemperature) +
           ',' +
-          g.beerTemperature +
+          (g.beerTemperature === null ? '' : g.beerTemperature) +
+          ',' +
+          g.velocity +
           '\n'
       })
 
-      download(s, 'text/plain', 'brewlogger_batch_' + id + '.csv')
+      download(s, 'text/plain', 'brewlogger_gravity_batch_' + id + '.csv')
+    } else {
+      global.messageError = 'Failed to fetch batch with id ' + id
+      global.disabled = false
+    }
+  })
+}
+
+function exportBatchPressureCSV(id) {
+  logDebug('BatchListView.exportBatchPressureCSV()', id)
+
+  getBatch(id, (success, b) => {
+    if (success) {
+      logDebug('BatchListView.exportBatchPressureCSV()', 'Collected batch')
+      var s = 'Name,Created,Temperature,Pressure,Pressure1,Battery,RSSI,RunTime\n'
+      b.pressure.forEach((g) => {
+        s +=
+          b.name +
+          ',' +
+          g.created +
+          ',' +
+          g.temperature +
+          ',' +
+          g.pressure +
+          ',' +
+          g.pressure1 +
+          ',' +
+          g.battery +
+          ',' +
+          g.rssi +
+          ',' +
+          g.runTime +
+          '\n'
+      })
+
+      download(s, 'text/plain', 'brewlogger_pressure_batch_' + id + '.csv')
     } else {
       global.messageError = 'Failed to fetch batch with id ' + id
       global.disabled = false

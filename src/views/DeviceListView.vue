@@ -84,7 +84,15 @@
             </td>
             <td>
               <router-link :to="{ name: 'device', params: { id: d.id } }">
-                <button type="button" class="btn btn-primary btn-sm" :disabled="global.disabled">
+                <button
+                  type="button"
+                  class="btn btn-primary btn-sm"
+                  :disabled="global.disabled"
+                  data-bs-toggle="tooltip"
+                  data-bs-placement="top"
+                  title="Edit device"
+                  aria-label="Edit device"
+                >
                   <i class="bi bi-pencil-square"></i>
                 </button> </router-link
               >&nbsp;
@@ -93,13 +101,25 @@
                 class="btn btn-danger btn-sm"
                 @click.prevent="deleteDevice(d.id, d.mdns)"
                 :disabled="global.disabled"
+                data-bs-toggle="tooltip"
+                data-bs-placement="top"
+                title="Delete device"
+                aria-label="Delete device"
               >
                 <i class="bi bi-file-x"></i></button
               >&nbsp;
 
               <template v-if="batchStore.anyBatchesForDevice(d.chipId)">
                 <router-link :to="{ name: 'batch-list', query: { chipId: d.chipId } }">
-                  <button type="button" class="btn btn-success btn-sm" :disabled="global.disabled">
+                  <button
+                    type="button"
+                    class="btn btn-success btn-sm"
+                    :disabled="global.disabled"
+                    data-bs-toggle="tooltip"
+                    data-bs-placement="top"
+                    title="Show batches for this device"
+                    aria-label="Show batches for this device"
+                  >
                     <i class="bi bi-boxes"></i>
                   </button> </router-link
                 >&nbsp;
@@ -111,6 +131,10 @@
                   type="button"
                   class="btn btn-secondary btn-sm"
                   :disabled="global.disabled"
+                  data-bs-toggle="tooltip"
+                  data-bs-placement="top"
+                  title="Open device UI"
+                  aria-label="Open device UI"
                 >
                   <i class="bi bi-link"></i></button
                 >&nbsp;
@@ -121,6 +145,10 @@
                     type="button"
                     class="btn btn-secondary btn-sm"
                     :disabled="global.disabled"
+                    data-bs-toggle="tooltip"
+                    data-bs-placement="top"
+                    title="Show device log"
+                    aria-label="Show device log"
                   >
                     <i class="bi bi-file-earmark-richtext"></i>
                   </button>
