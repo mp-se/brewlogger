@@ -40,9 +40,9 @@
           </div>
           <div class="col-md-2" v-if="activeFermentationSteps.length > 0">
             <BsInputBase label="&nbsp;">
-            <div class="input-group">
-              <p class="fs-5"><span class="badge text-bg-warning">Controller active</span></p>
-            </div>
+              <div class="input-group">
+                <p class="fs-5"><span class="badge text-bg-warning">Controller active</span></p>
+              </div>
             </BsInputBase>
           </div>
           <div class="col-md-12">
