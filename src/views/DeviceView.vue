@@ -169,7 +169,7 @@
 
             <BsModalConfirm
               :callback="deleteFermentationStepsCallback"
-              message="Do you reallu want to delete the fermentation steps"
+              message="Do you really want to delete the fermentation steps"
               id="deleteFermentationSteps"
               title="Delete"
               :disabled="global.disabled"
