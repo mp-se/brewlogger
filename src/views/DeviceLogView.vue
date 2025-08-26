@@ -23,6 +23,10 @@
           type="button"
           class="btn btn-primary"
           :disabled="deviceSelected == ''"
+          data-bs-toggle="tooltip"
+          data-bs-placement="top"
+          title="Fetch latest logs"
+          aria-label="Fetch latest logs"
         >
           Refresh
         </button>
@@ -32,6 +36,10 @@
           type="button"
           class="btn btn-danger"
           :disabled="deviceSelected == ''"
+          data-bs-toggle="tooltip"
+          data-bs-placement="top"
+          title="Delete logs"
+          aria-label="Delete logs"
         >
           <i class="bi bi-file-x"></i>
         </button>
@@ -41,6 +49,10 @@
           type="button"
           class="btn btn-secondary"
           :disabled="deviceSelected == ''"
+          data-bs-toggle="tooltip"
+          data-bs-placement="top"
+          title="Hide info level logs"
+          aria-label="Hide info level logs"
         >
           - Info
         </button>
@@ -50,6 +62,10 @@
           type="button"
           class="btn btn-secondary"
           :disabled="deviceSelected == ''"
+          data-bs-toggle="tooltip"
+          data-bs-placement="top"
+          title="Hide warning level logs"
+          aria-label="Hide warning level logs"
         >
           - Warn
         </button>
@@ -59,6 +75,10 @@
           type="button"
           class="btn btn-primary"
           :disabled="deviceSelected == ''"
+          data-bs-toggle="tooltip"
+          data-bs-placement="top"
+          title="Go to the end of the log window"
+          aria-label="Go to the end of the log window"
         >
           <i class="bi bi-arrow-90deg-down"></i>
         </button>
