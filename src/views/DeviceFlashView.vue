@@ -30,11 +30,7 @@
         ></BsInputRadio>
       </div>
       <div class="col-md-2">
-        <BsInputSwitch
-          v-model="beta"
-          label="Beta"
-          help="Use beta versions"
-        ></BsInputSwitch>
+        <BsInputSwitch v-model="beta" label="Beta" help="Use beta versions"></BsInputSwitch>
       </div>
     </div>
 
