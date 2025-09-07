@@ -42,6 +42,7 @@ There are a few public endpoints in brewlogger for receving data.
   - Feature: Added support for pressuremon and new post format
   - Updated web flasher
   - Various updates to UI to improve usability
+  - Made size of logfiles collected configurable
 
 - 0.8.0 Updated with new features
   - Feature: Refactored user interface to avoid data fetching, this will also allow for multiple devices interacting with the API's and data updated in background.
@@ -115,6 +116,7 @@ services:
     environment:
      - API_HOST=brew_api
      - API_KEY=[your API key for securing access to brew_api]
+     - MAX_FILE_SIZE=[optional max size of logfiles]
     volumes:
       - log:/app/log
     networks:

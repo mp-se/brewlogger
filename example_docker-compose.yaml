@@ -75,6 +75,7 @@ services:
     environment:
      - API_HOST=brew_api
      - API_KEY=key
+     - MAX_FILE_SIZE=1000000
     volumes:
       - log:/app/log
     networks:

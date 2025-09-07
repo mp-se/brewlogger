@@ -27,9 +27,7 @@ threadLogger = logging.getLogger("thead")
 endpoint = ""
 headers = {}
 threads = dict()
-
-MAX_FILE_SIZE = 10000
-
+maxFileSize = 100000
 
 class ThreadWrapper:
     def __init__(self):
@@ -65,9 +63,9 @@ def websocket_collector(url, chipId):
                     line = ""
                     f.close()
 
-                    if os.stat(fileName).st_size > MAX_FILE_SIZE:
+                    if os.stat(fileName).st_size > maxFileSize:
                         threadLogger.info(
-                            f"Logile is to large (>{MAX_FILE_SIZE}), rotating {fileName} to {fileName}.1"
+                            f"Logile is to large (>{maxFileSize}), rotating {fileName} to {fileName}.1"
                         )
                         try:
                             os.remove(fileName + ".1")
@@ -145,7 +143,7 @@ async def main():
         await asyncio.sleep(5)
 
 
-if __name__ == "__main__":
+if __name__ == "__main__":    
     logging.basicConfig(
         level=logging.INFO,
         format="%(asctime)-15s %(name)-8s %(levelname)s: %(message)s",
@@ -153,6 +151,10 @@ if __name__ == "__main__":
 
     apiHost = os.getenv("API_HOST")
     apiKey = os.getenv("API_KEY")
+    i = os.getenv("MAX_FILE_SIZE")
+
+    if i is not None:
+        maxFileSize = int(i)
 
     if apiHost is None or apiKey is None:
         logging.error(
@@ -166,7 +168,7 @@ if __name__ == "__main__":
         "Authorization": "Bearer " + apiKey,
     }
 
-    logger.info("Starting log collector")
+    logger.info(f"Starting log collector, max file size is {maxFileSize/1000} kb")
     asyncio.run(main())
     logger.info("Exiting...")
 
