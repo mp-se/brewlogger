@@ -65,7 +65,8 @@ async def create_pressure(
         logger.info("Added timestamp to pressure record %s", pressure.created)
     pressure = pressure_service.create(pressure)
     background_tasks.add_task(notifyClients, "batch", "update", pressure.batch_id)
-    return pressure 
+    return pressure
+
 
 @router.post(
     "/list/",
@@ -81,8 +82,10 @@ async def create_pressure_list(
 ) -> List[models.Pressure]:
     logger.info("Endpoint POST /api/pressure/list/")
     pressure_list = pressure_service.createList(pressure_list)
-    background_tasks.add_task(notifyClients, "batch", "update", pressure_list[0].batch_id)
-    return pressure_list 
+    background_tasks.add_task(
+        notifyClients, "batch", "update", pressure_list[0].batch_id
+    )
+    return pressure_list
 
 
 @router.patch(
@@ -99,14 +102,14 @@ async def update_pressure_by_id(
     logger.info("Endpoint PATCH /api/pressure/%d", pressure_id)
     pressure = pressure_service.update(pressure_id, pressure)
     background_tasks.add_task(notifyClients, "batch", "update", pressure.batch_id)
-    return pressure 
+    return pressure
 
 
 @router.delete("/{pressure_id}", status_code=204, dependencies=[Depends(api_key_auth)])
 async def delete_pressure_by_id(
-    pressure_id: int, 
+    pressure_id: int,
     background_tasks: BackgroundTasks,
-    pressure_service: PressureService = Depends(get_pressure_service)
+    pressure_service: PressureService = Depends(get_pressure_service),
 ):
     logger.info("Endpoint DELETE /api/pressure/%d", pressure_id)
     pressure = pressure_service.get(pressure_id)
@@ -114,9 +117,7 @@ async def delete_pressure_by_id(
     pressure_service.delete(pressure_id)
 
 
-@router.post("/public", 
-    response_model=schemas.Pressure,
-             status_code=200)
+@router.post("/public", response_model=schemas.Pressure, status_code=200)
 async def create_pressure_using_json(
     request: Request,
     background_tasks: BackgroundTasks,
@@ -127,9 +128,11 @@ async def create_pressure_using_json(
     logger.info("Endpoint POST /api/pressure/public")
 
     try:
-        json = await request.json()
+        req_json = await request.json()
 
-        chipId = json["id"]
+        logger.info(f"Payload: {req_json}")
+
+        chipId = req_json["id"]
 
         # Check if there is an active batch
         batchList = batch_service.search_chipId_active(chipId, True)
@@ -137,7 +140,8 @@ async def create_pressure_using_json(
         if len(batchList) == 0:
             batch = schemas.BatchCreate(
                 name="Batch for " + chipId,
-                chipId=chipId,
+                chipIdGravity="",
+                chipIdPressure=chipId,
                 description="Automatically created",
                 brewDate=datetime.today().strftime("%Y-%m-%d"),
                 style="",
@@ -181,41 +185,50 @@ async def create_pressure_using_json(
             "name": "aaaa",
             "id": "cb3818",
             "interval": 10,
-            "temp": 21.71,
-            "temp_units": "C",
+            "temperature": 21.71,
+            "temperature_unit": "C",
             "pressure": -0.0023,
-            "pressure_units": "PSI",
+            "pressure1": -0.0023,
+            "pressure_unit": "PSI",
             "battery": 0.00,
             "rssi": -82,
             "run-time": 0
         }
         """
 
+        pressure1 = 0.0
+
+        if "pressure1" in req_json:  # Pressure 1 is optional
+            pressure1 = req_json["pressure1"]
+
         pressure = schemas.PressureCreate(
-            temperature=json["temp"],
-            pressure=json["pressure"],
-            battery=json["battery"],
-            rssi=json["rssi"],
-            run_time=json["run-time"],
+            temperature=req_json["temperature"],
+            pressure=req_json["pressure"],
+            pressure1=pressure1,
+            battery=req_json["battery"],
+            rssi=req_json["rssi"],
+            run_time=req_json["run-time"],
             batch_id=batchList[0].id,
             created=datetime.now(),
             active=True,
         )
 
-        if json["temp_units"] == "F":
-            pressure.temperature = (
-                (pressure.temperature - 32) * 5 / 9
+        if req_json["temperature-unit"].upper() == "F":
+            pressure.temperature = float(
+                "%.2f" % ((pressure.temperature - 32) * 5 / 9)
             )  # °C = (°F − 32) x 5/9
 
-        if json["pressure_units"] == "BAR":
-            pressure.pressure = pressure.pressure / 0.0689475729
+        if req_json["pressure-unit"].upper() == "BAR":
+            pressure.pressure = float("%.4f" % (pressure.pressure * 1000))
+            pressure.pressure1 = float("%.4f" % (pressure.pressure1 * 1000))
 
-        if json["pressure_units"] == "HPA":
-            pressure.pressure = pressure.pressure / 68.947572932
+        if req_json["pressure-unit"].upper() == "PSI":
+            pressure.pressure = float("%.4f" % (pressure.pressure * 6.89476))
+            pressure.pressure1 = float("%.4f" % (pressure.pressure1 * 6.89476))
 
         pressure = pressure_service.create(pressure)
         background_tasks.add_task(notifyClients, "batch", "update", pressure.batch_id)
-        return pressure 
+        return pressure
 
     except JSONDecodeError:
         raise HTTPException(status_code=422, detail="Unable to parse request")

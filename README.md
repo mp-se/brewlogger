@@ -24,13 +24,25 @@ This is a short list of features that has been implemented into the Brewlogger s
 - Collect tap information from KegMon
 - Taplist for showing whats serving and what is available
 
+## Sending data to brewlogger
+
+There are a few public endpoints in brewlogger for receving data.
+
+- http://your-ip/gravity (Used for sending gravity data)
+- http://your-ip/pressure (Used for sending pressure data)
+- http://your-ip/post (Used for sending both pressure and gravity data)
+
 ### Features on the wish list
 
 - Keeping track of batches that contain pressure data (PressureMon)
 
 ### Release history
 
-- 0.7.0 First stable testing version
+- 0.9.0 Updated with new features
+  - Feature: Added support for pressuremon and new post format
+  - Updated web flasher
+  - Various updates to UI to improve usability
+  - Made size of logfiles collected configurable
 
 - 0.8.0 Updated with new features
   - Feature: Refactored user interface to avoid data fetching, this will also allow for multiple devices interacting with the API's and data updated in background.
@@ -40,9 +52,11 @@ This is a short list of features that has been implemented into the Brewlogger s
   - Feature: Adding option to disable individual pour records
   - Bug: Fixed problem with not beeing able to create a batch without connected gravity device.
   - Feature: Refactor mDNS repeater to use AVAHI driver instead. mDNS container will now scan and store results in the Redis Cache.
-  - Bug: Not able to store changes when a record has just been created. 
+  - Bug: Not able to store changes when a record has just been created.
   - Feature: Adding log collection and presentation using websocket interface
   - Feature: Supporting Chamber Controller project and fermentation profiles from brewfather
+
+- 0.7.0 First stable testing version
 
 ## Installation
 
@@ -57,7 +71,7 @@ It consists of the following containers.
 - **brewlogger-mdns** [Optional]; Scans for mDNS devices on the local network and stores these in the Redis Cache for consumption by the API. If not deployed discovery of brewing devices will not work. This container will need to run on the host networks and will update the cache via the web/api server.
 - **brewlogger-ble** [Optional]; BLE scanner that forwards data to the Server API's. If not deployed BLE data from GravityMon will not be captured. An option is to use GravityMon-Gatway instead.
 - **brewlogger-pgadmin** [Optional]; Postgres Admin application. Only needed if you want to interact directly with the postgres application
-- **brewlogger-log** [Optional]; Used for collecting logs from devices 
+- **brewlogger-log** [Optional]; Used for collecting logs from devices
 
 ### Docker-compose.yaml
 
@@ -102,6 +116,7 @@ services:
     environment:
      - API_HOST=brew_api
      - API_KEY=[your API key for securing access to brew_api]
+     - MAX_FILE_SIZE=[optional max size of logfiles]
     volumes:
       - log:/app/log
     networks:
@@ -187,5 +202,5 @@ volumes:
 
 When posting data from Gravitymon use the following URL's which points to the same API.
 
-- http://[your name or ip]/ispindel
-- http://[your name or ip]/gravity
+- http://[hostname or ip]/ispindel
+- http://[hostname or ip]/gravity

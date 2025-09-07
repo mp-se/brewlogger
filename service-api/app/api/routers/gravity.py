@@ -85,7 +85,9 @@ async def create_gravity_list(
 ) -> List[models.Gravity]:
     logger.info("Endpoint GET /api/gravity/list/")
     gravity_list = gravity_service.createList(gravity_list)
-    background_tasks.add_task(notifyClients, "batch", "update", gravity_list[0].batch_id)
+    background_tasks.add_task(
+        notifyClients, "batch", "update", gravity_list[0].batch_id
+    )
     return gravity_list
 
 
@@ -108,9 +110,9 @@ async def update_gravity_by_id(
 
 @router.delete("/{gravity_id}", status_code=204, dependencies=[Depends(api_key_auth)])
 async def delete_gravity_by_id(
-    gravity_id: int, 
+    gravity_id: int,
     background_tasks: BackgroundTasks,
-    gravity_service: GravityService = Depends(get_gravity_service)
+    gravity_service: GravityService = Depends(get_gravity_service),
 ):
     logger.info(f"Endpoint DELETE /api/gravity/{gravity_id}")
     gravity = gravity_service.get(gravity_id)
@@ -130,6 +132,8 @@ async def create_gravity_using_ispindel_format(
 
     try:
         req_json = await request.json()
+
+        logger.info(f"Payload: {req_json}")
 
         # This means the post is in TILT format so we need to look up the correct device and add the missing data.
         if "color" in req_json:
@@ -152,6 +156,7 @@ async def create_gravity_using_ispindel_format(
         corr_gravity = 0
         gravity_units = "SG"
         run_time = 0
+        velocity = 0
 
         if "corr-gravity" in req_json:
             corr_gravity = req_json["corr-gravity"]
@@ -159,6 +164,8 @@ async def create_gravity_using_ispindel_format(
             gravity_units = req_json["gravity-unit"]
         if "run-time" in req_json:
             run_time = req_json["run-time"]
+        if "velocity" in req_json:
+            velocity = req_json["velocity"]
 
         # Check if there is an active batch
         batchList = batch_service.search_chipId_active(req_json["ID"], True)
@@ -166,7 +173,8 @@ async def create_gravity_using_ispindel_format(
         if len(batchList) == 0:
             batch = schemas.BatchCreate(
                 name="Batch for " + req_json["ID"],
-                chipId=req_json["ID"],
+                chipIdGravity=req_json["ID"],
+                chipIdPressure="",
                 description="Automatically created",
                 brewDate=datetime.today().strftime("%Y-%m-%d"),
                 style="",
@@ -214,6 +222,7 @@ async def create_gravity_using_ispindel_format(
         gravity = schemas.GravityCreate(
             temperature=req_json["temperature"],
             gravity=req_json["gravity"],
+            velocity=velocity,
             angle=req_json["angle"],
             battery=req_json["battery"],
             rssi=req_json["RSSI"],
@@ -235,14 +244,18 @@ async def create_gravity_using_ispindel_format(
                 chamberTemp = readKey(key)
                 gravity.chamber_temperature = float(chamberTemp)
 
-        if req_json["temp_units"] == "F":
-            gravity.temperature = (
-                (gravity.temperature - 32) * 5 / 9
+        if req_json["temp_units"].upper() == "F":
+            gravity.temperature = float(
+                "%.2f" % ((gravity.temperature - 32) * 5 / 9)
             )  # °C = (°F − 32) x 5/9
 
-        if gravity_units == "P":
-            gravity.gravity = 1 + (
-                gravity.gravity / (258.6 - ((gravity.gravity / 258.2) * 227.1))
+        if gravity_units.upper() == "P":
+            gravity.gravity = float(
+                "%.4f"
+                % (
+                    1
+                    + (gravity.gravity / (258.6 - ((gravity.gravity / 258.2) * 227.1)))
+                )
             )  # SG = 1+ (plato / (258.6 – ((plato/258.2) *227.1)))
 
         g = gravity_service.create(gravity)

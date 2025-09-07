@@ -16,7 +16,8 @@ def test_init(app_client):
 def test_add(app_client):
     data = {
         "name": "f1",
-        "chipId": "BBBBBB",
+        "chipIdGravity": "BBBBBB",
+        "chipIdPressure": "",
         "description": "f3",
         "brewDate": "f4",
         "style": "f5",
@@ -37,7 +38,8 @@ def test_add(app_client):
     data1 = json.loads(r.text)
     assert data1["id"] == 1
     assert data1["name"] == data["name"]
-    assert data1["chipId"] == data["chipId"]
+    assert data1["chipIdGravity"] == data["chipIdGravity"]
+    assert data1["chipIdPressure"] == data["chipIdPressure"]
     assert data1["active"] == data["active"]
     assert data1["description"] == data["description"]
     assert data1["brewDate"] == data["brewDate"]
@@ -63,7 +65,8 @@ def test_add(app_client):
 
     data = {
         "name": "f1",
-        "chipId": "BBBBBB",
+        "chipIdGravity": "",
+        "chipIdPressure": "BBBBBB",
         "description": "f3",
         "brewDate": "f4",
         "style": "f5",
@@ -92,7 +95,8 @@ def test_list(app_client):
 def test_update(app_client):
     data = {
         "name": "ff1",
-        "chipId": "BBBBBB",
+        "chipIdGravity": "BBBBBB",
+        "chipIdPressure": "",
         "description": "ff3",
         "brewDate": "ff4",
         "style": "ff5",
@@ -116,7 +120,8 @@ def test_update(app_client):
     assert r2.status_code == 200
     data2 = json.loads(r.text)
     assert data["name"] == data2["name"]
-    assert data["chipId"] == data2["chipId"]
+    assert data["chipIdGravity"] == data2["chipIdGravity"]
+    assert data["chipIdPressure"] == data2["chipIdPressure"]
     assert data["active"] == data2["active"]
     assert data["description"] == data2["description"]
     assert data["brewDate"] == data2["brewDate"]
@@ -150,7 +155,8 @@ def test_delete(app_client):
 def test_query(app_client):
     data = {
         "name": "f1",
-        "chipId": "BBBBB2",
+        "chipIdGravity": "BBBBB2",
+        "chipIdPressure": "",
         "description": "f3",
         "brewDate": "f4",
         "style": "f5",
@@ -188,7 +194,8 @@ def test_query(app_client):
 def test_validation(app_client):
     data = {
         "name": "f1",
-        "chipId": "BBBBBBB",  # Failure point
+        "chipIdGravity": "BBBBBBB",  # Failure point
+        "chipIdPressure": "",
         "description": "f3",
         "brewDate": "f4",
         "style": "f5",
@@ -209,7 +216,8 @@ def test_validation(app_client):
 
     data = {
         "name": "f1",
-        "chipId": "23", # Failure point
+        "chipIdGravity": "",
+        "chipIdPressure": "23",  # Failure point
         "description": "f3",
         "brewDate": "f4",
         "style": "f5",
@@ -230,7 +238,8 @@ def test_validation(app_client):
 
     data = {
         "name": "01234567890123456789012345678901234567890",  # Failure point
-        "chipId": "012345",
+        "chipIdGravity": "012345",
+        "chipIdPressure": "",
         "description": "f3",
         "brewDate": "f4",
         "style": "f5",
@@ -251,7 +260,8 @@ def test_validation(app_client):
 
     data = {
         "name": "f1",
-        "chipId": "012345",
+        "chipIdGravity": "012345",
+        "chipIdPressure": "",
         "description": "0123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890",  # Failure point
         "brewDate": "f4",
         "style": "f5",
@@ -272,7 +282,8 @@ def test_validation(app_client):
 
     data = {
         "name": "f1",
-        "chipId": "012345",
+        "chipIdGravity": "012345",
+        "chipIdPressure": "",
         "description": "f2",
         "brewDate": "012345678901234567890",  # Failure point
         "style": "f5",
@@ -293,10 +304,11 @@ def test_validation(app_client):
 
     data = {
         "name": "f1",
-        "chipId": "012345",
+        "chipIdGravity": "012345",
+        "chipIdPressure": "",
         "description": "f2",
         "brewDate": "f3",
-        "style": "01234567890123456789001234567890012345678901",  # Failure point
+        "style": "0123456789012345678901234567890123456789012345",  # Failure point
         "brewer": "f6",
         "brewfatherId": "1",
         "active": True,
@@ -314,11 +326,12 @@ def test_validation(app_client):
 
     data = {
         "name": "f1",
-        "chipId": "0123456",
+        "chipIdGravity": "012345",
+        "chipIdPressure": "",
         "description": "f2",
         "brewDate": "f3",
         "style": "f4",
-        "brewer": "012345678901234567890",  # Failure point
+        "brewer": "012345678901234567890012345678901234567890012345678901234567890",  # Failure point
         "brewfatherId": "1",
         "active": True,
         "abv": 0.1,

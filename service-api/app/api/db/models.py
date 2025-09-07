@@ -80,7 +80,8 @@ class Batch(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String(40), nullable=False)
-    chip_id = Column(String(6), nullable=False)
+    chip_id_gravity = Column(String(6), nullable=False)
+    chip_id_pressure = Column(String(6), nullable=False) 
     description = Column(String(80), nullable=False)
     active = Column(Boolean, nullable=False)
     tap_list = Column(Boolean, nullable=False)
@@ -113,6 +114,7 @@ class Gravity(Base):
     id = Column(Integer, primary_key=True, index=True, nullable=False)
     temperature = Column(Float, nullable=False)
     gravity = Column(Float, nullable=False)
+    velocity = Column(Float, nullable=False)
     angle = Column(Float, nullable=False)
     battery = Column(Float, nullable=False)
     rssi = Column(Float, nullable=False)
@@ -120,8 +122,12 @@ class Gravity(Base):
     run_time = Column(Float, nullable=False)
 
     # Data from chamber controller
-    beer_temperature = Column(Float, nullable=True)  # Temperature from chamber controller
-    chamber_temperature = Column(Float, nullable=True)  # Temperature from chamber controller
+    beer_temperature = Column(
+        Float, nullable=True
+    )  # Temperature from chamber controller
+    chamber_temperature = Column(
+        Float, nullable=True
+    )  # Temperature from chamber controller
 
     # Internal
     created = Column(DateTime, nullable=False)
@@ -137,6 +143,7 @@ class Pressure(Base):
     id = Column(Integer, primary_key=True, index=True, nullable=False)
     temperature = Column(Float, nullable=False)
     pressure = Column(Float, nullable=False)
+    pressure1 = Column(Float, nullable=False)
     battery = Column(Float, nullable=False)
     rssi = Column(Float, nullable=False)
     run_time = Column(Float, nullable=False)

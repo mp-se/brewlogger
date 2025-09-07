@@ -182,9 +182,7 @@ class DeviceBase(BaseModel):
     ble_color: str = Field(
         min_length=0, max_length=15, description="Bluetooth color (Gravitymon)"
     )
-    collect_logs: bool = Field(
-        description="Collect logs from device"
-    )
+    collect_logs: bool = Field(description="Collect logs from device")
 
 
 class DeviceUpdate(DeviceBase):
@@ -211,6 +209,7 @@ class GravityBase(BaseModel):
 
     temperature: float = Field(description="Temperature value in C")
     gravity: float = Field(description="Calculated gravity in SG")
+    velocity: float = Field(description="Gravity velocity, points per day")
     angle: float = Field(description="Tilt or angle of the device")
     battery: float = Field(description="Battery voltage")
     rssi: float = Field(description="WIFI signal strenght")
@@ -250,7 +249,8 @@ class PressureBase(BaseModel):
     model_config = ConfigDict(alias_generator=to_camel, populate_by_name=True)
 
     temperature: float = Field(description="Temperature value in C")
-    pressure: float = Field(description="Measured pressure in hPA")
+    pressure: float = Field(description="Measured pressure in kPa")
+    pressure1: float = Field(description="Measured pressure1 in kPa")
     battery: float = Field(description="Battery voltage")
     rssi: float = Field(description="WIFI signal strenght")
     run_time: float = Field(description="Number of seconds the execution took")
@@ -317,15 +317,25 @@ class BatchBase(BaseModel):
     description: str = Field(
         min_length=0, max_length=80, description="Longer description of the batch"
     )
-    chip_id: str = Field(
+    chip_id_gravity: str = Field(
+        min_length=0, max_length=6, description="Chip id, 6 characters or empty"
+    )
+    chip_id_pressure: str = Field(
         min_length=0, max_length=6, description="Chip id, 6 characters or empty"
     )
 
-    @field_validator("chip_id")
+    @field_validator("chip_id_gravity")
     @classmethod
-    def validate_chip_id(cls, v: str) -> str:
+    def validate_gravity_chip_id(cls, v: str) -> str:
         if len(v) != 0 and len(v) != 6:
-            raise ValueError("chip_id must be zero or 6 characters long")
+            raise ValueError("chip_id_gravity must be zero or 6 characters long")
+        return v
+
+    @field_validator("chip_id_pressure")
+    @classmethod
+    def validate_pressure_chip_id(cls, v: str) -> str:
+        if len(v) != 0 and len(v) != 6:
+            raise ValueError("chip_id_gravity must be zero or 6 characters long")
         return v
 
     active: bool = Field(
@@ -344,7 +354,8 @@ class BatchBase(BaseModel):
         min_length=0, max_length=30, description="ID used in brewfather"
     )
     fermentation_chamber: Optional[int] = Field(
-        None, description="Device Index of the fermentation chamber (Chamber Controller)"
+        None,
+        description="Device Index of the fermentation chamber (Chamber Controller)",
     )
     fermentation_steps: Optional[str] = Field(
         None, description="JSON document with fermentation steps (Chamber Controller)"
@@ -375,9 +386,27 @@ class BatchDashboard(BaseModel):
     name: str = Field(
         min_length=0, max_length=40, description="Short name of the batch"
     )
-    chip_id: str = Field(
-        min_length=6, max_length=6, description="Chip id, must be 6 characters"
+    chip_id_gravity: str = Field(
+        min_length=0, max_length=6, description="Chip id, must be 6 characters"
     )
+    chip_id_pressure: str = Field(
+        min_length=0, max_length=6, description="Chip id, must be 6 characters"
+    )
+
+    @field_validator("chip_id_gravity")
+    @classmethod
+    def validate_gravity_chip_id(cls, v: str) -> str:
+        if len(v) != 0 and len(v) != 6:
+            raise ValueError("chip_id_gravity must be zero or 6 characters long")
+        return v
+
+    @field_validator("chip_id_pressure")
+    @classmethod
+    def validate_pressure_chip_id(cls, v: str) -> str:
+        if len(v) != 0 and len(v) != 6:
+            raise ValueError("chip_id_gravity must be zero or 6 characters long")
+        return v
+
     active: bool = Field(
         description="If the batch is active or not, active = can recive new gravity data"
     )

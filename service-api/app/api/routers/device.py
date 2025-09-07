@@ -43,7 +43,7 @@ async def list_devices(
     dependencies=[Depends(api_key_auth)],
 )
 async def get_device_by_id(
-    device_id: int, devices_service: DeviceService  = Depends(get_device_service)
+    device_id: int, devices_service: DeviceService = Depends(get_device_service)
 ) -> Optional[models.Device]:
     logger.info("Endpoint GET /api/device/%d", device_id)
     return devices_service.get(device_id)
@@ -53,10 +53,9 @@ async def get_device_by_id(
     "/logs/",
     dependencies=[Depends(api_key_auth)],
 )
-async def get_device_logs(
-) -> List[str]:
+async def get_device_logs() -> List[str]:
     logger.info("Endpoint GET /api/device/logs/")
-    files = [f for f in os.listdir(path='log') if os.path.isfile('log/' + f)]
+    files = [f for f in os.listdir(path="log") if os.path.isfile("log/" + f)]
     return files
 
 
@@ -64,16 +63,14 @@ async def get_device_logs(
     "/logs/{chip_id}",
     dependencies=[Depends(api_key_auth)],
 )
-async def delete_device_log_for_chip_id(
-    chip_id: str
-) -> None:
+async def delete_device_log_for_chip_id(chip_id: str) -> None:
     logger.info(f"Endpoint DEL /api/device/logs/{chip_id}")
     try:
-        os.remove('log/' + chip_id + ".log")
+        os.remove("log/" + chip_id + ".log")
     except Exception:
         pass
     try:
-        os.remove('log/' + chip_id + ".log.1")
+        os.remove("log/" + chip_id + ".log.1")
     except Exception:
         pass
 
@@ -248,4 +245,3 @@ async def delete_fermentation_step_by_device_id(
 ):
     logger.info(f"Endpoint DELETE /api/fermentation_step/{device_id}")
     fermentation_step_service.delete_by_deviceId(device_id)
-
