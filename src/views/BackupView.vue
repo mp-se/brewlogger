@@ -323,6 +323,9 @@ async function restoreBatches(bl) {
       // Update the batchId to match related data sets
       b.gravity.forEach((g) => {
         g.batchId = json.id
+
+        if (g.velocity === undefined)
+          g.velocity = 0 // New in 0.8
       })
 
       b.pressure.forEach((p) => {
