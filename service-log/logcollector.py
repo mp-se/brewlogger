@@ -16,18 +16,35 @@
 import threading
 import asyncio
 import logging
+from time import time
 import requests
+import redis
 import os
 from websockets.sync.client import connect
 from websockets.exceptions import WebSocketException
 
 logger = logging.getLogger(__name__)
-threadLogger = logging.getLogger("thead")
 
 endpoint = ""
 headers = {}
 threads = dict()
 maxFileSize = 100000
+pool = None
+
+def writeKey(key, value):
+    if pool is None:
+        return True
+
+    ttl = 60*60*6 # 6 hours
+
+    logger.info(f"Writing key {key} = {value} ttl:{ttl}.")
+    try:
+        r = redis.Redis(connection_pool=pool)
+        r.set(name=key, value=str(value), ex=ttl)
+        return True
+    except redis.exceptions.ConnectionError as e:
+        logger.error(f"Failed to connect with redis {e}.")
+    return False
 
 class ThreadWrapper:
     def __init__(self):
@@ -45,26 +62,37 @@ class ThreadWrapper:
 
 
 def websocket_collector(url, chipId):
-    threadLogger.info(f"Collecing logs from {url} and saving to {chipId}")
     uri = url.replace("http://", "ws://") + "serialws"
+    logger.info(f"Collecing logs from {uri} and saving to {chipId}")
     fileName = "log/" + chipId + ".log"
 
-    # time.sleep(200)
+    # Write the following keys to redis to share the current status
+    # log_<shipid>_start : <connect time>
+    # log_<shipid>_last  : <update time>
+    # log_<shipid>count : <number of lines read>
 
     try:
         with connect(uri) as websocket:
+            logger.info(f"Connected to {uri} listening for logs...")
+            writeKey(f"log_{chipId}_start", int(time()))
+
             line = ""
+            lineCnt = 0
 
             while True:
                 line += websocket.recv()
                 if line.endswith("\n") or len(line) > 200:
+                    # logger.info(f"Received log line from {uri}: {line.strip()}")
                     f = open(fileName, "a")
                     f.write(line)
                     line = ""
+                    lineCnt += 1
                     f.close()
+                    writeKey(f"log_{chipId}_last", int(time()))
+                    writeKey(f"log_{chipId}_count", lineCnt)
 
                     if os.stat(fileName).st_size > maxFileSize:
-                        threadLogger.info(
+                        logger.info(
                             f"Logile is to large (>{maxFileSize}), rotating {fileName} to {fileName}.1"
                         )
                         try:
@@ -79,14 +107,24 @@ def websocket_collector(url, chipId):
                     break
 
     except WebSocketException as e:
-        threadLogger.error(f"Websocket exception in log collection {e}")
+        logger.error(f"Websocket exception in log collection {e}")
     except Exception as e:
-        threadLogger.error(f"Unknown exception in log collection {e}")
+        logger.error(f"Unknown exception in log collection {e}")
 
-    threadLogger.info(f"Stopping log collection for {url}")
+    logger.info(f"Stopping log collection for {uri}")
 
 
 async def main():
+    global pool
+
+    redis_host = os.getenv("REDIS_HOST")
+
+    if redis_host is None:
+        logger.warning("No REDIS_HOST env variable, not sharing status...")
+    else:
+        logger.info(f"Using redis {redis_host}")
+        pool = redis.ConnectionPool(host=redis_host, port=6379, db=0)
+
     while True:
         devices = []
 
