@@ -210,10 +210,10 @@ const items = ref([
         label: 'System log',
         path: '/other/log'
       },
-      /*{
-        label: 'Support',
-        path: '/other/support',
-      },*/
+      // {
+      //   label: 'Support',
+      //   path: '/other/support',
+      // },
       {
         label: 'About',
         path: '/other/about'
