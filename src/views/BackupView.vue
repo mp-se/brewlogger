@@ -324,8 +324,7 @@ async function restoreBatches(bl) {
       b.gravity.forEach((g) => {
         g.batchId = json.id
 
-        if (g.velocity === undefined)
-          g.velocity = 0 // New in 0.8
+        if (g.velocity === undefined) g.velocity = 0 // New in 0.8
       })
 
       b.pressure.forEach((p) => {
