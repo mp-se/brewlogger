@@ -16,7 +16,23 @@ services:
       - 80:80
     depends_on:
       - brew_api
-      
+
+  brew_log:
+    image: mpse2/brewlogger-log
+    hostname: brew_log
+    restart: always
+    environment:
+     - API_HOST=brew_api
+     - API_KEY=key
+     - MAX_FILE_SIZE=1000000
+     - REDIS_HOST=brew_cache
+    volumes:
+      - log:/app/log
+    networks:
+      - brew_net
+    depends_on:
+     - brew_api
+
   brew_api:
     image: mpse2/brewlogger-api
     hostname: brew_api
