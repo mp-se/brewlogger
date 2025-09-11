@@ -69,7 +69,8 @@ def websocket_collector(url, chipId):
     # Write the following keys to redis to share the current status
     # log_<shipid>_start : <connect time>
     # log_<shipid>_last  : <update time>
-    # log_<shipid>count : <number of lines read>
+    # log_<shipid>_count : <number of lines read>
+    # log_<shipid>_size  : <number of bytes read>
 
     try:
         with connect(uri) as websocket:
@@ -78,6 +79,7 @@ def websocket_collector(url, chipId):
 
             line = ""
             lineCnt = 0
+            byteCnt = 0
 
             while True:
                 line += websocket.recv()
@@ -85,11 +87,13 @@ def websocket_collector(url, chipId):
                     # logger.info(f"Received log line from {uri}: {line.strip()}")
                     f = open(fileName, "a")
                     f.write(line)
-                    line = ""
                     lineCnt += 1
+                    byteCnt += len(line)
+                    line = ""
                     f.close()
                     writeKey(f"log_{chipId}_last", int(time()))
                     writeKey(f"log_{chipId}_count", lineCnt)
+                    writeKey(f"log_{chipId}_size", byteCnt)
 
                     if os.stat(fileName).st_size > maxFileSize:
                         logger.info(
