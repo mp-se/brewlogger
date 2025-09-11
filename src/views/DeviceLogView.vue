@@ -88,13 +88,13 @@
     <hr />
 
     <div class="row" v-if="deviceSelected != ''">
-      <div class="col-md-2">
-        <p>Log contains {{ deviceLog.length }} lines</p>
+      <div class="col-md-12">
+        <p>
+          Displaying {{ deviceLog.length }} lines, Size:
+          {{ Number(deviceLogSize / 1024).toFixed(0) }} kb, Last log date: {{ logStatusLast }},
+          Collected: {{ Number(logStatusSize / 1024).toFixed(0) }} kb
+        </p>
       </div>
-      <div class="col-md-6">
-        <p>Size: {{ Number(deviceLogSize / 1024).toFixed(0) }} kb</p>
-      </div>
-      <div class="col-md-4"></div>
       <hr />
     </div>
 
@@ -114,12 +114,25 @@
 <script setup>
 import { computed, onMounted, ref, watch } from 'vue'
 import { global, deviceStore } from '@/modules/pinia'
-import { logDebug } from '@/modules/logger'
+import { logDebug, logError } from '@/modules/logger'
 import router from '@/modules/router'
 
 const deviceSelected = ref('')
 const deviceOptions = ref([])
 const deviceLog = ref([])
+const logStatusData = ref({})
+
+const logStatusLast = computed(() => {
+  if (deviceSelected.value in logStatusData.value)
+    return logStatusData.value[deviceSelected.value].last || 'No date'
+  return 'No date'
+})
+
+const logStatusSize = computed(() => {
+  if (deviceSelected.value in logStatusData.value)
+    return logStatusData.value[deviceSelected.value].size || 0
+  return 0
+})
 
 const deviceLogSize = computed(() => {
   var l = 0
@@ -228,6 +241,34 @@ onMounted(() => {
 
   if (router.currentRoute.value.params.id != '*')
     deviceSelected.value = router.currentRoute.value.params.id
+
+  fetch(global.baseURL + 'api/system/self_test/', {
+    method: 'GET',
+    headers: { 'Content-Type': 'application/json', Authorization: global.token },
+    signal: AbortSignal.timeout(global.fetchTimout)
+  })
+    .then((res) => {
+      return res.json()
+    })
+    .then((json) => {
+      json.log.forEach((entry) => {
+        const [, deviceid, attribute] = entry.name.split('_')
+        if (!logStatusData.value[deviceid]) logStatusData.value[deviceid] = {}
+        let value = entry.value
+        if (attribute === 'start' || attribute === 'last') {
+          // Convert to 'YYYY-MM-DD HH:mm' format (assume value is a Unix timestamp in seconds)
+          const date = new Date(value * 1000)
+          const pad = (n) => n.toString().padStart(2, '0')
+          value = `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())} ${pad(date.getHours())}:${pad(date.getMinutes())}`
+        }
+        logStatusData.value[deviceid][attribute] = value
+      })
+
+      logDebug('DeviceLogView.onMounted()', json)
+    })
+    .catch((err) => {
+      logError('DeviceLogView.onMounted()', err)
+    })
 })
 
 function updateDeviceLogList() {
