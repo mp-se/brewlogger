@@ -109,6 +109,7 @@ services:
     environment:
       - MIN_INTERVAL=300
       - API_HOST=brew_api
+      - REDIS_HOST=brew_cache
     volumes:
       - /dev:/dev
       - /var/run/dbus:/var/run/dbus
