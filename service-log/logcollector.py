@@ -25,6 +25,12 @@ from websockets.exceptions import WebSocketException
 
 logger = logging.getLogger(__name__)
 
+# Write the following keys to redis to share the current status
+# log_<chipid>_start : <connect time>
+# log_<chipid>_last  : <update time>
+# log_<chipid>_count : <number of lines read>
+# log_<chipid>_size  : <number of bytes read>
+
 endpoint = ""
 headers = {}
 threads = dict()
@@ -65,12 +71,6 @@ def websocket_collector(url, chipId):
     uri = url.replace("http://", "ws://") + "serialws"
     logger.info(f"Collecing logs from {uri} and saving to {chipId}")
     fileName = "log/" + chipId + ".log"
-
-    # Write the following keys to redis to share the current status
-    # log_<shipid>_start : <connect time>
-    # log_<shipid>_last  : <update time>
-    # log_<shipid>_count : <number of lines read>
-    # log_<shipid>_size  : <number of bytes read>
 
     try:
         with connect(uri) as websocket:
