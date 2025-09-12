@@ -14,11 +14,11 @@ from bleak import BleakScanner, BleakClient
 from bleak.backends.device import BLEDevice
 from bleak.backends.scanner import AdvertisementData
 
-logger = logging.getLogger("tilt")
+logger = logging.getLogger(__file__)
 
 # Write the following keys to redis to share the current status
 # ble_<chipid>_last : <update time>
-# ble_<chipid>_type : tilt/gravitymon/rapt
+# ble_<chipid>_type : tilt/gravitymon/pressuremon/rapt/rapt2
 
 skip_push = False
 endpoint_gravity = "http://" + os.getenv("API_HOST") + "/api/gravity/public"
