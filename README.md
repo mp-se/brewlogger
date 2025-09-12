@@ -44,6 +44,9 @@ There are a few public endpoints in brewlogger for receving data.
   - Various updates to UI to improve usability
   - Made size of logfiles collected configurable
   - Added log/ble collecting status via redis cache
+  - Upgraded to postgres17 (first create backup and then upgrade with fresh volume + restore)
+  - Update to python3.13
+  - Update to redis8
 
 - 0.8.0 Updated with new features
   - Feature: Refactored user interface to avoid data fetching, this will also allow for multiple devices interacting with the API's and data updated in background.

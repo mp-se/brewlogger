@@ -33,14 +33,14 @@ services:
      - brew_cache
 
   brew_cache:
-    image: redis:7
+    image: redis:8
     hostname: brew_cache
     restart: always
     networks:
       - brew_net
 
   brew_db:
-    image: postgres:14
+    image: postgres:17
     hostname: brew_db
     restart: always
     networks:
