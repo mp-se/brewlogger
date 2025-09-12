@@ -53,11 +53,18 @@ async def self_test():
         value = readKey(key)
         log.append({"name": key, "value": value.decode() if value else None})
 
+    keys = findKey("ble_*")
+    ble = []
+    for key in keys:
+        value = readKey(key)
+        ble.append({"name": key, "value": value.decode() if value else None})
+
     return schemas.SelfTestResult(
         databaseConnection=database_connection,
         redisConnection=redis_connection,
         backgroundJobs=background_jobs,
         log=log,
+        ble=ble,
     )
 
 
