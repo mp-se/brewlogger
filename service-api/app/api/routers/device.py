@@ -125,7 +125,7 @@ async def delete_device_by_id(
 
 @router.post("/proxy_fetch/", status_code=200, dependencies=[Depends(api_key_auth)])
 async def fetch_data_from_device(proxy_req: schemas.ProxyRequest):
-    logger.info("Endpoint POST /api/device/proxy_fetch")
+    logger.info("Endpoint POST /api/device/proxy_fetch: %s %s", proxy_req.method, proxy_req.url)
 
     try:
         timeout = httpx.Timeout(10.0, connect=10.0, read=10.0)
