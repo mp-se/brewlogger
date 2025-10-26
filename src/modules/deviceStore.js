@@ -291,7 +291,7 @@ export const useDeviceStore = defineStore('deviceStore', {
     }
   },
   actions: {
-    processEvent(method, id) {
+    async processEvent(method, id) {
       logDebug('deviceStore.processEvent()', method, id)
       if (method == 'delete') {
         this.devices = this.devices.filter((d) => {
@@ -300,328 +300,274 @@ export const useDeviceStore = defineStore('deviceStore', {
         logDebug('deviceStore.processEvent()', 'Removed device with', id)
         global.updatedDeviceData += 1
       } else if (method == 'update') {
-        this.getDevice(id, (success, d) => {
-          if (success) {
-            this.devices = this.devices.filter((d) => {
-              return d.id !== id
-            })
-            this.devices.push(d)
-            logDebug('deviceStore.processEvent()', 'Updated device with', id)
-            global.updatedDeviceData += 1
-          }
-        })
+        const result = await this.getDevice(id)
+        if (result) {
+          this.devices = this.devices.filter((d) => {
+            return d.id !== id
+          })
+          this.devices.push(result.device)
+          logDebug('deviceStore.processEvent()', 'Updated device with', id)
+          global.updatedDeviceData += 1
+        }
       } else if (method == 'create') {
-        this.getDevice(id, (success, d) => {
-          if (success) {
-            this.devices.push(d)
-            logDebug('deviceStore.processEvent()', 'Added device with', id)
-            global.updatedDeviceData += 1
-          }
-        })
+        const result = await this.getDevice(id)
+        if (result) {
+          this.devices.push(result.device)
+          logDebug('deviceStore.processEvent()', 'Added device with', id)
+          global.updatedDeviceData += 1
+        }
       }
     },
-    getDeviceList(callback) {
-      // callback => (success, devices[])
+    async getDeviceList() {
+      // returns devices[] or null
 
       logDebug('deviceStore.getDeviceList()')
       global.disabled = true
-      fetch(global.baseURL + 'api/device/', {
-        method: 'GET',
-        headers: { Authorization: global.token },
-        signal: AbortSignal.timeout(global.fetchTimout)
-      })
-        .then((res) => {
-          logDebug('deviceStore.getDeviceList()', res.status)
-          if (!res.ok) throw res
-          return res.json()
+      try {
+        const res = await fetch(global.baseURL + 'api/device/', {
+          method: 'GET',
+          headers: { Authorization: global.token },
+          signal: AbortSignal.timeout(global.fetchTimout)
         })
-        .then((json) => {
-          logDebug('deviceStore.getDeviceList()', json)
-          this.devices = []
+        logDebug('deviceStore.getDeviceList()', res.status)
+        if (!res.ok) throw res
+        const json = await res.json()
+        logDebug('deviceStore.getDeviceList()', json)
+        this.devices = []
 
-          json.forEach((d) => {
-            var device = Device.fromJson(d)
-            this.devices.push(device)
-          })
+        json.forEach((d) => {
+          var device = Device.fromJson(d)
+          this.devices.push(device)
+        })
 
-          callback(true, this.devices)
-          global.disabled = false
-        })
-        .catch((err) => {
-          global.disabled = false
-          logError('deviceStore.getDeviceList()', err)
-          callback(false, null)
-        })
+        global.disabled = false
+        return this.devices
+      } catch (err) {
+        global.disabled = false
+        logError('deviceStore.getDeviceList()', err)
+        return null
+      }
     },
-    getDevice(id, callback) {
-      // callback => (success, device, fermentationSteps)
+    async getDevice(id) {
+      // returns {device, stepList} or null
 
       logDebug('deviceStore.getDevice()', id)
       global.disabled = true
-      fetch(global.baseURL + 'api/device/' + id, {
-        method: 'GET',
-        headers: { Authorization: global.token },
-        signal: AbortSignal.timeout(global.fetchTimout)
-      })
-        .then((res) => {
-          logDebug('deviceStore.getDevice()', res.status)
-          if (!res.ok) throw res
-          return res.json()
+      try {
+        const res = await fetch(global.baseURL + 'api/device/' + id, {
+          method: 'GET',
+          headers: { Authorization: global.token },
+          signal: AbortSignal.timeout(global.fetchTimout)
         })
-        .then((json) => {
-          logDebug('deviceStore.getDevice()', json)
-          var device = Device.fromJson(json)
-          var stepList = FermentationStep.listFromJson(json.fermentationStep, false) // Dont update the dates
-          callback(true, device, stepList)
-          global.disabled = false
-        })
-        .catch((err) => {
-          global.disabled = false
-          logError('deviceStore.getDevice()', err)
-          callback(false, null, null)
-        })
+        logDebug('deviceStore.getDevice()', res.status)
+        if (!res.ok) throw res
+        const json = await res.json()
+        logDebug('deviceStore.getDevice()', json)
+        var device = Device.fromJson(json)
+        var stepList = FermentationStep.listFromJson(json.fermentationStep, false) // Dont update the dates
+        global.disabled = false
+        return { device, stepList }
+      } catch (err) {
+        global.disabled = false
+        logError('deviceStore.getDevice()', err)
+        return null
+      }
     },
-    updateDevice(d, callback) {
-      // callback => (success, device)
+    async updateDevice(d) {
+      // returns device or null
 
       logDebug('deviceStore.updateDevice()', d.id, d.toJson())
       global.disabled = true
-      fetch(global.baseURL + 'api/device/' + d.id, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json', Authorization: global.token },
-        body: JSON.stringify(d.toJson()),
-        signal: AbortSignal.timeout(global.fetchTimout)
-      })
-        .then((res) => {
-          logDebug('deviceStore.updateDevice()', res.status)
-          if (res.status != 200) throw res
-          return res.json()
+      try {
+        const res = await fetch(global.baseURL + 'api/device/' + d.id, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json', Authorization: global.token },
+          body: JSON.stringify(d.toJson()),
+          signal: AbortSignal.timeout(global.fetchTimout)
         })
-        .then((json) => {
-          global.disabled = false
-          logDebug('deviceStore.updateDevice()', json)
-          var device = Device.fromJson(json)
-          callback(true, device)
-        })
-        .catch((err) => {
-          logError('deviceStore.updateDevice()', err)
-          callback(false, {})
-          global.disabled = false
-        })
+        logDebug('deviceStore.updateDevice()', res.status)
+        if (res.status != 200) throw res
+        const json = await res.json()
+        global.disabled = false
+        logDebug('deviceStore.updateDevice()', json)
+        var device = Device.fromJson(json)
+        return device
+      } catch (err) {
+        logError('deviceStore.updateDevice()', err)
+        global.disabled = false
+        return null
+      }
     },
-    addDevice(d, callback) {
-      // callback => (success, device)
+    async addDevice(d) {
+      // returns device or null
 
       logDebug('deviceStore.addDevice()', d.toJson())
       global.disabled = true
-      fetch(global.baseURL + 'api/device/', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', Authorization: global.token },
-        body: JSON.stringify(d.toJson()),
-        signal: AbortSignal.timeout(global.fetchTimout)
-      })
-        .then((res) => {
-          logDebug('deviceStore.addDevice()', res.status)
-          if (res.status != 201) throw res
-          return res.json()
+      try {
+        const res = await fetch(global.baseURL + 'api/device/', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', Authorization: global.token },
+          body: JSON.stringify(d.toJson()),
+          signal: AbortSignal.timeout(global.fetchTimout)
         })
-        .then((json) => {
-          global.disabled = false
-          logDebug('deviceStore.addDevice()', json)
-          var device = Device.fromJson(json)
-          callback(true, device)
-        })
-        .catch((err) => {
-          logError('deviceStore.addDevice()', err)
-          callback(false, {})
-          global.disabled = false
-        })
+        logDebug('deviceStore.addDevice()', res.status)
+        if (res.status != 201) throw res
+        const json = await res.json()
+        global.disabled = false
+        logDebug('deviceStore.addDevice()', json)
+        var device = Device.fromJson(json)
+        return device
+      } catch (err) {
+        logError('deviceStore.addDevice()', err)
+        global.disabled = false
+        return null
+      }
     },
-    deleteDevice(id, callback) {
-      // callback => (success)
+    async deleteDevice(id) {
+      // returns true or false
 
       logDebug('deviceStore.deleteDevice()', id)
       global.disabled = true
-      fetch(global.baseURL + 'api/device/' + id, {
-        method: 'DELETE',
-        headers: { 'Content-Type': 'application/json', Authorization: global.token },
-        signal: AbortSignal.timeout(global.fetchTimout)
-      })
-        .then((res) => {
-          global.disabled = false
-          logDebug('deviceStore.deleteDevice()', res.status)
-          if (res.status != 204) {
-            callback(false)
-          } else {
-            callback(true)
-          }
+      try {
+        const res = await fetch(global.baseURL + 'api/device/' + id, {
+          method: 'DELETE',
+          headers: { 'Content-Type': 'application/json', Authorization: global.token },
+          signal: AbortSignal.timeout(global.fetchTimout)
         })
-        .catch((err) => {
-          logError('deviceStore.deleteDevice()', err)
-          callback(false)
-          global.disabled = false
-        })
+        global.disabled = false
+        logDebug('deviceStore.deleteDevice()', res.status)
+        if (res.status != 204) {
+          return false
+        }
+        return true
+      } catch (err) {
+        logError('deviceStore.deleteDevice()', err)
+        global.disabled = false
+        return false
+      }
     },
-    getDeviceFermentationSteps(id, callback) {
-      // callback => (success, device)
+    async getDeviceFermentationSteps(id) {
+      // returns stepList[] or null
 
       logDebug('deviceStore.getDeviceFermentationSteps()', id)
       global.disabled = true
-      fetch(global.baseURL + 'api/device/' + id, {
-        method: 'GET',
-        headers: { Authorization: global.token },
-        signal: AbortSignal.timeout(global.fetchTimout)
-      })
-        .then((res) => {
-          logDebug('deviceStore.getDeviceFermentationSteps()', res.status)
-          if (!res.ok) throw res
-          return res.json()
+      try {
+        const res = await fetch(global.baseURL + 'api/device/' + id, {
+          method: 'GET',
+          headers: { Authorization: global.token },
+          signal: AbortSignal.timeout(global.fetchTimout)
         })
-        .then((json) => {
-          logDebug('deviceStore.getDeviceFermentationSteps()', json)
-          var stepList = FermentationStep.listFromJson(json.fermentationStep, false) // Dont update the dates
-          callback(true, stepList)
-          global.disabled = false
-        })
-        .catch((err) => {
-          global.disabled = false
-          logError('deviceStore.getDeviceFermentationSteps()', err)
-          callback(false, null)
-        })
+        logDebug('deviceStore.getDeviceFermentationSteps()', res.status)
+        if (!res.ok) throw res
+        const json = await res.json()
+        logDebug('deviceStore.getDeviceFermentationSteps()', json)
+        var stepList = FermentationStep.listFromJson(json.fermentationStep, false) // Dont update the dates
+        global.disabled = false
+        return stepList
+      } catch (err) {
+        global.disabled = false
+        logError('deviceStore.getDeviceFermentationSteps()', err)
+        return null
+      }
     },
-    addDeviceFermentationSteps(id, fsList, callback) {
-      // callback => (success)
+    async addDeviceFermentationSteps(id, fsList) {
+      // returns true or false
 
       logDebug('deviceStore.addDeviceFermentationSteps()', id)
       global.disabled = true
-      fetch(global.baseURL + 'api/device/' + id + '/step/', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', Authorization: global.token },
-        body: JSON.stringify(FermentationStep.listToJson(fsList, id)),
-        signal: AbortSignal.timeout(global.fetchTimout)
-      })
-        .then((res) => {
-          global.disabled = false
-          logDebug('deviceStore.addDeviceFermentationSteps()', res.status)
-          if (res.status != 201) {
-            callback(false)
-          } else {
-            callback(true)
-          }
+      try {
+        const res = await fetch(global.baseURL + 'api/device/' + id + '/step/', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', Authorization: global.token },
+          body: JSON.stringify(FermentationStep.listToJson(fsList, id)),
+          signal: AbortSignal.timeout(global.fetchTimout)
         })
-        .catch((err) => {
-          logError('deviceStore.addDeviceFermentationSteps()', err)
-          callback(false)
-          global.disabled = false
-        })
+        global.disabled = false
+        logDebug('deviceStore.addDeviceFermentationSteps()', res.status)
+        if (res.status != 201) {
+          return false
+        }
+        return true
+      } catch (err) {
+        logError('deviceStore.addDeviceFermentationSteps()', err)
+        global.disabled = false
+        return false
+      }
     },
-    deleteDeviceFermentationSteps(id, callback) {
-      // callback => (success)
+    async deleteDeviceFermentationSteps(id) {
+      // returns true or false
 
       logDebug('deviceStore.deleteDeviceFermentationSteps()', id)
       global.disabled = true
-      fetch(global.baseURL + 'api/device/' + id + '/step/', {
-        method: 'DELETE',
-        headers: { 'Content-Type': 'application/json', Authorization: global.token },
-        signal: AbortSignal.timeout(global.fetchTimout)
-      })
-        .then((res) => {
-          global.disabled = false
-          logDebug('deviceStore.deleteDeviceFermentationSteps()', res.status)
-          if (res.status != 204) {
-            callback(false)
-          } else {
-            callback(true)
-          }
+      try {
+        const res = await fetch(global.baseURL + 'api/device/' + id + '/step/', {
+          method: 'DELETE',
+          headers: { 'Content-Type': 'application/json', Authorization: global.token },
+          signal: AbortSignal.timeout(global.fetchTimout)
         })
-        .catch((err) => {
-          logError('deviceStore.deleteDeviceFermentationSteps()', err)
-          callback(false)
-          global.disabled = false
-        })
-    },
-    proxyRequest(url, method, body, callback) {
-      // callback => (success, json_response)
-
-      body = { url: url, method: method, body: body, header: '' }
-      logDebug('deviceStore.proxyRequest()', url, body)
-      fetch(global.baseURL + 'api/device/proxy_fetch/', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', Authorization: global.token },
-        body: JSON.stringify(body),
-        signal: AbortSignal.timeout(global.fetchTimout)
-      })
-        .then((res) => {
-          logDebug('deviceStore.proxyRequest()', res.status)
-          if (!res.ok) throw res
-          return res.json()
-        })
-        .then((json) => {
-          logDebug('deviceStore.proxyRequest()', json)
-          callback(true, json)
-        })
-        .catch((err) => {
-          logError('deviceStore.proxyRequest()', err)
-          callback(false, null)
-        })
-    },
-    async proxyRequestWaitable(method, url, header) {
-      var body = { url: url, method: method, body: '', header: header }
-      logDebug('deviceStore.proxyRequestWaitable()', body)
-
-      const res = await fetch(global.baseURL + 'api/device/proxy_fetch/', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', Authorization: global.token },
-        body: JSON.stringify(body),
-        signal: AbortSignal.timeout(20000)
-      }).catch((err) => {
-        logError('deviceStore.proxyRequestWaitable()', err)
-        throw new Error('Fetch error ' + err)
-      })
-
-      if (!res.ok) {
-        logError('deviceStore.proxyRequestWaitable()', res.status)
-        throw new Error('Failed to perform proxy request' + res.status)
+        global.disabled = false
+        logDebug('deviceStore.deleteDeviceFermentationSteps()', res.status)
+        if (res.status != 204) {
+          return false
+        }
+        return true
+      } catch (err) {
+        logError('deviceStore.deleteDeviceFermentationSteps()', err)
+        global.disabled = false
+        return false
       }
-
-      const json = await res.json()
-      return json
     },
+    async proxyRequest(method, url, header, body) {
+      // returns json_response or null
 
-    searchNetwork(callback) {
-      // callback => (success, json_response)
-      // mdns = { "type": type, "host": adresses, "name": host }
+      body = { url: url, method: method, header: header, body: body }
+      logDebug('deviceStore.proxyRequest()', url, body)
+      try {
+        const res = await fetch(global.baseURL + 'api/device/proxy_fetch/', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', Authorization: global.token },
+          body: JSON.stringify(body),
+          signal: AbortSignal.timeout(global.fetchTimout)
+        })
+        logDebug('deviceStore.proxyRequest()', res.status)
+        if (!res.ok) throw res
+        const json = await res.json()
+        logDebug('deviceStore.proxyRequest()', json)
+        return json
+      } catch (err) {
+        logError('deviceStore.proxyRequest()', err)
+        return null
+      }
+    },
+    async searchNetwork() {
+      // returns mdnsList or null
 
       logDebug('deviceStore.searchNetwork()')
       global.disabled = true
-      fetch(global.baseURL + 'api/device/mdns/', {
-        method: 'GET',
-        headers: { Authorization: global.token },
-        // signal: AbortSignal.timeout(global.fetchTimout),
-        signal: AbortSignal.timeout(30000)
-      })
-        .then((res) => {
-          logDebug('deviceStore.searchNetwork()', res.status)
-          if (!res.ok) throw res
-          return res.json()
+      try {
+        const res = await fetch(global.baseURL + 'api/device/mdns/', {
+          method: 'GET',
+          headers: { Authorization: global.token },
+          signal: AbortSignal.timeout(30000)
         })
-        .then((json) => {
-          logDebug('deviceStore.searchNetwork()', json)
-          var mdnsList = []
+        logDebug('deviceStore.searchNetwork()', res.status)
+        if (!res.ok) throw res
+        const json = await res.json()
+        logDebug('deviceStore.searchNetwork()', json)
+        var mdnsList = []
 
-          json.forEach((m) => {
-            var mdns = MDNS.fromJson(m)
-            mdnsList.push(mdns)
-          })
+        json.forEach((m) => {
+          var mdns = MDNS.fromJson(m)
+          mdnsList.push(mdns)
+        })
 
-          callback(true, mdnsList)
-          global.disabled = false
-        })
-        .catch((err) => {
-          global.disabled = false
-          logError('deviceStore.searchNetwork()', err)
-          callback(false, null)
-        })
+        global.disabled = false
+        return mdnsList
+      } catch (err) {
+        global.disabled = false
+        logError('deviceStore.searchNetwork()', err)
+        return null
+      }
     }
   }
 })

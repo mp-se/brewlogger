@@ -99,57 +99,52 @@ export const useBrewfatherStore = defineStore('brewfatherStore', {
     }
   },
   actions: {
-    getBatchList(callback) {
-      // callback => (success)
+    async getBatchList() {
+      // returns true or false
 
       if (this.isValid) {
         logDebug('brewfatherStore.getBatchList()', 'Cache is valid, skipping fetch!')
-        callback(true)
-        return
+        return true
       }
 
       logDebug('brewfatherStore.getBatchList()')
       global.disabled = true
-      fetch(
-        global.baseURL +
-          'api/brewfather/batch/?planning=true&brewing=true&fermenting=true&completed=true&archived=false',
-        {
-          method: 'GET',
-          headers: { Authorization: global.token },
-          signal: AbortSignal.timeout(global.fetchTimout)
-        }
-      )
-        .then((res) => {
-          logDebug('brewfatherStore.getBatchList()', res.status)
-          if (!res.ok) throw res
-          return res.json()
-        })
-        .then((json) => {
-          // logDebug(json)
-          this.batches = []
+      try {
+        const res = await fetch(
+          global.baseURL +
+            'api/brewfather/batch/?planning=true&brewing=true&fermenting=true&completed=true&archived=false',
+          {
+            method: 'GET',
+            headers: { Authorization: global.token },
+            signal: AbortSignal.timeout(global.fetchTimout)
+          }
+        )
+        logDebug('brewfatherStore.getBatchList()', res.status)
+        if (!res.ok) throw res
+        const json = await res.json()
+        this.batches = []
 
-          json.forEach((b) => {
-            var batch = BrewfatherBatch.fromJson(b)
-            this.batches.push(batch)
-          })
-
-          this.valid = true
-          callback(true)
-          global.disabled = false
-
-          // Keep valid for 5 minutes
-          setTimeout(
-            () => {
-              this.valid = false
-            },
-            60 * 5 * 1000
-          )
+        json.forEach((b) => {
+          var batch = BrewfatherBatch.fromJson(b)
+          this.batches.push(batch)
         })
-        .catch((err) => {
-          global.disabled = false
-          logError('brewfatherStore.getBatchList()', err)
-          callback(false)
-        })
+
+        this.valid = true
+        global.disabled = false
+        
+        // Keep valid for 5 minutes
+        setTimeout(
+          () => {
+            this.valid = false
+          },
+          60 * 5 * 1000
+        )
+        return true
+      } catch (err) {
+        global.disabled = false
+        logError('brewfatherStore.getBatchList()', err)
+        return false
+      }
     }
   }
 })

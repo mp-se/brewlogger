@@ -174,63 +174,58 @@ export const useGravityStore = defineStore('gravityStore', {
     return { gravity: [] }
   },
   actions: {
-    getGravityListForBatch(id, callback) {
-      // callback => (success, gravity[])
+    async getGravityListForBatch(id) {
+      // returns gravity[] or null
 
       logDebug('gravityStore.getGravityListForBatch()')
       global.disabled = true
-      fetch(global.baseURL + 'api/batch/' + id, {
-        method: 'GET',
-        headers: { Authorization: global.token },
-        signal: AbortSignal.timeout(global.fetchTimout)
-      })
-        .then((res) => {
-          logDebug('gravityStore.getGravityListForBatch()', res.status)
-          if (!res.ok) throw res
-          return res.json()
+      try {
+        const res = await fetch(global.baseURL + 'api/batch/' + id, {
+          method: 'GET',
+          headers: { Authorization: global.token },
+          signal: AbortSignal.timeout(global.fetchTimout)
         })
-        .then((json) => {
-          this.gravity = []
+        logDebug('gravityStore.getGravityListForBatch()', res.status)
+        if (!res.ok) throw res
+        const json = await res.json()
+        this.gravity = []
 
-          json.gravity.forEach((g) => {
-            var gravity = Gravity.fromJson(g)
-            this.gravity.push(gravity)
-          })
+        json.gravity.forEach((g) => {
+          var gravity = Gravity.fromJson(g)
+          this.gravity.push(gravity)
+        })
 
-          callback(true, this.gravity)
-          global.disabled = false
-        })
-        .catch((err) => {
-          global.disabled = false
-          logError('gravityStore.getGravityListForBatch()', err)
-          callback(false, [])
-        })
+        global.disabled = false
+        return this.gravity
+      } catch (err) {
+        global.disabled = false
+        logError('gravityStore.getGravityListForBatch()', err)
+        return null
+      }
     },
-    updateGravity(g, callback) {
-      // callback => (success)
+    async updateGravity(g) {
+      // returns true or false
 
       logDebug('gravityStore.updateGravity()', JSON.stringify(g.toJson()))
       global.disabled = true
-      fetch(global.baseURL + 'api/gravity/' + g.id, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json', Authorization: global.token },
-        body: JSON.stringify(g.toJson()),
-        signal: AbortSignal.timeout(global.fetchTimout)
-      })
-        .then((res) => {
-          global.disabled = false
-          logDebug('gravityStore.updateGravity()', res.status)
-          if (res.status != 200) {
-            callback(false)
-          } else {
-            callback(true)
-          }
+      try {
+        const res = await fetch(global.baseURL + 'api/gravity/' + g.id, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json', Authorization: global.token },
+          body: JSON.stringify(g.toJson()),
+          signal: AbortSignal.timeout(global.fetchTimout)
         })
-        .catch((err) => {
-          logError('gravityStore.updateGravity()', err)
-          callback(false)
-          global.disabled = false
-        })
+        global.disabled = false
+        logDebug('gravityStore.updateGravity()', res.status)
+        if (res.status != 200) {
+          return false
+        }
+        return true
+      } catch (err) {
+        logError('gravityStore.updateGravity()', err)
+        global.disabled = false
+        return false
+      }
     }
   }
 })

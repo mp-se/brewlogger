@@ -51,35 +51,38 @@ export const useConfigStore = defineStore('config', {
     }
   },
   actions: {
-    load(callback) {
+    async load() {
+      // returns true or false
+
       global.disabled = true
       logDebug('configStore.load()')
-      fetch(global.baseURL + 'api/config/', {
-        method: 'GET',
-        headers: { Authorization: global.token },
-        signal: AbortSignal.timeout(global.fetchTimout)
-      })
-        .then((res) => res.json())
-        .then((json) => {
-          logDebug('configStore.load()', json)
-          global.disabled = false
-          this.id = json.id
-          this.temperatureFormat = json.temperatureFormat
-          this.pressureFormat = json.pressureFormat
-          this.gravityFormat = json.gravityFormat
-          this.volumeFormat = json.volumeFormat
-          this.appVersion = json.appVersion
-          this.gravityForwardUrl = json.gravityForwardUrl
-          this.dark_mode = json.darkMode
-          callback(true)
+      try {
+        const res = await fetch(global.baseURL + 'api/config/', {
+          method: 'GET',
+          headers: { Authorization: global.token },
+          signal: AbortSignal.timeout(global.fetchTimout)
         })
-        .catch((err) => {
-          global.disabled = false
-          logError('configStore.load()', err)
-          callback(false)
-        })
+        const json = await res.json()
+        logDebug('configStore.load()', json)
+        global.disabled = false
+        this.id = json.id
+        this.temperatureFormat = json.temperatureFormat
+        this.pressureFormat = json.pressureFormat
+        this.gravityFormat = json.gravityFormat
+        this.volumeFormat = json.volumeFormat
+        this.appVersion = json.appVersion
+        this.gravityForwardUrl = json.gravityForwardUrl
+        this.dark_mode = json.darkMode
+        return true
+      } catch (err) {
+        global.disabled = false
+        logError('configStore.load()', err)
+        return false
+      }
     },
-    save(callback) {
+    async save() {
+      // returns true or false
+
       global.disabled = true
       logDebug('configStore.save()')
 
@@ -93,30 +96,27 @@ export const useConfigStore = defineStore('config', {
         version: ''
       }
 
-      // logDebug(data)
-
-      fetch(global.baseURL + 'api/config/' + this.id, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json', Authorization: global.token },
-        body: JSON.stringify(data),
-        signal: AbortSignal.timeout(global.fetchTimout)
-      })
-        .then((res) => {
-          global.disabled = false
-          if (res.status != 200) {
-            logDebug('configStore.save()', res.status)
-            callback(false)
-          } else {
-            logDebug('configStore.save()')
-            saveConfigState()
-            callback(true)
-          }
+      try {
+        const res = await fetch(global.baseURL + 'api/config/' + this.id, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json', Authorization: global.token },
+          body: JSON.stringify(data),
+          signal: AbortSignal.timeout(global.fetchTimout)
         })
-        .catch((err) => {
-          logError('configStore.save()', err)
-          callback(false)
-          global.disabled = false
-        })
+        global.disabled = false
+        if (res.status != 200) {
+          logDebug('configStore.save()', res.status)
+          return false
+        } else {
+          logDebug('configStore.save()')
+          saveConfigState()
+          return true
+        }
+      } catch (err) {
+        logError('configStore.save()', err)
+        global.disabled = false
+        return false
+      }
     }
   }
 })

@@ -82,89 +82,82 @@ export const usePourStore = defineStore('pourStore', {
     return { pour: [] }
   },
   actions: {
-    getPourListForBatch(id, callback) {
-      // callback => (success, pour[])
+    async getPourListForBatch(id) {
+      // returns pour[] or null
 
       logDebug('pourStore.getPourListForBatch()')
       global.disabled = true
-      fetch(global.baseURL + 'api/batch/' + id, {
-        method: 'GET',
-        headers: { Authorization: global.token },
-        signal: AbortSignal.timeout(global.fetchTimout)
-      })
-        .then((res) => {
-          logDebug('pourStore.getPourListForBatch()', res.status)
-          if (!res.ok) throw res
-          return res.json()
+      try {
+        const res = await fetch(global.baseURL + 'api/batch/' + id, {
+          method: 'GET',
+          headers: { Authorization: global.token },
+          signal: AbortSignal.timeout(global.fetchTimout)
         })
-        .then((json) => {
-          this.pour = []
+        logDebug('pourStore.getPourListForBatch()', res.status)
+        if (!res.ok) throw res
+        const json = await res.json()
+        this.pour = []
 
-          json.pour.forEach((p) => {
-            var pour = Pour.fromJson(p)
-            this.pour.push(pour)
-          })
+        json.pour.forEach((p) => {
+          var pour = Pour.fromJson(p)
+          this.pour.push(pour)
+        })
 
-          callback(true, this.pour)
-          global.disabled = false
-        })
-        .catch((err) => {
-          global.disabled = false
-          logError('pourStore.getPourListForBatch()', err)
-          callback(false, [])
-        })
+        global.disabled = false
+        return this.pour
+      } catch (err) {
+        global.disabled = false
+        logError('pourStore.getPourListForBatch()', err)
+        return null
+      }
     },
-    updatePour(p, callback) {
-      // callback => (success)
+    async updatePour(p) {
+      // returns true or false
 
       logDebug('pourStore.updatePour()', JSON.stringify(p.toJson()))
       global.disabled = true
-      fetch(global.baseURL + 'api/pour/' + p.id, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json', Authorization: global.token },
-        body: JSON.stringify(p.toJson()),
-        signal: AbortSignal.timeout(global.fetchTimout)
-      })
-        .then((res) => {
-          global.disabled = false
-          logDebug('pourStore.updatePour()', res.status)
-          if (res.status != 200) {
-            callback(false)
-          } else {
-            callback(true)
-          }
+      try {
+        const res = await fetch(global.baseURL + 'api/pour/' + p.id, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json', Authorization: global.token },
+          body: JSON.stringify(p.toJson()),
+          signal: AbortSignal.timeout(global.fetchTimout)
         })
-        .catch((err) => {
-          logError('pourStore.updatePour()', err)
-          callback(false)
-          global.disabled = false
-        })
+        global.disabled = false
+        logDebug('pourStore.updatePour()', res.status)
+        if (res.status != 200) {
+          return false
+        }
+        return true
+      } catch (err) {
+        logError('pourStore.updatePour()', err)
+        global.disabled = false
+        return false
+      }
     },
-    addPour(p, callback) {
-      // callback => (success)
+    async addPour(p) {
+      // returns true or false
 
       logDebug('pourStore.addPour()', JSON.stringify(p.toJson()))
       global.disabled = true
-      fetch(global.baseURL + 'api/pour/', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', Authorization: global.token },
-        body: JSON.stringify(p.toJson()),
-        signal: AbortSignal.timeout(global.fetchTimout)
-      })
-        .then((res) => {
-          global.disabled = false
-          logDebug('pourStore.addPour()', res.status)
-          if (res.status != 201) {
-            callback(false)
-          } else {
-            callback(true)
-          }
+      try {
+        const res = await fetch(global.baseURL + 'api/pour/', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', Authorization: global.token },
+          body: JSON.stringify(p.toJson()),
+          signal: AbortSignal.timeout(global.fetchTimout)
         })
-        .catch((err) => {
-          logError('pourStore.addPour()', err)
-          callback(false)
-          global.disabled = false
-        })
+        global.disabled = false
+        logDebug('pourStore.addPour()', res.status)
+        if (res.status != 201) {
+          return false
+        }
+        return true
+      } catch (err) {
+        logError('pourStore.addPour()', err)
+        global.disabled = false
+        return false
+      }
     }
   }
 })

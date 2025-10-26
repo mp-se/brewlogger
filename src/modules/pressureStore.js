@@ -127,63 +127,58 @@ export const usePressureStore = defineStore('pressureStore', {
     return { pressure: [] }
   },
   actions: {
-    getPressureListForBatch(id, callback) {
-      // callback => (success, pressure[])
+    async getPressureListForBatch(id) {
+      // returns pressure[] or null
 
       logDebug('pressureStore.getPressureListForBatch()')
       global.disabled = true
-      fetch(global.baseURL + 'api/batch/' + id, {
-        method: 'GET',
-        headers: { Authorization: global.token },
-        signal: AbortSignal.timeout(global.fetchTimout)
-      })
-        .then((res) => {
-          logDebug('pressureStore.getGravityListForBatch()', res.status)
-          if (!res.ok) throw res
-          return res.json()
+      try {
+        const res = await fetch(global.baseURL + 'api/batch/' + id, {
+          method: 'GET',
+          headers: { Authorization: global.token },
+          signal: AbortSignal.timeout(global.fetchTimout)
         })
-        .then((json) => {
-          this.pressure = []
+        logDebug('pressureStore.getGravityListForBatch()', res.status)
+        if (!res.ok) throw res
+        const json = await res.json()
+        this.pressure = []
 
-          json.pressure.forEach((p) => {
-            var pressure = Pressure.fromJson(p)
-            this.pressure.push(pressure)
-          })
+        json.pressure.forEach((p) => {
+          var pressure = Pressure.fromJson(p)
+          this.pressure.push(pressure)
+        })
 
-          callback(true, this.pressure)
-          global.disabled = false
-        })
-        .catch((err) => {
-          global.disabled = false
-          logError('pressureStore.getPressureListForBatch()', err)
-          callback(false, [])
-        })
+        global.disabled = false
+        return this.pressure
+      } catch (err) {
+        global.disabled = false
+        logError('pressureStore.getPressureListForBatch()', err)
+        return null
+      }
     },
-    updatePressure(p, callback) {
-      // callback => (success)
+    async updatePressure(p) {
+      // returns true or false
 
       logDebug('pressureStore.updatePressure()', JSON.stringify(p.toJson()))
       global.disabled = true
-      fetch(global.baseURL + 'api/pressure/' + p.id, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json', Authorization: global.token },
-        body: JSON.stringify(p.toJson()),
-        signal: AbortSignal.timeout(global.fetchTimout)
-      })
-        .then((res) => {
-          global.disabled = false
-          logDebug('pressureStore.updatePressure()', res.status)
-          if (res.status != 200) {
-            callback(false)
-          } else {
-            callback(true)
-          }
+      try {
+        const res = await fetch(global.baseURL + 'api/pressure/' + p.id, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json', Authorization: global.token },
+          body: JSON.stringify(p.toJson()),
+          signal: AbortSignal.timeout(global.fetchTimout)
         })
-        .catch((err) => {
-          logError('pressureStore.updatePressure()', err)
-          callback(false)
-          global.disabled = false
-        })
+        global.disabled = false
+        logDebug('pressureStore.updatePressure()', res.status)
+        if (res.status != 200) {
+          return false
+        }
+        return true
+      } catch (err) {
+        logError('pressureStore.updatePressure()', err)
+        global.disabled = false
+        return false
+      }
     }
   }
 })

@@ -318,7 +318,7 @@ export const useBatchStore = defineStore('batchStore', {
     }
   },
   actions: {
-    processEvent(method, id) {
+    async processEvent(method, id) {
       logDebug('batchStore.processEvent()', method, id)
       if (method == 'delete') {
         this.batches = this.batches.filter((b) => {
@@ -327,27 +327,26 @@ export const useBatchStore = defineStore('batchStore', {
         logDebug('batchStore.processEvent()', 'Removed batch with', id)
         global.updatedBatchData += 1
       } else if (method == 'update') {
-        this.getBatch(id, (success, b) => {
-          if (success) {
-            this.batches = this.batches.filter((b) => {
-              return b.id !== id
-            })
-            this.batches.push(b)
-            logDebug('batchStore.processEvent()', 'Updated batch with', id)
-            global.updatedBatchData += 1
-          }
-        })
+        const batch = await this.getBatch(id)
+        if (batch && batch.id) {
+          this.batches = this.batches.filter((b) => {
+            return b.id !== id
+          })
+          this.batches.push(batch)
+          logDebug('batchStore.processEvent()', 'Updated batch with', id)
+          global.updatedBatchData += 1
+        }
       } else if (method == 'create') {
-        this.getBatch(id, (success, b) => {
-          if (success) {
-            this.batches.push(b)
-            logDebug('batchStore.processEvent()', 'Added batch with', id)
-            global.updatedBatchData += 1
-          }
-        })
+        const batch = await this.getBatch(id)
+        if (batch && batch.id) {
+          this.batches.push(batch)
+          logDebug('batchStore.processEvent()', 'Added batch with', id)
+          global.updatedBatchData += 1
+        }
       }
     },
     anyBatchesForDevice(chipId) {
+      // returns true or false
       logDebug('batchStore.anyBatchesForDevice()')
 
       var found = false
@@ -357,173 +356,156 @@ export const useBatchStore = defineStore('batchStore', {
       })
       return found
     },
-    getBatchList(callback) {
-      // callback => (success, batches[])
+    async getBatchList() {
+      // returns batches[] or null
 
       logDebug('batchStore.getBatchList()')
       global.disabled = true
-      fetch(global.baseURL + 'api/batch/', {
-        method: 'GET',
-        headers: { Authorization: global.token },
-        signal: AbortSignal.timeout(global.fetchTimout)
-      })
-        .then((res) => {
-          logDebug('batchStore.getBatchList()', res.status)
-          if (!res.ok) throw res
-          return res.json()
+      try {
+        const res = await fetch(global.baseURL + 'api/batch/', {
+          method: 'GET',
+          headers: { Authorization: global.token },
+          signal: AbortSignal.timeout(global.fetchTimout)
         })
-        .then((json) => {
-          logDebug('batchStore.getBatchList()', json)
-          this.batches = []
+        logDebug('batchStore.getBatchList()', res.status)
+        if (!res.ok) throw res
+        const json = await res.json()
+        logDebug('batchStore.getBatchList()', json)
+        this.batches = []
 
-          json.forEach((b) => {
-            var batch = Batch.fromJson(b)
-            this.batches.push(batch)
-          })
+        json.forEach((b) => {
+          var batch = Batch.fromJson(b)
+          this.batches.push(batch)
+        })
 
-          callback(true, this.batches)
-          global.disabled = false
-        })
-        .catch((err) => {
-          global.disabled = false
-          logError('batchStore.getBatchList()', err)
-          callback(false, [])
-        })
+        global.disabled = false
+        return this.batches
+      } catch (err) {
+        global.disabled = false
+        logError('batchStore.getBatchList()', err)
+        return null
+      }
     },
-    getBatch(id, callback) {
-      // callback => (success, batch)
+    async getBatch(id) {
+      // returns batch or null
 
       logDebug('batchStore.getBatch()', id)
       global.disabled = true
-      fetch(global.baseURL + 'api/batch/' + id, {
-        method: 'GET',
-        headers: { Authorization: global.token },
-        signal: AbortSignal.timeout(global.fetchTimout)
-      })
-        .then((res) => {
-          logDebug('batchStore.getBatch()', res.status)
-          if (!res.ok) throw res
-          return res.json()
+      try {
+        const res = await fetch(global.baseURL + 'api/batch/' + id, {
+          method: 'GET',
+          headers: { Authorization: global.token },
+          signal: AbortSignal.timeout(global.fetchTimout)
         })
-        .then((json) => {
-          logDebug('batchStore.getBatch()', json)
-          var batch = Batch.fromJson(json)
-          callback(true, batch)
-          global.disabled = false
-        })
-        .catch((err) => {
-          global.disabled = false
-          logError('batchStore.getBatch()', err)
-          callback(false, null)
-        })
+        logDebug('batchStore.getBatch()', res.status)
+        if (!res.ok) throw res
+        const json = await res.json()
+        logDebug('batchStore.getBatch()', json)
+        var batch = Batch.fromJson(json)
+        global.disabled = false
+        return batch
+      } catch (err) {
+        global.disabled = false
+        logError('batchStore.getBatch()', err)
+        return null
+      }
     },
-    getBatchDashboard(id, callback) {
-      // callback => (success, batch)
+    async getBatchDashboard(id) {
+      // returns batch or null
 
       logDebug('batchStore.getBatchDashboard()', id)
       global.disabled = true
-      fetch(global.baseURL + 'api/batch/' + id + '/dashboard', {
-        method: 'GET',
-        headers: { Authorization: global.token },
-        signal: AbortSignal.timeout(global.fetchTimout)
-      })
-        .then((res) => {
-          logDebug('batchStore.getBatchDashboard()', res.status)
-          if (!res.ok) throw res
-          return res.json()
+      try {
+        const res = await fetch(global.baseURL + 'api/batch/' + id + '/dashboard', {
+          method: 'GET',
+          headers: { Authorization: global.token },
+          signal: AbortSignal.timeout(global.fetchTimout)
         })
-        .then((json) => {
-          logDebug('batchStore.getBatchDashboard()', json)
-          var batch = Batch.fromDashboardJson(json)
-          callback(true, batch)
-          global.disabled = false
-        })
-        .catch((err) => {
-          global.disabled = false
-          logError('batchStore.getBatchDashboard()', err)
-          callback(false, null)
-        })
+        logDebug('batchStore.getBatchDashboard()', res.status)
+        if (!res.ok) throw res
+        const json = await res.json()
+        logDebug('batchStore.getBatchDashboard()', json)
+        var batch = Batch.fromDashboardJson(json)
+        global.disabled = false
+        return batch
+      } catch (err) {
+        global.disabled = false
+        logError('batchStore.getBatchDashboard()', err)
+        return null
+      }
     },
-    updateBatch(b, callback) {
-      // callback => (success, batch)
+    async updateBatch(b) {
+      // returns batch or null
 
       logDebug('batchStore.updateBatch()', b.id, b.toJson())
       global.disabled = true
-      fetch(global.baseURL + 'api/batch/' + b.id, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json', Authorization: global.token },
-        body: JSON.stringify(b.toJson()),
-        signal: AbortSignal.timeout(global.fetchTimout)
-      })
-        .then((res) => {
-          logDebug('batchStore.updateBatch()', res.status)
-          if (res.status != 200) throw res
-          return res.json()
+      try {
+        const res = await fetch(global.baseURL + 'api/batch/' + b.id, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json', Authorization: global.token },
+          body: JSON.stringify(b.toJson()),
+          signal: AbortSignal.timeout(global.fetchTimout)
         })
-        .then((json) => {
-          logDebug('batchStore.updateBatch()', json)
-          global.disabled = false
-          var batch = Batch.fromJson(json)
-          callback(true, batch)
-        })
-        .catch((err) => {
-          logError('batchStore.updateBatch()', err)
-          callback(false, {})
-          global.disabled = false
-        })
+        logDebug('batchStore.updateBatch()', res.status)
+        if (res.status != 200) throw res
+        const json = await res.json()
+        logDebug('batchStore.updateBatch()', json)
+        global.disabled = false
+        var batch = Batch.fromJson(json)
+        return batch
+      } catch (err) {
+        logError('batchStore.updateBatch()', err)
+        global.disabled = false
+        return null
+      }
     },
-    addBatch(b, callback) {
-      // callback => (success, batch)
+    async addBatch(b) {
+      // returns batch or null
 
       logDebug('batchStore.addBatch()', b.toJson())
       global.disabled = true
-      fetch(global.baseURL + 'api/batch/', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', Authorization: global.token },
-        body: JSON.stringify(b.toJson()),
-        signal: AbortSignal.timeout(global.fetchTimout)
-      })
-        .then((res) => {
-          logDebug('batchStore.addBatch()', res.status)
-          if (res.status != 201) throw res
-          return res.json()
+      try {
+        const res = await fetch(global.baseURL + 'api/batch/', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', Authorization: global.token },
+          body: JSON.stringify(b.toJson()),
+          signal: AbortSignal.timeout(global.fetchTimout)
         })
-        .then((json) => {
-          global.disabled = false
-          logDebug('batchStore.addBatch()', json)
-          var batch = Batch.fromJson(json)
-          callback(true, batch)
-        })
-        .catch((err) => {
-          logError('batchStore.addBatch()', err)
-          callback(false)
-          global.disabled = false
-        })
+        logDebug('batchStore.addBatch()', res.status)
+        if (res.status != 201) throw res
+        const json = await res.json()
+        global.disabled = false
+        logDebug('batchStore.addBatch()', json)
+        var batch = Batch.fromJson(json)
+        return batch
+      } catch (err) {
+        logError('batchStore.addBatch()', err)
+        global.disabled = false
+        return null
+      }
     },
-    deleteBatch(id, callback) {
-      // callback => (success)
+    async deleteBatch(id) {
+      // returns true or false
 
       logDebug('batchStore.deleteBatch()', id)
       global.disabled = true
-      fetch(global.baseURL + 'api/batch/' + id, {
-        method: 'DELETE',
-        headers: { 'Content-Type': 'application/json', Authorization: global.token },
-        signal: AbortSignal.timeout(global.fetchTimout)
-      })
-        .then((res) => {
-          global.disabled = false
-          logDebug('batchStore.deleteBatch()', res.status)
-          if (res.status != 204) {
-            callback(false)
-          } else {
-            callback(true)
-          }
+      try {
+        const res = await fetch(global.baseURL + 'api/batch/' + id, {
+          method: 'DELETE',
+          headers: { 'Content-Type': 'application/json', Authorization: global.token },
+          signal: AbortSignal.timeout(global.fetchTimout)
         })
-        .catch((err) => {
-          logError('batchStore.deleteBatch()', err)
-          callback(false)
-          global.disabled = false
-        })
+        global.disabled = false
+        logDebug('batchStore.deleteBatch()', res.status)
+        if (res.status != 204) {
+          return false
+        }
+        return true
+      } catch (err) {
+        logError('batchStore.deleteBatch()', err)
+        global.disabled = false
+        return false
+      }
     }
   }
 })
