@@ -53,29 +53,27 @@ watch(batchId2, () => {
   updateGraph()
 })
 
-function updateGraph() {
+async function updateGraph() {
   if (batchId1.value != 0 && batchId2.value != 0) {
-    gravityStore.getGravityListForBatch(batchId1.value, (success, gl) => {
-      if (success) {
-        gravityList1.value = gl
+    const gl1 = await gravityStore.getGravityListForBatch(batchId1.value)
+    if (gl1) {
+      gravityList1.value = gl1
 
-        gravityStore.getGravityListForBatch(batchId2.value, (success, gl) => {
-          if (success) {
-            gravityList2.value = gl
+      const gl2 = await gravityStore.getGravityListForBatch(batchId2.value)
+      if (gl2) {
+        gravityList2.value = gl2
 
-            // Sort data to make sure the points are in date order
-            gravityList1.value.sort((a, b) => Date.parse(a.created) - Date.parse(b.created))
-            gravityList2.value.sort((a, b) => Date.parse(a.created) - Date.parse(b.created))
+        // Sort data to make sure the points are in date order
+        gravityList1.value.sort((a, b) => Date.parse(a.created) - Date.parse(b.created))
+        gravityList2.value.sort((a, b) => Date.parse(a.created) - Date.parse(b.created))
 
-            createGraph()
-          } else {
-            global.messageError = 'Failed to load batch ' + batchId2.value
-          }
-        })
+        createGraph()
       } else {
-        global.messageError = 'Failed to load batch ' + batchId1.value
+        global.messageError = 'Failed to load batch ' + batchId2.value
       }
-    })
+    } else {
+      global.messageError = 'Failed to load batch ' + batchId1.value
+    }
   }
 }
 

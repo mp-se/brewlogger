@@ -167,7 +167,7 @@ function test() {
   deviceStore
 }
 
-onMounted(() => {
+onMounted(async () => {
   logDebug('App.onMounted()')
 
   // Load persistent settings from browser
@@ -201,35 +201,32 @@ onMounted(() => {
     logDebug('App.onMounted()', 'Initializing')
     showSpinner()
 
-    config.load((success) => {
-      logDebug('App.onMounted()', 'Configuration loaded', success)
-      if (success) {
-        saveConfigState()
-        deviceStore.getDeviceList((success) => {
-          logDebug('App.onMounted()', 'Devices loaded', success)
-          if (success) {
-            batchStore.getBatchList((success) => {
-              logDebug('App.onMounted()', 'Batches loaded', success)
-              if (success) {
-                global.initialized = true
-                hideSpinner()
+    const configSuccess = await config.load()
+    logDebug('App.onMounted()', 'Configuration loaded', configSuccess)
+    if (configSuccess) {
+      saveConfigState()
+      const deviceSuccess = await deviceStore.getDeviceList()
+      logDebug('App.onMounted()', 'Devices loaded', deviceSuccess)
+      if (deviceSuccess) {
+        const batchSuccess = await batchStore.getBatchList()
+        logDebug('App.onMounted()', 'Batches loaded', batchSuccess)
+        if (batchSuccess) {
+          global.initialized = true
+          hideSpinner()
 
-                test()
-              } else {
-                global.messageError = 'Failed to load list of batches'
-                hideSpinner()
-              }
-            })
-          } else {
-            global.messageError = 'Failed to load list of devices'
-            hideSpinner()
-          }
-        })
+          test()
+        } else {
+          global.messageError = 'Failed to load list of batches'
+          hideSpinner()
+        }
       } else {
-        global.messageError = 'Failed to load configuration'
+        global.messageError = 'Failed to load list of devices'
         hideSpinner()
       }
-    })
+    } else {
+      global.messageError = 'Failed to load configuration'
+      hideSpinner()
+    }
   }
 
   setTimeout(() => {

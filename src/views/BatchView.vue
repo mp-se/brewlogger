@@ -567,14 +567,15 @@ function brewfatherChanged(id) {
   })
 }
 
-onMounted(() => {
+onMounted(async () => {
   logDebug('BatchView.onMounted()')
 
   batch.value = null
 
-  brewfatherStore.getBatchList((success) => {
-    logDebug('BatchView.onMounted()', success)
+  const success = await brewfatherStore.getBatchList()
+  logDebug('BatchView.onMounted()', success)
 
+  if (success) {
     brewfatherStore.batches.forEach((b) => {
       brewfatherOptions.value.push({
         label: b.name + ', ' + b.brewDate + ', ' + b.brewer + ', ' + b.style,
@@ -589,30 +590,29 @@ onMounted(() => {
       batchSaved.value = new Batch()
       batch.value = new Batch()
     } else {
-      batchStore.getBatch(router.currentRoute.value.params.id, (success, b) => {
-        if (success) {
-          batchSaved.value = Batch.fromJson(b.toJson())
-          batch.value = b
+      const batchResult = await batchStore.getBatch(router.currentRoute.value.params.id)
+      if (batchResult) {
+        batchSaved.value = Batch.fromJson(batchResult.toJson())
+        batch.value = batchResult
 
-          if (b.fermentationChamber > 0 || b.fermentationChamber !== null) {
-            deviceStore.getDevice(b.fermentationChamber, (success, d, fs) => {
-              if (success) {
-                if (fs.length > 0) {
-                  activeFermentationSteps.value = fs
-                }
-              } else {
-                // global.messageError = "Failed to load device " + id
-              }
-            })
+        if (batchResult.fermentationChamber > 0 || batchResult.fermentationChamber !== null) {
+          const deviceResult = await deviceStore.getDevice(batchResult.fermentationChamber)
+          if (deviceResult && deviceResult.device) {
+            const { stepList } = deviceResult
+            if (stepList.length > 0) {
+              activeFermentationSteps.value = stepList
+            }
+          } else {
+            // global.messageError = "Failed to load device " + id
           }
-
-          // logDebug(batch.value)
-        } else {
-          global.messageError = 'Failed to load batch ' + router.currentRoute.value.params.id
         }
-      })
+
+        // logDebug(batch.value)
+      } else {
+        global.messageError = 'Failed to load batch ' + router.currentRoute.value.params.id
+      }
     }
-  })
+  }
 })
 
 function updateDeviceOptions() {
@@ -669,7 +669,7 @@ function updateDeviceOptions() {
   logDebug('BatchView.updateDeviceOptions()', 'Chamber', tempControlDeviceOptions.value)
 }
 
-const save = () => {
+const save = async () => {
   logDebug('BatchView.save()')
 
   if (!validateCurrentForm()) return
@@ -678,23 +678,20 @@ const save = () => {
   batchSaved.value = Batch.fromJson(batch.value.toJson())
 
   if (isNew()) {
-    batchStore.addBatch(batch.value, (success, b) => {
-      logDebug('BatchView.addBatch()', success)
-      batch.value = b
-
-      if (success) {
-        logDebug('BatchView.addBatch()', 'Change to editor', success, batch.value)
-        router.push({ name: 'batch', params: { id: batch.value.id } })
-      } else {
-        global.messageError = 'Failed to add batch'
-      }
-    })
+    const result = await batchStore.addBatch(batch.value)
+    logDebug('BatchView.addBatch()', result)
+    if (result) {
+      batch.value = result
+      logDebug('BatchView.addBatch()', 'Change to editor', result, batch.value)
+      router.push({ name: 'batch', params: { id: batch.value.id } })
+    } else {
+      global.messageError = 'Failed to add batch'
+    }
   } else {
-    batchStore.updateBatch(batch.value, (success) => {
-      logDebug('BatchView.saveBatch()', success)
-      if (success) global.messageSuccess = 'Saved batch'
-      else global.messageError = 'Failed to save batch'
-    })
+    const success = await batchStore.updateBatch(batch.value)
+    logDebug('BatchView.saveBatch()', success)
+    if (success) global.messageSuccess = 'Saved batch'
+    else global.messageError = 'Failed to save batch'
   }
 }
 
@@ -703,17 +700,16 @@ function deleteFermentationSteps() {
   document.getElementById('deleteFermentationSteps').click()
 }
 
-function deleteFermentationStepsCallback() {
+async function deleteFermentationStepsCallback() {
   logDebug('DeviceView.deleteFermentationStepsCallback()')
 
-  deviceStore.deleteDeviceFermentationSteps(batch.value.fermentationChamber, (success) => {
-    logDebug('DeviceView.deleteFermentationSteps()', success)
-    if (success) {
-      global.messageSuccess = 'Fermentation steps removed'
-      activeFermentationSteps.value = ''
-    } else {
-      global.messageError = 'Failed to remove fermentation steps'
-    }
-  })
+  const success = await deviceStore.deleteDeviceFermentationSteps(batch.value.fermentationChamber)
+  logDebug('DeviceView.deleteFermentationSteps()', success)
+  if (success) {
+    global.messageSuccess = 'Fermentation steps removed'
+    activeFermentationSteps.value = ''
+  } else {
+    global.messageError = 'Failed to remove fermentation steps'
+  }
 }
 </script>

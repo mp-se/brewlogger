@@ -87,7 +87,7 @@ onMounted(() => {
   loadProfile()
 })
 
-function loadProfile() {
+async function loadProfile() {
   logDebug('BatchFermentationControlView.loadProfile()')
 
   fermentationSteps.value = null
@@ -97,92 +97,87 @@ function loadProfile() {
   global.clearMessages()
   global.disabled = true
 
-  batchStore.getBatch(router.currentRoute.value.params.id, (success, b) => {
-    if (success) {
-      batchName.value = b.name
+  const b = await batchStore.getBatch(router.currentRoute.value.params.id)
+  if (b) {
+    batchName.value = b.name
 
-      // Try to parse fermentation steps if defined in batch (should be imported from brewfather)
-      try {
-        fermentationSteps.value = FermentationStep.listFromJson(
-          JSON.parse(b.fermentationSteps),
-          true
-        ) // Set new dates based on today
-        logDebug(fermentationSteps.value)
-      } catch (e) {
-        logError('BatchFermentationControlView.onMounted()', e)
-        global.messageError =
-          'No fermentation profile found on batch, please connect with brewfather batch.'
-        global.disabled = false
-        return
-      }
-
-      // Try to load the fermentation controller if defined in batch (selected in UI)
-      if (b.fermentationChamber > 0) {
-        deviceStore.getDevice(b.fermentationChamber, (success, d) => {
-          if (success) {
-            device.value = d
-            logInfo('BatchFermentationControlView.onMounted()', d)
-          } else {
-            global.messageError =
-              'Failed to load the device configuration, check connected fermentation device.'
-            global.disabled = false
-            return
-          }
-        })
-      } else {
-        global.messageError = 'No fermentation controller is selected for this batch.'
-        global.disabled = false
-        return
-      }
-
-      // Check if there are defined fermentation steps for the device
-      deviceStore.getDeviceFermentationSteps(b.fermentationChamber, (success, fsList) => {
-        if (success) {
-          activeFermentationSteps.value = fsList
-        } else {
-          global.messageError = 'Failed to check for active fermentration steps.'
-          global.disabled = false
-          return
-        }
-      })
-    } else {
-      global.messageError = 'Failed to load the batch.'
+    // Try to parse fermentation steps if defined in batch (should be imported from brewfather)
+    try {
+      fermentationSteps.value = FermentationStep.listFromJson(JSON.parse(b.fermentationSteps), true) // Set new dates based on today
+      logDebug(fermentationSteps.value)
+    } catch (e) {
+      logError('BatchFermentationControlView.onMounted()', e)
+      global.messageError =
+        'No fermentation profile found on batch, please connect with brewfather batch.'
       global.disabled = false
+      return
     }
-  })
+
+    // Try to load the fermentation controller if defined in batch (selected in UI)
+    if (b.fermentationChamber > 0) {
+      const d = await deviceStore.getDevice(b.fermentationChamber)
+      if (d && d.device) {
+        device.value = d.device
+        logInfo('BatchFermentationControlView.onMounted()', d)
+      } else {
+        global.messageError =
+          'Failed to load the device configuration, check connected fermentation device.'
+        global.disabled = false
+        return
+      }
+    } else {
+      global.messageError = 'No fermentation controller is selected for this batch.'
+      global.disabled = false
+      return
+    }
+
+    // Check if there are defined fermentation steps for the device
+    const fsList = await deviceStore.getDeviceFermentationSteps(b.fermentationChamber)
+    if (fsList) {
+      activeFermentationSteps.value = fsList
+    } else {
+      global.messageError = 'Failed to check for active fermentration steps.'
+      global.disabled = false
+      return
+    }
+  } else {
+    global.messageError = 'Failed to load the batch.'
+    global.disabled = false
+  }
 }
 
-function startSteps() {
+async function startSteps() {
   global.clearMessages()
   global.disabled = true
 
   if (activeFermentationSteps.value.length > 0) {
-    deviceStore.deleteDeviceFermentationSteps(device.value.id, () => {
-      activeFermentationSteps.value = []
-      addSteps()
-    })
+    await deviceStore.deleteDeviceFermentationSteps(device.value.id)
+    activeFermentationSteps.value = []
+    addSteps()
   } else {
     addSteps()
   }
 }
 
-function addSteps() {
+async function addSteps() {
   logInfo('BatchFermentationControlView.addSteps()')
 
   // TODO: Some more validation is needed, check that controller is chamber controller device, check if steps alreay exist for this device => replace
   // TODO: This should not be accessible if device and steps are not loaded correctly
 
-  deviceStore.addDeviceFermentationSteps(device.value.id, fermentationSteps.value, (success) => {
-    if (success) {
-      logInfo('BatchFermentationControlView.addSteps()', 'Success')
-      loadProfile()
-      global.messageSuccess =
-        'Fermentation steps for device has been created, it will take a few minutes for execution to start.'
-    } else {
-      logInfo('BatchFermentationControlView.addSteps()', 'Success')
-      global.messageError = 'Failed to load the device.'
-      global.disabled = false
-    }
-  })
+  const success = await deviceStore.addDeviceFermentationSteps(
+    device.value.id,
+    fermentationSteps.value
+  )
+  if (success) {
+    logInfo('BatchFermentationControlView.addSteps()', 'Success')
+    loadProfile()
+    global.messageSuccess =
+      'Fermentation steps for device has been created, it will take a few minutes for execution to start.'
+  } else {
+    logInfo('BatchFermentationControlView.addSteps()', 'Success')
+    global.messageError = 'Failed to load the device.'
+    global.disabled = false
+  }
 }
 </script>

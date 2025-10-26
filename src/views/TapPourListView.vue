@@ -108,44 +108,42 @@ function convertL(v) {
 async function updatePour(id) {
   logDebug('TapPourListView.updatePour()', id)
 
-  pourList.value.forEach((p) => {
+  for (const p of pourList.value) {
     if (p.id == id) {
       logDebug('TapPourListView.updatePour()', 'Found Record', p)
 
       p.active = !p.active
-      pourStore.updatePour(p, (success) => {
-        if (success) {
-          logDebug('BatchGravityListView.updatePour()', 'Success')
-        } else {
-          global.messageError = 'Failed to load pour ' + id
-        }
-      })
+      const success = await pourStore.updatePour(p)
+      if (success) {
+        logDebug('BatchGravityListView.updatePour()', 'Success')
+      } else {
+        global.messageError = 'Failed to load pour ' + id
+      }
+      break
     }
-  })
+  }
 }
 
-onMounted(() => {
+onMounted(async () => {
   logDebug('TapPourListView.onMounted()')
   setSortingDefault('created', 'date', false)
 
   pourList.value = null
 
-  batchStore.getBatch(router.currentRoute.value.params.id, (success, b) => {
-    if (success) batchName.value = b.name
-  })
+  const b = await batchStore.getBatch(router.currentRoute.value.params.id)
+  if (b) batchName.value = b.name
 
-  pourStore.getPourListForBatch(router.currentRoute.value.params.id, (success, pl) => {
-    if (success) {
-      pourList.value = pl
-      applySortList(pourList.value)
-      logDebug('TapPourListView.onMounted()', pourList.value)
-    } else {
-      logError(
-        'TapPourListView.onMounted()',
-        'Failed to load pour',
-        router.currentRoute.value.params.id
-      )
-    }
-  })
+  const pl = await pourStore.getPourListForBatch(router.currentRoute.value.params.id)
+  if (pl) {
+    pourList.value = pl
+    applySortList(pourList.value)
+    logDebug('TapPourListView.onMounted()', pourList.value)
+  } else {
+    logError(
+      'TapPourListView.onMounted()',
+      'Failed to load pour',
+      router.currentRoute.value.params.id
+    )
+  }
 })
 </script>

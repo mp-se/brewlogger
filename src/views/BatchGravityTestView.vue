@@ -56,27 +56,25 @@ const gravityList = ref(null)
 const batchName = ref('')
 const data = ref([])
 
-onMounted(() => {
+onMounted(async () => {
   logDebug('BatchGravityTestView.onMounted()')
 
   gravityList.value = null
 
-  batchStore.getBatch(router.currentRoute.value.params.id, (success, b) => {
-    if (success) batchName.value = b.name
-  })
+  const b = await batchStore.getBatch(router.currentRoute.value.params.id)
+  if (b) batchName.value = b.name
 
-  gravityStore.getGravityListForBatch(router.currentRoute.value.params.id, (success, gl) => {
-    if (success) {
-      gravityList.value = gl
-      data.value = test(gravityList.value, 30)
-    } else {
-      logError(
-        'BatchGravityTestView.onMounted()',
-        'Failed to load gravity',
-        router.currentRoute.value.params.id
-      )
-    }
-  })
+  const gl = await gravityStore.getGravityListForBatch(router.currentRoute.value.params.id)
+  if (gl) {
+    gravityList.value = gl
+    data.value = test(gravityList.value, 30)
+  } else {
+    logError(
+      'BatchGravityTestView.onMounted()',
+      'Failed to load gravity',
+      router.currentRoute.value.params.id
+    )
+  }
 })
 
 function filterOutliers(data, limit) {

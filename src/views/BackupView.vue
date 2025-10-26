@@ -34,8 +34,8 @@
       <form @submit.prevent="restore()">
         <div class="col-md-12">
           <BsFileUpload
+            ref="fileUploadRef"
             name="upload"
-            id="upload"
             label="Select backup file"
             accept=".txt,.json"
             :disabled="global.disabled"
@@ -45,7 +45,12 @@
 
         <div class="col-md-3">
           <p></p>
-          <button type="submit" class="btn btn-primary" value="upload" :disabled="global.disabled">
+          <button
+            type="submit"
+            class="btn btn-primary"
+            value="upload"
+            :disabled="global.disabled || !fileSelected"
+          >
             <span
               class="spinner-border spinner-border-sm"
               role="status"
@@ -66,7 +71,7 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, onMounted, nextTick } from 'vue'
 import { batchStore, deviceStore, global } from '@/modules/pinia'
 import { download } from '@/modules/utils'
 import { logDebug, logError, logInfo } from '@/modules/logger'
@@ -74,6 +79,8 @@ import { logDebug, logError, logInfo } from '@/modules/logger'
 const progress = ref(0)
 const progressMax = ref(0)
 const restoreErrors = ref(0)
+const fileSelected = ref(false)
+const fileUploadRef = ref(null)
 const backup = ref({
   meta: {
     version: '0.8', // 0.5 is used for older version, 0.8 include pressure and pour data
@@ -84,6 +91,20 @@ const backup = ref({
   devices: [],
   pressure: [],
   pour: []
+})
+
+// Watch for file selection changes
+onMounted(() => {
+  nextTick(() => {
+    const fileInput = fileUploadRef.value?.$el?.querySelector('input[type="file"]')
+    logDebug('BackupView.onMounted()', 'File input found:', fileInput)
+    if (fileInput) {
+      fileInput.addEventListener('change', () => {
+        fileSelected.value = fileInput.files.length > 0
+        logDebug('BackupView.fileInput.change()', 'File selected:', fileSelected.value)
+      })
+    }
+  })
 })
 
 async function getBatchList(callback) {
@@ -147,7 +168,7 @@ function createBackup() {
         cleanupJson(b.gravity)
       })
 
-      console.log(backup.value.batches)
+      logDebug('BackupView.createBackup()', 'Backup batches:', backup.value.batches)
       // backup.value.batches = bl
 
       getDeviceList((success, dl) => {
@@ -172,9 +193,9 @@ function createBackup() {
 function restore() {
   logDebug('BackupView.restore()')
 
-  const fileElement = document.getElementById('upload')
+  const fileElement = fileUploadRef.value?.$el?.querySelector('input[type="file"]')
 
-  if (fileElement.files.length === 0) {
+  if (!fileElement || fileElement.files.length === 0) {
     global.messageError = 'You need to select a file to restore data from'
   } else {
     global.disabled = true
@@ -238,6 +259,7 @@ async function processRestore(json) {
     logError('BackupView.processRestore()', error)
     restoreErrors.value += 1
     global.disabled = false
+    fileSelected.value = false // Reset file selection on error
   }
 
   if (restoreErrors.value) {
@@ -246,23 +268,22 @@ async function processRestore(json) {
     global.messageSuccess = 'Restore successful'
   }
 
-  deviceStore.getDeviceList((success) => {
-    if (success) {
-      logInfo('BackupView.processRestore()', 'Refreshed device list')
-    } else {
-      logError('BackupView.processRestore()', 'Failed to refreshed device list')
-    }
+  const deviceSuccess = await deviceStore.getDeviceList()
+  if (deviceSuccess) {
+    logInfo('BackupView.processRestore()', 'Refreshed device list')
+  } else {
+    logError('BackupView.processRestore()', 'Failed to refreshed device list')
+  }
 
-    batchStore.getBatchList((success) => {
-      if (success) {
-        logInfo('BackupView.processRestore()', 'Refreshed batch list')
-      } else {
-        logError('BackupView.processRestore()', 'Failed to refreshed batch list')
-      }
-    })
-  })
+  const batchSuccess = await batchStore.getBatchList()
+  if (batchSuccess) {
+    logInfo('BackupView.processRestore()', 'Refreshed batch list')
+  } else {
+    logError('BackupView.processRestore()', 'Failed to refreshed batch list')
+  }
 
   global.disabled = false
+  fileSelected.value = false // Reset file selection after restore
 }
 
 async function restoreDevices(dl) {

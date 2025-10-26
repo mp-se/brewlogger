@@ -294,31 +294,29 @@ onUnmounted(() => {
   if (ticker.value != null) clearInterval(ticker.value)
 })
 
-onMounted(() => {
+onMounted(async () => {
   logDebug('HomeView.onMounted()')
 
   activeBatchList.value = []
   fermentationControlList.value = []
 
-  batchStore.batchList.forEach((batch) => {
+  for (const batch of batchStore.batchList) {
     if (batch.active) {
-      batchStore.getBatchDashboard(batch.id, (success, b) => {
-        logDebug('HomeView.onMounted()', success, b)
-        if (success) activeBatchList.value.push(b)
-      })
+      const b = await batchStore.getBatchDashboard(batch.id)
+      logDebug('HomeView.onMounted()', b)
+      if (b) activeBatchList.value.push(b)
     }
-  })
+  }
 
-  deviceStore.deviceList.forEach((device) => {
+  for (const device of deviceStore.deviceList) {
     if (device.software == 'Chamber-Controller') {
-      deviceStore.getDevice(device.id, (success, d, fs) => {
-        if (success && fs.length > 0) {
-          d.fermentationSteps = fs
-          fermentationControlList.value.push(d)
-        }
-      })
+      const result = await deviceStore.getDevice(device.id)
+      if (result && result.stepList && result.stepList.length > 0) {
+        result.device.fermentationSteps = result.stepList
+        fermentationControlList.value.push(result.device)
+      }
     }
-  })
+  }
 
   ticker.value = setInterval(() => {
     fetchScheduler()
@@ -344,10 +342,11 @@ async function fetchChamber() {
 
   await Promise.all(
     chamberList.map(async (device) => {
-      return deviceStore.proxyRequestWaitable(
+      return deviceStore.proxyRequest(
         'GET',
         device.url + 'api/status',
-        'Content-Type: application/json'
+        'Content-Type: application/json',
+        ''
       )
     })
   )
@@ -373,10 +372,11 @@ async function fetchKegmon() {
 
   await Promise.all(
     chamberList.map(async (device) => {
-      return deviceStore.proxyRequestWaitable(
+      return deviceStore.proxyRequest(
         'GET',
         device.url + 'api/status',
-        'Content-Type: application/json'
+        'Content-Type: application/json',
+        ''
       )
     })
   )

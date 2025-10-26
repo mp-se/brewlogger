@@ -317,39 +317,39 @@ onMounted(() => {
 async function toggleBatchTapList(id) {
   logDebug('BatchListView.toggleBatchTapList()', id)
 
-  batchList.value.forEach((b) => {
+  for (const b of batchList.value) {
     if (b.id == id) {
       logDebug('BatchListView.toggleBatchTapList()', 'Found Record', b)
 
       b.tapList = !b.tapList
-      batchStore.updateBatch(b, (success) => {
-        if (success) {
-          logDebug('BatchListView.toggleBatchTapList()', 'Success')
-        } else {
-          global.messageError = 'Failed to load batch ' + id
-        }
-      })
+      const success = await batchStore.updateBatch(b)
+      if (success) {
+        logDebug('BatchListView.toggleBatchTapList()', 'Success')
+      } else {
+        global.messageError = 'Failed to load batch ' + id
+      }
+      break
     }
-  })
+  }
 }
 
 async function toggleBatchActive(id) {
   logDebug('BatchListView.toggleBatchActive()', id)
 
-  batchList.value.forEach((b) => {
+  for (const b of batchList.value) {
     if (b.id == id) {
       logDebug('BatchListView.toggleBatchActive()', 'Found Record', b)
 
       b.active = !b.active
-      batchStore.updateBatch(b, (success) => {
-        if (success) {
-          logDebug('BatchListView.toggleBatchActive()', 'Success')
-        } else {
-          global.messageError = 'Failed to load batch ' + id
-        }
-      })
+      const success = await batchStore.updateBatch(b)
+      if (success) {
+        logDebug('BatchListView.toggleBatchActive()', 'Success')
+      } else {
+        global.messageError = 'Failed to load batch ' + id
+      }
+      break
     }
-  })
+  }
 }
 
 function filterBatchList() {
@@ -415,19 +415,18 @@ watch(batchListFilterData, async (selected) => {
   filterBatchList()
 })
 
-const confirmDeleteCallback = (result) => {
+const confirmDeleteCallback = async (result) => {
   logDebug('BatchListView.confirmDeleteCallback()', result)
 
   if (result) {
     global.disabled = true
     global.clearMessages()
 
-    batchStore.deleteBatch(confirmDeleteId.value, (success) => {
-      if (success) global.messageSuccess = 'Deleted batch'
-      else global.messageError = 'Failed to batch device'
+    const success = await batchStore.deleteBatch(confirmDeleteId.value)
+    if (success) global.messageSuccess = 'Deleted batch'
+    else global.messageError = 'Failed to batch device'
 
-      global.disabled = false
-    })
+    global.disabled = false
   }
 }
 
@@ -439,117 +438,111 @@ const deleteBatch = (id, name) => {
   document.getElementById('deleteBatch').click()
 }
 
-function exportBatchJSON(id) {
+async function exportBatchJSON(id) {
   logDebug('BatchListView.exportBatchJSON()', id)
 
-  getBatch(id, (success, b) => {
-    if (success) {
-      logDebug('BatchListView.exportBatchJSON()', 'Collected batch')
-      var s = JSON.stringify(b, null, 2)
-      download(s, 'text/plain', 'brewlogger_batch_' + id + '.json')
-    } else {
-      global.messageError = 'Failed to fetch batch with id ' + id
-      global.disabled = false
-    }
-  })
+  const b = await getBatch(id)
+  if (b) {
+    logDebug('BatchListView.exportBatchJSON()', 'Collected batch')
+    var s = JSON.stringify(b, null, 2)
+    download(s, 'text/plain', 'brewlogger_batch_' + id + '.json')
+  } else {
+    global.messageError = 'Failed to fetch batch with id ' + id
+    global.disabled = false
+  }
 }
 
-function exportBatchGravityCSV(id) {
+async function exportBatchGravityCSV(id) {
   logDebug('BatchListView.exportBatchGravityCSV()', id)
 
-  getBatch(id, (success, b) => {
-    if (success) {
-      logDebug('BatchListView.exportBatchGravityCSV()', 'Collected batch')
-      var s =
-        'Name,Created,Temperature,Gravity,Angle,Battery,RSSI,CorrGravity,RunTime,ChamberTemperature,BeerTemperature,GravityVelocity\n'
-      b.gravity.forEach((g) => {
-        s +=
-          b.name +
-          ',' +
-          g.created +
-          ',' +
-          g.temperature +
-          ',' +
-          g.gravity +
-          ',' +
-          g.angle +
-          ',' +
-          g.battery +
-          ',' +
-          g.rssi +
-          ',' +
-          g.corrGravity +
-          ',' +
-          g.runTime +
-          ',' +
-          (g.chamberTemperature === null ? '' : g.chamberTemperature) +
-          ',' +
-          (g.beerTemperature === null ? '' : g.beerTemperature) +
-          ',' +
-          g.velocity +
-          '\n'
-      })
+  const b = await getBatch(id)
+  if (b) {
+    logDebug('BatchListView.exportBatchGravityCSV()', 'Collected batch')
+    var s =
+      'Name,Created,Temperature,Gravity,Angle,Battery,RSSI,CorrGravity,RunTime,ChamberTemperature,BeerTemperature,GravityVelocity\n'
+    b.gravity.forEach((g) => {
+      s +=
+        b.name +
+        ',' +
+        g.created +
+        ',' +
+        g.temperature +
+        ',' +
+        g.gravity +
+        ',' +
+        g.angle +
+        ',' +
+        g.battery +
+        ',' +
+        g.rssi +
+        ',' +
+        g.corrGravity +
+        ',' +
+        g.runTime +
+        ',' +
+        (g.chamberTemperature === null ? '' : g.chamberTemperature) +
+        ',' +
+        (g.beerTemperature === null ? '' : g.beerTemperature) +
+        ',' +
+        g.velocity +
+        '\n'
+    })
 
-      download(s, 'text/plain', 'brewlogger_gravity_batch_' + id + '.csv')
-    } else {
-      global.messageError = 'Failed to fetch batch with id ' + id
-      global.disabled = false
-    }
-  })
+    download(s, 'text/plain', 'brewlogger_gravity_batch_' + id + '.csv')
+  } else {
+    global.messageError = 'Failed to fetch batch with id ' + id
+    global.disabled = false
+  }
 }
 
-function exportBatchPressureCSV(id) {
+async function exportBatchPressureCSV(id) {
   logDebug('BatchListView.exportBatchPressureCSV()', id)
 
-  getBatch(id, (success, b) => {
-    if (success) {
-      logDebug('BatchListView.exportBatchPressureCSV()', 'Collected batch')
-      var s = 'Name,Created,Temperature,Pressure,Pressure1,Battery,RSSI,RunTime\n'
-      b.pressure.forEach((g) => {
-        s +=
-          b.name +
-          ',' +
-          g.created +
-          ',' +
-          g.temperature +
-          ',' +
-          g.pressure +
-          ',' +
-          g.pressure1 +
-          ',' +
-          g.battery +
-          ',' +
-          g.rssi +
-          ',' +
-          g.runTime +
-          '\n'
-      })
+  const b = await getBatch(id)
+  if (b) {
+    logDebug('BatchListView.exportBatchPressureCSV()', 'Collected batch')
+    var s = 'Name,Created,Temperature,Pressure,Pressure1,Battery,RSSI,RunTime\n'
+    b.pressure.forEach((g) => {
+      s +=
+        b.name +
+        ',' +
+        g.created +
+        ',' +
+        g.temperature +
+        ',' +
+        g.pressure +
+        ',' +
+        g.pressure1 +
+        ',' +
+        g.battery +
+        ',' +
+        g.rssi +
+        ',' +
+        g.runTime +
+        '\n'
+    })
 
-      download(s, 'text/plain', 'brewlogger_pressure_batch_' + id + '.csv')
-    } else {
-      global.messageError = 'Failed to fetch batch with id ' + id
-      global.disabled = false
-    }
-  })
+    download(s, 'text/plain', 'brewlogger_pressure_batch_' + id + '.csv')
+  } else {
+    global.messageError = 'Failed to fetch batch with id ' + id
+    global.disabled = false
+  }
 }
 
-function getBatch(id, callback) {
-  fetch(global.baseURL + 'api/batch/' + id, {
-    method: 'GET',
-    headers: { Authorization: global.token },
-    signal: AbortSignal.timeout(global.fetchTimout)
-  })
-    .then((res) => {
-      logDebug('BatchListView.getBatch()', res.status)
-      if (!res.ok) throw res
-      return res.json()
+async function getBatch(id) {
+  try {
+    const res = await fetch(global.baseURL + 'api/batch/' + id, {
+      method: 'GET',
+      headers: { Authorization: global.token },
+      signal: AbortSignal.timeout(global.fetchTimout)
     })
-    .then((json) => {
-      callback(true, json)
-    })
-    .catch((err) => {
-      logError('BatchListView.getBatch()', err)
-      callback(false, {})
-    })
+    logDebug('BatchListView.getBatch()', res.status)
+    if (!res.ok) throw res
+    const json = await res.json()
+    return json
+  } catch (err) {
+    logError('BatchListView.getBatch()', err)
+    return false
+  }
 }
 </script>

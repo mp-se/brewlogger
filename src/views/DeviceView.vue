@@ -280,7 +280,7 @@ function isNew() {
   return router.currentRoute.value.params.id == 'new' ? true : false
 }
 
-onMounted(() => {
+onMounted(async () => {
   logDebug('DeviceView.onMounted()')
 
   device.value = null
@@ -291,17 +291,16 @@ onMounted(() => {
     deviceSaved.value = new Device()
     device.value = new Device()
   } else {
-    deviceStore.getDevice(router.currentRoute.value.params.id, (success, d, fs) => {
-      if (success) {
-        deviceSaved.value = Device.fromJson(d.toJson())
-        device.value = d
-        if (fs.length > 0) {
-          activeFermentationSteps.value = fs
-        }
-      } else {
-        // global.messageError = "Failed to load device " + id
+    const result = await deviceStore.getDevice(router.currentRoute.value.params.id)
+    if (result && result.device) {
+      deviceSaved.value = Device.fromJson(result.device.toJson())
+      device.value = result.device
+      if (result.stepList.length > 0) {
+        activeFermentationSteps.value = result.stepList
       }
-    })
+    } else {
+      // global.messageError = "Failed to load device " + id
+    }
   }
 })
 
@@ -340,34 +339,41 @@ async function fetchConfigEspFwkV1() {
   try {
     var data = {}
 
-    const status = await deviceStore.proxyRequestWaitable(
-      'GET',
-      device.value.url + 'api/status',
-      ''
-    )
-    logDebug('DeviceView.fetchConfigEspFwkV1()', status)
+    // Fetch from /api/atatus
+    const status = await deviceStore.proxyRequest('GET', device.value.url + 'api/status', '', '')
+    logDebug('DeviceView.fetchConfigEspFwkV1()', '/status', status)
     data.status = status
-
     device.value.mdns = detectMdns(status)
     device.value.chipFamily = detectPlatform(status)
     device.value.software = detectSoftware(status)
 
+    // Fetch from /api/auth
     const header = 'Authorization: Basic ' + btoa('username:password')
-    const auth = await deviceStore.proxyRequestWaitable(
-      'GET',
-      device.value.url + 'api/auth',
-      header
-    )
-    logDebug('DeviceView.fetchConfigEspFwkV1()', auth)
+    const auth = await deviceStore.proxyRequest('GET', device.value.url + 'api/auth', header, '')
+    logDebug('DeviceView.fetchConfigEspFwkV1()', '/auth', auth)
 
+    // Fetch from /api/config
     const header2 = 'Authorization: Bearer ' + auth.token
-    const config = await deviceStore.proxyRequestWaitable(
+    const config = await deviceStore.proxyRequest(
       'GET',
       device.value.url + 'api/config',
-      header2
+      header2,
+      ''
     )
-    logDebug('DeviceView.fetchConfigEspFwkV1()', config)
+    logDebug('DeviceView.fetchConfigEspFwkV1()', '/config', config)
     data.config = config
+
+    // Fetch from /api/feature
+    const feature = await deviceStore.proxyRequest(
+      'GET',
+      device.value.url + 'api/feature',
+      header2,
+      ''
+    )
+    logDebug('DeviceView.fetchConfigEspFwkV1()', '/feature', feature)
+    data.feature = feature
+    // Newer versions have the platform attribute in the feature endpoint
+    if (feature) device.value.chipFamily = detectPlatform(feature)
 
     // Gravitymon
     if (config.ble_tilt_color !== undefined) {
@@ -375,12 +381,13 @@ async function fetchConfigEspFwkV1() {
     }
 
     if (device.value.software == 'Gravitymon') {
-      const format = await deviceStore.proxyRequestWaitable(
+      const format = await deviceStore.proxyRequest(
         'GET',
         device.value.url + 'api/format',
-        header2
+        header2,
+        ''
       )
-      logDebug('DeviceView.fetchConfigEspFwkV1()', format)
+      logDebug('DeviceView.fetchConfigEspFwkV1()', '/format', format)
       data.format = format
     }
 
@@ -401,7 +408,7 @@ function validateUrl() {
       : device.value.url + '/'
 }
 
-const save = () => {
+const save = async () => {
   logDebug('DeviceView.save()')
 
   validateUrl()
@@ -420,21 +427,19 @@ const save = () => {
       }
     }
 
-    deviceStore.addDevice(device.value, (success, d) => {
-      logDebug('DeviceView.addDevice()', 'Add device', success)
-      device.value = d
-      if (success) {
-        router.push({ name: 'device', params: { id: device.value.id } })
-      } else {
-        global.messageError = 'Failed to add device'
-      }
-    })
+    const result = await deviceStore.addDevice(device.value)
+    logDebug('DeviceView.addDevice()', 'Add device', result)
+    if (result) {
+      device.value = result
+      router.push({ name: 'device', params: { id: device.value.id } })
+    } else {
+      global.messageError = 'Failed to add device'
+    }
   } else {
-    deviceStore.updateDevice(device.value, (success) => {
-      logDebug('DeviceView.saveDevice()', 'Update device', success)
-      if (success) global.messageSuccess = 'Saved device'
-      else global.messageError = 'Failed to save device'
-    })
+    const success = await deviceStore.updateDevice(device.value)
+    logDebug('DeviceView.saveDevice()', 'Update device', success)
+    if (success) global.messageSuccess = 'Saved device'
+    else global.messageError = 'Failed to save device'
   }
 }
 
@@ -443,17 +448,16 @@ function deleteFermentationSteps() {
   document.getElementById('deleteFermentationSteps').click()
 }
 
-function deleteFermentationStepsCallback() {
+async function deleteFermentationStepsCallback() {
   logDebug('DeviceView.deleteFermentationStepsCallback()')
 
-  deviceStore.deleteDeviceFermentationSteps(device.value.id, (success) => {
-    logDebug('DeviceView.deleteFermentationSteps()', success)
-    if (success) {
-      global.messageSuccess = 'Fermentation steps removed'
-      activeFermentationSteps.value = null
-    } else {
-      global.messageError = 'Failed to remove fermentation steps'
-    }
-  })
+  const success = await deviceStore.deleteDeviceFermentationSteps(device.value.id)
+  logDebug('DeviceView.deleteFermentationSteps()', success)
+  if (success) {
+    global.messageSuccess = 'Fermentation steps removed'
+    activeFermentationSteps.value = null
+  } else {
+    global.messageError = 'Failed to remove fermentation steps'
+  }
 }
 </script>

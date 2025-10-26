@@ -166,7 +166,7 @@ function filterBatchList() {
   })
 }
 
-const confirmEmptyCallback = (result) => {
+const confirmEmptyCallback = async (result) => {
   logDebug('TapListView.confirmEmptyCallback()', result)
 
   if (result) {
@@ -174,10 +174,9 @@ const confirmEmptyCallback = (result) => {
 
     const pour = new Pour(0, 0, 0, 0, new Date().toISOString(), confirmEmptyId.value, true)
 
-    pourStore.addPour(pour, (success) => {
-      if (success) global.messageSuccess = 'Marked batch as empty'
-      else global.messageError = 'Failed to update pour data'
-    })
+    const success = await pourStore.addPour(pour)
+    if (success) global.messageSuccess = 'Marked batch as empty'
+    else global.messageError = 'Failed to update pour data'
   }
 }
 

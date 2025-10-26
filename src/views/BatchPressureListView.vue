@@ -175,24 +175,24 @@ const batchName = ref('')
 async function updatePressure(id) {
   logDebug('BatchPressureListView.updatePressure()', id)
 
-  pressureList.value.forEach((p) => {
+  for (const p of pressureList.value) {
     if (p.id == id) {
       logDebug('BatchPressureListView.updatePressure()', 'Found Record', p)
 
       p.active = !p.active
-      pressureStore.updatePressure(p, (success) => {
-        if (success) {
-          logDebug('BatchPressureListView.updatePressure()', 'Success')
-          pressureStats.value = getPressureDataAnalytics(pressureList.value)
-        } else {
-          global.messageError = 'Failed to load pressure ' + id
-        }
-      })
+      const success = await pressureStore.updatePressure(p)
+      if (success) {
+        logDebug('BatchPressureListView.updatePressure()', 'Success')
+        pressureStats.value = getPressureDataAnalytics(pressureList.value)
+      } else {
+        global.messageError = 'Failed to load pressure ' + id
+      }
+      break
     }
-  })
+  }
 }
 
-function apply() {
+async function apply() {
   var last = Date.parse(infoLastDay.value)
   var first = Date.parse(infoFirstDay.value)
 
@@ -200,7 +200,7 @@ function apply() {
   logDebug('BatchPressureListView.apply()', first, last)
 
   global.disabled = true
-  pressureList.value.forEach(async (p) => {
+  for (const p of pressureList.value) {
     var date = Date.parse(p.created)
     var active = false
 
@@ -210,15 +210,14 @@ function apply() {
     if (p.active != active) {
       p.active = active
 
-      await pressureStore.updatePressure(p, (success) => {
-        if (success) {
-          logDebug('BatchPressureListView.apply()', 'Success')
-        } else {
-          logError('BatchPressureListView.apply()', 'Failed to update pressure', p)
-        }
-      })
+      const success = await pressureStore.updatePressure(p)
+      if (success) {
+        logDebug('BatchPressureListView.apply()', 'Success')
+      } else {
+        logError('BatchPressureListView.apply()', 'Failed to update pressure', p)
+      }
     }
-  })
+  }
 
   logDebug('BatchPressureListView.apply()', 'Completed')
   forceRender.value++
@@ -226,22 +225,21 @@ function apply() {
   pressureStats.value = getPressureDataAnalytics(pressureList.value)
 }
 
-function activateAll() {
+async function activateAll() {
   logDebug('BatchPressureListView.activateAll()')
 
   global.disabled = true
-  pressureList.value.forEach(async (p) => {
+  for (const p of pressureList.value) {
     if (!p.active) {
       p.active = true
-      await pressureStore.updatePressure(p, (success) => {
-        if (success) {
-          logDebug('BatchPressureListView.activateAll()', 'Success')
-        } else {
-          logError('BatchPressureListView.activateAll()', 'Failed to update pressure', p)
-        }
-      })
+      const success = await pressureStore.updatePressure(p)
+      if (success) {
+        logDebug('BatchPressureListView.activateAll()', 'Success')
+      } else {
+        logError('BatchPressureListView.activateAll()', 'Failed to update pressure', p)
+      }
     }
-  })
+  }
 
   logDebug('BatchPressureListView.activateAll()', 'Completed')
   forceRender.value++
@@ -249,33 +247,31 @@ function activateAll() {
   pressureStats.value = getPressureDataAnalytics(pressureList.value)
 }
 
-onMounted(() => {
+onMounted(async () => {
   logDebug('BatchPressureListView.onMounted()')
   setSortingDefault('created', 'date', false)
 
   pressureList.value = null
 
-  batchStore.getBatch(router.currentRoute.value.params.id, (success, b) => {
-    if (success) batchName.value = b.name
-  })
+  const b = await batchStore.getBatch(router.currentRoute.value.params.id)
+  if (b) batchName.value = b.name
 
-  pressureStore.getPressureListForBatch(router.currentRoute.value.params.id, (success, pl) => {
-    if (success) {
-      pressureList.value = pl
-      applySortList(pressureList.value)
-      logDebug('BatchPressureListView.onMounted()', pressureList.value)
+  const pl = await pressureStore.getPressureListForBatch(router.currentRoute.value.params.id)
+  if (pl) {
+    pressureList.value = pl
+    applySortList(pressureList.value)
+    logDebug('BatchPressureListView.onMounted()', pressureList.value)
 
-      pressureStats.value = getPressureDataAnalytics(pressureList.value)
+    pressureStats.value = getPressureDataAnalytics(pressureList.value)
 
-      infoFirstDay.value = pressureStats.value.date.firstDate
-      infoLastDay.value = pressureStats.value.date.lastDate
-    } else {
-      logError(
-        'BatchPressureListView.onMounted()',
-        'Failed to load pressure',
-        router.currentRoute.value.params.id
-      )
-    }
-  })
+    infoFirstDay.value = pressureStats.value.date.firstDate
+    infoLastDay.value = pressureStats.value.date.lastDate
+  } else {
+    logError(
+      'BatchPressureListView.onMounted()',
+      'Failed to load pressure',
+      router.currentRoute.value.params.id
+    )
+  }
 })
 </script>

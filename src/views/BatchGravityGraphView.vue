@@ -308,81 +308,81 @@ function filterVelocity() {
   apply()
 }
 
-onMounted(() => {
+onMounted(async () => {
   logDebug('BatchGravityGraphView.onMounted()')
 
   gravityList.value = null
 
-  batchStore.getBatch(router.currentRoute.value.params.id, (success, b) => {
-    if (success) batchName.value = b.name
-    else global.messageError = 'Failed to load batch ' + router.currentRoute.value.params.id
-  })
+  const b = await batchStore.getBatch(router.currentRoute.value.params.id)
+  if (b) batchName.value = b.name
+  else global.messageError = 'Failed to load batch ' + router.currentRoute.value.params.id
 
-  gravityStore.getGravityListForBatch(router.currentRoute.value.params.id, (success, gl) => {
-    if (success) {
-      gravityList.value = gl
+  const gl = await gravityStore.getGravityListForBatch(router.currentRoute.value.params.id)
+  if (gl) {
+    gravityList.value = gl
 
-      // Calculate statistics for the full dataset
-      gravityStats.value = getGravityDataAnalytics(gravityList.value)
-      infoFirstDay.value = gravityStats.value.date.firstDate
-      infoLastDay.value = gravityStats.value.date.lastDate
-      infoOG.value = Number.parseFloat(
-        new Number(gravityStats.value.gravity.max).toFixed(config.isGravitySG ? 3 : 2)
-      )
-      infoFG.value = Number.parseFloat(
-        new Number(gravityStats.value.gravity.min).toFixed(config.isGravitySG ? 3 : 2)
-      )
+    // Calculate statistics for the full dataset
+    gravityStats.value = getGravityDataAnalytics(gravityList.value)
+    infoFirstDay.value = gravityStats.value.date.firstDate
+    infoLastDay.value = gravityStats.value.date.lastDate
+    infoOG.value = Number.parseFloat(
+      new Number(gravityStats.value.gravity.max).toFixed(config.isGravitySG ? 3 : 2)
+    )
+    infoFG.value = Number.parseFloat(
+      new Number(gravityStats.value.gravity.min).toFixed(config.isGravitySG ? 3 : 2)
+    )
 
-      gravityList.value.sort((a, b) => Date.parse(a.created) - Date.parse(b.created))
+    gravityList.value.sort((a, b) => Date.parse(a.created) - Date.parse(b.created))
 
-      try {
-        const chartOptions = {
-          type: 'line',
-          data: { datasets: [] },
-          options: {
-            scales: {},
-            animation: false,
-            plugins: {
-              tooltip: {
-                enabled: true
+    try {
+      const chartOptions = {
+        type: 'line',
+        data: { datasets: [] },
+        options: {
+          scales: {},
+          animation: false,
+          plugins: {
+            tooltip: {
+              enabled: true
+            },
+            zoom: {
+              pan: {
+                enabled: true,
+                mode: 'xy'
               },
               zoom: {
-                pan: {
-                  enabled: true,
-                  mode: 'xy'
+                wheel: {
+                  enabled: true
+                },
+                pinch: {
+                  enabled: true
                 },
                 zoom: {
-                  wheel: {
-                    enabled: true
-                  },
-                  pinch: {
-                    enabled: true
-                  },
                   mode: 'xy'
                 }
               }
             }
           }
         }
-
-        logDebug('BatchGravityGraphView.onMounted()', 'Creating chart')
-
-        if (document.getElementById('gravityChart') == null) {
-          logError('BatchGravityGraphView.onMounted()', 'Unable to find the chart canvas')
-        } else {
-          // Create the chart
-          chart = new Chart(document.getElementById('gravityChart').getContext('2d'), chartOptions)
-          updateDataSet()
-          chart.update()
-          setTimeout(() => {
-            filterAll()
-          }, 100) // Quick fix so that data is always shown
-        }
-      } catch (err) {
-        logDebug('BatchGravityGraphView.onMounted()', err)
       }
+
+      logDebug('BatchGravityGraphView.onMounted()', 'Creating chart')
+
+      if (document.getElementById('gravityChart') == null) {
+        logError('BatchGravityGraphView.onMounted()', 'Unable to find the chart canvas')
+      } else {
+        // Create the chart
+        chart = new Chart(document.getElementById('gravityChart').getContext('2d'), chartOptions)
+        updateDataSet()
+        chart.update()
+        setTimeout(() => {
+          filterAll()
+        }, 100) // Quick fix so that data is always shown
+      }
+    } catch (err) {
+      logDebug('BatchGravityGraphView.onMounted()', err)
     }
-  })
+  }
 })
 
 function mapGravityData(gList) {

@@ -322,20 +322,20 @@ function filterDeviceList() {
 async function toggleDeviceLogging(id) {
   logDebug('DeviceListView.toggleDeviceLogging()', id)
 
-  deviceList.value.forEach((d) => {
+  for (const d of deviceList.value) {
     if (d.id == id) {
       logDebug('DeviceListView.toggleDeviceLogging()', 'Found Record', d)
 
       d.collectLogs = !d.collectLogs
-      deviceStore.updateDevice(d, (success) => {
-        if (success) {
-          logDebug('DeviceListView.toggleDeviceLogging()', 'Success')
-        } else {
-          global.messageError = 'Failed to load device ' + id
-        }
-      })
+      const success = await deviceStore.updateDevice(d)
+      if (success) {
+        logDebug('DeviceListView.toggleDeviceLogging()', 'Success')
+      } else {
+        global.messageError = 'Failed to load device ' + id
+      }
+      break
     }
-  })
+  }
 }
 
 watch(deviceListFilterSoftware, async (selected) => {
@@ -344,19 +344,18 @@ watch(deviceListFilterSoftware, async (selected) => {
   applySortList(deviceList.value)
 })
 
-const confirmDeleteCallback = (result) => {
+const confirmDeleteCallback = async (result) => {
   logDebug('DeviceListView.confirmDeleteCallback()', result)
 
   if (result) {
     global.disabled = true
     global.clearMessages()
 
-    deviceStore.deleteDevice(confirmDeleteId.value, (success) => {
-      if (success) global.messageSuccess = 'Deleted device'
-      else global.messageError = 'Failed to delete device'
+    const success = await deviceStore.deleteDevice(confirmDeleteId.value)
+    if (success) global.messageSuccess = 'Deleted device'
+    else global.messageError = 'Failed to delete device'
 
-      global.disabled = false
-    })
+    global.disabled = false
   }
 }
 
@@ -373,7 +372,7 @@ function openUrl(url) {
   window.open(url, '_blank')
 }
 
-function search() {
+async function search() {
   logDebug('DeviceListView.search()')
 
   global.disabled = true
@@ -388,23 +387,22 @@ function search() {
   searchOptions.value.push({ label: "Test 2", value: "192.168.1.3", host: "host2", type: "http.local.", name: "name2" })
   */
 
-  deviceStore.searchNetwork((success, ml) => {
-    if (success) {
-      searchOptions.value = [{ label: '- none -', value: '' }]
+  const ml = await deviceStore.searchNetwork()
+  if (ml) {
+    searchOptions.value = [{ label: '- none -', value: '' }]
 
-      ml.forEach((m) => {
-        searchOptions.value.push({
-          label: m.name + ',' + m.host + ' (' + m.type + ')',
-          value: m.host,
-          host: m.host,
-          type: m.type,
-          name: m.name
-        })
+    ml.forEach((m) => {
+      searchOptions.value.push({
+        label: m.name + ',' + m.host + ' (' + m.type + ')',
+        value: m.host,
+        host: m.host,
+        type: m.type,
+        name: m.name
       })
-    } else {
-      global.messageError = 'Failed to search for mDNS devices on the local network'
-    }
-  })
+    })
+  } else {
+    global.messageError = 'Failed to search for mDNS devices on the local network'
+  }
 }
 
 const confirmSearchCallback = (result, value) => {
@@ -430,7 +428,7 @@ async function detectDeviceType(url) {
 
   // This should detect the GravityMon, KegMon and PressureMon software
   try {
-    const status = await deviceStore.proxyRequestWaitable('GET', url + '/api/status', '')
+    const status = await deviceStore.proxyRequest('GET', url + '/api/status', '', '')
     logDebug('DeviceView.fetchConfigEspFwkV1()', status)
 
     var device = new Device(0, '', '', '', '', '', '', url, '', false)
@@ -440,13 +438,12 @@ async function detectDeviceType(url) {
     device.software = detectSoftware(status)
 
     if (device.chipId != '') {
-      deviceStore.addDevice(device, (success) => {
-        if (success) {
-          global.messageSuccess = 'Saved device ' + device.mdns
-        } else {
-          global.messageError = 'Failed to save device, it might already exist.'
-        }
-      })
+      const success = await deviceStore.addDevice(device)
+      if (success) {
+        global.messageSuccess = 'Saved device ' + device.mdns
+      } else {
+        global.messageError = 'Failed to save device, it might already exist.'
+      }
     } else {
       global.messageError = 'Unable to detect device type for ' + device.mdns
     }

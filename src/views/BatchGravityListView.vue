@@ -192,31 +192,31 @@ const batchName = ref('')
 async function updateGravity(id) {
   logDebug('BatchGravityListView.updateGravity()', id)
 
-  gravityList.value.forEach((g) => {
+  for (const g of gravityList.value) {
     if (g.id == id) {
       logDebug('BatchGravityListView.updateGravity()', 'Found Record', g)
 
       g.active = !g.active
-      gravityStore.updateGravity(g, (success) => {
-        if (success) {
-          logDebug('BatchGravityListView.updateGravity()', 'Success')
-          gravityStats.value = getGravityDataAnalytics(gravityList.value)
-        } else {
-          global.messageError = 'Failed to load gravity ' + id
-        }
-      })
+      const success = await gravityStore.updateGravity(g)
+      if (success) {
+        logDebug('BatchGravityListView.updateGravity()', 'Success')
+        gravityStats.value = getGravityDataAnalytics(gravityList.value)
+      } else {
+        global.messageError = 'Failed to load gravity ' + id
+      }
+      break
     }
-  })
+  }
 }
 
-function apply() {
+async function apply() {
   var last = Date.parse(infoLastDay.value)
   var first = Date.parse(infoFirstDay.value)
 
   logDebug('BatchGravityListView.apply()', first, last, infoOG.value, infoFG.value)
 
   global.disabled = true
-  gravityList.value.forEach(async (g) => {
+  for (const g of gravityList.value) {
     var date = Date.parse(g.created)
     var active = false
 
@@ -226,15 +226,14 @@ function apply() {
     if (g.active != active) {
       g.active = active
 
-      await gravityStore.updateGravity(g, (success) => {
-        if (success) {
-          logDebug('BatchGravityListView.apply()', 'Success')
-        } else {
-          logError('BatchGravityListView.apply()', 'Failed to update gravity', g)
-        }
-      })
+      const success = await gravityStore.updateGravity(g)
+      if (success) {
+        logDebug('BatchGravityListView.apply()', 'Success')
+      } else {
+        logError('BatchGravityListView.apply()', 'Failed to update gravity', g)
+      }
     }
-  })
+  }
 
   logDebug('BatchGravityListView.apply()', 'Completed')
   forceRender.value++
@@ -242,22 +241,21 @@ function apply() {
   gravityStats.value = getGravityDataAnalytics(gravityList.value)
 }
 
-function activateAll() {
+async function activateAll() {
   logDebug('BatchGravityListView.activateAll()')
 
   global.disabled = true
-  gravityList.value.forEach(async (g) => {
+  for (const g of gravityList.value) {
     if (!g.active) {
       g.active = true
-      await gravityStore.updateGravity(g, (success) => {
-        if (success) {
-          logDebug('BatchGravityListView.activateAll()', 'Success')
-        } else {
-          logError('BatchGravityListView.activateAll()', 'Failed to update gravity', g)
-        }
-      })
+      const success = await gravityStore.updateGravity(g)
+      if (success) {
+        logDebug('BatchGravityListView.activateAll()', 'Success')
+      } else {
+        logError('BatchGravityListView.activateAll()', 'Failed to update gravity', g)
+      }
     }
-  })
+  }
 
   logDebug('BatchGravityListView.activateAll()', 'Completed')
   forceRender.value++
@@ -265,39 +263,37 @@ function activateAll() {
   gravityStats.value = getGravityDataAnalytics(gravityList.value)
 }
 
-onMounted(() => {
+onMounted(async () => {
   logDebug('BatchGravityListView.onMounted()')
   setSortingDefault('created', 'date', false)
 
   gravityList.value = null
 
-  batchStore.getBatch(router.currentRoute.value.params.id, (success, b) => {
-    if (success) batchName.value = b.name
-  })
+  const batch = await batchStore.getBatch(router.currentRoute.value.params.id)
+  if (batch) batchName.value = batch.name
 
-  gravityStore.getGravityListForBatch(router.currentRoute.value.params.id, (success, gl) => {
-    if (success) {
-      gravityList.value = gl
-      applySortList(gravityList.value)
-      logDebug('BatchGravityListView.onMounted()', gravityList.value)
+  const gl = await gravityStore.getGravityListForBatch(router.currentRoute.value.params.id)
+  if (gl && gl.length > 0) {
+    gravityList.value = gl
+    applySortList(gravityList.value)
+    logDebug('BatchGravityListView.onMounted()', gravityList.value)
 
-      gravityStats.value = getGravityDataAnalytics(gravityList.value)
+    gravityStats.value = getGravityDataAnalytics(gravityList.value)
 
-      infoFirstDay.value = gravityStats.value.date.firstDate
-      infoLastDay.value = gravityStats.value.date.lastDate
-      infoOG.value = Number.parseFloat(
-        new Number(gravityStats.value.gravity.max).toFixed(config.isGravitySG ? 3 : 2)
-      )
-      infoFG.value = Number.parseFloat(
-        new Number(gravityStats.value.gravity.min).toFixed(config.isGravitySG ? 3 : 2)
-      )
-    } else {
-      logError(
-        'BatchGravityListView.onMounted()',
-        'Failed to load gravity',
-        router.currentRoute.value.params.id
-      )
-    }
-  })
+    infoFirstDay.value = gravityStats.value.date.firstDate
+    infoLastDay.value = gravityStats.value.date.lastDate
+    infoOG.value = Number.parseFloat(
+      new Number(gravityStats.value.gravity.max).toFixed(config.isGravitySG ? 3 : 2)
+    )
+    infoFG.value = Number.parseFloat(
+      new Number(gravityStats.value.gravity.min).toFixed(config.isGravitySG ? 3 : 2)
+    )
+  } else {
+    logError(
+      'BatchGravityListView.onMounted()',
+      'Failed to load gravity',
+      router.currentRoute.value.params.id
+    )
+  }
 })
 </script>

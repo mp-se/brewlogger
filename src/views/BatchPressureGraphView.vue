@@ -195,75 +195,73 @@ function filterTemp() {
   apply()
 }
 
-onMounted(() => {
+onMounted(async () => {
   logDebug('BatchPressureGraphView.onMounted()')
 
   pressureList.value = null
 
-  batchStore.getBatch(router.currentRoute.value.params.id, (success, b) => {
-    if (success) batchName.value = b.name
-    else global.messageError = 'Failed to load batch ' + router.currentRoute.value.params.id
-  })
+  const batch = await batchStore.getBatch(router.currentRoute.value.params.id)
+  if (batch) batchName.value = batch.name
+  else global.messageError = 'Failed to load batch ' + router.currentRoute.value.params.id
 
-  pressureStore.getPressureListForBatch(router.currentRoute.value.params.id, (success, gl) => {
-    if (success) {
-      pressureList.value = gl
+  const gl = await pressureStore.getPressureListForBatch(router.currentRoute.value.params.id)
+  if (gl && gl.length > 0) {
+    pressureList.value = gl
 
-      // Calculate statistics for the full dataset
-      pressureStats.value = getPressureDataAnalytics(pressureList.value)
-      infoFirstDay.value = pressureStats.value.date.firstDate
-      infoLastDay.value = pressureStats.value.date.lastDate
+    // Calculate statistics for the full dataset
+    pressureStats.value = getPressureDataAnalytics(pressureList.value)
+    infoFirstDay.value = pressureStats.value.date.firstDate
+    infoLastDay.value = pressureStats.value.date.lastDate
 
-      pressureList.value.sort((a, b) => Date.parse(a.created) - Date.parse(b.created))
+    pressureList.value.sort((a, b) => Date.parse(a.created) - Date.parse(b.created))
 
-      try {
-        const chartOptions = {
-          type: 'line',
-          data: { datasets: [] },
-          options: {
-            scales: {},
-            animation: false,
-            plugins: {
-              tooltip: {
-                enabled: true
+    try {
+      const chartOptions = {
+        type: 'line',
+        data: { datasets: [] },
+        options: {
+          scales: {},
+          animation: false,
+          plugins: {
+            tooltip: {
+              enabled: true
+            },
+            zoom: {
+              pan: {
+                enabled: true,
+                mode: 'xy'
               },
               zoom: {
-                pan: {
-                  enabled: true,
-                  mode: 'xy'
+                wheel: {
+                  enabled: true
                 },
-                zoom: {
-                  wheel: {
-                    enabled: true
-                  },
-                  pinch: {
-                    enabled: true
-                  },
-                  mode: 'xy'
-                }
+                pinch: {
+                  enabled: true
+                },
+                mode: 'xy'
               }
             }
           }
         }
-
-        logDebug('BatchPressureGraphView.onMounted()', 'Creating chart')
-
-        if (document.getElementById('pressureChart') == null) {
-          logError('BatchPressureGraphView.onMounted()', 'Unable to find the chart canvas')
-        } else {
-          // Create the chart
-          chart = new Chart(document.getElementById('pressureChart').getContext('2d'), chartOptions)
-          updateDataSet()
-          chart.update()
-          setTimeout(() => {
-            filterAll()
-          }, 100) // Quick fix so that data is always shown
-        }
-      } catch (err) {
-        logDebug('BatchPressureGraphView.onMounted()', err)
       }
+
+      logDebug('BatchPressureGraphView.onMounted()', 'Creating chart')
+
+      if (document.getElementById('pressureChart') == null) {
+        logError('BatchPressureGraphView.onMounted()', 'Unable to find the chart canvas')
+      } else {
+        // Create the chart
+        chart = new Chart(document.getElementById('pressureChart').getContext('2d'), chartOptions)
+        updateDataSet()
+        chart.update()
+        setTimeout(() => {
+          filterAll()
+        }, 100) // Quick fix so that data is always shown
+      }
+    } catch (err) {
+      logDebug('BatchPressureGraphView.onMounted()', err)
     }
-  })
+  }
 })
 
 function mapPressureData(pList) {
