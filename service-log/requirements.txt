@@ -1,3 +1,4 @@
-requests
-zeroconf==0.136.0
-websockets==14.1
+requests==2.32.5
+zeroconf==0.147.2
+websockets==15.0.1
+redis==6.4.0

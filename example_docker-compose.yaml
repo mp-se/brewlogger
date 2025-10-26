@@ -33,14 +33,14 @@ services:
      - brew_cache
 
   brew_cache:
-    image: redis:7
+    image: redis:8
     hostname: brew_cache
     restart: always
     networks:
       - brew_net
 
   brew_db:
-    image: postgres:14
+    image: postgres:17
     hostname: brew_db
     restart: always
     networks:
@@ -76,6 +76,7 @@ services:
      - API_HOST=brew_api
      - API_KEY=key
      - MAX_FILE_SIZE=1000000
+     - REDIS_HOST=brew_cache
     volumes:
       - log:/app/log
     networks:
@@ -90,7 +91,7 @@ services:
     network_mode: host
     privileged: true
     environment:
-     - WEB_HOSTlocalhost
+      - WEB_HOST=localhost
       - API_KEY=key
     volumes:
       - /var/run/dbus:/var/run/dbus
@@ -108,6 +109,7 @@ services:
     environment:
       - MIN_INTERVAL=300
       - API_HOST=brew_api
+      - REDIS_HOST=brew_cache
     volumes:
       - /dev:/dev
       - /var/run/dbus:/var/run/dbus

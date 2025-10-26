@@ -38,7 +38,7 @@ idna==3.10
     #   httpx
 ifaddr==0.2.0
     # via zeroconf
-platformdirs==4.3.8
+platformdirs==4.4.0
     # via virtualenv
 psycopg2==2.9.10
     # via brewlogger_api (setup.py)
@@ -63,7 +63,7 @@ sqlalchemy==2.0.43
     # via brewlogger_api (setup.py)
 starlette==0.47.3
     # via fastapi
-typing-extensions==4.14.1
+typing-extensions==4.15.0
     # via
     #   anyio
     #   fastapi
@@ -86,5 +86,5 @@ virtualenv==20.34.0
     # via brewlogger_api (setup.py)
 websockets==15.0.1
     # via brewlogger_api (setup.py)
-zeroconf==0.147.0
+zeroconf==0.147.2
     # via brewlogger_api (setup.py)

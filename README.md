@@ -43,6 +43,10 @@ There are a few public endpoints in brewlogger for receving data.
   - Updated web flasher
   - Various updates to UI to improve usability
   - Made size of logfiles collected configurable
+  - Added log/ble collecting status via redis cache
+  - Upgraded to postgres17 (first create backup and then upgrade with fresh volume + restore)
+  - Update to python3.13
+  - Update to redis8
 
 - 0.8.0 Updated with new features
   - Feature: Refactored user interface to avoid data fetching, this will also allow for multiple devices interacting with the API's and data updated in background.
@@ -117,6 +121,7 @@ services:
      - API_HOST=brew_api
      - API_KEY=[your API key for securing access to brew_api]
      - MAX_FILE_SIZE=[optional max size of logfiles]
+     - REDIS_HOST=brew_cache
     volumes:
       - log:/app/log
     networks:
@@ -184,6 +189,7 @@ services:
     environment:
       - API_HOST=brew_api
       - MIN_INTERVAL=[Minimum time in seconds between sending data to API, ie. 300]
+      - REDIS_HOST=brew_cache
     volumes:
       - /dev:/dev
       - /var/run/dbus:/var/run/dbus

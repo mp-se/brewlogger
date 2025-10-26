@@ -31,12 +31,16 @@ class Job(BaseModel):
     name: str
     nextRunIn: int
 
+class Cache(BaseModel):
+    name: str
+    value: str
 
 class SelfTestResult(BaseModel):
     databaseConnection: bool
     redisConnection: bool
     backgroundJobs: List[str]
-
+    log: List[Cache]
+    ble: List[Cache]
 
 class BrewfatherBatch(BaseModel):
     name: str

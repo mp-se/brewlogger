@@ -8,7 +8,7 @@ from fastapi.routing import APIRouter
 from api.db import models, schemas
 from api.db.session import create_session
 from api.services import BrewLoggerService, SystemLogService, get_systemlog_service
-from ..cache import writeKey, readKey
+from ..cache import writeKey, readKey, findKey
 from ..scheduler import scheduler
 from ..ws import ws_manager
 from ..security import api_key_auth
@@ -47,10 +47,24 @@ async def self_test():
     for job in jobs:
         background_jobs.append(job.name)
 
+    keys = findKey("log_*")
+    log = []
+    for key in keys:
+        value = readKey(key)
+        log.append({"name": key, "value": value.decode() if value else None})
+
+    keys = findKey("ble_*")
+    ble = []
+    for key in keys:
+        value = readKey(key)
+        ble.append({"name": key, "value": value.decode() if value else None})
+
     return schemas.SelfTestResult(
         databaseConnection=database_connection,
         redisConnection=redis_connection,
         backgroundJobs=background_jobs,
+        log=log,
+        ble=ble,
     )
 
 
