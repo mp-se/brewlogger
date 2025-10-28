@@ -108,35 +108,47 @@ onMounted(() => {
 })
 
 async function getBatchList(callback) {
-  const res = await fetch(global.baseURL + 'api/batch/', {
-    method: 'GET',
-    headers: { Authorization: global.token }
-    // signal: AbortSignal.timeout(global.fetchTimout),
-  })
+  try {
+    const res = await fetch(global.baseURL + 'api/batch/', {
+      method: 'GET',
+      headers: { Authorization: global.token }
+      // signal: AbortSignal.timeout(global.fetchTimout),
+    })
 
-  if (!res.ok) {
-    logError('BackupView.getBatchList()', res.status)
-    throw res
+    if (!res.ok) {
+      logError('BackupView.getBatchList()', res.status)
+      callback(false, null)
+      return
+    }
+
+    const json = await res.json()
+    callback(true, json)
+  } catch (error) {
+    logError('BackupView.getBatchList()', 'Exception:', error)
+    callback(false, null)
   }
-
-  const json = await res.json()
-  callback(true, json)
 }
 
 async function getDeviceList(callback) {
-  const res = await fetch(global.baseURL + 'api/device/', {
-    method: 'GET',
-    headers: { Authorization: global.token }
-    // signal: AbortSignal.timeout(global.fetchTimout),
-  })
+  try {
+    const res = await fetch(global.baseURL + 'api/device/', {
+      method: 'GET',
+      headers: { Authorization: global.token }
+      // signal: AbortSignal.timeout(global.fetchTimout),
+    })
 
-  if (!res.ok) {
-    logDebug('BackupView.getDeviceList()', res.status)
-    throw res
+    if (!res.ok) {
+      logDebug('BackupView.getDeviceList()', res.status)
+      callback(false, null)
+      return
+    }
+
+    const json = await res.json()
+    callback(true, json)
+  } catch (error) {
+    logError('BackupView.getDeviceList()', 'Exception:', error)
+    callback(false, null)
   }
-
-  const json = await res.json()
-  callback(true, json)
 }
 
 function cleanupJson(list) {
@@ -156,38 +168,45 @@ function createBackup() {
   global.disabled = true
   backup.value.meta.created = new Date().toISOString().slice(0, 10)
 
-  getBatchList((success, bl) => {
-    if (success) {
-      logDebug('BackupView.createBackup()', 'Collected batches')
-      backup.value.batches = bl
+  try {
+    getBatchList((success, bl) => {
+      if (success) {
+        logDebug('BackupView.createBackup()', 'Collected batches')
+        backup.value.batches = bl
 
-      // Remove optional params from payload
-      cleanupJson(backup.value.batches)
+        // Remove optional params from payload
+        cleanupJson(backup.value.batches)
 
-      backup.value.batches.forEach((b) => {
-        cleanupJson(b.gravity)
-      })
+        backup.value.batches.forEach((b) => {
+          cleanupJson(b.gravity)
+        })
 
-      logDebug('BackupView.createBackup()', 'Backup batches:', backup.value.batches)
-      // backup.value.batches = bl
+        logDebug('BackupView.createBackup()', 'Backup batches:', backup.value.batches)
+        // backup.value.batches = bl
 
-      getDeviceList((success, dl) => {
-        if (success) {
-          logDebug('BackupView.createBackup()', 'Collected devices')
-          backup.value.devices = dl
+        getDeviceList((success, dl) => {
+          if (success) {
+            logDebug('BackupView.createBackup()', 'Collected devices')
+            backup.value.devices = dl
 
-          var s = JSON.stringify(backup.value, null, 2)
-          download(s, 'text/plain', 'brewlogger_backup.txt')
-        } else {
-          global.messageError = 'Failed to fetch devices'
-          global.disabled = false
-        }
-      })
-    } else {
-      global.messageError = 'Failed to fetch batches'
-      global.disabled = false
-    }
-  })
+            var s = JSON.stringify(backup.value, null, 2)
+            download(s, 'text/plain', 'brewlogger_backup.txt')
+            global.disabled = false
+          } else {
+            global.messageError = 'Failed to fetch devices'
+            global.disabled = false
+          }
+        })
+      } else {
+        global.messageError = 'Failed to fetch batches'
+        global.disabled = false
+      }
+    })
+  } catch (error) {
+    logError('BackupView.createBackup()', 'Exception occurred:', error)
+    global.messageError = 'Failed to create backup'
+    global.disabled = false
+  }
 }
 
 function restore() {
