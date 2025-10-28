@@ -77,9 +77,18 @@ export function isValidFormData(s) {
 
 export function download(content, mimeType, filename) {
   const a = document.createElement('a')
-  const blob = new Blob([content], { type: mimeType })
-  const url = URL.createObjectURL(blob)
-  a.setAttribute('href', url)
+
+  // For text content, use data URL to avoid blob URL mixed content issues
+  if (mimeType.startsWith('text/')) {
+    const dataUrl = `data:${mimeType};charset=utf-8,${encodeURIComponent(content)}`
+    a.setAttribute('href', dataUrl)
+  } else {
+    // For binary content, still use blob URL
+    const blob = new Blob([content], { type: mimeType })
+    const url = URL.createObjectURL(blob)
+    a.setAttribute('href', url)
+  }
+
   a.setAttribute('download', filename)
   a.click()
 }
