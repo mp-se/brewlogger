@@ -8,7 +8,7 @@ install_requires = [
     "pydantic-settings",
     "pyyaml",
     "httpx",
-    "psycopg2",
+    "psycopg2-binary",
     "zeroconf",
     "apscheduler",
     "redis",
