@@ -3,110 +3,143 @@
     <p class="h3">Flash devices</p>
     <hr />
 
-    <div class="col-md-12 text-bg-warning" v-if="isBeta">
+    <template v-if="isSSL">
+      <div class="col-md-12 text-bg-info">
+        <p class="fw-normal">Please wait, loading manifest files from server...</p>
+      </div>
+      <div class="col-md-12 text-bg-warning" v-if="isBeta">
+        <p class="fw-normal">
+          You are now using beta version of the softwares, select a software to see if there are any
+          beta versions available.
+        </p>
+      </div>
+
       <p class="fw-normal">
-        You are now using beta version of the softwares, select a software to see if there are any
-        beta versions available.
+        Here you can flash your devices using the ESP Web Flasher. Note that flashing will do a FULL
+        ERASE!
       </p>
-    </div>
+      <p class="fw-normal">
+        Upgrading can be done in the web interface, using the firmware upload method. Download the
+        latest version from github.
+      </p>
+      <p class="fw-normal">If you want to try any beta versions then add '?beta' to the URL.</p>
 
-    <p class="fw-normal">
-      Here you can flash your devices using the ESP Web Flasher. Note that flashing will do a FULL
-      ERASE!
-    </p>
-    <p class="fw-normal">
-      Upgrading can be done in the web interface, using the firmware upload method. Download the
-      latest version from github.
-    </p>
-    <p class="fw-normal">If you want to try any beta versions then add '?beta' to the URL.</p>
+      <div class="row">
+        <div class="col-md-10">
+          <BsInputRadio
+            v-model="software"
+            :options="softwareOptions.filter((o) => o.enabled == 1)"
+            label="Software"
+            help="Select which software to flash"
+          ></BsInputRadio>
+        </div>
+        <div class="col-md-2">
+          <BsInputSwitch v-model="beta" label="Beta" help="Use beta versions"></BsInputSwitch>
+        </div>
+      </div>
 
-    <div class="row">
-      <div class="col-md-10">
+      <div class="col-md-12" v-if="message.length">
+        <p></p>
+        <p class="fw-normal">Note! {{ message }}</p>
+      </div>
+
+      <div class="col-md-12" v-if="variantBoardOptions.length">
         <BsInputRadio
-          v-model="software"
-          :options="softwareOptions.filter((o) => o.enabled == 1)"
-          label="Software"
-          help="Select which software to flash"
+          v-model="variant"
+          :options="variantBoardOptions"
+          label="Board variant"
+          help="Choose the board manufacturer"
         ></BsInputRadio>
       </div>
-      <div class="col-md-2">
-        <BsInputSwitch v-model="beta" label="Beta" help="Use beta versions"></BsInputSwitch>
-      </div>
-    </div>
 
-    <div class="col-md-12" v-if="message.length">
-      <p></p>
-      <p class="fw-normal">Note! {{ message }}</p>
-    </div>
+      <template v-if="manifestStatus == 1">
+        <div class="col-md-12" v-if="software != ''">
+          <p>&nbsp;</p>
+          <esp-web-install-button :manifest="manifestUrl"></esp-web-install-button>
+          <p>&nbsp;</p>
+          <p class="fw-normal">
+            Some devices might need to be put in flash mode before flashing will work. Hold in EN
+            and then do a reset and release EN should put the device in flashing mode.
+          </p>
+        </div>
 
-    <div class="col-md-12" v-if="variantBoardOptions.length">
-      <BsInputRadio
-        v-model="variant"
-        :options="variantBoardOptions"
-        label="Board variant"
-        help="Choose the board manufacturer"
-      ></BsInputRadio>
-    </div>
+        <div class="col-md-12" v-if="supportedBoardsManifest.length">
+          <p class="fw-normal">
+            Software version: <b>{{ softwareVersion }}, {{ message }}</b>
+          </p>
+          <p class="fw-normal">List of supported boards:</p>
+          <ul>
+            <li class="fw-normal" v-for="(b, index) in supportedBoardsManifest" :key="index">
+              {{ b }}
+            </li>
+          </ul>
+        </div>
+      </template>
 
-    <template v-if="manifestStatus == 1">
-      <div class="col-md-12" v-if="software != ''">
-        <p>&nbsp;</p>
-        <esp-web-install-button :manifest="manifestUrl"></esp-web-install-button>
-        <p>&nbsp;</p>
-        <p class="fw-normal">
-          Some devices might need to be put in flash mode before flashing will work. Hold in EN and
-          then do a reset and release EN should put the device in flashing mode.
+      <div class="col-md-12 text-bg-danger" v-if="manifestStatus == 2 && !isBeta">
+        <p></p>
+        <p class="fw-bold">
+          Failed to load the needed manifest file from the server. Could be that there is no
+          released version yet.
         </p>
       </div>
 
-      <div class="col-md-12" v-if="supportedBoardsManifest.length">
+      <div class="col-md-12 text-bg-info" v-if="manifestStatus == 2 && isBeta">
+        <p></p>
+        <p class="fw-bold">No beta available for this option.</p>
+      </div>
+
+      <div class="row" v-if="github != ''">
+        <p></p>
         <p class="fw-normal">
-          Software version: <b>{{ softwareVersion }}, {{ message }}</b>
+          Project url on github.com: <a :href="github" target="_blank">{{ github }}</a>
         </p>
-        <p class="fw-normal">List of supported boards:</p>
-        <ul>
-          <li class="fw-normal" v-for="(b, index) in supportedBoardsManifest" :key="index">
-            {{ b }}
-          </li>
-        </ul>
+      </div>
+
+      <div class="col-md-12">
+        <hr />
+        <p class="fw-normal">Powered by <b>esp web tools</b> and <b>esptool-js</b></p>
+      </div>
+
+      <div class="row" v-if="doValidation">
+        <div class="col-md-12">
+          <p class="fw-normal">
+            Validating {{ validationCount.validated }} of {{ validationCount.total }}
+          </p>
+        </div>
+        <div class="col-md-12" v-for="(log, index) in validationLog" :key="index">
+          <p class="fw-normal">{{ log }}</p>
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="col">
+          <p>
+            <router-link :to="{ name: 'device-list' }">
+              <button type="button" class="btn btn-secondary w-2">Back</button>
+            </router-link>
+          </p>
+        </div>
       </div>
     </template>
-
-    <div class="col-md-12 text-bg-danger" v-if="manifestStatus == 2 && !isBeta">
-      <p></p>
-      <p class="fw-bold">
-        Failed to load the needed manifest file from the server. Could be that there is no released
-        version yet.
-      </p>
-    </div>
-
-    <div class="col-md-12 text-bg-info" v-if="manifestStatus == 2 && isBeta">
-      <p></p>
-      <p class="fw-bold">No beta available for this option.</p>
-    </div>
-
-    <div class="row" v-if="github != ''">
-      <p></p>
-      <p class="fw-normal">
-        Project url on github.com: <a :href="github" target="_blank">{{ github }}</a>
-      </p>
-    </div>
-
-    <div class="col-md-12">
-      <hr />
-      <p class="fw-normal">Powered by <b>esp web tools</b> and <b>esptool-js</b></p>
-    </div>
-
-    <div class="row" v-if="doValidation">
-      <div class="col-md-12">
+    <template v-else>
+      <div class="col">
         <p class="fw-normal">
-          Validating {{ validationCount.validated }} of {{ validationCount.total }}
+          Due to security restrictions in modern browsers, flashing devices is only possible when
+          accessing this interface over HTTPS.
         </p>
+        <p class="fw-normal">
+          You can use the webflasher on
+          <a href="https://www.gravitymon.com" target="_blank">www.gravitymon.com</a> instead
+        </p>
+        <p>
+          <router-link :to="{ name: 'device-list' }">
+            <button type="button" class="btn btn-secondary w-2">Back</button>
+          </router-link>
+        </p>
+        <hr />
       </div>
-      <div class="col-md-12" v-for="(log, index) in validationLog" :key="index">
-        <p class="fw-normal">{{ log }}</p>
-      </div>
-    </div>
+    </template>
   </div>
 </template>
 
@@ -128,6 +161,9 @@ const manifestStatus = ref(0) // 0 = not loaded, 1 = loading, 2 = failed loading
 const validationLog = ref([])
 const validationCount = ref({ total: 0, validated: 0 })
 const variantBoardOptions = ref([])
+
+// const isSSL = false
+const isSSL = window.location.protocol === 'https:' || window.location.hostname === 'localhost'
 
 watch(disabled, () => {
   logDebug('DeviceFlashView.watch(disabled)')
