@@ -14,28 +14,52 @@ router = APIRouter(prefix="/api/batch")
 
 @router.get(
     "/",
-    response_model=List[schemas.Batch],
+    response_model=List[schemas.BatchList],
 )
 async def list_batches(
     chipId: str = "*",
     active: str = "*",
     batch_service: BatchService = Depends(get_batch_service),
     dependencies=[Depends(api_key_auth)],
-) -> List[models.Batch]:
+) -> List[schemas.BatchList]:
     logger.info(f"Endpoint GET /api/batch/?chipId={chipId}&active={active}")
+    
     if chipId != "*":  # ChipId + Active flas
         if active == "True" or active == "true":
-            return batch_service.search_chipId_active(chipId, True)
+            batches = batch_service.search_chipId_active(chipId, True)
         elif active == "False" or active == "false":
-            return batch_service.search_chipId_active(chipId, False)
-        return batch_service.search_chipId(chipId)
+            batches = batch_service.search_chipId_active(chipId, False)
+        else:
+            batches = batch_service.search_chipId(chipId)
     elif active != "*":  # Active flag only
         if active == "True" or active == "true":
-            return batch_service.search_active(True)
+            batches = batch_service.search_active(True)
         elif active == "False" or active == "false":
-            return batch_service.search_active(False)
-    # return all records
-    return batch_service.list()
+            batches = batch_service.search_active(False)
+        else:
+            batches = batch_service.list()
+    else:  # return all records
+        batches = batch_service.list()
+    
+    # Enrich batches with counts and last pour data
+    for batch in batches:
+        batch.gravity_count = len(batch.gravity) if batch.gravity else 0
+        batch.pressure_count = len(batch.pressure) if batch.pressure else 0
+        batch.pour_count = len(batch.pour) if batch.pour else 0
+        
+        last_pour_volume = None
+        last_pour_max_volume = None
+        if batch.pour:
+            active_pours = [p for p in batch.pour if p.active]
+            if active_pours:
+                active_pours.sort(key=lambda x: x.created, reverse=True)
+                last_pour_volume = active_pours[0].volume
+                last_pour_max_volume = active_pours[0].max_volume
+        
+        batch.last_pour_volume = last_pour_volume
+        batch.last_pour_max_volume = last_pour_max_volume
+    
+    return batches
 
 
 @router.get(

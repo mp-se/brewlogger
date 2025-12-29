@@ -384,6 +384,16 @@ class Batch(BatchCreate):
     pour: List[Pour] = None
 
 
+class BatchList(BatchBase):
+    model_config = ConfigDict(from_attributes=True, alias_generator=to_camel, populate_by_name=True)
+    id: int
+    gravity_count: int = Field(default=0, description="Count of gravity readings")
+    pressure_count: int = Field(default=0, description="Count of pressure readings")
+    pour_count: int = Field(default=0, description="Count of pour readings")
+    last_pour_volume: Optional[float] = Field(None, description="Latest pour volume")
+    last_pour_max_volume: Optional[float] = Field(None, description="Latest pour max volume")
+
+
 class BatchDashboard(BaseModel):
     model_config = ConfigDict(alias_generator=to_camel, populate_by_name=True)
     id: int

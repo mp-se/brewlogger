@@ -38,6 +38,10 @@ There are a few public endpoints in brewlogger for receving data.
 
 ### Release history
 
+- 1.0.0 
+  - Changed the batch API to only return the batches (not all the data)
+  - Fixed issue with NGNIX that added compression when payload was large which cause fetch errors in UI
+
 - 0.9.0 Updated with new features
   - Feature: Added support for pressuremon and new post format
   - Updated web flasher

@@ -10,3 +10,4 @@ production/*
 docker-compose*.yaml
 .DS_Store
 *.log
+deploy.sh
