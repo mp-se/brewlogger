@@ -20,9 +20,11 @@ export class Batch {
     fermentationChamber,
     fermentationSteps,
     tapList,
-    gravity,
-    pressure,
-    pour
+    gravityCount,
+    pressureCount,
+    pourCount,
+    lastPourVolume,
+    lastPourMaxVolume
   ) {
     this.id = id === undefined ? 0 : id
     this.name = name === undefined ? '' : name
@@ -43,25 +45,18 @@ export class Batch {
     this.fermentationSteps =
       fermentationSteps === undefined || fermentationSteps === null ? '' : fermentationSteps
 
-    this.gravityCount = gravity === undefined || gravity === null ? 0 : gravity.length
-    this.gravity = []
-    this.pressureCount = pressure === undefined || pressure === null ? 0 : pressure.length
-    this.pressure = []
-    this.pourCount = pour === undefined || pour === null ? 0 : pour.length
-    this.pour = []
+    this.gravityCount = gravityCount === undefined ? 0 : gravityCount
+    this.pressureCount = pressureCount === undefined ? 0 : pressureCount
+    this.pourCount = pourCount === undefined ? 0 : pourCount
+    this.lastPourVolume =
+      lastPourVolume === undefined || lastPourVolume === null ? undefined : lastPourVolume
+    this.lastPourMaxVolume =
+      lastPourMaxVolume === undefined || lastPourMaxVolume === null ? undefined : lastPourMaxVolume
 
-    // Sort the pour list in decending order (newest first) to extract the last reported volume for the batch, undefined if nothing is reported
-    if (pour !== undefined && pour !== null) {
-      pour = pour.filter((p) => {
-        return p.active
-      })
-      pour.sort((a, b) => Date.parse(b.created) - Date.parse(a.created))
-      // logDebug(pour)
-      if (pour.length) {
-        this.lastPourVolume = pour[0].volume
-        this.lastPourMaxVolume = pour[0].maxVolume
-      }
-    }
+    // Initialize arrays
+    this.gravity = []
+    this.pressure = []
+    this.pour = []
   }
 
   static compare(b1, b2) {
@@ -101,13 +96,32 @@ export class Batch {
       b.fermentationChamber,
       b.fermentationSteps,
       b.tapList,
-      b.gravity,
-      b.pressure,
-      b.pour
+      b.gravityCount,
+      b.pressureCount,
+      b.pourCount,
+      b.lastPourVolume,
+      b.lastPourMaxVolume
     )
   }
 
   static fromDashboardJson(bd) {
+    // Calculate counts from arrays
+    const gravityCount = bd.gravity === undefined || bd.gravity === null ? 0 : bd.gravity.length
+    const pressureCount = bd.pressure === undefined || bd.pressure === null ? 0 : bd.pressure.length
+    const pourCount = bd.pour === undefined || bd.pour === null ? 0 : bd.pour.length
+
+    // Extract last pour values from the pour array
+    let lastPourVolume = undefined
+    let lastPourMaxVolume = undefined
+    if (bd.pour !== undefined && bd.pour !== null) {
+      const activePours = bd.pour.filter((p) => p.active)
+      activePours.sort((a, b) => Date.parse(b.created) - Date.parse(a.created))
+      if (activePours.length) {
+        lastPourVolume = activePours[0].volume
+        lastPourMaxVolume = activePours[0].maxVolume
+      }
+    }
+
     var b = new Batch(
       bd.id,
       bd.name,
@@ -125,13 +139,18 @@ export class Batch {
       bd.fermentationChamber,
       '',
       bd.tapList,
-      bd.gravity,
-      bd.pressure,
-      bd.pour
+      gravityCount,
+      pressureCount,
+      pourCount,
+      lastPourVolume,
+      lastPourMaxVolume
     )
-    b.gravity = bd.gravity
-    b.pressure = bd.pressure
-    b.pour = bd.pour
+
+    // Assign the full arrays
+    b.gravity = bd.gravity || []
+    b.pressure = bd.pressure || []
+    b.pour = bd.pour || []
+
     return b
   }
 
