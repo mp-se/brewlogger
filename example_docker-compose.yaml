@@ -1,5 +1,3 @@
-version: "3.8"
-
 # Simplified version, see brewlogger project for complete setup
 
 services:
@@ -48,7 +46,7 @@ services:
      - brew_db
 
   brew_db:
-    image: postgres:14
+    image: postgres:17
     hostname: brew_db
     restart: always
     networks:
@@ -61,6 +59,16 @@ services:
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=password
       - POSTGRES_DB=app
+
+  brew_cache:
+    image: redis:8
+    hostname: brew_cache
+    restart: always
+    ports:
+      - 6379:6379
+    networks:
+      - brew_net
+
 
 networks:
   brew_net:
