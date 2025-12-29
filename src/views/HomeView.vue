@@ -77,7 +77,6 @@
             Mode: Fridge target => {{ d.pid_fridge_target_temp }} °{{ d.pid_temp_format }}
           </div>
           <div class="text-center" v-if="d.pid_mode == 'o'">Mode: Off</div>
-          <div class="text-center">Version: {{ d.app_ver }} ({{ d.app_build }})</div>
         </BsCard>
       </div>
 
@@ -90,7 +89,6 @@
             Tap2: {{ Number(d.beer_volume2 / 100).toFixed(1) }} L, ({{ d.glass2 }} glasses)
           </div>
           <div class="text-center">Temp: {{ d.temperature }} °{{ d.temp_format }}</div>
-          <div class="text-center">Version: {{ d.app_ver }} ({{ d.app_build }})</div>
         </BsCard>
       </div>
 
@@ -352,7 +350,7 @@ async function fetchChamber() {
   )
     .then((values) => {
       logDebug('HomeView.fetchChamber()', values)
-      chamberTemps.value = values
+      chamberTemps.value = values.filter((v) => v !== null)
     })
     .catch((err) => {
       logError('HomeView.fetchChamber()', err)
@@ -381,7 +379,7 @@ async function fetchKegmon() {
     })
   )
     .then((values) => {
-      kegmonTaps.value = values
+      kegmonTaps.value = values.filter((v) => v !== null)
     })
     .catch((err) => {
       logError('HomeView.fetchKegmon()', err)
