@@ -162,19 +162,31 @@ def test_public(app_client):
     }
     r = app_client.post("/api/pressure/public", json=data)
     assert r.status_code == 200
+    res = json.loads(r.text)
+    assert res["pressure"] == 1.05
+    assert res["battery"] == 3.85
+    assert res["rssi"] == -76.2
+    assert res["temperature"] == 0.0
 
-    # Check relation to batch
+    # Check relation to batch and validate stored values
     r = app_client.get("/api/batch/?chipId=EEEEE1", headers=headers)
     assert r.status_code == 200
     data2 = json.loads(r.text)
     assert len(data2) == 1
     print(data2)
-    assert data2[0]["pressure"][0]["pressure"] == 1.05
-    assert data2[0]["pressure"][0]["pressure1"] == 0.0
-    assert data2[0]["pressure"][0]["battery"] == 3.85
-    assert data2[0]["pressure"][0]["rssi"] == -76.2
-    assert data2[0]["pressure"][0]["runTime"] == 1.0
-    assert data2[0]["pressure"][0]["temperature"] == 0.0
+    assert data2[0]["pressureCount"] == 1
+    batch_id = data2[0]["id"]
+    
+    # Get the batch details which includes pressure records
+    r = app_client.get(f"/api/batch/{batch_id}", headers=headers)
+    assert r.status_code == 200
+    batch_detail = json.loads(r.text)
+    assert len(batch_detail["pressure"]) == 1
+    pressure = batch_detail["pressure"][0]
+    assert pressure["pressure"] == 1.05
+    assert pressure["battery"] == 3.85
+    assert pressure["rssi"] == -76.2
+    assert pressure["temperature"] == 0.0
 
     data["id"] = "EEEEE2"
     r = app_client.post("/api/pressure/public", json=data)
@@ -202,19 +214,35 @@ def test_public(app_client):
     }
     r = app_client.post("/api/pressure/public", json=data)
     assert r.status_code == 200
+    res = json.loads(r.text)
+    assert res["pressure"] == 7.929  # 1.15 * 6.89476 rounded to 3 decimals
+    assert res["pressure1"] == 8.6184  # 1.25 * 6.89476 rounded to 4 decimals
+    assert res["battery"] == 3.85
+    assert res["rssi"] == -72.2
+    assert res["runTime"] == 1.1
+    assert res["temperature"] == 10.0
 
-    # Check relation to batch
+    # Check relation to batch and validate stored values
     r = app_client.get("/api/batch/?chipId=EEEEE3", headers=headers)
     assert r.status_code == 200
     data2 = json.loads(r.text)
     assert len(data2) == 1
     print(data2)
-    assert data2[0]["pressure"][0]["pressure"] == 7.929
-    assert data2[0]["pressure"][0]["pressure1"] == 8.6184
-    assert data2[0]["pressure"][0]["battery"] == 3.85
-    assert data2[0]["pressure"][0]["rssi"] == -72.2
-    assert data2[0]["pressure"][0]["runTime"] == 1.1
-    assert data2[0]["pressure"][0]["temperature"] == 10.0
+    assert data2[0]["pressureCount"] == 1
+    batch_id = data2[0]["id"]
+    
+    # Get the batch details which includes pressure records
+    r = app_client.get(f"/api/batch/{batch_id}", headers=headers)
+    assert r.status_code == 200
+    batch_detail = json.loads(r.text)
+    assert len(batch_detail["pressure"]) == 1
+    pressure = batch_detail["pressure"][0]
+    assert pressure["pressure"] == 7.929
+    assert pressure["pressure1"] == 8.6184
+    assert pressure["battery"] == 3.85
+    assert pressure["rssi"] == -72.2
+    assert pressure["runTime"] == 1.1
+    assert pressure["temperature"] == 10.0
 
     data = {
         "name": "012345",
@@ -232,19 +260,107 @@ def test_public(app_client):
     }
     r = app_client.post("/api/pressure/public", json=data)
     assert r.status_code == 200
+    res = json.loads(r.text)
+    assert res["pressure"] == 1150.0  # 1.15 * 1000
+    assert res["pressure1"] == 1250.0  # 1.25 * 1000
+    assert res["battery"] == 3.85
+    assert res["rssi"] == -72.2
+    assert res["runTime"] == 1.1
+    assert res["temperature"] == -12.22  # (10 - 32) * 5/9
 
-    # Check relation to batch
+    # Check relation to batch and validate stored values
     r = app_client.get("/api/batch/?chipId=EEEEE4", headers=headers)
     assert r.status_code == 200
     data2 = json.loads(r.text)
     assert len(data2) == 1
     print(data2)
-    assert data2[0]["pressure"][0]["pressure"] == 1150
-    assert data2[0]["pressure"][0]["pressure1"] == 1250
-    assert data2[0]["pressure"][0]["battery"] == 3.85
-    assert data2[0]["pressure"][0]["rssi"] == -72.2
-    assert data2[0]["pressure"][0]["runTime"] == 1.1
-    assert data2[0]["pressure"][0]["temperature"] == -12.22
+    assert data2[0]["pressureCount"] == 1
+    batch_id = data2[0]["id"]
+    
+    # Get the batch details which includes pressure records
+    r = app_client.get(f"/api/batch/{batch_id}", headers=headers)
+    assert r.status_code == 200
+    batch_detail = json.loads(r.text)
+    assert len(batch_detail["pressure"]) == 1
+    pressure = batch_detail["pressure"][0]
+    assert pressure["pressure"] == 1150.0
+    assert pressure["pressure1"] == 1250.0
+    assert pressure["battery"] == 3.85
+    assert pressure["rssi"] == -72.2
+    assert pressure["runTime"] == 1.1
+    assert abs(pressure["temperature"] - (-12.22)) < 0.01  # Allow small float precision difference
+
+
+def test_public_with_none_pressure1(app_client):
+    """Test that pressure1 with None value is handled correctly"""
+    truncate_database()
+    
+    # Test with pressure1 as None - should not crash
+    data = {
+        "name": "012345",
+        "token": "",
+        "interval": 0,
+        "id": "ZZZZZ1",
+        "temperature": 20,
+        "temperature-unit": "C",
+        "pressure": 1.05,
+        "pressure1": None,
+        "pressure-unit": "kPa",
+        "battery": 3.85,
+        "rssi": -76.2,
+        "run-time": 1.0,
+    }
+    r = app_client.post("/api/pressure/public", json=data)
+    assert r.status_code == 200
+    res = json.loads(r.text)
+    assert res["pressure"] == 1.05
+    assert res["pressure1"] == 0.0
+    assert res["battery"] == 3.85
+    assert res["temperature"] == 20
+    
+    # Test with pressure1 None and unit conversion (PSI)
+    data = {
+        "name": "012345",
+        "token": "",
+        "interval": 0,
+        "id": "ZZZZZ2",
+        "temperature": 20,
+        "temperature-unit": "C",
+        "pressure": 1.05,
+        "pressure1": None,
+        "pressure-unit": "PSI",
+        "battery": 3.85,
+        "rssi": -76.2,
+        "run-time": 1.0,
+    }
+    r = app_client.post("/api/pressure/public", json=data)
+    assert r.status_code == 200
+    res = json.loads(r.text)
+    assert res["pressure"] == 7.2395  # 1.05 * 6.89476
+    assert res["pressure1"] == 0.0  # Stays 0 when None
+    assert res["battery"] == 3.85
+    
+    # Test with pressure1 None and unit conversion (BAR)
+    data = {
+        "name": "012345",
+        "token": "",
+        "interval": 0,
+        "id": "ZZZZZ3",
+        "temperature": 20,
+        "temperature-unit": "C",
+        "pressure": 1.05,
+        "pressure1": None,
+        "pressure-unit": "BAR",
+        "battery": 3.85,
+        "rssi": -76.2,
+        "run-time": 1.0,
+    }
+    r = app_client.post("/api/pressure/public", json=data)
+    assert r.status_code == 200
+    res = json.loads(r.text)
+    assert res["pressure"] == 1050.0  # 1.05 * 1000
+    assert res["pressure1"] == 0.0  # Stays 0 when None
+    assert res["battery"] == 3.85
 
 
 def test_validation(app_client):

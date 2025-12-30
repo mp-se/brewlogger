@@ -124,13 +124,13 @@ async def create_pour_using_kegmon_format(
         volumeVal = 0
         maxVolumeVal = 0
 
-        if "pour" in req_json:
+        if "pour" in req_json and req_json["pour"] is not None:
             pourVal = req_json["pour"]
 
-        if "volume" in req_json:
+        if "volume" in req_json and req_json["volume"] is not None:
             volumeVal = req_json["volume"]
 
-        if "maxVolume" in req_json:
+        if "maxVolume" in req_json and req_json["maxVolume"] is not None:
             maxVolumeVal = req_json["maxVolume"]
 
         # Check if there is an active batch

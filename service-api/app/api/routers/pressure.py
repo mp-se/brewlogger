@@ -198,7 +198,7 @@ async def create_pressure_using_json(
 
         pressure1 = 0.0
 
-        if "pressure1" in req_json:  # Pressure 1 is optional
+        if "pressure1" in req_json and req_json["pressure1"] is not None:  # Pressure 1 is optional
             pressure1 = req_json["pressure1"]
 
         pressure = schemas.PressureCreate(
@@ -220,11 +220,13 @@ async def create_pressure_using_json(
 
         if req_json["pressure-unit"].upper() == "BAR":
             pressure.pressure = float("%.4f" % (pressure.pressure * 1000))
-            pressure.pressure1 = float("%.4f" % (pressure.pressure1 * 1000))
+            if pressure.pressure1 is not None and pressure.pressure1 != 0.0:
+                pressure.pressure1 = float("%.4f" % (pressure.pressure1 * 1000))
 
         if req_json["pressure-unit"].upper() == "PSI":
             pressure.pressure = float("%.4f" % (pressure.pressure * 6.89476))
-            pressure.pressure1 = float("%.4f" % (pressure.pressure1 * 6.89476))
+            if pressure.pressure1 is not None and pressure.pressure1 != 0.0:
+                pressure.pressure1 = float("%.4f" % (pressure.pressure1 * 6.89476))
 
         pressure = pressure_service.create(pressure)
         background_tasks.add_task(notifyClients, "batch", "update", pressure.batch_id)

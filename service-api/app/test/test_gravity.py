@@ -202,19 +202,27 @@ def test_public(app_client):
     r = app_client.post("/api/gravity/public", json=data)
     assert r.status_code == 200
 
-    # Check relation to batch
+    # Check relation to batch and validate stored values
     r = app_client.get("/api/batch/?chipId=AAAAA1", headers=headers)
     assert r.status_code == 200
     data2 = json.loads(r.text)
     print(data2)
     assert len(data2) == 1
-    assert data2[0]["gravity"][0]["gravity"] == 1.05
-    assert data2[0]["gravity"][0]["velocity"] == 0.1
-    assert data2[0]["gravity"][0]["angle"] == 34.45
-    assert data2[0]["gravity"][0]["battery"] == 3.85
-    assert data2[0]["gravity"][0]["rssi"] == -76.2
-    assert data2[0]["gravity"][0]["runTime"] == 0.0
-    assert data2[0]["gravity"][0]["temperature"] == 20.2
+    assert data2[0]["gravityCount"] == 1
+    batch_id = data2[0]["id"]
+    
+    # Get the batch details which includes gravity records
+    r = app_client.get(f"/api/batch/{batch_id}", headers=headers)
+    assert r.status_code == 200
+    batch_detail = json.loads(r.text)
+    assert len(batch_detail["gravity"]) == 1
+    gravity = batch_detail["gravity"][0]
+    assert gravity["gravity"] == 1.05
+    assert gravity["velocity"] == 0.1
+    assert gravity["angle"] == 34.45
+    assert gravity["battery"] == 3.85
+    assert gravity["rssi"] == -76.2
+    assert gravity["temperature"] == 20.2
 
     data["ID"] = "AAAAA2"
     r = app_client.post("/api/gravity/public", json=data)
@@ -270,6 +278,61 @@ def test_public2(app_client):
     }
     r = app_client.post("/api/gravity/public", json=data)
     assert r.status_code == 200
+
+
+def test_public_with_none_values(app_client):
+    """Test that optional fields with None values are handled correctly"""
+    truncate_database()
+    
+    # Test with corr-gravity as None - should not crash
+    gravity_data = {
+        "name": "test",
+        "ID": "ZZZZZ1",
+        "token": "token",
+        "interval": 1,
+        "temperature": 20.2,
+        "temp_units": "C",
+        "gravity": 1.05,
+        "velocity": None,
+        "angle": 34.45,
+        "gravity_units": "SG",
+        "battery": 3.85,
+        "RSSI": -76.2,
+        "corr-gravity": None,
+        "run-time": None,
+    }
+    r = app_client.post("/api/gravity/public", json=gravity_data)
+    assert r.status_code == 200
+    res = json.loads(r.text)
+    assert res["gravity"] == 1.05
+    assert res["velocity"] == 0  # None becomes 0
+    assert res["temperature"] == 20.2
+    assert res["battery"] == 3.85
+    
+    # Test with all optional extension fields as None
+    gravity_data = {
+        "name": "test",
+        "ID": "ZZZZZ2",
+        "token": "token",
+        "interval": 1,
+        "temperature": 22.5,
+        "temp_units": "C",
+        "gravity": 1.08,
+        "angle": 40.0,
+        "battery": 3.5,
+        "RSSI": -80.0,
+        "corr-gravity": None,
+        "gravity-unit": None,
+        "run-time": None,
+        "velocity": None,
+    }
+    r = app_client.post("/api/gravity/public", json=gravity_data)
+    assert r.status_code == 200
+    res = json.loads(r.text)
+    assert res["gravity"] == 1.08
+    assert res["temperature"] == 22.5
+    assert res["velocity"] == 0
+    assert res["battery"] == 3.5
 
 
 def test_validation(app_client):

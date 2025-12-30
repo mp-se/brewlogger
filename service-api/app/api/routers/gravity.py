@@ -158,13 +158,13 @@ async def create_gravity_using_ispindel_format(
         run_time = 0
         velocity = 0
 
-        if "corr-gravity" in req_json:
+        if "corr-gravity" in req_json and req_json["corr-gravity"] is not None:
             corr_gravity = req_json["corr-gravity"]
-        if "gravity-unit" in req_json:
+        if "gravity-unit" in req_json and req_json["gravity-unit"] is not None:
             gravity_units = req_json["gravity-unit"]
-        if "run-time" in req_json:
+        if "run-time" in req_json and req_json["run-time"] is not None:
             run_time = req_json["run-time"]
-        if "velocity" in req_json:
+        if "velocity" in req_json and req_json["velocity"] is not None:
             velocity = req_json["velocity"]
 
         # Check if there is an active batch

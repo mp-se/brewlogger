@@ -90,6 +90,47 @@ def test_delete(app_client):
     assert len(data) == 0
 
 
+def test_public_with_none_values(app_client):
+    """Test that optional fields with None values are handled correctly"""
+    test_init(app_client)
+    
+    # Test with pour as None
+    data = {"pour": None, "volume": 1.5, "maxVolume": 4.0, "id": "1"}
+    r = app_client.post("/api/pour/public", json=data)
+    assert r.status_code == 200
+    res = json.loads(r.text)
+    assert res["pour"] == 0
+    assert res["volume"] == 1.5
+    assert res["maxVolume"] == 4.0
+    
+    # Test with volume as None
+    data = {"pour": 0.5, "volume": None, "maxVolume": 4.0, "id": "1"}
+    r = app_client.post("/api/pour/public", json=data)
+    assert r.status_code == 200
+    res = json.loads(r.text)
+    assert res["pour"] == 0.5
+    assert res["volume"] == 0
+    assert res["maxVolume"] == 4.0
+    
+    # Test with maxVolume as None
+    data = {"pour": 0.5, "volume": 1.5, "maxVolume": None, "id": "1"}
+    r = app_client.post("/api/pour/public", json=data)
+    assert r.status_code == 200
+    res = json.loads(r.text)
+    assert res["pour"] == 0.5
+    assert res["volume"] == 1.5
+    assert res["maxVolume"] == 0
+    
+    # Test with all optional fields as None
+    data = {"pour": None, "volume": None, "maxVolume": None, "id": "1"}
+    r = app_client.post("/api/pour/public", json=data)
+    assert r.status_code == 200
+    res = json.loads(r.text)
+    assert res["pour"] == 0
+    assert res["volume"] == 0
+    assert res["maxVolume"] == 0
+
+
 def test_public(app_client):
     data = {"pour": 0.1, "id": "1"}
 
