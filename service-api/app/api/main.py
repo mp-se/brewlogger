@@ -1,4 +1,5 @@
 import logging
+import os
 from api.routers import device as apiDevice
 from api.routers import batch as apiBatch
 from api.routers import pour as apiPour
@@ -28,6 +29,9 @@ async def lifespan(app: FastAPI):
     # Running on startup
     logger.info("Running startup handler")
     load_settings()
+    scheduler_setup(app)
+    writeKey("brewlogger", get_settings().version, ttl=None)
+    system_log("main", "System started", 0)
     yield
     # Running on closedown
     logger.info("Running shutdown handler")
@@ -36,8 +40,8 @@ async def lifespan(app: FastAPI):
 
 def register_handlers(app):
     origins = [
-        # "*",
-        "http://localhost:5173",
+        "*",
+        # "http://localhost:5173",
         # "http://localhost:8080",
         # "http://localhost:8081",
     ]
@@ -72,7 +76,7 @@ def register_handlers(app):
         logger.error(f"{request}: {exc_str}")
         content = {"status_code": 10422, "message": exc_str, "data": None}
         return JSONResponse(
-            content=content, status_code=status.HTTP_422_UNPROCESSABLE_ENTITY
+            content=content, status_code=status.HTTP_422_UNPROCESSABLE_CONTENT
         )
 
 
@@ -86,10 +90,10 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
-app.mount("/logs", StaticFiles(directory="log"), name="logs")
+# Use absolute path for log directory
+log_dir = os.path.join(os.path.dirname(os.path.dirname(__file__)), "log")
+if os.path.exists(log_dir):
+    app.mount("/logs", StaticFiles(directory=log_dir), name="logs")
 
+# Register handlers at module level (middleware and routes must be added before app starts)
 register_handlers(app)
-scheduler_setup(app)
-writeKey("brewlogger", get_settings().version, ttl=None)
-
-system_log("main", "System started", 0)
