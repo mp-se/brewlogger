@@ -121,19 +121,131 @@
         </BsCard>
       </div>
     </div>
+
+    <div class="row gy-4 mt-1">
+      <div class="col-md-12" v-if="latestGravityReadings.length > 0">
+        <BsCard header="Latest Gravity Readings" color="secondary" title="">
+          <table class="table table-sm table-striped">
+            <colgroup>
+              <col style="width: 25%">
+              <col style="width: 15%">
+              <col style="width: 15%">
+              <col style="width: 15%">
+              <col style="width: 15%">
+              <col style="width: 15%">
+            </colgroup>
+            <thead>
+              <tr>
+                <th>Batch</th>
+                <th>Gravity</th>
+                <th>Velocity</th>
+                <th>Temp</th>
+                <th>Battery</th>
+                <th>Time</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="(reading, index) in latestGravityReadings" :key="index">
+                <td>{{ truncateString(reading.batchName, 30) }}</td>
+                <td>{{ Number(reading.gravity).toFixed(4) }}</td>
+                <td>{{ Number(reading.velocity).toFixed(4) }}</td>
+                <td>{{ getFormattedTemperature(reading.temperature) }}</td>
+                <td>{{ Number(reading.battery).toFixed(2) }}V</td>
+                <td>{{ getTimeSincePosted(reading.created) }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </BsCard>
+      </div>
+
+      <div class="col-md-12" v-if="latestPressureReadings.length > 0">
+        <BsCard header="Latest Pressure Readings" color="secondary" title="">
+          <table class="table table-sm table-striped">
+            <colgroup>
+              <col style="width: 25%">
+              <col style="width: 15%">
+              <col style="width: 15%">
+              <col style="width: 15%">
+              <col style="width: 15%">
+              <col style="width: 15%">
+            </colgroup>
+            <thead>
+              <tr>
+                <th>Batch</th>
+                <th>Pressure</th>
+                <th>Pressure1</th>
+                <th>Temp</th>
+                <th>Battery</th>
+                <th>Time</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="(reading, index) in latestPressureReadings" :key="index">
+                <td>{{ truncateString(reading.batchName, 30) }}</td>
+                <td>{{ getFormattedPressure(reading.pressure) }}</td>
+                <td>{{ getFormattedPressure(reading.pressure1) }}</td>
+                <td>{{ getFormattedTemperature(reading.temperature) }}</td>
+                <td>{{ Number(reading.battery).toFixed(2) }}V</td>
+                <td>{{ getTimeSincePosted(reading.created) }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </BsCard>
+      </div>
+
+      <div class="col-md-12" v-if="latestPourReadings.length > 0">
+        <BsCard header="Latest Pour Readings" color="secondary" title="">
+          <table class="table table-sm table-striped">
+            <colgroup>
+              <col style="width: 25%">
+              <col style="width: 15%">
+              <col style="width: 15%">
+              <col style="width: 15%">
+              <col style="width: 15%">
+              <col style="width: 15%">
+            </colgroup>
+            <thead>
+              <tr>
+                <th>Batch</th>
+                <th>Volume (L)</th>
+                <th>Pour (cl)</th>
+                <th></th>
+                <th></th>
+                <th>Time</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="(reading, index) in latestPourReadings" :key="index">
+                <td>{{ truncateString(reading.batchName, 30) }}</td>
+                <td>{{ Number(reading.volume).toFixed(2) }}</td>
+                <td>{{ Number(reading.pour * 100).toFixed(0) }}</td>
+                <td></td>
+                <td></td>
+                <td>{{ getTimeSincePosted(reading.created) }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </BsCard>
+      </div>
+
+    </div>
   </div>
 </template>
 
 <script setup>
 import { onMounted, onUnmounted, ref, computed } from 'vue'
-import { config, global, batchStore, deviceStore } from '@/modules/pinia'
-import { gravityToPlato, tempToF, formatTime, pressureToKPA, pressureToBAR } from '@/modules/utils'
+import { config, global, batchStore, deviceStore, gravityStore, pressureStore, pourStore } from '@/modules/pinia'
+import { gravityToPlato, tempToF, formatTime, pressureToKPA, pressureToBAR, getFormattedTemperature, getFormattedPressure, truncateString, getTimeSincePosted } from '@/modules/utils'
 import { logDebug, logError } from '@/modules/logger'
 
 const activeBatchList = ref([])
 const schedulerStatus = ref(null)
 const ticker = ref(null)
 const fermentationControlList = ref([])
+const latestGravityReadings = ref([])
+const latestPressureReadings = ref([])
+const latestPourReadings = ref([])
+const isFetching = ref(false)
 
 function prettySchedulerName(n) {
   switch (n) {
@@ -254,17 +366,9 @@ function getLastTemperature(batch) {
   logDebug('HomeView.getLastTemperature()')
 
   if (batch.gravityCount == 2) {
-    var t = batch.gravity[1].temperature
-
-    if (config.isTempF) return new Number(tempToF(t)).toFixed(2) + ' F'
-
-    return new Number(t).toFixed(2) + ' C'
+    return getFormattedTemperature(batch.gravity[1].temperature)
   } else if (batch.pressureCount == 2) {
-    var t2 = batch.pressure[1].temperature
-
-    if (config.isTempF) return new Number(tempToF(t2)).toFixed(2) + ' F'
-
-    return new Number(t2).toFixed(2) + ' C'
+    return getFormattedTemperature(batch.pressure[1].temperature)
   }
 
   return 'N/A'
@@ -274,13 +378,7 @@ function getLastPressure(batch) {
   logDebug('HomeView.getLastPressure()')
 
   if (batch.pressureCount == 2) {
-    var t = batch.pressure[1].pressure
-
-    if (config.isPressurePSI) return new Number(t).toFixed(2) + ' PSI'
-
-    if (config.isPressureKPA) return new Number(pressureToKPA(t)).toFixed(2) + ' kPa'
-
-    return new Number(pressureToBAR(t)).toFixed(2) + ' Bar'
+    return getFormattedPressure(batch.pressure[1].pressure)
   }
 
   return 'N/A'
@@ -316,10 +414,24 @@ onMounted(async () => {
     }
   }
 
-  ticker.value = setInterval(() => {
-    fetchScheduler()
-    fetchChamber()
-    fetchKegmon()
+  ticker.value = setInterval(async () => {
+    // Safeguard: skip if already fetching
+    if (isFetching.value) {
+      logDebug('HomeView.ticker()', 'Fetch already in progress, skipping')
+      return
+    }
+    
+    isFetching.value = true
+    try {
+      await Promise.all([
+        fetchLatestReadings(),
+        fetchScheduler(),
+        fetchChamber(),
+        fetchKegmon()
+      ])
+    } finally {
+      isFetching.value = false
+    }
   }, 5000)
 })
 
@@ -384,6 +496,40 @@ async function fetchKegmon() {
     .catch((err) => {
       logError('HomeView.fetchKegmon()', err)
     })
+}
+
+async function fetchLatestReadings() {
+  logDebug('HomeView.fetchLatestReadings()')
+
+  try {
+    const gravityResults = await gravityStore.getLatestGravity(5)
+    if (gravityResults) {
+      latestGravityReadings.value = gravityResults
+      logDebug('HomeView.fetchLatestReadings()', 'Gravity readings:', latestGravityReadings.value.length)
+    }
+  } catch (err) {
+    logError('HomeView.fetchLatestReadings()', 'Error fetching gravity', err)
+  }
+
+  try {
+    const pressureResults = await pressureStore.getLatestPressure(5)
+    if (pressureResults) {
+      latestPressureReadings.value = pressureResults
+      logDebug('HomeView.fetchLatestReadings()', 'Pressure readings:', latestPressureReadings.value.length)
+    }
+  } catch (err) {
+    logError('HomeView.fetchLatestReadings()', 'Error fetching pressure', err)
+  }
+
+  try {
+    const pourResults = await pourStore.getLatestPour(5)
+    if (pourResults) {
+      latestPourReadings.value = pourResults
+      logDebug('HomeView.fetchLatestReadings()', 'Pour readings:', latestPourReadings.value.length)
+    }
+  } catch (err) {
+    logError('HomeView.fetchLatestReadings()', 'Error fetching pour', err)
+  }
 }
 
 async function fetchScheduler() {

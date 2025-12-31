@@ -24,7 +24,10 @@ export class Batch {
     pressureCount,
     pourCount,
     lastPourVolume,
-    lastPourMaxVolume
+    lastPourMaxVolume,
+    gravity,
+    pressure,
+    pour
   ) {
     this.id = id === undefined ? 0 : id
     this.name = name === undefined ? '' : name
@@ -54,9 +57,9 @@ export class Batch {
       lastPourMaxVolume === undefined || lastPourMaxVolume === null ? undefined : lastPourMaxVolume
 
     // Initialize arrays
-    this.gravity = []
-    this.pressure = []
-    this.pour = []
+    this.gravity = gravity === undefined || gravity === null ? [] : gravity
+    this.pressure = pressure === undefined || pressure === null ? [] : pressure
+    this.pour = pour === undefined || pour === null ? [] : pour
   }
 
   static compare(b1, b2) {
@@ -100,7 +103,10 @@ export class Batch {
       b.pressureCount,
       b.pourCount,
       b.lastPourVolume,
-      b.lastPourMaxVolume
+      b.lastPourMaxVolume,
+      b.gravity,
+      b.pressure,
+      b.pour
     )
   }
 
@@ -143,19 +149,18 @@ export class Batch {
       pressureCount,
       pourCount,
       lastPourVolume,
-      lastPourMaxVolume
+      lastPourMaxVolume,
+      bd.gravity,
+      bd.pressure,
+      bd.pour
     )
-
-    // Assign the full arrays
-    b.gravity = bd.gravity || []
-    b.pressure = bd.pressure || []
-    b.pour = bd.pour || []
 
     return b
   }
 
   toJson() {
     var j = {
+      id: this.id,
       name: this.name,
       description: this.description,
       chipIdGravity: this.chipIdGravity,
@@ -170,7 +175,10 @@ export class Batch {
       ibu: this.ibu,
       brewfatherId: this.brewfatherId,
       fermentationChamber: this.fermentationChamber, // Optional: Can be undefined (=0)
-      fermentationSteps: this.fermentationSteps // Optional: Can be undefined (='')
+      fermentationSteps: this.fermentationSteps, // Optional: Can be undefined (='')
+      gravity: this.gravity || [],
+      pressure: this.pressure || [],
+      pour: this.pour || []
     }
 
     // Optional: Can be undefined

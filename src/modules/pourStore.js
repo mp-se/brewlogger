@@ -82,6 +82,38 @@ export const usePourStore = defineStore('pourStore', {
     return { pour: [] }
   },
   actions: {
+    async getLatestPour(limit) {
+      // returns pour[] or null
+
+      logDebug('pourStore.getLatestPour()', `limit=${limit}`)
+      global.disabled = true
+      try {
+        const url = new URL(global.baseURL + 'api/pour/latest')
+        url.searchParams.append('limit', limit)
+        const res = await fetch(url.toString(), {
+          method: 'GET',
+          headers: { Authorization: global.token },
+          signal: AbortSignal.timeout(global.fetchTimout)
+        })
+        logDebug('pourStore.getLatestPour()', res.status)
+        if (!res.ok) throw res
+        const json = await res.json()
+        this.pour = []
+
+        json.forEach((p) => {
+          var pour = Pour.fromJson(p)
+          pour.batchName = p.batchName
+          this.pour.push(pour)
+        })
+
+        global.disabled = false
+        return this.pour
+      } catch (err) {
+        global.disabled = false
+        logError('pourStore.getLatestPour()', err)
+        return null
+      }
+    },
     async getPourListForBatch(id) {
       // returns pour[] or null
 

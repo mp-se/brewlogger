@@ -174,6 +174,39 @@ export const useGravityStore = defineStore('gravityStore', {
     return { gravity: [] }
   },
   actions: {
+    async getLatestGravity(limit) {
+      // returns gravity[] or null
+
+      logDebug('gravityStore.getLatestGravity()', `limit=${limit}`)
+      global.disabled = true
+      try {
+        const url = new URL(global.baseURL + 'api/gravity/latest')
+        url.searchParams.append('limit', limit)
+        const res = await fetch(url.toString(), {
+          method: 'GET',
+          headers: { Authorization: global.token },
+          signal: AbortSignal.timeout(global.fetchTimout)
+        })
+        logDebug('gravityStore.getLatestGravity()', res.status)
+        if (!res.ok) throw res
+        const json = await res.json()
+        this.gravity = []
+
+        json.forEach((g) => {
+          var gravity = Gravity.fromJson(g)
+          gravity.batchName = g.batchName
+          gravity.chipIdGravity = g.chipIdGravity
+          this.gravity.push(gravity)
+        })
+
+        global.disabled = false
+        return this.gravity
+      } catch (err) {
+        global.disabled = false
+        logError('gravityStore.getLatestGravity()', err)
+        return null
+      }
+    },
     async getGravityListForBatch(id) {
       // returns gravity[] or null
 

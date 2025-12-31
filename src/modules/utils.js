@@ -54,6 +54,52 @@ export function pressureToBAR(p) {
   return p * 0.0689475729
 }
 
+export function getFormattedTemperature(temp) {
+  if (temp === undefined || temp < -270) {
+    return '--'
+  }
+  if (config.isTempF) {
+    return Number(tempToF(temp)).toFixed(1) + ' °F'
+  }
+  return Number(temp).toFixed(1) + ' °C'
+}
+
+export function getFormattedPressure(pressure) {
+  if (config.isPressurePSI) {
+    return Number(pressure).toFixed(1) + ' PSI'
+  }
+  if (config.isPressureKPA) {
+    return Number(pressureToKPA(pressure)).toFixed(0) + ' kPa'
+  }
+  return Number(pressureToBAR(pressure)).toFixed(2) + ' Bar'
+}
+
+export function truncateString(str, maxLength) {
+  if (str.length <= maxLength) {
+    return str
+  }
+  return str.substring(0, maxLength) + '...'
+}
+
+export function getTimeSincePosted(created) {
+  const now = new Date()
+  const postDate = new Date(created)
+  const diffMs = now - postDate
+  const diffHours = diffMs / (1000 * 60 * 60)
+  const diffDays = diffHours / 24
+  const diffWeeks = diffDays / 7
+
+  if (diffHours < 1) {
+    return 'just now'
+  } else if (diffHours < 24) {
+    return Math.round(diffHours) + ' h ago'
+  } else if (diffDays < 7) {
+    return Math.round(diffDays) + ' d ago'
+  } else {
+    return Math.round(diffWeeks) + ' w ago'
+  }
+}
+
 export function isValidJson(s) {
   try {
     JSON.stringify(JSON.parse(s))

@@ -21,6 +21,11 @@
         </button>
       </div>
 
+      <div v-if="backupProgress > -1" class="col-md-12">
+        <p></p>
+        <BsProgress :progress="backupProgress"></BsProgress>
+      </div>
+
       <div class="col-md-12">
         <hr />
       </div>
@@ -61,9 +66,9 @@
           </button>
         </div>
 
-        <div v-if="progress > 0" class="col-md-12">
+        <div v-if="restoreProgress > 0" class="col-md-12">
           <p></p>
-          <BsProgress :progress="progress"></BsProgress>
+          <BsProgress :progress="restoreProgress"></BsProgress>
         </div>
       </form>
     </div>
@@ -76,8 +81,10 @@ import { batchStore, deviceStore, global } from '@/modules/pinia'
 import { download } from '@/modules/utils'
 import { logDebug, logError, logInfo } from '@/modules/logger'
 
-const progress = ref(0)
-const progressMax = ref(0)
+const restoreProgress = ref(0)
+const restoreProgressMax = ref(0)
+const backupProgress = ref(0)
+const backupProgressMax = ref(0)
 const restoreErrors = ref(0)
 const fileSelected = ref(false)
 const fileUploadRef = ref(null)
@@ -162,45 +169,118 @@ function cleanupJson(list) {
   })
 }
 
-function createBackup() {
+async function createBackup() {
   logDebug('BackupView.createBackup()')
 
   global.disabled = true
   backup.value.meta.created = new Date().toISOString().slice(0, 10)
 
+  backupProgress.value = 0
+
   try {
+    // Fetch batch list
     getBatchList((success, bl) => {
-      if (success) {
-        logDebug('BackupView.createBackup()', 'Collected batches')
-        backup.value.batches = bl
+      if (!success) {
+        global.messageError = 'Failed to fetch batches'
+        global.disabled = false
+        return
+      }
 
-        // Remove optional params from payload
-        cleanupJson(backup.value.batches)
+      logDebug('BackupView.createBackup()', 'Collected batches')
 
-        backup.value.batches.forEach((b) => {
-          cleanupJson(b.gravity)
-        })
+      // Fetch device list
+      getDeviceList((success, dl) => {
+        if (!success) {
+          global.messageError = 'Failed to fetch devices'
+          global.disabled = false
+          return
+        }
 
-        logDebug('BackupView.createBackup()', 'Backup batches:', backup.value.batches)
-        // backup.value.batches = bl
+        logDebug('BackupView.createBackup()', 'Collected devices')
+        backup.value.devices = dl
 
-        getDeviceList((success, dl) => {
-          if (success) {
-            logDebug('BackupView.createBackup()', 'Collected devices')
-            backup.value.devices = dl
+        // If no batches, we're done
+        if (bl.length === 0) {
+          logDebug('BackupView.createBackup()', 'No batches to process')
+          var s = JSON.stringify(backup.value, null, 2)
+          download(s, 'text/plain', 'brewlogger_backup.txt')
+          backupProgress.value = 0
+          backupProgressMax.value = 0
+          global.disabled = false
+          return
+        }
+
+        // Initialize progress for fetching batch data
+        backupProgressMax.value = bl.length
+
+        // Fetch full batch data for each batch sequentially to avoid race conditions
+        let fetchedBatches = []
+
+        const fetchBatchesSequentially = async () => {
+          for (const b of bl) {
+            logDebug('BackupView.createBackup()', 'Fetching full data for batch', b.id)
+            try {
+              const b2 = await batchStore.getBatch(b.id)
+              if (b2) {
+                fetchedBatches.push(b2)
+              }
+            } catch (error) {
+              logError('BackupView.createBackup()', 'Error fetching batch', b.id, error)
+            }
+            updateBackupProgress()
+          }
+          return fetchedBatches
+        }
+
+        fetchBatchesSequentially()
+          .then((fullBatches) => {
+            logDebug('BackupView.createBackup()', 'Collected all batch data', fullBatches.length)
+
+            // Convert batches to plain JSON objects - extract raw values to avoid Vue reactivity wrappers
+            backup.value.batches = fullBatches.map((b) => ({
+              name: b.name,
+              description: b.description,
+              chipIdGravity: b.chipIdGravity,
+              chipIdPressure: b.chipIdPressure,
+              active: b.active,
+              tapList: b.tapList,
+              brewDate: b.brewDate,
+              style: b.style,
+              brewer: b.brewer,
+              abv: b.abv,
+              ebc: b.ebc,
+              ibu: b.ibu,
+              brewfatherId: b.brewfatherId,
+              fermentationChamber: b.fermentationChamber,
+              fermentationSteps: b.fermentationSteps,
+              id: b.id,
+              gravity: b.gravity || [],
+              pressure: b.pressure || [],
+              pour: b.pour || []
+            }))
+
+            // Remove optional params from batch objects
+            cleanupJson(backup.value.batches)
+
+            // Clean up arrays in each batch
+            backup.value.batches.forEach((b) => {
+              if (b.gravity && b.gravity.length > 0) cleanupJson(b.gravity)
+              if (b.pressure && b.pressure.length > 0) cleanupJson(b.pressure)
+              if (b.pour && b.pour.length > 0) cleanupJson(b.pour)
+            })
+
+            logDebug('BackupView.createBackup()', 'Backup batches:', backup.value.batches)
 
             var s = JSON.stringify(backup.value, null, 2)
             download(s, 'text/plain', 'brewlogger_backup.txt')
             global.disabled = false
-          } else {
-            global.messageError = 'Failed to fetch devices'
+          })
+          .catch((error) => {
+            logError('BackupView.createBackup()', 'Error fetching batch data:', error)
+            global.messageError = 'Failed to fetch batch data'
             global.disabled = false
-          }
-        })
-      } else {
-        global.messageError = 'Failed to fetch batches'
-        global.disabled = false
-      }
+          })
+      })
     })
   } catch (error) {
     logError('BackupView.createBackup()', 'Exception occurred:', error)
@@ -251,10 +331,10 @@ async function processRestore(json) {
     var cntDevices = json.devices.length + deviceStore.deviceList.length
     var cntBatches = json.batches.length * 4 + batchStore.batchList.length // For update we separate sending batch + gravity + pressure + pour
 
-    progress.value = 0
-    progressMax.value = cntDevices + cntBatches
+    restoreProgress.value = 0
+    restoreProgressMax.value = cntDevices + cntBatches
 
-    logDebug('BackupView.processRestore()', 'Steps to complete restore', progressMax.value)
+    logDebug('BackupView.processRestore()', 'Steps to complete restore', restoreProgressMax.value)
 
     /* Check the current database and delete records if needed */
 
@@ -322,7 +402,7 @@ async function restoreDevices(dl) {
         body: JSON.stringify(d)
         // signal: AbortSignal.timeout(global.fetchTimout),
       })
-      updateProgress()
+      updateRestoreProgress()
       return res.json()
     })
   )
@@ -357,7 +437,7 @@ async function restoreBatches(bl) {
       })
 
       const json = await res.json()
-      updateProgress()
+      updateRestoreProgress()
       b.id = json.id
 
       // Update the batchId to match related data sets
@@ -388,7 +468,7 @@ async function restoreBatches(bl) {
 
       if (b.gravity.length == 0) {
         logInfo('BackupView.restoreBatch()', 'No gravity readings for batch', b.id)
-        updateProgress()
+        updateRestoreProgress()
         return {}
       }
 
@@ -400,7 +480,7 @@ async function restoreBatches(bl) {
       })
 
       const json = await res.json()
-      updateProgress()
+      updateRestoreProgress()
       return json
     })
   )
@@ -412,7 +492,7 @@ async function restoreBatches(bl) {
 
       if (b.pressure.length == 0) {
         logInfo('BackupView.restoreBatch()', 'No pressure readings for batch', b.id)
-        updateProgress()
+        updateRestoreProgress()
         return {}
       }
 
@@ -424,7 +504,7 @@ async function restoreBatches(bl) {
       })
 
       const json = await res.json()
-      updateProgress()
+      updateRestoreProgress()
       return json
     })
   )
@@ -436,7 +516,7 @@ async function restoreBatches(bl) {
 
       if (b.pour.length == 0) {
         logInfo('BackupView.restoreBatch()', 'No pour readings for batch', b.id)
-        updateProgress()
+        updateRestoreProgress()
         return {}
       }
 
@@ -448,7 +528,7 @@ async function restoreBatches(bl) {
       })
 
       const json = await res.json()
-      updateProgress()
+      updateRestoreProgress()
       return json
     })
   )
@@ -485,7 +565,7 @@ async function deleteDevices() {
   json.forEach((d) => {
     logDebug('BackupView.deleteDevices()', 'Deleting device', d.id)
     deleteDevice(d)
-    updateProgress()
+    updateRestoreProgress()
   })
 }
 
@@ -518,11 +598,23 @@ async function deleteBatches() {
   json.forEach((b) => {
     logDebug('BackupView.deleteDevices()', 'Deleting batch', b.id)
     deleteBatch(b)
-    updateProgress()
+    updateRestoreProgress()
   })
 }
 
-function updateProgress() {
-  progress.value = progress.value + 100 / progressMax.value
+function updateBackupProgress() {
+  logDebug(
+    'BackupView.updateBackupProgress()',
+    'backupProgress:',
+    backupProgress.value,
+    '>',
+    backupProgress.value + 100 / backupProgressMax.value,
+    backupProgressMax.value
+  )
+  backupProgress.value = backupProgress.value + 100 / backupProgressMax.value
+}
+
+function updateRestoreProgress() {
+  restoreProgress.value = restoreProgress.value + 100 / restoreProgressMax.value
 }
 </script>

@@ -138,13 +138,7 @@
               }}
             </td>
             <td class="fs-5">{{ new Number(g.angle).toFixed(2) }}</td>
-            <td class="fs-5">
-              {{
-                config.isTempC
-                  ? new Number(g.temperature).toFixed(2)
-                  : new Number(tempToF(g.temperature)).toFixed(2)
-              }}
-            </td>
+            <td class="fs-5">{{ getFormattedTemperature(g.temperature) }}</td>
             <td class="fs-5">{{ new Number(g.battery).toFixed(2) }}</td>
             <td class="fs-5">{{ g.rssi }}</td>
             <td class="fs-5">{{ new Number(g.runTime).toFixed(2) }}</td>
@@ -168,7 +162,7 @@
 import { onMounted, ref } from 'vue'
 import { config, gravityStore, batchStore, global } from '@/modules/pinia'
 import router from '@/modules/router'
-import { gravityToPlato, tempToF, getGravityDataAnalytics } from '@/modules/utils'
+import { gravityToPlato, tempToF, getGravityDataAnalytics, getFormattedTemperature } from '@/modules/utils'
 import { logDebug, logError } from '@/modules/logger'
 import {
   sortedIconClass,

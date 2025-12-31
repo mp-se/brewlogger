@@ -127,6 +127,39 @@ export const usePressureStore = defineStore('pressureStore', {
     return { pressure: [] }
   },
   actions: {
+    async getLatestPressure(limit) {
+      // returns pressure[] or null
+
+      logDebug('pressureStore.getLatestPressure()', `limit=${limit}`)
+      global.disabled = true
+      try {
+        const url = new URL(global.baseURL + 'api/pressure/latest')
+        url.searchParams.append('limit', limit)
+        const res = await fetch(url.toString(), {
+          method: 'GET',
+          headers: { Authorization: global.token },
+          signal: AbortSignal.timeout(global.fetchTimout)
+        })
+        logDebug('pressureStore.getLatestPressure()', res.status)
+        if (!res.ok) throw res
+        const json = await res.json()
+        this.pressure = []
+
+        json.forEach((p) => {
+          var pressure = Pressure.fromJson(p)
+          pressure.batchName = p.batchName
+          pressure.chipIdPressure = p.chipIdPressure
+          this.pressure.push(pressure)
+        })
+
+        global.disabled = false
+        return this.pressure
+      } catch (err) {
+        global.disabled = false
+        logError('pressureStore.getLatestPressure()', err)
+        return null
+      }
+    },
     async getPressureListForBatch(id) {
       // returns pressure[] or null
 

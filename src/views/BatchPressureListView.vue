@@ -110,26 +110,8 @@
                 />
               </div>
             </td>
-            <td class="fs-5">
-              {{
-                new Number(
-                  config.isPressurePSI
-                    ? p.pressure
-                    : config.isPressureBAR
-                      ? pressureToBAR(p.pressure)
-                      : pressureToKPA(p.pressure)
-                ).toFixed(2)
-              }}
-            </td>
-            <td class="fs-5">
-              {{
-                p.temperature > -270
-                  ? config.isTempC
-                    ? new Number(p.temperature).toFixed(2)
-                    : new Number(tempToF(p.temperature)).toFixed(2)
-                  : '-'
-              }}
-            </td>
+            <td class="fs-5">{{ getFormattedPressure(p.pressure) }}</td>
+            <td class="fs-5">{{ getFormattedTemperature(p.temperature) }}</td>
             <td class="fs-5">{{ new Number(p.battery).toFixed(2) }}</td>
             <td class="fs-5">{{ p.rssi }}</td>
             <td class="fs-5">{{ new Number(p.runTime).toFixed(2) }}</td>
@@ -153,7 +135,7 @@
 import { onMounted, ref } from 'vue'
 import { config, pressureStore, batchStore, global } from '@/modules/pinia'
 import router from '@/modules/router'
-import { tempToF, getPressureDataAnalytics, pressureToKPA, pressureToBAR } from '@/modules/utils'
+import { tempToF, getPressureDataAnalytics, pressureToKPA, pressureToBAR, getFormattedTemperature, getFormattedPressure } from '@/modules/utils'
 import { logDebug, logError } from '@/modules/logger'
 import {
   sortedIconClass,
