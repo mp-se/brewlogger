@@ -82,6 +82,13 @@ export class Batch {
     )
   }
   static fromJson(b) {
+    // Calculate counts from arrays if they exist, otherwise use provided counts
+    const gravityCount =
+      b.gravity !== undefined && b.gravity !== null ? b.gravity.length : b.gravityCount || 0
+    const pressureCount =
+      b.pressure !== undefined && b.pressure !== null ? b.pressure.length : b.pressureCount || 0
+    const pourCount = b.pour !== undefined && b.pour !== null ? b.pour.length : b.pourCount || 0
+
     return new Batch(
       b.id,
       b.name,
@@ -99,9 +106,9 @@ export class Batch {
       b.fermentationChamber,
       b.fermentationSteps,
       b.tapList,
-      b.gravityCount,
-      b.pressureCount,
-      b.pourCount,
+      gravityCount,
+      pressureCount,
+      pourCount,
       b.lastPourVolume,
       b.lastPourMaxVolume,
       b.gravity,

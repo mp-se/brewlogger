@@ -51,9 +51,9 @@
               />
             </div>
           </td>
-          <td class="fs-5">{{ convertCL(p.pour) }}</td>
-          <td class="fs-5">{{ convertL(p.volume) }}</td>
-          <td class="fs-5">{{ convertL(p.maxVolume) }}</td>
+          <td class="fs-5">{{ getFormattedPourVolume(p.pour * 100) }}</td>
+          <td class="fs-5">{{ getFormattedVolume(p.volume) }}</td>
+          <td class="fs-5">{{ getFormattedVolume(p.maxVolume) }}</td>
         </tr>
       </tbody>
     </table>
@@ -74,12 +74,7 @@ import { onMounted, ref } from 'vue'
 import { pourStore, batchStore, config, global } from '@/modules/pinia'
 import router from '@/modules/router'
 import { logDebug, logError } from '@/modules/logger'
-import {
-  volumeLtoUSGallon,
-  volumeLtoUKGallon,
-  volumeCLtoUSOZ,
-  volumeCLtoUKOZ
-} from '@/modules/utils'
+import { getFormattedVolume, getFormattedPourVolume } from '@/modules/utils'
 import {
   sortedIconClass,
   setSortingDefault,
@@ -91,19 +86,6 @@ import {
 const pourList = ref(null)
 const forceRender = ref(0)
 const batchName = ref('')
-
-function convertCL(v) {
-  v = v * 100 // Convert to CL
-  return Number(
-    config.isVolumeMetric ? v : config.isVolumeUk ? volumeCLtoUKOZ(v) : volumeCLtoUSOZ(v)
-  ).toFixed(0)
-}
-
-function convertL(v) {
-  return Number(
-    config.isVolumeMetric ? v : config.isVolumeUk ? volumeLtoUKGallon(v) : volumeLtoUSGallon(v)
-  ).toFixed(2)
-}
 
 async function updatePour(id) {
   logDebug('TapPourListView.updatePour()', id)

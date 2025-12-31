@@ -36,7 +36,7 @@
 
     <div class="row gy-4">
       <div class="col-md-4" v-for="b in activeBatchList" :key="b.id">
-        <BsCard :header="'Batch: ' + b.name" color="info" title="">
+        <BsCard :header="'Batch: ' + b.name" color="primary" title="">
           <p class="text-center">
             <template v-if="b.gravityCount > 0">
               <router-link :to="{ name: 'batch-gravity-graph', params: { id: b.id } }">
@@ -61,7 +61,9 @@
           <div class="text-center">Temperature {{ getLastTemperature(b) }}</div>
         </BsCard>
       </div>
+    </div>
 
+    <div class="row gy-4 mt-1">
       <div class="col-md-4" v-for="(d, index) in chamberTemps" :key="index">
         <BsCard :header="'Chamber: ' + d.mdns" color="info" title="">
           <div class="text-center" v-if="d.pid_fridge_temp_connected">
@@ -99,7 +101,7 @@
       </div>
 
       <div class="col-md-4" v-if="schedulerStatus != null">
-        <BsCard header="Scheduler" color="info" title="">
+        <BsCard header="Scheduler" color="secondary" title="">
           <template v-if="schedulerStatus.length == 0">
             <div class="text-center">Scheduler disabled</div>
           </template>
@@ -112,7 +114,7 @@
       </div>
 
       <div class="col-md-4">
-        <BsCard header="Database Metrics" color="info" title="">
+        <BsCard header="Database Metrics" color="secondary" title="">
           <div class="text-center">{{ deviceCount }} devices in database</div>
           <div class="text-center">{{ batchCount }} batches in database</div>
           <div class="text-center">{{ gravityCount }} gravity points in database</div>
@@ -124,15 +126,15 @@
 
     <div class="row gy-4 mt-1">
       <div class="col-md-12" v-if="latestGravityReadings.length > 0">
-        <BsCard header="Latest Gravity Readings" color="secondary" title="">
+        <BsCard header="Latest Gravity Readings" color="info" title="">
           <table class="table table-sm table-striped">
             <colgroup>
-              <col style="width: 25%">
-              <col style="width: 15%">
-              <col style="width: 15%">
-              <col style="width: 15%">
-              <col style="width: 15%">
-              <col style="width: 15%">
+              <col style="width: 25%" />
+              <col style="width: 15%" />
+              <col style="width: 15%" />
+              <col style="width: 15%" />
+              <col style="width: 15%" />
+              <col style="width: 15%" />
             </colgroup>
             <thead>
               <tr>
@@ -148,7 +150,9 @@
               <tr v-for="(reading, index) in latestGravityReadings" :key="index">
                 <td>{{ truncateString(reading.batchName, 30) }}</td>
                 <td>{{ Number(reading.gravity).toFixed(4) }}</td>
-                <td>{{ reading.velocity !== null ? Number(reading.velocity).toFixed(4) : '--' }}</td>
+                <td>
+                  {{ reading.velocity !== null ? Number(reading.velocity).toFixed(4) : '--' }}
+                </td>
                 <td>{{ getFormattedTemperature(reading.temperature) }}</td>
                 <td>{{ Number(reading.battery).toFixed(2) }}V</td>
                 <td>{{ getTimeSincePosted(reading.created) }}</td>
@@ -159,15 +163,15 @@
       </div>
 
       <div class="col-md-12" v-if="latestPressureReadings.length > 0">
-        <BsCard header="Latest Pressure Readings" color="secondary" title="">
+        <BsCard header="Latest Pressure Readings" color="info" title="">
           <table class="table table-sm table-striped">
             <colgroup>
-              <col style="width: 25%">
-              <col style="width: 15%">
-              <col style="width: 15%">
-              <col style="width: 15%">
-              <col style="width: 15%">
-              <col style="width: 15%">
+              <col style="width: 25%" />
+              <col style="width: 15%" />
+              <col style="width: 15%" />
+              <col style="width: 15%" />
+              <col style="width: 15%" />
+              <col style="width: 15%" />
             </colgroup>
             <thead>
               <tr>
@@ -194,15 +198,15 @@
       </div>
 
       <div class="col-md-12" v-if="latestPourReadings.length > 0">
-        <BsCard header="Latest Pour Readings" color="secondary" title="">
+        <BsCard header="Latest Pour Readings" color="info" title="">
           <table class="table table-sm table-striped">
             <colgroup>
-              <col style="width: 25%">
-              <col style="width: 15%">
-              <col style="width: 15%">
-              <col style="width: 15%">
-              <col style="width: 15%">
-              <col style="width: 15%">
+              <col style="width: 25%" />
+              <col style="width: 15%" />
+              <col style="width: 15%" />
+              <col style="width: 15%" />
+              <col style="width: 15%" />
+              <col style="width: 15%" />
             </colgroup>
             <thead>
               <tr>
@@ -217,8 +221,8 @@
             <tbody>
               <tr v-for="(reading, index) in latestPourReadings" :key="index">
                 <td>{{ truncateString(reading.batchName, 30) }}</td>
-                <td>{{ Number(reading.volume).toFixed(2) }}</td>
-                <td>{{ Number(reading.pour * 100).toFixed(0) }}</td>
+                <td>{{ getFormattedVolume(reading.volume) }}</td>
+                <td>{{ getFormattedPourVolume(reading.pour * 100) }}</td>
                 <td></td>
                 <td></td>
                 <td>{{ getTimeSincePosted(reading.created) }}</td>
@@ -227,25 +231,41 @@
           </table>
         </BsCard>
       </div>
-
     </div>
   </div>
 </template>
 
 <script setup>
 import { onMounted, onUnmounted, ref, computed } from 'vue'
-import { config, global, batchStore, deviceStore, gravityStore, pressureStore, pourStore } from '@/modules/pinia'
-import { gravityToPlato, tempToF, formatTime, pressureToKPA, pressureToBAR, getFormattedTemperature, getFormattedPressure, truncateString, getTimeSincePosted } from '@/modules/utils'
+import {
+  config,
+  global,
+  batchStore,
+  deviceStore,
+  gravityStore,
+  pressureStore,
+  pourStore
+} from '@/modules/pinia'
+import {
+  gravityToPlato,
+  formatTime,
+  getFormattedTemperature,
+  getFormattedPressure,
+  getFormattedVolume,
+  getFormattedPourVolume,
+  truncateString,
+  getTimeSincePosted
+} from '@/modules/utils'
 import { logDebug, logError } from '@/modules/logger'
 
 const activeBatchList = ref([])
 const schedulerStatus = ref(null)
 const ticker = ref(null)
+const readingsTicker = ref(null)
 const fermentationControlList = ref([])
 const latestGravityReadings = ref([])
 const latestPressureReadings = ref([])
 const latestPourReadings = ref([])
-const isFetching = ref(false)
 
 function prettySchedulerName(n) {
   switch (n) {
@@ -388,6 +408,7 @@ onUnmounted(() => {
   logDebug('HomeView.onUnmounted()')
 
   if (ticker.value != null) clearInterval(ticker.value)
+  if (readingsTicker.value != null) clearInterval(readingsTicker.value)
 })
 
 onMounted(async () => {
@@ -415,24 +436,16 @@ onMounted(async () => {
   }
 
   ticker.value = setInterval(async () => {
-    // Safeguard: skip if already fetching
-    if (isFetching.value) {
-      logDebug('HomeView.ticker()', 'Fetch already in progress, skipping')
-      return
-    }
-    
-    isFetching.value = true
-    try {
-      await Promise.all([
-        fetchLatestReadings(),
-        fetchScheduler(),
-        fetchChamber(),
-        fetchKegmon()
-      ])
-    } finally {
-      isFetching.value = false
-    }
+    await Promise.all([fetchScheduler(), fetchChamber(), fetchKegmon()])
   }, 5000)
+
+  readingsTicker.value = setInterval(async () => {
+    logDebug('HomeView.readingsTicker()', 'Fetching latest readings')
+    await fetchLatestReadings()
+  }, 300000) // 5 minutes
+
+  // Fetch immediately on mount
+  await fetchLatestReadings()
 })
 
 const chamberTemps = ref([])
@@ -502,33 +515,36 @@ async function fetchLatestReadings() {
   logDebug('HomeView.fetchLatestReadings()')
 
   try {
-    const gravityResults = await gravityStore.getLatestGravity(5)
+    const [gravityResults, pressureResults, pourResults] = await Promise.all([
+      gravityStore.getLatestGravity(5),
+      pressureStore.getLatestPressure(5),
+      pourStore.getLatestPour(5)
+    ])
+
     if (gravityResults) {
       latestGravityReadings.value = gravityResults
-      logDebug('HomeView.fetchLatestReadings()', 'Gravity readings:', latestGravityReadings.value.length)
+      logDebug(
+        'HomeView.fetchLatestReadings()',
+        'Gravity readings:',
+        latestGravityReadings.value.length
+      )
     }
-  } catch (err) {
-    logError('HomeView.fetchLatestReadings()', 'Error fetching gravity', err)
-  }
 
-  try {
-    const pressureResults = await pressureStore.getLatestPressure(5)
     if (pressureResults) {
       latestPressureReadings.value = pressureResults
-      logDebug('HomeView.fetchLatestReadings()', 'Pressure readings:', latestPressureReadings.value.length)
+      logDebug(
+        'HomeView.fetchLatestReadings()',
+        'Pressure readings:',
+        latestPressureReadings.value.length
+      )
     }
-  } catch (err) {
-    logError('HomeView.fetchLatestReadings()', 'Error fetching pressure', err)
-  }
 
-  try {
-    const pourResults = await pourStore.getLatestPour(5)
     if (pourResults) {
       latestPourReadings.value = pourResults
       logDebug('HomeView.fetchLatestReadings()', 'Pour readings:', latestPourReadings.value.length)
     }
   } catch (err) {
-    logError('HomeView.fetchLatestReadings()', 'Error fetching pour', err)
+    logError('HomeView.fetchLatestReadings()', 'Error fetching readings', err)
   }
 }
 

@@ -74,6 +74,26 @@ export function getFormattedPressure(pressure) {
   return Number(pressureToBAR(pressure)).toFixed(2) + ' Bar'
 }
 
+export function getFormattedVolume(volumeLiters) {
+  if (config.isVolumeUs) {
+    return Number(volumeLtoUSGallon(volumeLiters)).toFixed(2) + ' gal'
+  }
+  if (config.isVolumeUk) {
+    return Number(volumeLtoUKGallon(volumeLiters)).toFixed(2) + ' gal'
+  }
+  return Number(volumeLiters).toFixed(2) + ' L'
+}
+
+export function getFormattedPourVolume(volumeCentiliters) {
+  if (config.isVolumeUs) {
+    return Number(volumeCLtoUSOZ(volumeCentiliters)).toFixed(1) + ' oz'
+  }
+  if (config.isVolumeUk) {
+    return Number(volumeCLtoUKOZ(volumeCentiliters)).toFixed(1) + ' oz'
+  }
+  return Number(volumeCentiliters).toFixed(0) + ' cl'
+}
+
 export function truncateString(str, maxLength) {
   if (str.length <= maxLength) {
     return str

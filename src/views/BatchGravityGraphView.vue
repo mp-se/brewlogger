@@ -420,7 +420,9 @@ function mapTemperatureData(gList) {
     if (g.temperature !== null) {
       result.push({
         x: g.created,
-        y: parseFloat(new Number(config.isTempC ? g.temperature : tempToF(g.temperature)).toFixed(2))
+        y: parseFloat(
+          new Number(config.isTempC ? g.temperature : tempToF(g.temperature)).toFixed(2)
+        )
       })
     }
   })

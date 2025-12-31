@@ -135,7 +135,11 @@
 import { onMounted, ref } from 'vue'
 import { config, pressureStore, batchStore, global } from '@/modules/pinia'
 import router from '@/modules/router'
-import { tempToF, getPressureDataAnalytics, pressureToKPA, pressureToBAR, getFormattedTemperature, getFormattedPressure } from '@/modules/utils'
+import {
+  getPressureDataAnalytics,
+  getFormattedTemperature,
+  getFormattedPressure
+} from '@/modules/utils'
 import { logDebug, logError } from '@/modules/logger'
 import {
   sortedIconClass,
