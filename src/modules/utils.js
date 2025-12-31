@@ -55,7 +55,7 @@ export function pressureToBAR(p) {
 }
 
 export function getFormattedTemperature(temp) {
-  if (temp === undefined || temp < -270) {
+  if (temp === null || temp === undefined || temp < -270) {
     return '--'
   }
   if (config.isTempF) {
@@ -183,7 +183,7 @@ export function getPressureDataAnalytics(pressureList) {
       if (p.pressure < stats.pressure.min) stats.pressure.min = p.pressure
 
       // -273 means invalid temperature or not sensor attached
-      if (p.temperature > -270) {
+      if (p.temperature !== null && p.temperature >= -270) {
         if (p.temperature > stats.temperature.max) stats.temperature.max = p.temperature
         if (p.temperature < stats.temperature.min) stats.temperature.min = p.temperature
       }
@@ -288,8 +288,10 @@ export function getGravityDataAnalytics(gravityList) {
       if (g.gravity > stats.gravity.max) stats.gravity.max = g.gravity
       if (g.gravity < stats.gravity.min) stats.gravity.min = g.gravity
 
-      if (g.temperature > stats.temperature.max) stats.temperature.max = g.temperature
-      if (g.temperature < stats.temperature.min) stats.temperature.min = g.temperature
+      if (g.temperature !== null) {
+        if (g.temperature > stats.temperature.max) stats.temperature.max = g.temperature
+        if (g.temperature < stats.temperature.min) stats.temperature.min = g.temperature
+      }
     }
   })
 

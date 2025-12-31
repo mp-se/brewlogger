@@ -148,7 +148,7 @@
               <tr v-for="(reading, index) in latestGravityReadings" :key="index">
                 <td>{{ truncateString(reading.batchName, 30) }}</td>
                 <td>{{ Number(reading.gravity).toFixed(4) }}</td>
-                <td>{{ Number(reading.velocity).toFixed(4) }}</td>
+                <td>{{ reading.velocity !== null ? Number(reading.velocity).toFixed(4) : '--' }}</td>
                 <td>{{ getFormattedTemperature(reading.temperature) }}</td>
                 <td>{{ Number(reading.battery).toFixed(2) }}V</td>
                 <td>{{ getTimeSincePosted(reading.created) }}</td>

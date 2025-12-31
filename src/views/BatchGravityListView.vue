@@ -141,7 +141,7 @@
             <td class="fs-5">{{ getFormattedTemperature(g.temperature) }}</td>
             <td class="fs-5">{{ new Number(g.battery).toFixed(2) }}</td>
             <td class="fs-5">{{ g.rssi }}</td>
-            <td class="fs-5">{{ new Number(g.runTime).toFixed(2) }}</td>
+            <td class="fs-5">{{ g.runTime !== null ? new Number(g.runTime).toFixed(2) : '--' }}</td>
           </tr>
         </tbody>
       </table>

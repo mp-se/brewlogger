@@ -16,12 +16,12 @@ export class Pressure {
     active
   ) {
     this.id = id === undefined ? 0 : id
-    this.temperature = temperature === undefined ? 0.0 : temperature
+    this.temperature = temperature === undefined || temperature === null ? null : temperature
     this.pressure = pressure === undefined ? 0.0 : pressure
-    this.pressure1 = pressure1 === undefined ? 0.0 : pressure1
-    this.battery = battery === undefined ? 0.0 : battery
+    this.pressure1 = pressure1 === undefined || pressure1 === null ? null : pressure1
+    this.battery = battery === undefined || battery === null ? null : battery
     this.rssi = rssi === undefined ? 0 : rssi
-    this.runTime = runTime === undefined ? 0 : runTime
+    this.runTime = runTime === undefined || runTime === null ? null : runTime
     this.created = created === undefined ? '' : created
     this.batchId = batchId === undefined ? 0 : batchId
     this.active = active === undefined ? true : active

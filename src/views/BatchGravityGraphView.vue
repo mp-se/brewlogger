@@ -417,10 +417,12 @@ function mapTemperatureData(gList) {
   var result = []
 
   gList.forEach((g) => {
-    result.push({
-      x: g.created,
-      y: parseFloat(new Number(config.isTempC ? g.temperature : tempToF(g.temperature)).toFixed(2))
-    })
+    if (g.temperature !== null) {
+      result.push({
+        x: g.created,
+        y: parseFloat(new Number(config.isTempC ? g.temperature : tempToF(g.temperature)).toFixed(2))
+      })
+    }
   })
 
   return result
@@ -444,7 +446,7 @@ function mapChamberData(gList) {
   var result = []
 
   gList
-    .filter((g) => g.chamberTemperature !== undefined)
+    .filter((g) => g.chamberTemperature !== null)
     .forEach((g) => {
       result.push({
         x: g.created,
@@ -499,12 +501,12 @@ function mapGravityVelocityData(gList) {
       currentSlot = { time: null, totalGravity: 0, count: 0 }
     }
 
-    // For testing and showing the filtered gravity
-    gravityVelocityData1.value.push({
-      x: new Date(g.created),
-      // y: gravity
-      y: g.velocity
-    })
+    if (g.velocity !== null) {
+      gravityVelocityData1.value.push({
+        x: new Date(g.created),
+        y: g.velocity
+      })
+    }
   })
 
   if (currentSlot.count > 0) slots.push(currentSlot)

@@ -20,23 +20,23 @@ export class Gravity {
     beerTemperature
   ) {
     this.id = id === undefined ? 0 : id
-    this.temperature = temperature === undefined ? 0.0 : temperature
+    this.temperature = temperature === undefined || temperature === null ? null : temperature
     this.gravity = gravity === undefined ? 0.0 : gravity
-    this.velocity = velocity === undefined ? 0.0 : velocity
+    this.velocity = velocity === undefined || velocity === null ? null : velocity
     this.angle = angle === undefined ? 0.0 : angle
     this.battery = battery === undefined ? 0.0 : battery
     this.rssi = rssi === undefined ? 0 : rssi
-    this.corrGravity = corrGravity === undefined ? 0.0 : corrGravity
-    this.runTime = runTime === undefined ? 0 : runTime
+    this.corrGravity = corrGravity === undefined || corrGravity === null ? null : corrGravity
+    this.runTime = runTime === undefined || runTime === null ? null : runTime
     this.created = created === undefined ? '' : created
     this.batchId = batchId === undefined ? 0 : batchId
     this.active = active === undefined ? true : active
     this.chamberTemperature =
       chamberTemperature === undefined || chamberTemperature === null
-        ? undefined
+        ? null
         : chamberTemperature
     this.beerTemperature =
-      beerTemperature === undefined || beerTemperature === null ? undefined : beerTemperature
+      beerTemperature === undefined || beerTemperature === null ? null : beerTemperature
   }
 
   static fromJson(g) {
@@ -74,10 +74,10 @@ export class Gravity {
       active: this.active
     }
 
-    // Optional: Can be undefined or null
-    if (this.chamberTemperature !== undefined) j.chamberTemperature = this.chamberTemperature
+    // Optional: Can be null
+    if (this.chamberTemperature !== null) j.chamberTemperature = this.chamberTemperature
 
-    if (this.beerTemperature !== undefined) j.beerTemperature = this.beerTemperature
+    if (this.beerTemperature !== null) j.beerTemperature = this.beerTemperature
 
     return j
   }

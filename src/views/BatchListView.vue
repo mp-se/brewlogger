@@ -466,7 +466,7 @@ async function exportBatchGravityCSV(id) {
         ',' +
         g.created +
         ',' +
-        g.temperature +
+        (g.temperature !== null ? g.temperature : '') +
         ',' +
         g.gravity +
         ',' +
@@ -476,15 +476,15 @@ async function exportBatchGravityCSV(id) {
         ',' +
         g.rssi +
         ',' +
-        g.corrGravity +
+        (g.corrGravity !== null ? g.corrGravity : '') +
         ',' +
-        g.runTime +
+        (g.runTime !== null ? g.runTime : '') +
         ',' +
-        (g.chamberTemperature === null ? '' : g.chamberTemperature) +
+        (g.chamberTemperature !== null ? g.chamberTemperature : '') +
         ',' +
-        (g.beerTemperature === null ? '' : g.beerTemperature) +
+        (g.beerTemperature !== null ? g.beerTemperature : '') +
         ',' +
-        g.velocity +
+        (g.velocity !== null ? g.velocity : '') +
         '\n'
     })
 
@@ -508,17 +508,17 @@ async function exportBatchPressureCSV(id) {
         ',' +
         g.created +
         ',' +
-        g.temperature +
+        (g.temperature !== null ? g.temperature : '') +
         ',' +
         g.pressure +
         ',' +
-        g.pressure1 +
+        (g.pressure1 !== null ? g.pressure1 : '') +
         ',' +
-        g.battery +
+        (g.battery !== null ? g.battery : '') +
         ',' +
         g.rssi +
         ',' +
-        g.runTime +
+        (g.runTime !== null ? g.runTime : '') +
         '\n'
     })
 

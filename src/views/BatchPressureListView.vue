@@ -112,9 +112,9 @@
             </td>
             <td class="fs-5">{{ getFormattedPressure(p.pressure) }}</td>
             <td class="fs-5">{{ getFormattedTemperature(p.temperature) }}</td>
-            <td class="fs-5">{{ new Number(p.battery).toFixed(2) }}</td>
+            <td class="fs-5">{{ p.battery !== null ? new Number(p.battery).toFixed(2) : '--' }}</td>
             <td class="fs-5">{{ p.rssi }}</td>
-            <td class="fs-5">{{ new Number(p.runTime).toFixed(2) }}</td>
+            <td class="fs-5">{{ p.runTime !== null ? new Number(p.runTime).toFixed(2) : '--' }}</td>
           </tr>
         </tbody>
       </table>

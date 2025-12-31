@@ -289,10 +289,12 @@ function mapBatteryData(pList) {
   var result = []
 
   pList.forEach((p) => {
-    result.push({
-      x: p.created,
-      y: parseFloat(new Number(p.battery).toFixed(2))
-    })
+    if (p.battery !== null) {
+      result.push({
+        x: p.created,
+        y: parseFloat(new Number(p.battery).toFixed(2))
+      })
+    }
   })
 
   return result
@@ -303,7 +305,7 @@ function mapTemperatureData(pList) {
 
   pList.forEach((p) => {
     // -273 refers to invalid temperature or missing temperature sensor
-    if (p.temperature > -270) {
+    if (p.temperature !== null && p.temperature >= -270) {
       result.push({
         x: p.created,
         y: parseFloat(
