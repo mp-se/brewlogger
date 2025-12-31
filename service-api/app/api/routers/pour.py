@@ -18,13 +18,26 @@ router = APIRouter(prefix="/api/pour")
     "/", response_model=List[schemas.Pour], dependencies=[Depends(api_key_auth)]
 )
 async def list_pours(
-    chipId: str = "*",
+    batchId: int = -1,
     pour_service: PourService = Depends(get_pour_service),
 ) -> List[models.Pour]:
-    logger.info(f"Endpoint GET /api/pour/?chipId={chipId}")
-    if chipId != "*":
-        return pour_service.search(chipId)
+    logger.info(f"Endpoint GET /api/pour/?batchId={batchId}")
+    if batchId != -1:
+        return pour_service.search_by_batchId(batchId)
     return pour_service.list()
+
+
+@router.get(
+    "/latest",
+    response_model=List[schemas.PourLatest],
+    dependencies=[Depends(api_key_auth)],
+)
+async def get_latest_pours(
+    limit: int = 10,
+    pour_service: PourService = Depends(get_pour_service),
+) -> List[dict]:
+    logger.info(f"Endpoint GET /api/pour/latest?limit={limit}")
+    return pour_service.get_latest(limit)
 
 
 @router.get(

@@ -112,14 +112,14 @@ class Gravity(Base):
 
     # Data from Gravitymon
     id = Column(Integer, primary_key=True, index=True, nullable=False)
-    temperature = Column(Float, nullable=False)
+    temperature = Column(Float, nullable=True)
     gravity = Column(Float, nullable=False)
-    velocity = Column(Float, nullable=False)
+    velocity = Column(Float, nullable=True)
     angle = Column(Float, nullable=False)
     battery = Column(Float, nullable=False)
     rssi = Column(Float, nullable=False)
-    corr_gravity = Column(Float, nullable=False)
-    run_time = Column(Float, nullable=False)
+    corr_gravity = Column(Float, nullable=True)
+    run_time = Column(Float, nullable=True)
 
     # Data from chamber controller
     beer_temperature = Column(
@@ -141,12 +141,12 @@ class Pressure(Base):
     __tablename__ = "pressure"
 
     id = Column(Integer, primary_key=True, index=True, nullable=False)
-    temperature = Column(Float, nullable=False)
+    temperature = Column(Float, nullable=True)
     pressure = Column(Float, nullable=False)
-    pressure1 = Column(Float, nullable=False)
-    battery = Column(Float, nullable=False)
+    pressure1 = Column(Float, nullable=True)
+    battery = Column(Float, nullable=True)
     rssi = Column(Float, nullable=False)
-    run_time = Column(Float, nullable=False)
+    run_time = Column(Float, nullable=True)
     created = Column(DateTime, nullable=False)
     active = Column(Boolean, nullable=False)
 

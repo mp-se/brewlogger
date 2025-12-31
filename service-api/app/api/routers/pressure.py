@@ -25,13 +25,26 @@ router = APIRouter(prefix="/api/pressure")
     "/", response_model=List[schemas.Pressure], dependencies=[Depends(api_key_auth)]
 )
 async def list_pressures(
-    chipId: str = "*",
+    batchId: int = -1,
     pressure_service: PressureService = Depends(get_pressure_service),
 ) -> List[models.Pressure]:
-    logger.info("Endpoint GET /api/pressure/?chipId=%s", chipId)
-    if chipId != "*":
-        return pressure_service.search(chipId)
+    logger.info("Endpoint GET /api/pressure/?batchId=%d", batchId)
+    if batchId != -1:
+        return pressure_service.search_by_batchId(batchId)
     return pressure_service.list()
+
+
+@router.get(
+    "/latest",
+    response_model=List[schemas.PressureLatest],
+    dependencies=[Depends(api_key_auth)],
+)
+async def get_latest_pressures(
+    limit: int = 10,
+    pressure_service: PressureService = Depends(get_pressure_service),
+) -> List[dict]:
+    logger.info(f"Endpoint GET /api/pressure/latest?limit={limit}")
+    return pressure_service.get_latest(limit)
 
 
 @router.get(
@@ -196,39 +209,46 @@ async def create_pressure_using_json(
         }
         """
 
-        pressure1 = 0.0
+        # Extract optional fields, defaulting to None if not present or None
+        temperature = req_json.get("temperature", None)
+        pressure = req_json.get("pressure")  # pressure is required
+        pressure1 = req_json.get("pressure1", None)
+        battery = req_json.get("battery", None)
+        run_time = req_json.get("run-time", None)
 
-        if "pressure1" in req_json and req_json["pressure1"] is not None:  # Pressure 1 is optional
-            pressure1 = req_json["pressure1"]
+        # Handle temperature unit conversion
+        if temperature is not None and "temperature-unit" in req_json and req_json["temperature-unit"].upper() == "F":
+            temperature = float(
+                "%.2f" % ((temperature - 32) * 5 / 9)
+            )  # °C = (°F − 32) x 5/9
 
-        pressure = schemas.PressureCreate(
-            temperature=req_json["temperature"],
-            pressure=req_json["pressure"],
+        # Handle pressure unit conversion
+        if "pressure-unit" in req_json:
+            if req_json["pressure-unit"].upper() == "BAR":
+                pressure = float("%.4f" % (pressure * 1000))
+            elif req_json["pressure-unit"].upper() == "PSI":
+                pressure = float("%.4f" % (pressure * 6.89476))
+
+        # Handle pressure1 unit conversion
+        if pressure1 is not None and pressure1 != 0.0 and "pressure-unit" in req_json:
+            if req_json["pressure-unit"].upper() == "BAR":
+                pressure1 = float("%.4f" % (pressure1 * 1000))
+            elif req_json["pressure-unit"].upper() == "PSI":
+                pressure1 = float("%.4f" % (pressure1 * 6.89476))
+
+        pressure_obj = schemas.PressureCreate(
+            temperature=temperature,
+            pressure=pressure,
             pressure1=pressure1,
-            battery=req_json["battery"],
+            battery=battery,
             rssi=req_json["rssi"],
-            run_time=req_json["run-time"],
+            run_time=run_time,
             batch_id=batchList[0].id,
             created=datetime.now(),
             active=True,
         )
 
-        if req_json["temperature-unit"].upper() == "F":
-            pressure.temperature = float(
-                "%.2f" % ((pressure.temperature - 32) * 5 / 9)
-            )  # °C = (°F − 32) x 5/9
-
-        if req_json["pressure-unit"].upper() == "BAR":
-            pressure.pressure = float("%.4f" % (pressure.pressure * 1000))
-            if pressure.pressure1 is not None and pressure.pressure1 != 0.0:
-                pressure.pressure1 = float("%.4f" % (pressure.pressure1 * 1000))
-
-        if req_json["pressure-unit"].upper() == "PSI":
-            pressure.pressure = float("%.4f" % (pressure.pressure * 6.89476))
-            if pressure.pressure1 is not None and pressure.pressure1 != 0.0:
-                pressure.pressure1 = float("%.4f" % (pressure.pressure1 * 6.89476))
-
-        pressure = pressure_service.create(pressure)
+        pressure = pressure_service.create(pressure_obj)
         background_tasks.add_task(notifyClients, "batch", "update", pressure.batch_id)
         return pressure
 

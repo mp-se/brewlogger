@@ -51,3 +51,49 @@ class PressureService(
             "Fetched pressure based on chipId=%s, records found %d", chipId, len(objs)
         )
         return objs
+
+    def search_by_batchId(self, batchId: int) -> List[models.Pressure]:
+        filters = {"batch_id": batchId}
+        objs: List[self.model] = self.db_session.scalars(
+            select(self.model).filter_by(**filters)
+        ).all()
+        logger.info(
+            "Fetched pressure based on batchId=%d, records found %d", batchId, len(objs)
+        )
+        return objs
+
+    def get_latest(self, limit: int = 10) -> List[dict]:
+        objs = self.db_session.query(
+            models.Pressure.id,
+            models.Pressure.temperature,
+            models.Pressure.pressure,
+            models.Pressure.pressure1,
+            models.Pressure.battery,
+            models.Pressure.rssi,
+            models.Pressure.run_time,
+            models.Pressure.created,
+            models.Pressure.active,
+            models.Pressure.batch_id,
+            models.Batch.name.label('batch_name'),
+            models.Batch.chip_id_pressure
+        ).join(models.Batch).order_by(models.Pressure.created.desc()).limit(limit).all()
+        
+        logger.info("Fetched latest %d pressure records", len(objs))
+        # Convert rows to dictionaries
+        result = []
+        for row in objs:
+            result.append({
+                'id': row.id,
+                'temperature': row.temperature,
+                'pressure': row.pressure,
+                'pressure1': row.pressure1,
+                'battery': row.battery,
+                'rssi': row.rssi,
+                'runTime': row.run_time,
+                'created': row.created,
+                'active': row.active,
+                'batchId': row.batch_id,
+                'batchName': row.batch_name,
+                'chipIdPressure': row.chip_id_pressure
+            })
+        return result

@@ -130,6 +130,14 @@ def migrate_database():
         "ALTER TABLE gravity ADD COLUMN velocity FLOAT",
         "UPDATE gravity SET velocity = 0 WHERE velocity IS NULL",
         "ALTER TABLE gravity ALTER COLUMN velocity SET NOT NULL",
+        "ALTER TABLE gravity ALTER COLUMN temperature DROP NOT NULL",
+        "ALTER TABLE gravity ALTER COLUMN velocity DROP NOT NULL",
+        "ALTER TABLE gravity ALTER COLUMN corr_gravity DROP NOT NULL",
+        "ALTER TABLE gravity ALTER COLUMN run_time DROP NOT NULL",
+        "ALTER TABLE pressure ALTER COLUMN temperature DROP NOT NULL",
+        "ALTER TABLE pressure ALTER COLUMN pressure1 DROP NOT NULL",
+        "ALTER TABLE pressure ALTER COLUMN battery DROP NOT NULL",
+        "ALTER TABLE pressure ALTER COLUMN run_time DROP NOT NULL",
     ]
 
     with engine.connect() as con:

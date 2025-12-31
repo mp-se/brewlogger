@@ -70,10 +70,24 @@ def test_add(app_client):
 
 
 def test_list(app_client):
+    # Test listing all pressures
     r = app_client.get("/api/pressure/", headers=headers)
     assert r.status_code == 200
     data = json.loads(r.text)
     assert len(data) == 1
+    
+    # Test listing pressures by batchId
+    r = app_client.get("/api/pressure/?batchId=1", headers=headers)
+    assert r.status_code == 200
+    data = json.loads(r.text)
+    assert len(data) == 1
+    assert data[0]["batchId"] == 1
+    
+    # Test listing pressures with non-existent batchId
+    r = app_client.get("/api/pressure/?batchId=999", headers=headers)
+    assert r.status_code == 200
+    data = json.loads(r.text)
+    assert len(data) == 0
 
 
 def test_update(app_client):
@@ -314,7 +328,7 @@ def test_public_with_none_pressure1(app_client):
     assert r.status_code == 200
     res = json.loads(r.text)
     assert res["pressure"] == 1.05
-    assert res["pressure1"] == 0.0
+    assert res["pressure1"] is None  # Returns None when not provided
     assert res["battery"] == 3.85
     assert res["temperature"] == 20
     
@@ -337,7 +351,7 @@ def test_public_with_none_pressure1(app_client):
     assert r.status_code == 200
     res = json.loads(r.text)
     assert res["pressure"] == 7.2395  # 1.05 * 6.89476
-    assert res["pressure1"] == 0.0  # Stays 0 when None
+    assert res["pressure1"] is None  # Stays None when None
     assert res["battery"] == 3.85
     
     # Test with pressure1 None and unit conversion (BAR)
@@ -359,9 +373,446 @@ def test_public_with_none_pressure1(app_client):
     assert r.status_code == 200
     res = json.loads(r.text)
     assert res["pressure"] == 1050.0  # 1.05 * 1000
-    assert res["pressure1"] == 0.0  # Stays 0 when None
+    assert res["pressure1"] is None  # Stays None when None
     assert res["battery"] == 3.85
 
 
 def test_validation(app_client):
     pass
+
+
+def test_list_by_batchid(app_client):
+    """Test listing pressures filtered by batchId"""
+    truncate_database()
+    
+    # Create two batches
+    batch1 = {
+        "name": "batch1",
+        "chipIdGravity": "",
+        "chipIdPressure": "AAAAAA",
+        "description": "batch1",
+        "brewDate": "2024-01-01",
+        "style": "IPA",
+        "brewer": "test",
+        "brewfatherId": "",
+        "active": True,
+        "abv": 0.1,
+        "ebc": 0.2,
+        "ibu": 0.3,
+        "fermentationChamber": 0,
+        "fermentationSteps": "",
+        "tapList": True,
+    }
+    
+    batch2 = batch1.copy()
+    batch2["name"] = "batch2"
+    batch2["chipIdPressure"] = "BBBBBB"
+    
+    r = app_client.post("/api/batch/", json=batch1, headers=headers)
+    assert r.status_code == 201
+    batch1_id = json.loads(r.text)["id"]
+    
+    r = app_client.post("/api/batch/", json=batch2, headers=headers)
+    assert r.status_code == 201
+    batch2_id = json.loads(r.text)["id"]
+    
+    # Add pressures to batch 1
+    pressure_data = {
+        "batchId": batch1_id,
+        "temperature": 20.0,
+        "pressure": 1.050,
+        "pressure1": 1.050,
+        "battery": 3.8,
+        "rssi": -76,
+        "runTime": 0.8,
+        "active": True,
+    }
+    
+    for i in range(3):
+        r = app_client.post("/api/pressure/", json=pressure_data, headers=headers)
+        assert r.status_code == 201
+    
+    # Add pressures to batch 2
+    pressure_data["batchId"] = batch2_id
+    for i in range(2):
+        r = app_client.post("/api/pressure/", json=pressure_data, headers=headers)
+        assert r.status_code == 201
+    
+    # List all pressures
+    r = app_client.get("/api/pressure/", headers=headers)
+    assert r.status_code == 200
+    data = json.loads(r.text)
+    assert len(data) == 5
+    
+    # Filter by batch 1 (should get 3)
+    r = app_client.get(f"/api/pressure/?batchId={batch1_id}", headers=headers)
+    assert r.status_code == 200
+    data = json.loads(r.text)
+    assert len(data) == 3
+    assert all(p["batchId"] == batch1_id for p in data)
+    
+    # Filter by batch 2 (should get 2)
+    r = app_client.get(f"/api/pressure/?batchId={batch2_id}", headers=headers)
+    assert r.status_code == 200
+    data = json.loads(r.text)
+    assert len(data) == 2
+    assert all(p["batchId"] == batch2_id for p in data)
+
+
+def test_latest(app_client):
+    """Test getting the latest pressure measurements"""
+    test_init(app_client)
+    
+    # Add 5 pressure records
+    data = {
+        "batchId": 1,
+        "temperature": 20.0,
+        "pressure": 1.0,
+        "pressure1": 0.0,
+        "battery": 3.5,
+        "rssi": -70.0,
+        "runTime": 1.0,
+        "active": True,
+    }
+    
+    for i in range(5):
+        data["temperature"] = 20.0 + i
+        data["pressure"] = 1.0 + i * 0.1
+        r = app_client.post("/api/pressure/", json=data, headers=headers)
+        assert r.status_code == 201
+    
+    # Get latest 3
+    r = app_client.get("/api/pressure/latest?limit=3", headers=headers)
+    assert r.status_code == 200
+    res = json.loads(r.text)
+    assert len(res) == 3
+    # Should be ordered newest first (descending by created)
+    assert res[0]["pressure"] == 1.4  # Last added (i=4, 1.0 + 4*0.1)
+    assert res[1]["pressure"] == 1.3  # i=3
+    assert res[2]["pressure"] == 1.2  # i=2
+    
+    # Verify batch metadata is included
+    assert res[0]["batchName"] == "f1"
+    assert res[0]["chipIdPressure"] == "EEEEEE"
+    
+    # Get latest 10 (default)
+    r = app_client.get("/api/pressure/latest", headers=headers)
+    assert r.status_code == 200
+    res = json.loads(r.text)
+    assert len(res) == 5  # Only 5 records exist
+    
+    # Get latest 1
+    r = app_client.get("/api/pressure/latest?limit=1", headers=headers)
+    assert r.status_code == 200
+    res = json.loads(r.text)
+    assert len(res) == 1
+    assert res[0]["pressure"] == 1.4  # Most recent
+    assert res[0]["batchName"] == "f1"
+    assert res[0]["chipIdPressure"] == "EEEEEE"
+
+
+def test_nullable_pressure_fields_in_create(app_client):
+    """Test that nullable pressure fields (temperature, pressure1, battery) can be None when creating"""
+    truncate_database()
+    
+    # Create batch
+    batch_data = {
+        "name": "test_batch",
+        "chipIdGravity": "",
+        "chipIdPressure": "AAAAAA",
+        "description": "test",
+        "brewDate": "2024-01-01",
+        "style": "IPA",
+        "brewer": "test",
+        "brewfatherId": "",
+        "active": True,
+        "abv": 0.1,
+        "ebc": 0.2,
+        "ibu": 0.3,
+        "fermentationChamber": 0,
+        "fermentationSteps": "",
+        "tapList": True,
+    }
+    r = app_client.post("/api/batch/", json=batch_data, headers=headers)
+    assert r.status_code == 201
+    
+    # Test 1: Create pressure with null temperature
+    pressure_data = {
+        "batchId": 1,
+        "temperature": None,
+        "pressure": 1.050,
+        "pressure1": 1.050,
+        "battery": 3.8,
+        "rssi": -75,
+        "runTime": 0.8,
+        "active": True,
+    }
+    r = app_client.post("/api/pressure/", json=pressure_data, headers=headers)
+    assert r.status_code == 201
+    res = json.loads(r.text)
+    assert res["temperature"] is None
+    assert res["pressure"] == 1.050
+    
+    # Test 2: Create pressure with null pressure1
+    pressure_data = {
+        "batchId": 1,
+        "temperature": 20.0,
+        "pressure": 1.050,
+        "pressure1": None,
+        "battery": 3.8,
+        "rssi": -75,
+        "runTime": 0.8,
+        "active": True,
+    }
+    r = app_client.post("/api/pressure/", json=pressure_data, headers=headers)
+    assert r.status_code == 201
+    res = json.loads(r.text)
+    assert res["pressure1"] is None
+    assert res["pressure"] == 1.050
+    
+    # Test 3: Create pressure with null battery
+    pressure_data = {
+        "batchId": 1,
+        "temperature": 20.0,
+        "pressure": 1.050,
+        "pressure1": 1.050,
+        "battery": None,
+        "rssi": -75,
+        "runTime": 0.8,
+        "active": True,
+    }
+    r = app_client.post("/api/pressure/", json=pressure_data, headers=headers)
+    assert r.status_code == 201
+    res = json.loads(r.text)
+    assert res["battery"] is None
+    assert res["pressure"] == 1.050
+    
+    # Test 4: Create pressure with all nullable fields as None (except pressure which is required)
+    pressure_data = {
+        "batchId": 1,
+        "temperature": None,
+        "pressure": 1.050,
+        "pressure1": None,
+        "battery": None,
+        "rssi": -75,
+        "runTime": 0.8,
+        "active": True,
+    }
+    r = app_client.post("/api/pressure/", json=pressure_data, headers=headers)
+    assert r.status_code == 201
+    res = json.loads(r.text)
+    assert res["temperature"] is None
+    assert res["pressure1"] is None
+    assert res["battery"] is None
+    assert res["pressure"] == 1.050
+    assert res["rssi"] == -75
+    
+    # Verify all 4 records were created
+    r = app_client.get("/api/pressure/", headers=headers)
+    assert r.status_code == 200
+    data = json.loads(r.text)
+    assert len(data) == 4
+
+
+def test_nullable_pressure_fields_in_update(app_client):
+    """Test that nullable pressure fields can be updated to None"""
+    truncate_database()
+    
+    # Create batch and initial pressure
+    batch_data = {
+        "name": "test_batch",
+        "chipIdGravity": "",
+        "chipIdPressure": "AAAAAA",
+        "description": "test",
+        "brewDate": "2024-01-01",
+        "style": "IPA",
+        "brewer": "test",
+        "brewfatherId": "",
+        "active": True,
+        "abv": 0.1,
+        "ebc": 0.2,
+        "ibu": 0.3,
+        "fermentationChamber": 0,
+        "fermentationSteps": "",
+        "tapList": True,
+    }
+    r = app_client.post("/api/batch/", json=batch_data, headers=headers)
+    assert r.status_code == 201
+    
+    pressure_data = {
+        "batchId": 1,
+        "temperature": 20.0,
+        "pressure": 1.050,
+        "pressure1": 1.050,
+        "battery": 3.8,
+        "rssi": -75,
+        "runTime": 0.8,
+        "active": True,
+    }
+    r = app_client.post("/api/pressure/", json=pressure_data, headers=headers)
+    assert r.status_code == 201
+    pressure_id = json.loads(r.text)["id"]
+    
+    # Update temperature to None
+    update_data = {
+        "temperature": None,
+        "pressure": 1.050,
+        "pressure1": 1.050,
+        "battery": 3.8,
+        "rssi": -75,
+        "runTime": 0.8,
+        "active": True,
+    }
+    r = app_client.patch(f"/api/pressure/{pressure_id}", json=update_data, headers=headers)
+    assert r.status_code == 200
+    
+    # Verify update
+    r = app_client.get(f"/api/pressure/{pressure_id}", headers=headers)
+    assert r.status_code == 200
+    res = json.loads(r.text)
+    assert res["temperature"] is None
+    assert res["pressure"] == 1.050
+    
+    # Update pressure1 to None
+    update_data["pressure1"] = None
+    r = app_client.patch(f"/api/pressure/{pressure_id}", json=update_data, headers=headers)
+    assert r.status_code == 200
+    res = json.loads(r.text)
+    assert res["pressure1"] is None
+    
+    # Update battery to None
+    update_data["battery"] = None
+    r = app_client.patch(f"/api/pressure/{pressure_id}", json=update_data, headers=headers)
+    assert r.status_code == 200
+    res = json.loads(r.text)
+    assert res["battery"] is None
+
+
+def test_nullable_pressure_fields_in_latest(app_client):
+    """Test that /latest endpoint handles nullable pressure fields correctly"""
+    truncate_database()
+    
+    # Create batch
+    batch_data = {
+        "name": "test_batch",
+        "chipIdGravity": "",
+        "chipIdPressure": "AAAAAA",
+        "description": "test",
+        "brewDate": "2024-01-01",
+        "style": "IPA",
+        "brewer": "test",
+        "brewfatherId": "",
+        "active": True,
+        "abv": 0.1,
+        "ebc": 0.2,
+        "ibu": 0.3,
+        "fermentationChamber": 0,
+        "fermentationSteps": "",
+        "tapList": True,
+    }
+    r = app_client.post("/api/batch/", json=batch_data, headers=headers)
+    assert r.status_code == 201
+    
+    # Create pressure with nullable fields (pressure is required, so use a value)
+    pressure_data = {
+        "batchId": 1,
+        "temperature": None,
+        "pressure": 1.050,
+        "pressure1": None,
+        "battery": None,
+        "rssi": -75,
+        "runTime": 0.8,
+        "active": True,
+    }
+    r = app_client.post("/api/pressure/", json=pressure_data, headers=headers)
+    assert r.status_code == 201
+    
+    # Verify /latest endpoint returns the data with nulls
+    r = app_client.get("/api/pressure/latest?limit=1", headers=headers)
+    assert r.status_code == 200
+    res = json.loads(r.text)
+    assert len(res) == 1
+    assert res[0]["temperature"] is None
+    assert res[0]["pressure"] == 1.050
+    assert res[0]["pressure1"] is None
+    assert res[0]["battery"] is None
+    assert res[0]["rssi"] == -75
+    assert res[0]["batchName"] == "test_batch"
+
+
+def test_all_nullable_pressure_fields_together(app_client):
+    """Test creating and updating pressure with all nullable fields as None"""
+    truncate_database()
+    
+    # Create batch
+    batch_data = {
+        "name": "test_batch",
+        "chipIdGravity": "",
+        "chipIdPressure": "AAAAAA",
+        "description": "test",
+        "brewDate": "2024-01-01",
+        "style": "IPA",
+        "brewer": "test",
+        "brewfatherId": "",
+        "active": True,
+        "abv": 0.1,
+        "ebc": 0.2,
+        "ibu": 0.3,
+        "fermentationChamber": 0,
+        "fermentationSteps": "",
+        "tapList": True,
+    }
+    r = app_client.post("/api/batch/", json=batch_data, headers=headers)
+    assert r.status_code == 201
+    
+    # Create pressure with all nullable fields as None (pressure is required)
+    pressure_data = {
+        "batchId": 1,
+        "temperature": None,
+        "pressure": 1.050,
+        "pressure1": None,
+        "battery": None,
+        "rssi": -75,
+        "runTime": None,
+        "active": True,
+    }
+    r = app_client.post("/api/pressure/", json=pressure_data, headers=headers)
+    assert r.status_code == 201
+    res = json.loads(r.text)
+    assert res["temperature"] is None
+    assert res["pressure"] == 1.050
+    assert res["pressure1"] is None
+    assert res["battery"] is None
+    assert res["runTime"] is None
+    assert res["rssi"] == -75
+    assert res["active"] == True
+    pressure_id = res["id"]
+    
+    # Verify GET returns the same
+    r = app_client.get(f"/api/pressure/{pressure_id}", headers=headers)
+    assert r.status_code == 200
+    res = json.loads(r.text)
+    assert res["temperature"] is None
+    assert res["pressure"] == 1.050
+    assert res["pressure1"] is None
+    assert res["battery"] is None
+    assert res["runTime"] is None
+    
+    # Update all nullable fields with actual values
+    update_data = {
+        "temperature": 20.5,
+        "pressure": 1.052,
+        "pressure1": 1.051,
+        "battery": 3.9,
+        "rssi": -70,
+        "runTime": 1.5,
+        "active": True,
+    }
+    r = app_client.patch(f"/api/pressure/{pressure_id}", json=update_data, headers=headers)
+    assert r.status_code == 200
+    res = json.loads(r.text)
+    assert res["temperature"] == 20.5
+    assert res["pressure"] == 1.052
+    assert res["pressure1"] == 1.051
+    assert res["battery"] == 3.9
+    assert res["runTime"] == 1.5

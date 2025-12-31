@@ -211,14 +211,14 @@ class Device(DeviceCreate):
 class GravityBase(BaseModel):
     model_config = ConfigDict(alias_generator=to_camel, populate_by_name=True)
 
-    temperature: float = Field(description="Temperature value in C")
+    temperature: Optional[float] = Field(None, description="Temperature value in C")
     gravity: float = Field(description="Calculated gravity in SG")
-    velocity: float = Field(description="Gravity velocity, points per day")
+    velocity: Optional[float] = Field(None, description="Gravity velocity, points per day")
     angle: float = Field(description="Tilt or angle of the device")
     battery: float = Field(description="Battery voltage")
     rssi: float = Field(description="WIFI signal strenght")
-    corr_gravity: float = Field(description="Temperature corrected gravity")
-    run_time: float = Field(description="Number of seconds the execution took")
+    corr_gravity: Optional[float] = Field(None, description="Temperature corrected gravity")
+    run_time: Optional[float] = Field(None, description="Number of seconds the execution took")
     created: Optional[datetime] | None = Field(
         default=None, description="If undefined the current time will be used"
     )
@@ -246,18 +246,23 @@ class Gravity(GravityCreate):
     id: int
 
 
+class GravityLatest(Gravity):
+    batch_name: str = Field(description="Name of the parent batch")
+    chip_id_gravity: str = Field(description="Chip ID for gravity from parent batch")
+
+
 ################################################################################
 
 
 class PressureBase(BaseModel):
     model_config = ConfigDict(alias_generator=to_camel, populate_by_name=True)
 
-    temperature: float = Field(description="Temperature value in C")
+    temperature: Optional[float] = Field(None, description="Temperature value in C")
     pressure: float = Field(description="Measured pressure in kPa")
-    pressure1: float = Field(description="Measured pressure1 in kPa")
-    battery: float = Field(description="Battery voltage")
+    pressure1: Optional[float] = Field(None, description="Measured pressure1 in kPa")
+    battery: Optional[float] = Field(None, description="Battery voltage")
     rssi: float = Field(description="WIFI signal strenght")
-    run_time: float = Field(description="Number of seconds the execution took")
+    run_time: Optional[float] = Field(None, description="Number of seconds the execution took")
     created: Optional[datetime] | None = Field(
         default=None, description="If undefined the current time will be used"
     )
@@ -277,6 +282,11 @@ class PressureCreate(PressureBase):
 class Pressure(PressureCreate):
     model_config = ConfigDict(from_attributes=True)
     id: int
+
+
+class PressureLatest(Pressure):
+    batch_name: str = Field(description="Name of the parent batch")
+    chip_id_pressure: str = Field(description="Chip ID for pressure from parent batch")
 
 
 ################################################################################
@@ -308,6 +318,11 @@ class PourCreate(PourBase):
 class Pour(PourCreate):
     model_config = ConfigDict(from_attributes=True)
     id: int
+
+
+class PourLatest(Pour):
+    batch_name: str = Field(description="Name of the parent batch")
+
 
 
 ################################################################################

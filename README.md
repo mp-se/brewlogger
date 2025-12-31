@@ -38,10 +38,13 @@ There are a few public endpoints in brewlogger for receving data.
 
 ### Release history
 
-- 1.0.0 
+- 1.0.0 Refactoring to support new devices
   - Changed the batch API to only return the batches (not all the data)
   - Fixed issue with NGNIX that added compression when payload was large which cause fetch errors in UI
-
+  - Refactored all API's to support null values when there is no data for better consistency
+  - Added the latest data points to the home view to a better overview.
+  - Update ble scanning code to support latest products
+  
 - 0.9.0 Updated with new features
   - Feature: Added support for pressuremon and new post format
   - Updated web flasher

@@ -27,14 +27,27 @@ router = APIRouter(prefix="/api/gravity")
     "/", response_model=List[schemas.Gravity], dependencies=[Depends(api_key_auth)]
 )
 async def list_gravities(
-    chipId: str = "*",
+    batchId: int = -1,
     gravity_service: GravityService = Depends(get_gravity_service),
 ) -> List[models.Gravity]:
-    logger.info(f"Endpoint GET /api/gravity/?chipId={chipId}")
-    if chipId != "*":
-        return gravity_service.search(chipId)
+    logger.info(f"Endpoint GET /api/gravity/?batchId={batchId}")
+    if batchId != -1:
+        return gravity_service.search_by_batchId(batchId)
 
     return gravity_service.list()
+
+
+@router.get(
+    "/latest",
+    response_model=List[schemas.GravityLatest],
+    dependencies=[Depends(api_key_auth)],
+)
+async def get_latest_gravities(
+    limit: int = 10,
+    gravity_service: GravityService = Depends(get_gravity_service),
+) -> List[dict]:
+    logger.info(f"Endpoint GET /api/gravity/latest?limit={limit}")
+    return gravity_service.get_latest(limit)
 
 
 @router.get(
@@ -152,11 +165,11 @@ async def create_gravity_using_ispindel_format(
             req_json["angle"] = 0
             req_json["battery"] = 0
 
-        # Extensions from Gravitymon
-        corr_gravity = 0
+        # Extensions from Gravitymon - use None when not provided to support nullable fields
+        corr_gravity = None
         gravity_units = "SG"
-        run_time = 0
-        velocity = 0
+        run_time = None
+        velocity = None
 
         if "corr-gravity" in req_json and req_json["corr-gravity"] is not None:
             corr_gravity = req_json["corr-gravity"]
@@ -219,8 +232,20 @@ async def create_gravity_using_ispindel_format(
             f"Saving gravity request for batch {batchList[0].id}",
         )
 
+        # Extract temperature and validate it early
+        temperature = req_json.get("temperature")
+        # Treat temperature values less than -270 as null (below absolute zero, sensor error)
+        if temperature is not None and temperature < -270:
+            temperature = None
+        
+        # Convert temperature from Fahrenheit to Celsius if needed
+        if temperature is not None and "temp_units" in req_json and req_json["temp_units"].upper() == "F":
+            temperature = float(
+                "%.2f" % ((temperature - 32) * 5 / 9)
+            )  # °C = (°F − 32) x 5/9
+
         gravity = schemas.GravityCreate(
-            temperature=req_json["temperature"],
+            temperature=temperature,
             gravity=req_json["gravity"],
             velocity=velocity,
             angle=req_json["angle"],
@@ -243,11 +268,6 @@ async def create_gravity_using_ispindel_format(
             if existKey(key):
                 chamberTemp = readKey(key)
                 gravity.chamber_temperature = float(chamberTemp)
-
-        if req_json["temp_units"].upper() == "F":
-            gravity.temperature = float(
-                "%.2f" % ((gravity.temperature - 32) * 5 / 9)
-            )  # °C = (°F − 32) x 5/9
 
         if gravity_units.upper() == "P":
             gravity.gravity = float(
