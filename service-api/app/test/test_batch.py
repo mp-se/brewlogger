@@ -345,3 +345,173 @@ def test_validation(app_client):
     # Add new
     r = app_client.post("/api/batch/", json=data, headers=headers)
     assert r.status_code == 422
+
+
+def test_taplist(app_client):
+    """Test getting batches in tap list"""
+    test_init(app_client)
+    
+    # Create batch with tapList = True
+    data = {
+        "name": "Tap List Batch",
+        "chipIdGravity": "AAAAAA",
+        "chipIdPressure": "",
+        "description": "test",
+        "brewDate": "2024-01-01",
+        "style": "IPA",
+        "brewer": "test",
+        "brewfatherId": "123",
+        "active": True,
+        "abv": 6.5,
+        "ebc": 50,
+        "ibu": 60,
+        "fermentationChamber": 0,
+        "fermentationSteps": "",
+        "tapList": True,
+    }
+    
+    r = app_client.post("/api/batch/", json=data, headers=headers)
+    assert r.status_code == 201
+    
+    # Create batch with tapList = False
+    data["name"] = "Not in Tap List"
+    data["chipIdGravity"] = "BBBBBB"
+    data["tapList"] = False
+    
+    r = app_client.post("/api/batch/", json=data, headers=headers)
+    assert r.status_code == 201
+    
+    # Get tap list (should only include first batch)
+    r = app_client.get("/api/batch/taplist")
+    assert r.status_code == 200
+    res = json.loads(r.text)
+    assert len(res) == 1
+    assert res[0]["name"] == "Tap List Batch"
+    assert res[0]["brewfatherId"] == "123"
+    assert res[0]["abv"] == 6.5
+
+
+def test_search_by_active_flag(app_client):
+    """Test searching batches by active flag"""
+    test_init(app_client)
+    
+    # Create active batch
+    active_data = {
+        "name": "Active Batch",
+        "chipIdGravity": "AAAAAA",
+        "chipIdPressure": "",
+        "description": "test",
+        "brewDate": "2024-01-01",
+        "style": "IPA",
+        "brewer": "test",
+        "brewfatherId": "",
+        "active": True,
+        "abv": 6.5,
+        "ebc": 50,
+        "ibu": 60,
+        "fermentationChamber": 0,
+        "fermentationSteps": "",
+        "tapList": True,
+    }
+    
+    r = app_client.post("/api/batch/", json=active_data, headers=headers)
+    assert r.status_code == 201
+    
+    # Create inactive batch
+    inactive_data = active_data.copy()
+    inactive_data["name"] = "Inactive Batch"
+    inactive_data["chipIdGravity"] = "BBBBBB"
+    inactive_data["active"] = False
+    
+    r = app_client.post("/api/batch/", json=inactive_data, headers=headers)
+    assert r.status_code == 201
+    
+    # Search for active only
+    r = app_client.get("/api/batch/?active=true", headers=headers)
+    assert r.status_code == 200
+    res = json.loads(r.text)
+    assert len(res) == 1
+    assert res[0]["name"] == "Active Batch"
+    assert res[0]["active"] == True
+    
+    # Search for inactive only
+    r = app_client.get("/api/batch/?active=false", headers=headers)
+    assert r.status_code == 200
+    res = json.loads(r.text)
+    assert len(res) == 1
+    assert res[0]["name"] == "Inactive Batch"
+    assert res[0]["active"] == False
+
+
+def test_batch_with_gravity_and_pressure(app_client):
+    """Test batch with related gravity and pressure records"""
+    test_init(app_client)
+    
+    # Create batch
+    batch_data = {
+        "name": "Test Batch",
+        "chipIdGravity": "AAAAAA",
+        "chipIdPressure": "BBBBBB",
+        "description": "test",
+        "brewDate": "2024-01-01",
+        "style": "IPA",
+        "brewer": "test",
+        "brewfatherId": "",
+        "active": True,
+        "abv": 6.5,
+        "ebc": 50,
+        "ibu": 60,
+        "fermentationChamber": 0,
+        "fermentationSteps": "",
+        "tapList": True,
+    }
+    
+    r = app_client.post("/api/batch/", json=batch_data, headers=headers)
+    assert r.status_code == 201
+    batch_id = json.loads(r.text)["id"]
+    
+    # Add gravity record
+    gravity_data = {
+        "batchId": batch_id,
+        "temperature": 20.0,
+        "gravity": 1.050,
+        "velocity": 0.1,
+        "angle": 45.0,
+        "battery": 3.8,
+        "rssi": -75,
+        "corrGravity": 1.050,
+        "runTime": 0.8,
+        "active": True,
+    }
+    
+    r = app_client.post("/api/gravity/", json=gravity_data, headers=headers)
+    assert r.status_code == 201
+    
+    # Add pressure record
+    pressure_data = {
+        "batchId": batch_id,
+        "temperature": 20.0,
+        "pressure": 1.050,
+        "pressure1": 1.050,
+        "battery": 3.8,
+        "rssi": -75,
+        "runTime": 0.8,
+        "active": True,
+    }
+    
+    r = app_client.post("/api/pressure/", json=pressure_data, headers=headers)
+    assert r.status_code == 201
+    
+    # Get batch and verify counts
+    r = app_client.get(f"/api/batch/{batch_id}", headers=headers)
+    assert r.status_code == 200
+    res = json.loads(r.text)
+    assert len(res["gravity"]) == 1
+    assert len(res["pressure"]) == 1
+    
+    # Get batch list and verify counts in list
+    r = app_client.get("/api/batch/", headers=headers)
+    assert r.status_code == 200
+    res = json.loads(r.text)
+    assert res[0]["gravityCount"] == 1
+    assert res[0]["pressureCount"] == 1

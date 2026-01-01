@@ -191,3 +191,194 @@ def test_validation(app_client):
     }
     r = app_client.post("/api/device/", json=data, headers=headers)
     assert r.status_code == 422
+
+
+def test_device_search_by_chipid(app_client):
+    """Test searching devices by chipId"""
+    truncate_database()  # Clear database first
+    
+    # Create devices
+    device1 = {
+        "chipId": "AAAAAA",
+        "chipFamily": "f2",
+        "software": "Controller",
+        "mdns": "device1-mdns",
+        "config": "",
+        "url": "f6",
+        "bleColor": "f7",
+        "description": "Device 1",
+        "collectLogs": False,
+    }
+    
+    r = app_client.post("/api/device/", json=device1, headers=headers)
+    assert r.status_code == 201
+    
+    # Search by chipId
+    r = app_client.get("/api/device/?chipId=AAAAAA", headers=headers)
+    assert r.status_code == 200
+    data = json.loads(r.text)
+    assert len(data) == 1
+    assert data[0]["chipId"] == "AAAAAA"
+
+
+def test_device_search_by_software_and_mdns(app_client):
+    """Test searching devices by multiple criteria"""
+    truncate_database()  # Clear database first
+    
+    # Create a device to search for
+    device = {
+        "chipId": "CCCCCC",
+        "chipFamily": "f2",
+        "software": "Chamber-Controller",
+        "mdns": "chamber-mdns",
+        "config": "",
+        "url": "f6",
+        "bleColor": "f7",
+        "description": "Test device",
+        "collectLogs": False,
+    }
+    
+    r = app_client.post("/api/device/", json=device, headers=headers)
+    assert r.status_code == 201
+    
+    # Search for specific software and MDNS combination
+    r = app_client.get("/api/device/?software=Chamber-Controller&mdns=chamber-mdns", headers=headers)
+    assert r.status_code == 200
+    data = json.loads(r.text)
+    assert len(data) >= 1
+
+
+def test_device_search_by_blename(app_client):
+    """Test searching devices by BLE name (bleColor)"""
+    truncate_database()  # Clear database first
+    
+    # Create a device
+    device = {
+        "chipId": "DDDDDD",
+        "chipFamily": "f2",
+        "software": "Sensor",
+        "mdns": "sensor-mdns",
+        "config": "",
+        "url": "f6",
+        "bleColor": "custom-ble",
+        "description": "Test",
+        "collectLogs": False,
+    }
+    
+    r = app_client.post("/api/device/", json=device, headers=headers)
+    assert r.status_code == 201
+    
+    # Search by BLE color
+    r = app_client.get("/api/device/?bleColor=custom-ble", headers=headers)
+    assert r.status_code == 200
+    data = json.loads(r.text)
+    assert len(data) >= 1
+
+
+def test_device_collect_logs_flag(app_client):
+    """Test creating device with different collectLogs settings"""
+    truncate_database()  # Clear database first
+    
+    # Create device with collectLogs = True
+    device_with_logs = {
+        "chipId": "EEEEEE",
+        "chipFamily": "f2",
+        "software": "Logger",
+        "mdns": "logger-mdns",
+        "config": "",
+        "url": "f6",
+        "bleColor": "f7",
+        "description": "Device with logging",
+        "collectLogs": True,
+    }
+    
+    r = app_client.post("/api/device/", json=device_with_logs, headers=headers)
+    assert r.status_code == 201
+    res = json.loads(r.text)
+    assert res["collectLogs"] == True
+    
+    # Create device with collectLogs = False
+    device_no_logs = device_with_logs.copy()
+    device_no_logs["chipId"] = "FFFFFF"
+    device_no_logs["collectLogs"] = False
+    device_no_logs["description"] = "Device without logging"
+    
+    r = app_client.post("/api/device/", json=device_no_logs, headers=headers)
+    assert r.status_code == 201
+    res = json.loads(r.text)
+    assert res["collectLogs"] == False
+
+
+def test_device_config_json(app_client):
+    """Test creating device with complex config JSON"""
+    truncate_database()  # Clear database first
+    
+    device_with_config = {
+        "chipId": "GGGGGG",
+        "chipFamily": "f2",
+        "software": "Advanced",
+        "mdns": "advanced-mdns",
+        "config": '{"temperatureOffset": 2.5, "units": "celsius"}',
+        "url": "http://192.168.1.100",
+        "bleColor": "blue",
+        "description": "Device with config",
+        "collectLogs": False,
+    }
+    
+    r = app_client.post("/api/device/", json=device_with_config, headers=headers)
+    assert r.status_code == 201
+    res = json.loads(r.text)
+    assert res["config"] == '{"temperatureOffset": 2.5, "units": "celsius"}'
+    
+    # Verify by reading
+    r = app_client.get(f"/api/device/{res['id']}", headers=headers)
+    assert r.status_code == 200
+    res2 = json.loads(r.text)
+    assert res2["config"] == device_with_config["config"]
+
+
+def test_device_update_url(app_client):
+    """Test updating device URL"""
+    truncate_database()  # Clear database first
+    
+    device = {
+        "chipId": "HHHHHH",
+        "chipFamily": "f2",
+        "software": "WebController",
+        "mdns": "web-mdns",
+        "config": "",
+        "url": "http://192.168.1.100",
+        "bleColor": "green",
+        "description": "Web device",
+        "collectLogs": False,
+    }
+    
+    r = app_client.post("/api/device/", json=device, headers=headers)
+    assert r.status_code == 201
+    device_id = json.loads(r.text)["id"]
+    
+    # Update URL
+    update_data = {
+        "chipId": "ignored",
+        "chipFamily": "f2",
+        "software": "WebController",
+        "mdns": "web-mdns",
+        "config": "",
+        "url": "http://192.168.1.200",
+        "bleColor": "green",
+        "description": "Updated description",
+        "collectLogs": True,
+    }
+    
+    r = app_client.patch(f"/api/device/{device_id}", json=update_data, headers=headers)
+    assert r.status_code == 200
+    
+    # Verify URL was updated
+    r = app_client.get(f"/api/device/{device_id}", headers=headers)
+    assert r.status_code == 200
+    res = json.loads(r.text)
+    assert res["url"] == "http://192.168.1.200"
+    assert res["description"] == "Updated description"
+    assert res["collectLogs"] == True
+    # chipId should not change
+    assert res["chipId"] == "HHHHHH"
