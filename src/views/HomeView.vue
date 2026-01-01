@@ -65,32 +65,42 @@
 
     <div class="row gy-4 mt-1">
       <div class="col-md-4" v-for="(d, index) in chamberTemps" :key="index">
-        <BsCard :header="'Chamber: ' + d.mdns" color="info" title="">
-          <div class="text-center" v-if="d.pid_fridge_temp_connected">
-            Fridge temp: {{ d.pid_fridge_temp }} °{{ d.pid_temp_format }}
+        <BsCard v-if="d.error === undefined" :header="'Chamber: ' + d.mdns" color="info" title="">
+          <div class="text-center" v-if="d?.pid_fridge_temp_connected">
+            Fridge temp: {{ d?.pid_fridge_temp }} °{{ d?.pid_temp_format }}
           </div>
-          <div class="text-center" v-if="d.pid_beer_temp_connected">
-            Beer temp: {{ d.pid_beer_temp }} °{{ d.pid_temp_format }}
+          <div class="text-center" v-if="d?.pid_beer_temp_connected">
+            Beer temp: {{ d?.pid_beer_temp }} °{{ d?.pid_temp_format }}
           </div>
-          <div class="text-center" v-if="d.pid_mode == 'b'">
-            Mode: Beer target => {{ d.pid_beer_target_temp }} °{{ d.pid_temp_format }}
+          <div class="text-center" v-if="d?.pid_mode == 'b'">
+            Mode: Beer target => {{ d?.pid_beer_target_temp }} °{{ d?.pid_temp_format }}
           </div>
-          <div class="text-center" v-if="d.pid_mode == 'f'">
-            Mode: Fridge target => {{ d.pid_fridge_target_temp }} °{{ d.pid_temp_format }}
+          <div class="text-center" v-if="d?.pid_mode == 'f'">
+            Mode: Fridge target => {{ d?.pid_fridge_target_temp }} °{{ d?.pid_temp_format }}
           </div>
-          <div class="text-center" v-if="d.pid_mode == 'o'">Mode: Off</div>
+          <div class="text-center" v-if="d?.pid_mode == 'o'">Mode: Off</div>
+        </BsCard>
+        <BsCard v-else :header="'Chamber: ' + d.mdns" color="danger" title="">
+          <div class="text-center">
+            {{ d.error }}
+          </div>
         </BsCard>
       </div>
 
       <div class="col-md-4" v-for="(d, index) in kegmonTaps" :key="index">
-        <BsCard :header="'Kegmon: ' + d.mdns" color="info" title="">
+        <BsCard v-if="d.error === undefined" :header="'Kegmon: ' + d.mdns" color="info" title="">
           <div class="text-center">
-            Tap1: {{ Number(d.beer_volume1 / 100).toFixed(1) }} L, ({{ d.glass1 }} glasses)
+            Tap1: {{ Number(d?.beer_volume1 / 100).toFixed(1) }} L, ({{ d?.glass1 }} glasses)
           </div>
           <div class="text-center">
-            Tap2: {{ Number(d.beer_volume2 / 100).toFixed(1) }} L, ({{ d.glass2 }} glasses)
+            Tap2: {{ Number(d?.beer_volume2 / 100).toFixed(1) }} L, ({{ d?.glass2 }} glasses)
           </div>
-          <div class="text-center">Temp: {{ d.temperature }} °{{ d.temp_format }}</div>
+          <div class="text-center">Temp: {{ d?.temperature }} °{{ d?.temp_format }}</div>
+        </BsCard>
+        <BsCard v-else :header="'Kegmon: ' + d.mdns" color="danger" title="">
+          <div class="text-center">
+            {{ d.error }}
+          </div>
         </BsCard>
       </div>
 
@@ -258,11 +268,22 @@ import {
 } from '@/modules/utils'
 import { logDebug, logError } from '@/modules/logger'
 
-const activeBatchList = ref([])
-const schedulerStatus = ref(null)
+// Helpers
 const ticker = ref(null)
 const readingsTicker = ref(null)
+
+// Active batches
+const activeBatchList = ref([])
+
+// Chamber and Kegmon
+const chamberTemps = ref([])
+const kegmonTaps = ref([])
+
+// Scheduler status
+const schedulerStatus = ref(null)
 const fermentationControlList = ref([])
+
+// Latest section on view
 const latestGravityReadings = ref([])
 const latestPressureReadings = ref([])
 const latestPourReadings = ref([])
@@ -448,9 +469,6 @@ onMounted(async () => {
   await fetchLatestReadings()
 })
 
-const chamberTemps = ref([])
-const kegmonTaps = ref([])
-
 async function fetchChamber() {
   logDebug('HomeView.fetchChamber()')
 
@@ -459,27 +477,42 @@ async function fetchChamber() {
     return
   }
 
-  var chamberList = deviceStore.deviceList.filter((d) => {
+  const chamberList = deviceStore.deviceList.filter((d) => {
     return d.software == 'Chamber-Controller'
   })
 
-  await Promise.all(
-    chamberList.map(async (device) => {
-      return deviceStore.proxyRequest(
-        'GET',
-        device.url + 'api/status',
-        'Content-Type: application/json',
-        ''
-      )
+  try {
+    const results = await Promise.allSettled(
+      chamberList.map(async (device) => {
+        return deviceStore.proxyRequest(
+          'GET',
+          device.url + 'api/status',
+          'Content-Type: application/json',
+          ''
+        )
+      })
+    )
+
+    chamberTemps.value = results.map((result, index) => {
+      if (result.value !== null) {
+        return result.value
+      } else {
+        const device = chamberList[index]
+        logError(
+          'HomeView.fetchChamber()',
+          `Failed to fetch chamber data from ${device.mdns} (${device.url})`,
+          result.reason
+        )
+        return {
+          mdns: device.mdns,
+          url: device.url,
+          error: 'Failed to fetch data'
+        }
+      }
     })
-  )
-    .then((values) => {
-      logDebug('HomeView.fetchChamber()', values)
-      chamberTemps.value = values.filter((v) => v !== null)
-    })
-    .catch((err) => {
-      logError('HomeView.fetchChamber()', err)
-    })
+  } catch (err) {
+    logError('HomeView.fetchChamber()', 'Unexpected error fetching chamber data', err)
+  }
 }
 
 async function fetchKegmon() {
@@ -489,26 +522,43 @@ async function fetchKegmon() {
     kegmonTaps.value = []
     return
   }
-  var chamberList = deviceStore.deviceList.filter((d) => {
+
+  const kegmonList = deviceStore.deviceList.filter((d) => {
     return d.software == 'Kegmon'
   })
 
-  await Promise.all(
-    chamberList.map(async (device) => {
-      return deviceStore.proxyRequest(
-        'GET',
-        device.url + 'api/status',
-        'Content-Type: application/json',
-        ''
-      )
+  try {
+    const results = await Promise.allSettled(
+      kegmonList.map(async (device) => {
+        return deviceStore.proxyRequest(
+          'GET',
+          device.url + 'api/status',
+          'Content-Type: application/json',
+          ''
+        )
+      })
+    )
+
+    kegmonTaps.value = results.map((result, index) => {
+      if (result.value !== null) {
+        return result.value
+      } else {
+        const device = kegmonList[index]
+        logError(
+          'HomeView.fetchKegmon()',
+          `Failed to fetch kegmon data from ${device.mdns} (${device.url})`,
+          result.reason
+        )
+        return {
+          mdns: device.mdns,
+          url: device.url,
+          error: 'Failed to fetch data'
+        }
+      }
     })
-  )
-    .then((values) => {
-      kegmonTaps.value = values.filter((v) => v !== null)
-    })
-    .catch((err) => {
-      logError('HomeView.fetchKegmon()', err)
-    })
+  } catch (err) {
+    logError('HomeView.fetchKegmon()', 'Unexpected error fetching kegmon data', err)
+  }
 }
 
 async function fetchLatestReadings() {
