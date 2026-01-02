@@ -3,8 +3,8 @@ import logging
 import json
 from datetime import datetime
 from json.decoder import JSONDecodeError
-from typing import List, Optional
-from fastapi import Depends, Request, BackgroundTasks
+from typing import List, Optional, Union
+from fastapi import Depends, Request, BackgroundTasks, Query
 from fastapi.routing import APIRouter
 from fastapi.responses import Response
 from starlette.exceptions import HTTPException
@@ -29,13 +29,13 @@ router = APIRouter(prefix="/api/gravity")
     "/", response_model=List[schemas.Gravity], dependencies=[Depends(api_key_auth)]
 )
 async def list_gravities(
-    batchId: int = -1,  # pylint: disable=invalid-name
+    batch_id: Optional[int] = Query(None, alias="batchId"),
     gravity_service: GravityService = Depends(get_gravity_service),
 ) -> List[models.Gravity]:
     """List gravity readings, optionally filtered by batch ID."""
-    logger.info("Endpoint GET /api/gravity/?batchId=%s", batchId)
-    if batchId != -1:
-        return gravity_service.search_by_batch_id(batchId)
+    logger.info("Endpoint GET /api/gravity/?batch_id=%s", batch_id)
+    if batch_id is not None:
+        return gravity_service.search_by_batch_id(batch_id)
 
     return gravity_service.list()
 
@@ -70,45 +70,38 @@ async def get_gravity_by_id(
 
 @router.post(
     "/",
-    response_model=schemas.Gravity,
+    response_model=Union[schemas.Gravity, List[schemas.Gravity]],
     status_code=201,
     responses={409: {"description": "Conflict Error"}},
     dependencies=[Depends(api_key_auth)],
 )
 async def create_gravity(
-    gravity: schemas.GravityCreate,
+    gravity: Union[schemas.GravityCreate, List[schemas.GravityCreate]],
     background_tasks: BackgroundTasks,
     gravity_service: GravityService = Depends(get_gravity_service),
-) -> models.Gravity:
-    """Create a new gravity reading."""
+) -> Union[models.Gravity, List[models.Gravity]]:
+    """Create one or multiple gravity readings in a single request."""
     logger.info("Endpoint POST /api/gravity/")
+    
+    # Handle single gravity reading
+    if isinstance(gravity, schemas.GravityCreate):
+        if gravity.created is None:
+            gravity.created = datetime.now()
+            logger.info("Added timestamp to gravity record %s", gravity.created)
+        result = gravity_service.create(gravity)
+        background_tasks.add_task(notify_clients, "batch", "update", result.batch_id)
+        return result
+    
+    # Handle multiple gravity readings
     if gravity.created is None:
         gravity.created = datetime.now()
-        logger.info("Added timestamp to gravity record %s", gravity.created)
-    gravity = gravity_service.create(gravity)
-    background_tasks.add_task(notify_clients, "batch", "update", gravity.batch_id)
-    return gravity
-
-
-@router.post(
-    "/list/",
-    response_model=List[schemas.Gravity],
-    status_code=201,
-    responses={409: {"description": "Conflict Error"}},
-    dependencies=[Depends(api_key_auth)],
-)
-async def create_gravity_list(
-    gravity_list: List[schemas.GravityCreate],
-    background_tasks: BackgroundTasks,
-    gravity_service: GravityService = Depends(get_gravity_service),
-) -> List[models.Gravity]:
-    """Create multiple gravity readings in batch."""
-    logger.info("Endpoint GET /api/gravity/list/")
-    gravity_list = gravity_service.create_list(gravity_list)
-    background_tasks.add_task(
-        notify_clients, "batch", "update", gravity_list[0].batch_id
-    )
-    return gravity_list
+        logger.info("Added timestamp to gravity records")
+    for g in gravity:
+        if g.created is None:
+            g.created = datetime.now()
+    result = gravity_service.create_list(gravity)
+    background_tasks.add_task(notify_clients, "batch", "update", result[0].batch_id)
+    return result
 
 
 @router.patch(
@@ -138,6 +131,8 @@ async def delete_gravity_by_id(
     """Delete a gravity reading by ID."""
     logger.info("Endpoint DELETE /api/gravity/%s", gravity_id)
     gravity = gravity_service.get(gravity_id)
+    if not gravity:
+        raise HTTPException(status_code=404, detail="Gravity not found")
     background_tasks.add_task(notify_clients, "batch", "update", gravity.batch_id)
     gravity_service.delete(gravity_id)
 

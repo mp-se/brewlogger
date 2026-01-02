@@ -2,8 +2,8 @@
 import logging
 from datetime import datetime
 from json.decoder import JSONDecodeError
-from typing import List, Optional
-from fastapi import Depends, Request, BackgroundTasks
+from typing import List, Optional, Union
+from fastapi import Depends, Request, BackgroundTasks, Query
 from fastapi.routing import APIRouter
 from fastapi.responses import Response
 from starlette.exceptions import HTTPException
@@ -27,13 +27,13 @@ router = APIRouter(prefix="/api/pressure")
     "/", response_model=List[schemas.Pressure], dependencies=[Depends(api_key_auth)]
 )
 async def list_pressures(
-    batchId: int = -1,  # pylint: disable=invalid-name
+    batch_id: Optional[int] = Query(None, alias="batchId"),
     pressure_service: PressureService = Depends(get_pressure_service),
 ) -> List[models.Pressure]:
     """List pressure readings, optionally filtered by batch ID."""
-    logger.info("Endpoint GET /api/pressure/?batchId=%d", batchId)
-    if batchId != -1:
-        return pressure_service.search_by_batch_id(batchId)
+    logger.info("Endpoint GET /api/pressure/?batch_id=%d", batch_id or -1)
+    if batch_id is not None:
+        return pressure_service.search_by_batch_id(batch_id)
     return pressure_service.list()
 
 
@@ -67,45 +67,35 @@ async def get_pressure_by_id(
 
 @router.post(
     "/",
-    response_model=schemas.Pressure,
+    response_model=Union[schemas.Pressure, List[schemas.Pressure]],
     status_code=201,
     responses={409: {"description": "Conflict Error"}},
     dependencies=[Depends(api_key_auth)],
 )
 async def create_pressure(
-    pressure: schemas.PressureCreate,
+    pressure: Union[schemas.PressureCreate, List[schemas.PressureCreate]],
     background_tasks: BackgroundTasks,
     pressure_service: PressureService = Depends(get_pressure_service),
-) -> models.Pressure:
-    """Create a new pressure reading."""
+) -> Union[models.Pressure, List[models.Pressure]]:
+    """Create one or multiple pressure readings in a single request."""
     logger.info("Endpoint POST /api/pressure/")
-    if pressure.created is None:
-        pressure.created = datetime.now()
-        logger.info("Added timestamp to pressure record %s", pressure.created)
-    pressure = pressure_service.create(pressure)
-    background_tasks.add_task(notify_clients, "batch", "update", pressure.batch_id)
-    return pressure
-
-
-@router.post(
-    "/list/",
-    response_model=List[schemas.Pressure],
-    status_code=201,
-    responses={409: {"description": "Conflict Error"}},
-    dependencies=[Depends(api_key_auth)],
-)
-async def create_pressure_list(
-    pressure_list: List[schemas.PressureCreate],
-    background_tasks: BackgroundTasks,
-    pressure_service: PressureService = Depends(get_pressure_service),
-) -> List[models.Pressure]:
-    """Create multiple pressure readings in batch."""
-    logger.info("Endpoint POST /api/pressure/list/")
-    pressure_list = pressure_service.create_list(pressure_list)
-    background_tasks.add_task(
-        notify_clients, "batch", "update", pressure_list[0].batch_id
-    )
-    return pressure_list
+    
+    # Handle single pressure reading
+    if isinstance(pressure, schemas.PressureCreate):
+        if pressure.created is None:
+            pressure.created = datetime.now()
+            logger.info("Added timestamp to pressure record %s", pressure.created)
+        result = pressure_service.create(pressure)
+        background_tasks.add_task(notify_clients, "batch", "update", result.batch_id)
+        return result
+    
+    # Handle multiple pressure readings
+    for p in pressure:
+        if p.created is None:
+            p.created = datetime.now()
+    result = pressure_service.create_list(pressure)
+    background_tasks.add_task(notify_clients, "batch", "update", result[0].batch_id)
+    return result
 
 
 @router.patch(
@@ -135,6 +125,8 @@ async def delete_pressure_by_id(
     """Delete a specific pressure reading by ID."""
     logger.info("Endpoint DELETE /api/pressure/%d", pressure_id)
     pressure = pressure_service.get(pressure_id)
+    if not pressure:
+        raise HTTPException(status_code=404, detail="Pressure not found")
     background_tasks.add_task(notify_clients, "batch", "update", pressure.batch_id)
     pressure_service.delete(pressure_id)
 

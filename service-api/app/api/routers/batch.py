@@ -1,7 +1,7 @@
 """Batch management API endpoints for creating, updating, and managing brewing batches."""
 import logging
 from typing import List, Optional
-from fastapi import Depends, BackgroundTasks
+from fastapi import Depends, BackgroundTasks, Query
 from fastapi.routing import APIRouter
 from starlette.exceptions import HTTPException
 from api.db import models, schemas
@@ -19,28 +19,14 @@ router = APIRouter(prefix="/api/batch")
     dependencies=[Depends(api_key_auth)],
 )
 async def list_batches(
-    chipId: str = "*",  # pylint: disable=invalid-name
-    active: str = "*",
+    chip_id: Optional[str] = Query(None, alias="chipId"),
+    active: Optional[bool] = Query(None),
     batch_service: BatchService = Depends(get_batch_service),
 ) -> List[schemas.BatchList]:
     """List all batches with optional filtering by chip ID and active status."""
-    logger.info("Endpoint GET /api/batch/?chipId=%s&active=%s", chipId, active)
-    if chipId != "*":  # ChipId + Active flas
-        if active in ("True", "true"):
-            batches = batch_service.search_chip_id_active(chipId, True)
-        elif active in ("False", "false"):
-            batches = batch_service.search_chip_id_active(chipId, False)
-        else:
-            batches = batch_service.search_chip_id(chipId)
-    elif active != "*":  # Active flag only
-        if active in ("True", "true"):
-            batches = batch_service.search_active(True)
-        elif active in ("False", "false"):
-            batches = batch_service.search_active(False)
-        else:
-            batches = batch_service.list()
-    else:  # return all records
-        batches = batch_service.list()
+    logger.info("Endpoint GET /api/batch/?chip_id=%s&active=%s", chip_id, active)
+
+    batches = batch_service.list_filtered(chip_id=chip_id, active=active)
 
     # Enrich batches with counts and last pour data
     for batch in batches:
@@ -207,5 +193,8 @@ async def delete_batch_by_id(
 ):
     """Delete a batch by ID."""
     logger.info("Endpoint DELETE /api/batch/%d", batch_id)
+    batch = batch_service.get(batch_id)
+    if not batch:
+        raise HTTPException(status_code=404, detail="Batch not found")
     batch_service.delete(batch_id)
     background_tasks.add_task(notify_clients, "batch", "delete", batch_id)

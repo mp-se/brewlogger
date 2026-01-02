@@ -28,6 +28,30 @@ class BatchService(BaseService[models.Batch, schemas.BatchCreate, schemas.BatchU
         )
         return objs
 
+    def list_filtered(self, chip_id: str = None, active: bool = None) -> List[models.Batch]:
+        """List batches with optional filtering by chip ID and/or active status."""
+        query = select(self.model)
+
+        if chip_id and active is not None:
+            query = query.filter(and_(
+                or_(self.model.chip_id_gravity == chip_id, self.model.chip_id_pressure == chip_id),
+                self.model.active == active
+            ))
+            logger.info("Fetched batches based on chipId=%s + active=%s", chip_id, active)
+        elif chip_id:
+            query = query.filter(or_(
+                self.model.chip_id_gravity == chip_id,
+                self.model.chip_id_pressure == chip_id
+            ))
+            logger.info("Fetched batches based on chipId=%s", chip_id)
+        elif active is not None:
+            query = query.filter(self.model.active == active)
+            logger.info("Fetched batches based on active=%s", active)
+
+        objs: List[self.model] = self.db_session.scalars(query).all()
+        logger.info("Total batches found: %d", len(objs))
+        return objs
+
     def search_tap_list(self) -> List[models.Batch]:
         """Search batches that are on tap list."""
         filters = {"tap_list": True}

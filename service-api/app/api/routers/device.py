@@ -100,7 +100,10 @@ async def create_device(
     if device.chip_id != "000000":
         device_list = devices_service.search_chip_id(device.chip_id)
         if len(device_list) > 0:
-            raise HTTPException(status_code=409, detail="Conflict Error")
+            raise HTTPException(
+                status_code=409,
+                detail=f"Device with chip_id '{device.chip_id}' already exists"
+            )
     logger.info("Creating device: %s", device)
     device = devices_service.create(device)
     background_tasks.add_task(notify_clients, "device", "create", device.id)
@@ -130,6 +133,9 @@ async def delete_device_by_id(
 ):
     """Delete a specific device by ID."""
     logger.info("Endpoint DELETE /api/device/%d", device_id)
+    device = devices_service.get(device_id)
+    if not device:
+        raise HTTPException(status_code=404, detail="Device not found")
     devices_service.delete(device_id)
     background_tasks.add_task(notify_clients, "device", "delete", device_id)
 

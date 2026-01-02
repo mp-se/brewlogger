@@ -19,7 +19,7 @@ def api_key_auth(api_key: str = Depends(oauth2_scheme)):
             system_log_security(f"Invalid token {api_key} in request", 401)
             logger.error("Api-key is not valid: %s", api_key)
             raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED, detail="Acccess forbidden"
+                status_code=status.HTTP_401_UNAUTHORIZED, detail="Access forbidden"
             )
     else:
         logger.info("Access token validation is disabled configuration")

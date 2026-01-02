@@ -2,8 +2,8 @@
 import logging
 from json.decoder import JSONDecodeError
 from datetime import datetime
-from typing import List, Optional
-from fastapi import Depends, Request, BackgroundTasks
+from typing import List, Optional, Union
+from fastapi import Depends, Request, BackgroundTasks, Query
 from fastapi.responses import Response
 from fastapi.routing import APIRouter
 from starlette.exceptions import HTTPException
@@ -20,13 +20,13 @@ router = APIRouter(prefix="/api/pour")
     "/", response_model=List[schemas.Pour], dependencies=[Depends(api_key_auth)]
 )
 async def list_pours(
-    batchId: int = -1,  # pylint: disable=invalid-name
+    batch_id: Optional[int] = Query(None, alias="batchId"),
     pour_service: PourService = Depends(get_pour_service),
 ) -> List[models.Pour]:
     """List pour events, optionally filtered by batch ID."""
-    logger.info("Endpoint GET /api/pour/?batchId=%s", batchId)
-    if batchId != -1:
-        return pour_service.search_by_batch_id(batchId)
+    logger.info("Endpoint GET /api/pour/?batch_id=%s", batch_id)
+    if batch_id is not None:
+        return pour_service.search_by_batch_id(batch_id)
     return pour_service.list()
 
 
@@ -60,43 +60,35 @@ async def get_pour_by_id(
 
 @router.post(
     "/",
-    response_model=schemas.Pour,
+    response_model=Union[schemas.Pour, List[schemas.Pour]],
     status_code=201,
     responses={409: {"description": "Conflict Error"}},
     dependencies=[Depends(api_key_auth)],
 )
 async def create_pour(
-    pour: schemas.PourCreate,
+    pour: Union[schemas.PourCreate, List[schemas.PourCreate]],
     background_tasks: BackgroundTasks,
     pour_service: PourService = Depends(get_pour_service),
-) -> models.Pour:
-    """Create a new pour event."""
+) -> Union[models.Pour, List[models.Pour]]:
+    """Create one or multiple pour events in a single request."""
     logger.info("Endpoint POST /api/pour/")
-    if pour.created is None:
-        pour.created = datetime.now()
-        logger.info("Added timestamp to pour record %s", pour.created)
-    pour = pour_service.create(pour)
-    background_tasks.add_task(notify_clients, "batch", "update", pour.batch_id)
-    return pour
-
-
-@router.post(
-    "/list/",
-    response_model=List[schemas.Pour],
-    status_code=201,
-    responses={409: {"description": "Conflict Error"}},
-    dependencies=[Depends(api_key_auth)],
-)
-async def create_pour_list(
-    pour_list: List[schemas.PourCreate],
-    background_tasks: BackgroundTasks,
-    pour_service: PourService = Depends(get_pour_service),
-) -> List[models.Pour]:
-    """Create multiple pour events in batch."""
-    logger.info("Endpoint POST /api/pour/list/")
-    pour_list = pour_service.create_list(pour_list)
-    background_tasks.add_task(notify_clients, "batch", "update", pour_list[0].batch_id)
-    return pour_list
+    
+    # Handle single pour event
+    if isinstance(pour, schemas.PourCreate):
+        if pour.created is None:
+            pour.created = datetime.now()
+            logger.info("Added timestamp to pour record %s", pour.created)
+        result = pour_service.create(pour)
+        background_tasks.add_task(notify_clients, "batch", "update", result.batch_id)
+        return result
+    
+    # Handle multiple pour events
+    for p in pour:
+        if p.created is None:
+            p.created = datetime.now()
+    result = pour_service.create_list(pour)
+    background_tasks.add_task(notify_clients, "batch", "update", result[0].batch_id)
+    return result
 
 
 @router.patch(
@@ -121,9 +113,11 @@ async def delete_pour_by_id(
     background_tasks: BackgroundTasks,
     pour_service: PourService = Depends(get_pour_service),
 ):
-    """Delete a specific pour event by ID."""
+    """Delete a pour event by ID."""
     logger.info("Endpoint DELETE /api/pour/%s", pour_id)
     pour = pour_service.get(pour_id)
+    if not pour:
+        raise HTTPException(status_code=404, detail="Pour not found")
     background_tasks.add_task(notify_clients, "batch", "update", pour.batch_id)
     pour_service.delete(pour_id)
 
