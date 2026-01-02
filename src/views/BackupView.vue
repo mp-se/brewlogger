@@ -472,7 +472,7 @@ async function restoreBatches(bl) {
         return {}
       }
 
-      const res = await fetch(global.baseURL + 'api/gravity/list/', {
+      const res = await fetch(global.baseURL + 'api/gravity/', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: global.token },
         body: JSON.stringify(b.gravity)
@@ -496,7 +496,7 @@ async function restoreBatches(bl) {
         return {}
       }
 
-      const res = await fetch(global.baseURL + 'api/pressure/list/', {
+      const res = await fetch(global.baseURL + 'api/pressure/', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: global.token },
         body: JSON.stringify(b.pressure)
@@ -520,7 +520,7 @@ async function restoreBatches(bl) {
         return {}
       }
 
-      const res = await fetch(global.baseURL + 'api/pour/list/', {
+      const res = await fetch(global.baseURL + 'api/pour/', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: global.token },
         body: JSON.stringify(b.pour)

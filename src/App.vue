@@ -126,16 +126,19 @@ watch(disabled, () => {
 })
 
 function connect() {
-  // Get API key from global config
-  const apiKey = global.apiKey || localStorage.getItem('apiKey')
+  const apiKey = global.token
   
   if (!apiKey) {
     logInfo('App.connect()', 'No API key found, WebSocket connection skipped')
     return
   }
   
+  // Strip 'bearer ' prefix if present
+  const keyOnly = apiKey.replace(/^bearer\s+/i, '')
+  
   var host = global.baseURL.replaceAll('http://', 'ws://')
-  var wsUrl = host + 'api/system/notify?api_key=' + encodeURIComponent(apiKey)
+  var wsUrl = host + 'api/system/notify?apiKey=' + encodeURIComponent(keyOnly)
+  logInfo('App.connect()', 'WebSocket URL: ' + wsUrl)
   socket.value = new WebSocket(wsUrl)
 
   socket.value.onopen = function () {
@@ -160,6 +163,8 @@ function connect() {
 
   socket.value.onerror = function (event) {
     logInfo('App.connect()', 'WebSocket error: ' + event)
+    logInfo('App.connect()', 'WebSocket URL: ' + wsUrl)
+    logInfo('App.connect()', 'WebSocket readyState: ' + socket.value.readyState)
   }
 
   socket.value.onclose = function (event) {
@@ -231,7 +236,7 @@ onMounted(async () => {
         if (batchSuccess) {
           global.initialized = true
           hideSpinner()
-
+          connect()
           test()
         } else {
           global.messageError = 'Failed to load list of batches'
@@ -245,11 +250,9 @@ onMounted(async () => {
       global.messageError = 'Failed to load configuration'
       hideSpinner()
     }
-  }
-
-  setTimeout(() => {
+  } else {
     connect()
-  }, 100)
+  }
 })
 
 function showSpinner() {
