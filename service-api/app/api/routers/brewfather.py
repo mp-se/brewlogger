@@ -1,20 +1,24 @@
-import httpx
-import logging
+"""Brewfather API integration endpoints for syncing batch data from Brewfather service."""
 import json
+import logging
 from datetime import datetime
 from json import JSONDecodeError
 from typing import List
+
+import httpx
 from fastapi import Depends
 from fastapi.routing import APIRouter
 from starlette.exceptions import HTTPException
+
 from api.db import schemas, models
-from ..security import api_key_auth
+
 from ..config import get_settings
+from ..security import api_key_auth
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/api/brewfather")
 
-max_records = 100
+MAX_RECORDS = 100
 
 
 @router.get(
@@ -29,31 +33,35 @@ async def get_fermenting_batches_from_brewfather(
     completed: bool = False,
     archived: bool = False,
 ) -> List[models.Batch]:
+    """Fetch batches from Brewfather API filtered by status."""
     logger.info(
-        f"Endpoint GET /api/brewfather/batch/?planning={planning}&brewing={brewing}&fermenting={fermenting}&completed={completed}&archived={archived}"
+        "Endpoint GET /api/brewfather/batch/"
+        "?planning=%s&brewing=%s&fermenting=%s&completed=%s&archived=%s",
+        planning, brewing, fermenting, completed, archived
     )
-    batches = list()
+    batches = []
 
     if planning:
-        batches += await fetchBatchList("Planning")
+        batches += await fetch_batch_list("Planning")
 
     if brewing:
-        batches += await fetchBatchList("Brewing")
+        batches += await fetch_batch_list("Brewing")
 
     if fermenting:
-        batches += await fetchBatchList("Fermenting")
+        batches += await fetch_batch_list("Fermenting")
 
     if completed:
-        batches += await fetchBatchList("Completed")
+        batches += await fetch_batch_list("Completed")
 
     if archived:
-        batches += await fetchBatchList("Archived")
+        batches += await fetch_batch_list("Archived")
 
     return batches
 
 
-async def fetchBatchList(status):
-    batches = list()
+async def fetch_batch_list(status):  # pylint: disable=too-many-locals,too-many-branches
+    """Fetch batch list from Brewfather API for a given status."""
+    batches = []
 
     if (
         get_settings().brewfather_user_key == ""
@@ -67,11 +75,13 @@ async def fetchBatchList(status):
     try:
         async with httpx.AsyncClient() as client:
             url = "https://api.brewfather.app/v2/batches"
+            abv_color_ibu = "recipe.abv,recipe.color,recipe.ibu"
+            include_fields = f"{abv_color_ibu},recipe.style.name,recipe.fermentation"
             data = {
-                "include": "recipe.abv,recipe.color,recipe.ibu,recipe.style.name,recipe.fermentation",
+                "include": include_fields,
                 "complete": False,
                 "status": status,
-                "limit": max_records,
+                "limit": MAX_RECORDS,
             }
             res = await client.get(
                 url=url,
@@ -100,51 +110,50 @@ async def fetchBatchList(status):
                 name = batch["name"]
                 steps = []
 
-                """ Example response
-                [
-                    {
-                        "_id": "ejriIST30hkmqSlzDGRQ8420eQyze1",
-                        "batchNo": 78,
-                        "brewDate": 1727474400000,
-                        "brewer": "Magnus Persson",
-                        "name": "Christmas Lager",
-                        "recipe": {
-                            "abv": 4.33,
-                            "color": 14.7,
-                            "fermentation": {
-                                "_id": null,
-                                "name": "Imported",
-                                "steps": [
-                                    {
-                                        "actualTime": 1727474400000,
-                                        "stepTemp": 12,
-                                        "stepTime": 14,
-                                        "type": "Primary"
-                                    },
-                                    {
-                                        "actualTime": 1728684000000,
-                                        "stepTemp": 2,
-                                        "stepTime": 4,
-                                        "type": "Secondary"
-                                    },
-                                    {
-                                        "actualTime": 1729029600000,
-                                        "stepTemp": 16,
-                                        "stepTime": 14,
-                                        "type": "Conditioning"
-                                    }
-                                ]
-                            },
-                            "ibu": 32.3,
-                            "name": "71. Christmas Lager",
-                            "style": {
-                                "name": "American-Style Dark Lager"
-                            }
-                        },
-                        "status": "Fermenting"
-                    }
-                ]
-                """
+                # Example response
+                # [
+                #     {
+                #         "_id": "ejriIST30hkmqSlzDGRQ8420eQyze1",
+                #         "batchNo": 78,
+                #         "brewDate": 1727474400000,
+                #         "brewer": "Magnus Persson",
+                #         "name": "Christmas Lager",
+                #         "recipe": {
+                #             "abv": 4.33,
+                #             "color": 14.7,
+                #             "fermentation": {
+                #                 "_id": null,
+                #                 "name": "Imported",
+                #                 "steps": [
+                #                     {
+                #                         "actualTime": 1727474400000,
+                #                         "stepTemp": 12,
+                #                         "stepTime": 14,
+                #                         "type": "Primary"
+                #                     },
+                #                     {
+                #                         "actualTime": 1728684000000,
+                #                         "stepTemp": 2,
+                #                         "stepTime": 4,
+                #                         "type": "Secondary"
+                #                     },
+                #                     {
+                #                         "actualTime": 1729029600000,
+                #                         "stepTemp": 16,
+                #                         "stepTime": 14,
+                #                         "type": "Conditioning"
+                #                     }
+                #                 ]
+                #             },
+                #             "ibu": 32.3,
+                #             "name": "71. Christmas Lager",
+                #             "style": {
+                #                 "name": "American-Style Dark Lager"
+                #             }
+                #         },
+                #         "status": "Fermenting"
+                #     }
+                # ]
 
                 if "recipe" in batch:
                     if (
@@ -194,14 +203,14 @@ async def fetchBatchList(status):
                     )
                 )
 
-    except JSONDecodeError:
+    except JSONDecodeError as exc:
         logger.error("Unable to parse JSON response")
         raise HTTPException(
             status_code=400, detail="Unable to parse JSON from brewfather."
-        )
-    except httpx.ConnectError:
+        ) from exc
+    except httpx.ConnectError as exc:
         logger.error("Unable to connect to brewfather")
-        raise HTTPException(status_code=400, detail="Unable to connect to brewfather.")
+        raise HTTPException(status_code=400, detail="Unable to connect to brewfather.") from exc
 
     return batches
 
@@ -214,7 +223,8 @@ async def fetchBatchList(status):
 async def get_completed_batches_from_brewfather(
     batch_id: str,
 ):
-    logger.info(f"Endpoint GET /api/brewfather/batch/{batch_id}")
+    """Fetch a specific batch from Brewfather by batch ID."""
+    logger.info("Endpoint GET /api/brewfather/batch/%s", batch_id)
 
     batch = {}
 
@@ -239,13 +249,13 @@ async def get_completed_batches_from_brewfather(
             )
             batch = res.json()
 
-    except JSONDecodeError:
+    except JSONDecodeError as exc:
         logger.error("Unable to parse JSON response")
         raise HTTPException(
             status_code=400, detail="Unable to parse JSON from brewfather."
-        )
-    except httpx.ConnectError:
+        ) from exc
+    except httpx.ConnectError as exc:
         logger.error("Unable to connect to brewfather")
-        raise HTTPException(status_code=400, detail="Unable to connect to brewfather.")
+        raise HTTPException(status_code=400, detail="Unable to connect to brewfather.") from exc
 
     return batch

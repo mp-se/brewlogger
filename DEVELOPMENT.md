@@ -48,6 +48,13 @@ cd service-api/app
 pytest -k device
 ```
 
+## Running linter
+
+```
+cd service-api
+pylint app/api --reports=yes
+```
+
 ## Starting the service for http://localhost:8000
 
 This will run the server locally listening on port 8000

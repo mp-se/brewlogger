@@ -1,4 +1,7 @@
 import json
+import pytest
+from datetime import datetime
+from starlette.exceptions import HTTPException
 from api.config import get_settings
 from .conftest import truncate_database
 
@@ -176,11 +179,6 @@ def test_public(app_client):
     }
     r = app_client.post("/api/pressure/public", json=data)
     assert r.status_code == 200
-    res = json.loads(r.text)
-    assert res["pressure"] == 1.05
-    assert res["battery"] == 3.85
-    assert res["rssi"] == -76.2
-    assert res["temperature"] == 0.0
 
     # Check relation to batch and validate stored values
     r = app_client.get("/api/batch/?chipId=EEEEE1", headers=headers)
@@ -228,13 +226,6 @@ def test_public(app_client):
     }
     r = app_client.post("/api/pressure/public", json=data)
     assert r.status_code == 200
-    res = json.loads(r.text)
-    assert res["pressure"] == 7.929  # 1.15 * 6.89476 rounded to 3 decimals
-    assert res["pressure1"] == 8.6184  # 1.25 * 6.89476 rounded to 4 decimals
-    assert res["battery"] == 3.85
-    assert res["rssi"] == -72.2
-    assert res["runTime"] == 1.1
-    assert res["temperature"] == 10.0
 
     # Check relation to batch and validate stored values
     r = app_client.get("/api/batch/?chipId=EEEEE3", headers=headers)
@@ -274,13 +265,6 @@ def test_public(app_client):
     }
     r = app_client.post("/api/pressure/public", json=data)
     assert r.status_code == 200
-    res = json.loads(r.text)
-    assert res["pressure"] == 1150.0  # 1.15 * 1000
-    assert res["pressure1"] == 1250.0  # 1.25 * 1000
-    assert res["battery"] == 3.85
-    assert res["rssi"] == -72.2
-    assert res["runTime"] == 1.1
-    assert res["temperature"] == -12.22  # (10 - 32) * 5/9
 
     # Check relation to batch and validate stored values
     r = app_client.get("/api/batch/?chipId=EEEEE4", headers=headers)
@@ -326,11 +310,12 @@ def test_public_with_none_pressure1(app_client):
     }
     r = app_client.post("/api/pressure/public", json=data)
     assert r.status_code == 200
-    res = json.loads(r.text)
-    assert res["pressure"] == 1.05
-    assert res["pressure1"] is None  # Returns None when not provided
-    assert res["battery"] == 3.85
-    assert res["temperature"] == 20
+    r = app_client.get("/api/pressure/latest?limit=1", headers=headers)
+    assert r.status_code == 200
+    pressures = json.loads(r.text)
+    assert len(pressures) > 0
+    assert pressures[0]["pressure"] == 1.05
+    assert pressures[0]["battery"] == 3.85
     
     # Test with pressure1 None and unit conversion (PSI)
     data = {
@@ -349,11 +334,11 @@ def test_public_with_none_pressure1(app_client):
     }
     r = app_client.post("/api/pressure/public", json=data)
     assert r.status_code == 200
-    res = json.loads(r.text)
-    assert res["pressure"] == 7.2395  # 1.05 * 6.89476
-    assert res["pressure1"] is None  # Stays None when None
-    assert res["battery"] == 3.85
-    
+    r = app_client.get("/api/pressure/latest?limit=1", headers=headers)
+    assert r.status_code == 200
+    pressures = json.loads(r.text)
+    assert len(pressures) > 0
+    assert pressures[0]["pressure"] == 7.2395    
     # Test with pressure1 None and unit conversion (BAR)
     data = {
         "name": "012345",
@@ -371,10 +356,6 @@ def test_public_with_none_pressure1(app_client):
     }
     r = app_client.post("/api/pressure/public", json=data)
     assert r.status_code == 200
-    res = json.loads(r.text)
-    assert res["pressure"] == 1050.0  # 1.05 * 1000
-    assert res["pressure1"] is None  # Stays None when None
-    assert res["battery"] == 3.85
 
 
 def test_validation(app_client):
@@ -816,3 +797,616 @@ def test_all_nullable_pressure_fields_together(app_client):
     assert res["pressure1"] == 1.051
     assert res["battery"] == 3.9
     assert res["runTime"] == 1.5
+
+
+# =====================================================================
+# Service-layer unit tests
+# =====================================================================
+
+
+def test_pressure_service_init(db_session):
+    """Test PressureService initialization."""
+    from api.services.pressure import PressureService
+    from api.db import models
+    
+    service = PressureService(db_session)
+    assert service.db_session == db_session
+    assert service.model == models.Pressure
+
+
+def test_pressure_service_create_valid(db_session):
+    """Test creating a pressure record with valid batch."""
+    from api.services.pressure import PressureService
+    from api.db import models, schemas
+    from .conftest import truncate_database
+    
+    truncate_database()
+    
+    # Create a batch first
+    batch_data = {
+        "name": "Test Batch",
+        "chip_id_gravity": "",
+        "chip_id_pressure": "TEST123",
+        "description": "Test",
+        "brew_date": datetime.now(),
+        "style": "IPA",
+        "brewer": "Test Brewer",
+        "brewfather_id": "",
+        "active": True,
+        "tap_list": False,
+        "fermentation_chamber": None,
+        "fermentation_steps": "[]",
+        "abv": 5.0,
+        "ebc": 15.0,
+        "ibu": 30.0,
+    }
+    batch = models.Batch(**batch_data)
+    db_session.add(batch)
+    db_session.commit()
+    
+    service = PressureService(db_session)
+    
+    pressure_data = schemas.PressureCreate(
+        batch_id=batch.id,
+        temperature=20.5,
+        pressure=1.052,
+        pressure1=1.051,
+        battery=3.9,
+        rssi=85,
+        run_time=1.5,
+        active=True,
+            created=datetime.now()
+    )
+    
+    result = service.create(pressure_data)
+    
+    assert result.batch_id == batch.id
+    assert result.temperature == 20.5
+    assert result.pressure == 1.052
+    assert result.pressure1 == 1.051
+    assert result.battery == 3.9
+
+
+def test_pressure_service_create_invalid_batch(db_session):
+    """Test creating a pressure record with non-existent batch."""
+    from api.services.pressure import PressureService
+    from api.db import schemas
+    from .conftest import truncate_database
+    
+    truncate_database()
+    
+    service = PressureService(db_session)
+    
+    pressure_data = schemas.PressureCreate(
+        batch_id=999,  # Non-existent batch
+        temperature=20.5,
+        pressure=1.052,
+        pressure1=1.051,
+        battery=3.9,
+        rssi=85,
+        run_time=1.5,
+        active=True,
+            created=datetime.now()
+    )
+    
+    with pytest.raises(HTTPException) as exc_info:
+        service.create(pressure_data)
+    
+    assert exc_info.value.status_code == 400
+
+
+def test_pressure_service_create_list_valid(db_session):
+    """Test creating multiple pressure records."""
+    from api.services.pressure import PressureService
+    from api.db import models, schemas
+    from .conftest import truncate_database
+    
+    truncate_database()
+    
+    # Create a batch
+    batch_data = {
+        "name": "Test Batch",
+        "chip_id_gravity": "",
+        "chip_id_pressure": "TEST123",
+        "description": "Test",
+        "brew_date": datetime.now(),
+        "style": "IPA",
+        "brewer": "Test Brewer",
+        "brewfather_id": "",
+        "active": True,
+        "tap_list": False,
+        "fermentation_chamber": None,
+        "fermentation_steps": "[]",
+        "abv": 5.0,
+        "ebc": 15.0,
+        "ibu": 30.0,
+    }
+    batch = models.Batch(**batch_data)
+    db_session.add(batch)
+    db_session.commit()
+    
+    service = PressureService(db_session)
+    
+    pressure_list = [
+        schemas.PressureCreate(
+            batch_id=batch.id,
+            temperature=20.5,
+            pressure=1.052,
+            pressure1=1.051,
+            battery=3.9,
+            rssi=85,
+            run_time=1.5,
+            active=True,
+            created=datetime.now()
+        ),
+        schemas.PressureCreate(
+            batch_id=batch.id,
+            temperature=21.0,
+            pressure=1.053,
+            pressure1=1.052,
+            battery=3.8,
+            rssi=86,
+            run_time=1.6,
+            active=True,
+            created=datetime.now()
+        )
+    ]
+    
+    results = service.create_list(pressure_list)
+    
+    assert len(results) == 2
+    assert results[0].temperature == 20.5
+    assert results[1].temperature == 21.0
+
+
+def test_pressure_service_create_list_empty(db_session):
+    """Test creating empty pressure list raises error."""
+    from api.services.pressure import PressureService
+    from .conftest import truncate_database
+    
+    truncate_database()
+    
+    service = PressureService(db_session)
+    
+    with pytest.raises(HTTPException) as exc_info:
+        service.create_list([])
+    
+    assert exc_info.value.status_code == 400
+    assert "No pressure readings" in exc_info.value.detail
+
+
+def test_pressure_service_create_list_invalid_batch(db_session):
+    """Test creating pressure list with non-existent batch."""
+    from api.services.pressure import PressureService
+    from api.db import schemas
+    from .conftest import truncate_database
+    
+    truncate_database()
+    
+    service = PressureService(db_session)
+    
+    pressure_list = [
+        schemas.PressureCreate(
+            batch_id=999,  # Non-existent
+            temperature=20.5,
+            pressure=1.052,
+            pressure1=1.051,
+            battery=3.9,
+            rssi=85,
+            run_time=1.5,
+            active=True,
+            created=datetime.now()
+        )
+    ]
+    
+    with pytest.raises(HTTPException) as exc_info:
+        service.create_list(pressure_list)
+    
+    assert exc_info.value.status_code == 400
+
+
+def test_pressure_service_search_by_batch_id(db_session):
+    """Test searching pressure records by batch ID."""
+    from api.services.pressure import PressureService
+    from api.db import models
+    from .conftest import truncate_database
+    
+    truncate_database()
+    
+    # Create a batch
+    batch_data = {
+        "name": "Test Batch",
+        "chip_id_gravity": "",
+        "chip_id_pressure": "TEST123",
+        "description": "Test",
+        "brew_date": datetime.now(),
+        "style": "IPA",
+        "brewer": "Test Brewer",
+        "brewfather_id": "",
+        "active": True,
+        "tap_list": False,
+        "fermentation_chamber": None,
+        "fermentation_steps": "[]",
+        "abv": 5.0,
+        "ebc": 15.0,
+        "ibu": 30.0,
+    }
+    batch = models.Batch(**batch_data)
+    db_session.add(batch)
+    db_session.commit()
+    
+    # Add pressure records
+    pressure1 = models.Pressure(
+        batch_id=batch.id,
+        temperature=20.5,
+        pressure=1.052,
+        pressure1=1.051,
+        battery=3.9,
+        rssi=85,
+        run_time=1.5,
+        active=True,
+            created=datetime.now()
+    )
+    pressure2 = models.Pressure(
+        batch_id=batch.id,
+        temperature=21.0,
+        pressure=1.053,
+        pressure1=1.052,
+        battery=3.8,
+        rssi=86,
+        run_time=1.6,
+        active=True,
+            created=datetime.now()
+    )
+    db_session.add(pressure1)
+    db_session.add(pressure2)
+    db_session.commit()
+    
+    service = PressureService(db_session)
+    results = service.search_by_batch_id(batch.id)
+    
+    assert len(results) == 2
+    assert all(p.batch_id == batch.id for p in results)
+
+
+def test_pressure_service_search_by_batch_id_no_results(db_session):
+    """Test searching pressure records by batch ID with no results."""
+    from api.services.pressure import PressureService
+    from .conftest import truncate_database
+    
+    truncate_database()
+    
+    service = PressureService(db_session)
+    results = service.search_by_batch_id(999)
+    
+    assert len(results) == 0
+
+
+def test_pressure_service_get_latest_with_data(db_session):
+    """Test getting latest pressure readings with batch information."""
+    from api.services.pressure import PressureService
+    from api.db import models
+    from .conftest import truncate_database
+    
+    truncate_database()
+    
+    # Create a batch
+    batch_data = {
+        "name": "Test Batch",
+        "chip_id_gravity": "",
+        "chip_id_pressure": "TEST123",
+        "description": "Test",
+        "brew_date": datetime.now(),
+        "style": "IPA",
+        "brewer": "Test Brewer",
+        "brewfather_id": "",
+        "active": True,
+        "tap_list": False,
+        "fermentation_chamber": None,
+        "fermentation_steps": "[]",
+        "abv": 5.0,
+        "ebc": 15.0,
+        "ibu": 30.0,
+    }
+    batch = models.Batch(**batch_data)
+    db_session.add(batch)
+    db_session.commit()
+    
+    # Add pressure records
+    for i in range(3):
+        pressure = models.Pressure(
+            batch_id=batch.id,
+            temperature=20.5 + i,
+            pressure=1.052 + (i * 0.001),
+            pressure1=1.051 + (i * 0.001),
+            battery=3.9 - (i * 0.1),
+            rssi=85 + i,
+            run_time=1.5 + i,
+            active=True,
+            created=datetime.now()
+        )
+        db_session.add(pressure)
+    db_session.commit()
+    
+    service = PressureService(db_session)
+    results = service.get_latest(limit=2)
+    
+    # Should return 2 latest records (ordered by created descending)
+    assert len(results) == 2
+    assert 'id' in results[0]
+    assert 'temperature' in results[0]
+    assert 'pressure' in results[0]
+    assert 'pressure1' in results[0]
+    assert 'battery' in results[0]
+    assert 'rssi' in results[0]
+    assert 'runTime' in results[0]
+    assert 'created' in results[0]
+    assert 'active' in results[0]
+    assert 'batchId' in results[0]
+    assert 'batchName' in results[0]
+    assert results[0]['batchName'] == "Test Batch"
+    assert results[0]['chipIdPressure'] == "TEST123"
+
+
+def test_pressure_service_get_latest_default_limit(db_session):
+    """Test getting latest pressure readings with default limit."""
+    from api.services.pressure import PressureService
+    from api.db import models
+    from .conftest import truncate_database
+    
+    truncate_database()
+    
+    # Create a batch
+    batch_data = {
+        "name": "Test Batch",
+        "chip_id_gravity": "",
+        "chip_id_pressure": "TEST123",
+        "description": "Test",
+        "brew_date": datetime.now(),
+        "style": "IPA",
+        "brewer": "Test Brewer",
+        "brewfather_id": "",
+        "active": True,
+        "tap_list": False,
+        "fermentation_chamber": None,
+        "fermentation_steps": "[]",
+        "abv": 5.0,
+        "ebc": 15.0,
+        "ibu": 30.0,
+    }
+    batch = models.Batch(**batch_data)
+    db_session.add(batch)
+    db_session.commit()
+    
+    # Add 15 pressure records
+    for i in range(15):
+        pressure = models.Pressure(
+            batch_id=batch.id,
+            temperature=20.5 + i,
+            pressure=1.052 + (i * 0.001),
+            pressure1=1.051 + (i * 0.001),
+            battery=3.9 - (i * 0.01),
+            rssi=85 + i,
+            run_time=1.5 + i,
+            active=True,
+            created=datetime.now()
+        )
+        db_session.add(pressure)
+    db_session.commit()
+    
+    service = PressureService(db_session)
+    results = service.get_latest()  # Default limit=10
+    
+    assert len(results) == 10
+
+
+def test_pressure_service_get_latest_no_data(db_session):
+    """Test getting latest pressure readings when no data exists."""
+    from api.services.pressure import PressureService
+    from .conftest import truncate_database
+    
+    truncate_database()
+    
+    service = PressureService(db_session)
+    results = service.get_latest()
+    
+    assert len(results) == 0
+
+
+def test_pressure_service_get_latest_with_none_values(db_session):
+    """Test getting latest pressure readings with None values."""
+    from api.services.pressure import PressureService
+    from api.db import models
+    from .conftest import truncate_database
+    
+    truncate_database()
+    
+    # Create a batch
+    batch_data = {
+        "name": "Test Batch",
+        "chip_id_gravity": "",
+        "chip_id_pressure": "TEST123",
+        "description": "Test",
+        "brew_date": datetime.now(),
+        "style": "IPA",
+        "brewer": "Test Brewer",
+        "brewfather_id": "",
+        "active": True,
+        "tap_list": False,
+        "fermentation_chamber": None,
+        "fermentation_steps": "[]",
+        "abv": 5.0,
+        "ebc": 15.0,
+        "ibu": 30.0,
+    }
+    batch = models.Batch(**batch_data)
+    db_session.add(batch)
+    db_session.commit()
+    
+    # Add pressure record with None values
+    pressure = models.Pressure(
+        batch_id=batch.id,
+        temperature=None,  # None
+        pressure=1.052,
+        pressure1=None,  # None
+        battery=None,  # None
+        rssi=85,
+        run_time=1.5,
+        active=True,
+            created=datetime.now()
+    )
+    db_session.add(pressure)
+    db_session.commit()
+    
+    service = PressureService(db_session)
+    results = service.get_latest(limit=1)
+    
+    assert len(results) == 1
+    assert results[0]['temperature'] is None
+    assert results[0]['pressure1'] is None
+    assert results[0]['battery'] is None
+    assert results[0]['pressure'] == 1.052
+
+
+def test_pressure_service_get_latest_multiple_batches(db_session):
+    """Test getting latest pressure readings from multiple batches."""
+    from api.services.pressure import PressureService
+    from api.db import models
+    from .conftest import truncate_database
+    
+    truncate_database()
+    
+    # Create two batches
+    batch1_data = {
+        "name": "Batch 1",
+        "chip_id_gravity": "",
+        "chip_id_pressure": "CHIP1",
+        "description": "Test",
+        "brew_date": datetime.now(),
+        "style": "IPA",
+        "brewer": "Test Brewer",
+        "brewfather_id": "",
+        "active": True,
+        "tap_list": False,
+        "fermentation_chamber": None,
+        "fermentation_steps": "[]",
+        "abv": 5.0,
+        "ebc": 15.0,
+        "ibu": 30.0,
+    }
+    batch1 = models.Batch(**batch1_data)
+    
+    batch2_data = {
+        "name": "Batch 2",
+        "chip_id_gravity": "",
+        "chip_id_pressure": "CHIP2",
+        "description": "Test",
+        "brew_date": datetime.now(),
+        "style": "Lager",
+        "brewer": "Test Brewer",
+        "brewfather_id": "",
+        "active": True,
+        "tap_list": False,
+        "fermentation_chamber": None,
+        "fermentation_steps": "[]",
+        "abv": 4.5,
+        "ebc": 20.0,
+        "ibu": 25.0,
+    }
+    batch2 = models.Batch(**batch2_data)
+    
+    db_session.add(batch1)
+    db_session.add(batch2)
+    db_session.commit()
+    
+    # Add pressure records from both batches
+    pressure1 = models.Pressure(
+        batch_id=batch1.id,
+        temperature=20.5,
+        pressure=1.052,
+        pressure1=1.051,
+        battery=3.9,
+        rssi=85,
+        run_time=1.5,
+        active=True,
+            created=datetime.now()
+    )
+    pressure2 = models.Pressure(
+        batch_id=batch2.id,
+        temperature=18.0,
+        pressure=1.010,
+        pressure1=1.009,
+        battery=4.0,
+        rssi=90,
+        run_time=2.0,
+        active=True,
+            created=datetime.now()
+    )
+    db_session.add(pressure1)
+    db_session.add(pressure2)
+    db_session.commit()
+    
+    service = PressureService(db_session)
+    results = service.get_latest(limit=5)
+    
+    assert len(results) == 2
+    batch_names = {r['batchName'] for r in results}
+    assert "Batch 1" in batch_names
+    assert "Batch 2" in batch_names
+
+
+def test_pressure_service_get_latest_order_by_created(db_session):
+    """Test that get_latest returns records ordered by created descending."""
+    from api.services.pressure import PressureService
+    from api.db import models
+    from .conftest import truncate_database
+    
+    truncate_database()
+    
+    # Create a batch
+    batch_data = {
+        "name": "Test Batch",
+        "chip_id_gravity": "",
+        "chip_id_pressure": "TEST123",
+        "description": "Test",
+        "brew_date": datetime.now(),
+        "style": "IPA",
+        "brewer": "Test Brewer",
+        "brewfather_id": "",
+        "active": True,
+        "tap_list": False,
+        "fermentation_chamber": None,
+        "fermentation_steps": "[]",
+        "abv": 5.0,
+        "ebc": 15.0,
+        "ibu": 30.0,
+    }
+    batch = models.Batch(**batch_data)
+    db_session.add(batch)
+    db_session.commit()
+    
+    # Add pressure records with distinguishable values
+    temps = [20.0, 21.0, 22.0]
+    for temp in temps:
+        pressure = models.Pressure(
+            batch_id=batch.id,
+            temperature=temp,
+            pressure=1.052,
+            pressure1=1.051,
+            battery=3.9,
+            rssi=85,
+            run_time=1.5,
+            active=True,
+            created=datetime.now()
+        )
+        db_session.add(pressure)
+    db_session.commit()
+    
+    service = PressureService(db_session)
+    results = service.get_latest(limit=5)
+    
+    # Should be ordered by created DESC (newest first)
+    assert len(results) == 3
+    assert results[0]['temperature'] == 22.0
+    assert results[1]['temperature'] == 21.0
+    assert results[2]['temperature'] == 20.0

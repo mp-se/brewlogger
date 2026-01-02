@@ -1,10 +1,14 @@
-from typing import List
-from fastapi import HTTPException
-from sqlalchemy import select
-from sqlalchemy.orm import Session
-from api.db import models, schemas
-from .base import BaseService
+"""Pressure service for managing fermentation pressure readings and batch associations."""
+# pylint: disable=duplicate-code
 import logging
+from typing import List
+
+from fastapi import HTTPException
+from sqlalchemy.orm import Session
+
+from api.db import models, schemas
+
+from .base import BaseService
 
 logger = logging.getLogger(__name__)
 
@@ -12,57 +16,42 @@ logger = logging.getLogger(__name__)
 class PressureService(
     BaseService[models.Pressure, schemas.PressureCreate, schemas.PressureUpdate]
 ):
+    """Service for managing fermentation pressure readings and batch associations."""
     def __init__(self, db_session: Session):
-        super(PressureService, self).__init__(models.Pressure, db_session)
+        super().__init__(models.Pressure, db_session)
 
     def create(self, obj: schemas.PressureCreate) -> models.Pressure:
-        batch = self.db_session.get(models.Batch, obj.batch_id)
-        logger.info("Searching for batch with id=%s %s", obj.batch_id, batch)
-        if batch is None:
-            raise HTTPException(
-                status_code=400,
-                detail=f"Batch with id = {obj.batch_id} not found.",
-            )
-        return super(PressureService, self).create(obj)
+        self._validate_batch_exists(obj.batch_id)
+        return super().create(obj)
 
-    def createList(self, lst: List[schemas.PressureCreate]) -> List[models.Pressure]:
+    def create_list(self, lst: List[schemas.PressureCreate]) -> List[models.Pressure]:
         logger.info("Adding %d pressure records for batch", len(lst))
         if len(lst) == 0:
             raise HTTPException(
                 status_code=400,
                 detail="No pressure readings in request.",
             )
+        self._validate_batch_exists(lst[0].batch_id)
+        return super().create_list(lst)
 
-        batch = self.db_session.get(models.Batch, lst[0].batch_id)
-        logger.info("Searching for batch with id=%s %s", lst[0].batch_id, batch)
-        if batch is None:
-            raise HTTPException(
-                status_code=400,
-                detail=f"Batch with id = {lst[0].batch_id} not found.",
-            )
-        return super(PressureService, self).createList(lst)
-
-    def search(self, chipId: str) -> List[models.Pressure]:
-        filters = {"chip_id": chipId}
-        objs: List[self.model] = self.db_session.scalars(
-            select(self.model).filter_by(**filters)
-        ).all()
+    def search(self, chip_id: str) -> List[models.Pressure]:
+        """Search pressure readings by chip ID."""
+        objs = self._search_by_filter({"chip_id": chip_id})
         logger.info(
-            "Fetched pressure based on chipId=%s, records found %d", chipId, len(objs)
+            "Fetched pressure based on chipId=%s, records found %d", chip_id, len(objs)
         )
         return objs
 
-    def search_by_batchId(self, batchId: int) -> List[models.Pressure]:
-        filters = {"batch_id": batchId}
-        objs: List[self.model] = self.db_session.scalars(
-            select(self.model).filter_by(**filters)
-        ).all()
+    def search_by_batch_id(self, batch_id: int) -> List[models.Pressure]:
+        """Search pressure readings by batch ID."""
+        objs = self._search_by_filter({"batch_id": batch_id})
         logger.info(
-            "Fetched pressure based on batchId=%d, records found %d", batchId, len(objs)
+            "Fetched pressure based on batchId=%d, records found %d", batch_id, len(objs)
         )
         return objs
 
-    def get_latest(self, limit: int = 10) -> List[dict]:
+    def get_latest(self, limit: int = 10) -> List[dict]:  # pylint: disable=duplicate-code
+        """Get the latest pressure readings with batch information."""
         objs = self.db_session.query(
             models.Pressure.id,
             models.Pressure.temperature,
@@ -77,7 +66,7 @@ class PressureService(
             models.Batch.name.label('batch_name'),
             models.Batch.chip_id_pressure
         ).join(models.Batch).order_by(models.Pressure.created.desc()).limit(limit).all()
-        
+
         logger.info("Fetched latest %d pressure records", len(objs))
         # Convert rows to dictionaries
         result = []

@@ -1,14 +1,16 @@
+"""Pour event API endpoints for recording and managing beer pour operations."""
 import logging
 from json.decoder import JSONDecodeError
 from datetime import datetime
 from typing import List, Optional
 from fastapi import Depends, Request, BackgroundTasks
+from fastapi.responses import Response
 from fastapi.routing import APIRouter
 from starlette.exceptions import HTTPException
 from api.db import models, schemas
 from api.services import PourService, get_pour_service, BatchService, get_batch_service
 from ..security import api_key_auth
-from ..ws import notifyClients
+from ..ws import notify_clients
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/api/pour")
@@ -18,12 +20,13 @@ router = APIRouter(prefix="/api/pour")
     "/", response_model=List[schemas.Pour], dependencies=[Depends(api_key_auth)]
 )
 async def list_pours(
-    batchId: int = -1,
+    batchId: int = -1,  # pylint: disable=invalid-name
     pour_service: PourService = Depends(get_pour_service),
 ) -> List[models.Pour]:
-    logger.info(f"Endpoint GET /api/pour/?batchId={batchId}")
+    """List pour events, optionally filtered by batch ID."""
+    logger.info("Endpoint GET /api/pour/?batchId=%s", batchId)
     if batchId != -1:
-        return pour_service.search_by_batchId(batchId)
+        return pour_service.search_by_batch_id(batchId)
     return pour_service.list()
 
 
@@ -36,7 +39,8 @@ async def get_latest_pours(
     limit: int = 10,
     pour_service: PourService = Depends(get_pour_service),
 ) -> List[dict]:
-    logger.info(f"Endpoint GET /api/pour/latest?limit={limit}")
+    """Get the most recent pour events with limit."""
+    logger.info("Endpoint GET /api/pour/latest?limit=%s", limit)
     return pour_service.get_latest(limit)
 
 
@@ -49,7 +53,8 @@ async def get_latest_pours(
 async def get_pour_by_id(
     pour_id: int, pour_service: PourService = Depends(get_pour_service)
 ) -> Optional[models.Pour]:
-    logger.info(f"Endpoint GET /api/pour/{pour_id}")
+    """Retrieve a specific pour event by ID."""
+    logger.info("Endpoint GET /api/pour/%s", pour_id)
     return pour_service.get(pour_id)
 
 
@@ -65,12 +70,13 @@ async def create_pour(
     background_tasks: BackgroundTasks,
     pour_service: PourService = Depends(get_pour_service),
 ) -> models.Pour:
+    """Create a new pour event."""
     logger.info("Endpoint POST /api/pour/")
     if pour.created is None:
         pour.created = datetime.now()
-        logger.info(f"Added timestamp to pour record {pour.created}")
+        logger.info("Added timestamp to pour record %s", pour.created)
     pour = pour_service.create(pour)
-    background_tasks.add_task(notifyClients, "batch", "update", pour.batch_id)
+    background_tasks.add_task(notify_clients, "batch", "update", pour.batch_id)
     return pour
 
 
@@ -86,9 +92,10 @@ async def create_pour_list(
     background_tasks: BackgroundTasks,
     pour_service: PourService = Depends(get_pour_service),
 ) -> List[models.Pour]:
+    """Create multiple pour events in batch."""
     logger.info("Endpoint POST /api/pour/list/")
-    pour_list = pour_service.createList(pour_list)
-    background_tasks.add_task(notifyClients, "batch", "update", pour_list[0].batch_id)
+    pour_list = pour_service.create_list(pour_list)
+    background_tasks.add_task(notify_clients, "batch", "update", pour_list[0].batch_id)
     return pour_list
 
 
@@ -101,9 +108,10 @@ async def update_pour_by_id(
     background_tasks: BackgroundTasks,
     pour_service: PourService = Depends(get_pour_service),
 ) -> Optional[models.Pour]:
-    logger.info(f"Endpoint PATCH /api/pour/{pour_id}")
+    """Update a specific pour event by ID."""
+    logger.info("Endpoint PATCH /api/pour/%s", pour_id)
     pour = pour_service.update(pour_id, gravity)
-    background_tasks.add_task(notifyClients, "batch", "update", pour.batch_id)
+    background_tasks.add_task(notify_clients, "batch", "update", pour.batch_id)
     return pour
 
 
@@ -113,73 +121,71 @@ async def delete_pour_by_id(
     background_tasks: BackgroundTasks,
     pour_service: PourService = Depends(get_pour_service),
 ):
-    logger.info(f"Endpoint DELETE /api/pour/{pour_id}")
+    """Delete a specific pour event by ID."""
+    logger.info("Endpoint DELETE /api/pour/%s", pour_id)
     pour = pour_service.get(pour_id)
-    background_tasks.add_task(notifyClients, "batch", "update", pour.batch_id)
+    background_tasks.add_task(notify_clients, "batch", "update", pour.batch_id)
     pour_service.delete(pour_id)
 
 
-@router.post("/public", response_model=schemas.Pour, status_code=200)
+@router.post("/public", response_class=Response, status_code=200)
 async def create_pour_using_kegmon_format(
     request: Request,
     background_tasks: BackgroundTasks,
     pour_service: PourService = Depends(get_pour_service),
     batch_service: BatchService = Depends(get_batch_service),
-) -> models.Pour:
+) -> Response:
+    """Create a pour event from Kegmon format data."""
     logger.info("Endpoint POST /api/pour/public")
 
     try:
         req_json = await request.json()
 
-        logger.info(f"Payload: {req_json}")
+        logger.info("Payload: %s", req_json)
 
-        pourVal = 0
-        volumeVal = 0
-        maxVolumeVal = 0
+        pour_val = 0
+        volume_val = 0
+        max_volume_val = 0
 
         if "pour" in req_json and req_json["pour"] is not None:
-            pourVal = req_json["pour"]
+            pour_val = req_json["pour"]
 
         if "volume" in req_json and req_json["volume"] is not None:
-            volumeVal = req_json["volume"]
+            volume_val = req_json["volume"]
 
         if "maxVolume" in req_json and req_json["maxVolume"] is not None:
-            maxVolumeVal = req_json["maxVolume"]
+            max_volume_val = req_json["maxVolume"]
 
         # Check if there is an active batch
         batch = batch_service.get(int(req_json["id"]))
 
-        pour_list = pour_service.search_by_batchId(batch.id)
+        pour_list = pour_service.search_by_batch_id(batch.id)
         pour_list.sort(key=lambda x: x.created, reverse=True)
 
         for p in pour_list:
-            logging.info(f"{p.created} {p.volume}")
+            logging.info("%s %s", p.created, p.volume)
 
         # If we get a volume update and no pour, check if the value has changed
-        if len(pour_list) > 0 and pourVal == 0:
-            if pour_list[0].volume == volumeVal:
+        if len(pour_list) > 0 and pour_val == 0:
+            if pour_list[0].volume == volume_val:
                 logging.info(
                     "Volume recevied in pour update has not changed, ignoring data."
                 )
                 return None
 
         pour = schemas.PourCreate(
-            pour=pourVal,
-            volume=volumeVal,
-            maxVolume=maxVolumeVal,
+            pour=pour_val,
+            volume=volume_val,
+            maxVolume=max_volume_val,
             batch_id=batch.id,
             created=datetime.now(),
             active=True,
         )
 
         pour = pour_service.create(pour)
-        background_tasks.add_task(notifyClients, "batch", "update", pour.batch_id)
-        return pour
+        background_tasks.add_task(notify_clients, "batch", "update", pour.batch_id)
+        return Response(content="", status_code=200)
 
-    except KeyError as e:
+    except (KeyError, JSONDecodeError) as e:
         logging.error(e)
-        raise HTTPException(status_code=422, detail="Unable to parse request")
-
-    except JSONDecodeError as e:
-        logging.error(e)
-        raise HTTPException(status_code=422, detail="Unable to parse request")
+        raise HTTPException(status_code=422, detail="Unable to parse request") from e

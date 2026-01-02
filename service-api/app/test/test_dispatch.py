@@ -1,4 +1,6 @@
 import json
+from unittest.mock import AsyncMock, patch
+
 from api.config import get_settings
 from .conftest import truncate_database
 
@@ -12,21 +14,94 @@ def test_init(app_client):
     truncate_database()
 
 
-def test_dispatch_endpoint_requires_gravity_or_pressure(app_client):
-    """Test that dispatch endpoint requires gravity or pressure field"""
+def test_dispatch_invalid_json(app_client):
+    """Test that dispatch endpoint handles invalid JSON"""
     test_init(app_client)
     
-    # The dispatch endpoint expects either 'gravity' or 'pressure' key
-    # When neither is present, it should fail (note: there's a bug in the endpoint)
-    # So we skip testing the exact response since it's not well-formed
-    # Instead, we just verify the endpoint is reachable
-    try:
-        r = app_client.post("/api/dispatch/public", json={})
-        # If we get here, the endpoint returned something (even if buggy)
-        assert r.status_code in [400, 422, 500]
-    except TypeError:
-        # Known issue: dispatch.py has a bug with Response(detail=...)
-        pass
+    # Send malformed JSON
+    r = app_client.post(
+        "/api/dispatch/public",
+        content="not valid json",
+        headers={"Content-Type": "application/json"}
+    )
+    assert r.status_code == 422
+
+
+def test_dispatch_missing_required_field(app_client):
+    """Test that dispatch endpoint rejects data without gravity or pressure"""
+    test_init(app_client)
+    
+    # No gravity or pressure field
+    r = app_client.post("/api/dispatch/public", json={"some_field": "value"})
+    assert r.status_code == 400
+    data = json.loads(r.text)
+    assert "Format not recognized" in data.get("detail", "")
+
+
+def test_dispatch_empty_object(app_client):
+    """Test that dispatch endpoint rejects empty object"""
+    test_init(app_client)
+    
+    r = app_client.post("/api/dispatch/public", json={})
+    assert r.status_code == 400
+
+
+@patch("api.routers.dispatch.httpx.AsyncClient")
+def test_dispatch_gravity_forward_success(mock_client, app_client):
+    """Test successful forwarding of gravity data to brew_api"""
+    test_init(app_client)
+    
+    # Mock the AsyncClient and response
+    mock_response = AsyncMock()
+    mock_response.content = b'{"status": "received"}'
+    
+    mock_async_client = AsyncMock()
+    mock_async_client.post = AsyncMock(return_value=mock_response)
+    mock_async_client.__aenter__ = AsyncMock(return_value=mock_async_client)
+    mock_async_client.__aexit__ = AsyncMock(return_value=None)
+    
+    mock_client.return_value = mock_async_client
+    
+    # Send gravity data
+    payload = {"gravity": 1.055, "angle": 45, "temperature": 68}
+    r = app_client.post("/api/dispatch/public", json=payload)
+    
+    # Verify the response
+    assert r.status_code == 200
+    # Verify httpx was called with correct parameters
+    mock_async_client.post.assert_called_once_with(
+        "http://brew_api:80/api/gravity/public",
+        json=payload
+    )
+
+
+@patch("api.routers.dispatch.httpx.AsyncClient")
+def test_dispatch_pressure_forward_success(mock_client, app_client):
+    """Test successful forwarding of pressure data to brew_api"""
+    test_init(app_client)
+    
+    # Mock the AsyncClient and response
+    mock_response = AsyncMock()
+    mock_response.content = b'{"status": "received"}'
+    
+    mock_async_client = AsyncMock()
+    mock_async_client.post = AsyncMock(return_value=mock_response)
+    mock_async_client.__aenter__ = AsyncMock(return_value=mock_async_client)
+    mock_async_client.__aexit__ = AsyncMock(return_value=None)
+    
+    mock_client.return_value = mock_async_client
+    
+    # Send pressure data
+    payload = {"pressure": 15.5, "temperature": 68}
+    r = app_client.post("/api/dispatch/public", json=payload)
+    
+    # Verify the response
+    assert r.status_code == 200
+    # Verify httpx was called with correct parameters
+    mock_async_client.post.assert_called_once_with(
+        "http://brew_api:80/api/pressure/public",
+        json=payload
+    )
 
 
 

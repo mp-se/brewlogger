@@ -1,15 +1,18 @@
+"""Request dispatching endpoints for forwarding requests to remote brewery devices."""
 import logging
-import httpx
 from json import JSONDecodeError
-from fastapi.routing import APIRouter
+
+import httpx
 from fastapi import Request, Response
+from fastapi.routing import APIRouter
 from starlette.exceptions import HTTPException
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/api/dispatch")
 
 @router.post("/public", status_code=200, response_class=Response)
-async def pressmon_test_post(request: Request):
+async def dispatch_post_to_correct_endpoint(request: Request):
+    """Forward gravity and pressure data to appropriate endpoints."""
     logger.info("Endpoint POST /dispatch/public")
     try:
         j = await request.json()
@@ -20,8 +23,8 @@ async def pressmon_test_post(request: Request):
             async with httpx.AsyncClient() as client:
                 response = await client.post(
                     "http://brew_api:80/api/gravity/public",
-                    json=j             )
-                
+                    json=j)
+
                 logger.info(response)
                 return Response(content=response.content, status_code=200)
 
@@ -35,11 +38,8 @@ async def pressmon_test_post(request: Request):
                 logger.info(response)
                 return Response(content=response.content, status_code=200)
 
-    except KeyError as e:
+    except (KeyError, JSONDecodeError) as e:
         logging.error(e)
-        raise HTTPException(status_code=422, detail="Unable to parse request")
-    except JSONDecodeError as e:
-        logging.error(e)
-        raise HTTPException(status_code=422, detail="Unable to parse request")
+        raise HTTPException(status_code=422, detail="Unable to parse request") from e
 
-    return Response(status_code=400, detail="Format not recognized")
+    raise HTTPException(status_code=400, detail="Format not recognized")

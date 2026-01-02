@@ -1,3 +1,4 @@
+"""API key authentication and security management for BrewLogger API."""
 import logging
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
@@ -10,6 +11,7 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token", auto_error=False)
 
 
 def api_key_auth(api_key: str = Depends(oauth2_scheme)):
+    """Validate API key for endpoint authentication."""
     settings = get_settings()
     if settings.api_key_enabled:
         logger.info("Validating access token")

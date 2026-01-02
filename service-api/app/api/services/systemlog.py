@@ -1,3 +1,4 @@
+"""System log service for managing application event logging and retention."""
 import logging
 from datetime import datetime, timedelta
 from typing import List
@@ -12,8 +13,9 @@ logger = logging.getLogger(__name__)
 class SystemLogService(
     BaseService[models.SystemLog, schemas.SystemLogCreate, schemas.SystemLogUpdate]
 ):
+    """Service for managing system log entries and event tracking."""
     def __init__(self, db_session: Session):
-        super(SystemLogService, self).__init__(models.SystemLog, db_session)
+        super().__init__(models.SystemLog, db_session)
 
     def list(self, limit: int = 100) -> List[models.SystemLog]:
         objs: List[models.SystemLog] = (
@@ -24,7 +26,8 @@ class SystemLogService(
         )
         return objs
 
-    def deleteByTimestamp(self, days: int = 30):
+    def delete_by_timestamp(self, days: int = 30):
+        """Delete system log entries older than the specified number of days."""
         dt = datetime.now() - timedelta(days=days)
         statement = delete(models.SystemLog).where(models.SystemLog.timestamp <= dt)
         result = self.db_session.execute(statement)

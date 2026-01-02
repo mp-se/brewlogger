@@ -1,17 +1,21 @@
+"""System management API endpoints for health checks, scheduling, and real-time notifications."""
 import logging
 import json
 from json import JSONDecodeError
 from datetime import datetime, timezone
 from typing import List
+import redis
+from sqlalchemy.exc import SQLAlchemyError
 from fastapi import Depends, WebSocket, WebSocketDisconnect
 from fastapi.routing import APIRouter
 from api.db import models, schemas
 from api.db.session import create_session
 from api.services import BrewLoggerService, SystemLogService, get_systemlog_service
-from ..cache import writeKey, readKey, findKey
+from ..cache import write_key, read_key, find_key
 from ..scheduler import scheduler
 from ..ws import ws_manager
 from ..security import api_key_auth
+from ..config import get_settings
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/api/system")
@@ -19,6 +23,7 @@ router = APIRouter(prefix="/api/system")
 
 @router.get("/self_test/", response_model=schemas.SelfTestResult)
 async def self_test():
+    """Perform system self-test checking database, redis, and scheduler connectivity."""
     logger.info("Endpoint GET /api/system/self_test/")
 
     # Check for database connectivity
@@ -28,35 +33,35 @@ async def self_test():
         cfg = BrewLoggerService(create_session()).list()
         if len(cfg) > 0:
             database_connection = True
-    except Exception as e:
-        logger.info(f"Failed to connect with database {e}")
+    except (SQLAlchemyError, OSError) as e:
+        logger.info("Failed to connect with database %s", e)
 
     # Check for redis connectivity
     redis_connection = False
     try:
         logger.info("Checking redis connection")
-        writeKey("self_test", "testing", 60)
-        if readKey("self_test").decode() == "testing":
+        write_key("self_test", "testing", 60)
+        if read_key("self_test").decode() == "testing":
             redis_connection = True
-    except Exception as e:
-        logger.info(f"Failed to connect with redis cache {e}")
+    except (redis.ConnectionError, AttributeError) as e:
+        logger.info("Failed to connect with redis cache %s", e)
 
     # Check scheduler
     jobs = scheduler.get_jobs()
-    background_jobs = list()
+    background_jobs = []
     for job in jobs:
         background_jobs.append(job.name)
 
-    keys = findKey("log_*")
+    keys = find_key("log_*")
     log = []
     for key in keys:
-        value = readKey(key)
+        value = read_key(key)
         log.append({"name": key, "value": value.decode() if value else None})
 
-    keys = findKey("ble_*")
+    keys = find_key("ble_*")
     ble = []
     for key in keys:
-        value = readKey(key)
+        value = read_key(key)
         ble.append({"name": key, "value": value.decode() if value else None})
 
     return schemas.SelfTestResult(
@@ -70,11 +75,12 @@ async def self_test():
 
 @router.get("/scheduler/", response_model=List[schemas.Job])
 async def scheduler_status():
+    """Get status of all scheduled background jobs with next run times."""
     logger.info("Endpoint GET /api/system/scheduler/")
 
     jobs = scheduler.get_jobs()
     today = datetime.now(timezone.utc)
-    background_jobs = list()
+    background_jobs = []
     for job in jobs:
         background_jobs.append(
             schemas.Job(
@@ -95,6 +101,7 @@ async def system_log(
     limit: int = 100,
     systemlog_service: SystemLogService = Depends(get_systemlog_service),
 ):
+    """Retrieve system logs with optional limit parameter."""
     logger.info("Endpoint GET /api/system/log/")
     return systemlog_service.list(limit)
 
@@ -110,6 +117,7 @@ async def create_device(
     log: schemas.SystemLogCreate,
     systemlog_service: SystemLogService = Depends(get_systemlog_service),
 ) -> models.SystemLog:
+    """Create a new system log entry."""
     logger.info("Endpoint POST /api/system/log/")
     record = systemlog_service.create(log)
     return record
@@ -117,6 +125,27 @@ async def create_device(
 
 @router.websocket("/notify")
 async def websocket_endpoint(websocket: WebSocket):
+    """WebSocket endpoint for real-time notifications.
+
+    Requires API key authentication via query parameter:
+    ws://host/api/system/notify?api_key=YOUR_API_KEY
+    """
+    # Extract and validate API key from query parameters
+    api_key = websocket.query_params.get("api_key")
+
+    if not api_key:
+        logger.warning("WebSocket connection attempted without API key")
+        await websocket.close(code=1008, reason="Missing API key")
+        return
+
+    # Validate API key matches configured key
+    settings = get_settings()
+    if api_key != settings.api_key:
+        logger.warning("WebSocket connection attempted with invalid API key: %s...", api_key[:10])
+        await websocket.close(code=1008, reason="Invalid API key")
+        return
+
+    logger.info("WebSocket client connected with valid authentication")
     await ws_manager.connect(websocket)
     try:
         while True:
@@ -124,21 +153,25 @@ async def websocket_endpoint(websocket: WebSocket):
     except WebSocketDisconnect:
         ws_manager.disconnect(websocket)
         logger.info("Client disconnected")
+    except RuntimeError as e:
+        logger.error("WebSocket error: %s", e)
+        ws_manager.disconnect(websocket)
 
 
 @router.post("/mdns", status_code=201, dependencies=[Depends(api_key_auth)])
 async def add_mdns_to_cache(mdns: schemas.Mdns) -> None:
+    """Cache mDNS service information."""
     logger.info("Endpoint POST /api/system/mdns")
 
     try:
-        logger.info(f"Caching mdns for {mdns.name}")
+        logger.info("Caching mdns for %s", mdns.name)
         key = mdns.host + mdns.type
-        writeKey(
+        write_key(
             key,
             json.dumps({"type": mdns.type, "host": mdns.host, "name": mdns.name}),
             ttl=900,
         )
     except JSONDecodeError:
-        logger.error(f"Unable to parse JSON response {mdns}")
+        logger.error("Unable to parse JSON response %s", mdns)
 
     return None

@@ -1,63 +1,66 @@
-import logging
-import httpx
+"""Chamber controller integration for temperature and control management."""
 import json
+import logging
 from json import JSONDecodeError
+
+import httpx
+
 from .log import system_log_fermentationcontrol
 
 logger = logging.getLogger(__name__)
 
 
 async def chamberctrl_temps(url):
+    """Fetch current temperature readings from chamber controller device."""
     timeout = httpx.Timeout(10.0, connect=10.0, read=10.0)
     headers = {
         "Content-Type": "application/json",
     }
 
-    if url != "http://" and url != "https://" and url != "":
+    if url not in ("http://", "https://", ""):
         if not url.endswith("/"):
             url += "/"
 
         url += "api/temps"
 
         try:
-            logger.info(f"Fetching temps from chamber controller device {url}")
+            logger.info("Fetching temps from chamber controller device %s", url)
             async with httpx.AsyncClient(timeout=timeout) as client:
                 res = await client.get(url, headers=headers)
 
                 if res.status_code == 200:
-                    json = res.json()
-                    logger.info(f"JSON response received {json}")
-                    return json
-                else:
-                    system_log_fermentationcontrol(
-                        f"Http response {res.status_code} from chamber controller device {url}",
-                        res.status_code,
-                    )
-                    logger.error(
-                        f"Got response {res.status_code} from chamber controller device at {url}"
-                    )
+                    json_data = res.json()
+                    logger.info("JSON response received %s", json_data)
+                    return json_data
+                system_log_fermentationcontrol(
+                    f"Http response {res.status_code} from chamber controller device {url}",
+                    res.status_code,
+                )
+                logger.error(
+                    "Got response %s from chamber controller device at %s", res.status_code, url
+                )
 
         except JSONDecodeError:
             system_log_fermentationcontrol(
                 f"Failed to parse temps from chamber controller {url}, JSONDecodeError",
                 0,
             )
-            logger.error(f"Unable to parse JSON response {url}")
+            logger.error("Unable to parse JSON response %s", url)
         except httpx.ReadTimeout:
             system_log_fermentationcontrol(
                 f"Failed to connect with chamber controller {url}, ReadTimeout", 0
             )
-            logger.error(f"Unable to connect to device {url}")
+            logger.error("Unable to connect to device %s", url)
         except httpx.ConnectError:
             system_log_fermentationcontrol(
                 f"Failed to connect with chamber controller {url}, ConnectError", 0
             )
-            logger.error(f"Unable to read from device {url}")
+            logger.error("Unable to read from device %s", url)
         except httpx.ConnectTimeout:
             system_log_fermentationcontrol(
                 f"Failed to connect with chamber controller {url}, ConnectTimeout", 0
             )
-            logger.error(f"Unable to connect to device {url}")
+            logger.error("Unable to connect to device %s", url)
     else:
         system_log_fermentationcontrol(
             "chamber controller device has no defined URL, unable to fetch temperatures",
@@ -71,19 +74,20 @@ async def chamberctrl_temps(url):
 
 
 async def chamberctrl_set_fridge_temp(url, temp, chipid):
-    logger.info(f"Set fridge temperature {url}, {temp}, {chipid}")
+    """Set target fridge temperature on chamber controller device."""
+    logger.info("Set fridge temperature %s, %s, %s", url, temp, chipid)
 
     timeout = httpx.Timeout(10.0, connect=10.0, read=10.0)
     headers = {"Content-Type": "application/json", "Authorization": "Bearer " + chipid}
 
-    if url != "http://" and url != "https://" and url != "":
+    if url not in ("http://", "https://", ""):
         if not url.endswith("/"):
             url += "/"
 
         url += "api/mode"
 
         try:
-            logger.info(f"Setting target fridge temperature on {url} to {temp}")
+            logger.info("Setting target fridge temperature on %s to %s", url, temp)
 
             async with httpx.AsyncClient(timeout=timeout) as client:
                 res = await client.put(
@@ -94,36 +98,35 @@ async def chamberctrl_set_fridge_temp(url, temp, chipid):
 
                 if res.status_code == 200:
                     return True
-                else:
-                    system_log_fermentationcontrol(
-                        f"Http response {res.status_code} from chamber controller device {url}",
-                        res.status_code,
-                    )
-                    logger.error(
-                        f"Got response {res.status_code} from chamber controller device at {url}"
-                    )
+                system_log_fermentationcontrol(
+                    f"Http response {res.status_code} from chamber controller device {url}",
+                    res.status_code,
+                )
+                logger.error(
+                    "Got response %s from chamber controller device at %s", res.status_code, url
+                )
 
         except JSONDecodeError:
             system_log_fermentationcontrol(
                 f"Failed to parse temps from chamber controller {url}, JSONDecodeError",
                 0,
             )
-            logger.error(f"Unable to parse JSON response {url}")
+            logger.error("Unable to parse JSON response %s", url)
         except httpx.ReadTimeout:
             system_log_fermentationcontrol(
                 f"Failed to connect with chamber controller {url}, ReadTimeout", 0
             )
-            logger.error(f"Unable to connect to device {url}")
+            logger.error("Unable to connect to device %s", url)
         except httpx.ConnectError:
             system_log_fermentationcontrol(
                 f"Failed to connect with chamber controller {url}, ConnectTimeout", 0
             )
-            logger.error(f"Unable to read from device {url}")
+            logger.error("Unable to read from device %s", url)
         except httpx.ConnectTimeout:
             system_log_fermentationcontrol(
                 f"Failed to connect with chamber controller {url}, ConnectTimeout", 0
             )
-            logger.error(f"Unable to connect to device {url}")
+            logger.error("Unable to connect to device %s", url)
     else:
         system_log_fermentationcontrol(
             "Chamber controller device has no defined URL, unable to fetch temperatures",

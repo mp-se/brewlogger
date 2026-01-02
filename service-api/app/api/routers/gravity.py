@@ -1,3 +1,4 @@
+"""Gravity sensor API endpoints for managing fermentation gravity readings and device data."""
 import logging
 import json
 from datetime import datetime
@@ -5,6 +6,7 @@ from json.decoder import JSONDecodeError
 from typing import List, Optional
 from fastapi import Depends, Request, BackgroundTasks
 from fastapi.routing import APIRouter
+from fastapi.responses import Response
 from starlette.exceptions import HTTPException
 from api.db import models, schemas
 from api.services import (
@@ -16,8 +18,8 @@ from api.services import (
     get_device_service,
 )
 from ..security import api_key_auth
-from ..cache import existKey, readKey, writeKey
-from ..ws import notifyClients
+from ..cache import exist_key, read_key, write_key
+from ..ws import notify_clients
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/api/gravity")
@@ -27,12 +29,13 @@ router = APIRouter(prefix="/api/gravity")
     "/", response_model=List[schemas.Gravity], dependencies=[Depends(api_key_auth)]
 )
 async def list_gravities(
-    batchId: int = -1,
+    batchId: int = -1,  # pylint: disable=invalid-name
     gravity_service: GravityService = Depends(get_gravity_service),
 ) -> List[models.Gravity]:
-    logger.info(f"Endpoint GET /api/gravity/?batchId={batchId}")
+    """List gravity readings, optionally filtered by batch ID."""
+    logger.info("Endpoint GET /api/gravity/?batchId=%s", batchId)
     if batchId != -1:
-        return gravity_service.search_by_batchId(batchId)
+        return gravity_service.search_by_batch_id(batchId)
 
     return gravity_service.list()
 
@@ -46,7 +49,8 @@ async def get_latest_gravities(
     limit: int = 10,
     gravity_service: GravityService = Depends(get_gravity_service),
 ) -> List[dict]:
-    logger.info(f"Endpoint GET /api/gravity/latest?limit={limit}")
+    """Get the most recent gravity readings with limit."""
+    logger.info("Endpoint GET /api/gravity/latest?limit=%s", limit)
     return gravity_service.get_latest(limit)
 
 
@@ -59,7 +63,8 @@ async def get_latest_gravities(
 async def get_gravity_by_id(
     gravity_id: int, gravity_service: GravityService = Depends(get_gravity_service)
 ) -> Optional[models.Gravity]:
-    logger.info(f"Endpoint GET /api/gravity/{gravity_id}")
+    """Retrieve a specific gravity reading by ID."""
+    logger.info("Endpoint GET /api/gravity/%s", gravity_id)
     return gravity_service.get(gravity_id)
 
 
@@ -75,12 +80,13 @@ async def create_gravity(
     background_tasks: BackgroundTasks,
     gravity_service: GravityService = Depends(get_gravity_service),
 ) -> models.Gravity:
+    """Create a new gravity reading."""
     logger.info("Endpoint POST /api/gravity/")
     if gravity.created is None:
         gravity.created = datetime.now()
-        logger.info(f"Added timestamp to gravity record {gravity.created}")
+        logger.info("Added timestamp to gravity record %s", gravity.created)
     gravity = gravity_service.create(gravity)
-    background_tasks.add_task(notifyClients, "batch", "update", gravity.batch_id)
+    background_tasks.add_task(notify_clients, "batch", "update", gravity.batch_id)
     return gravity
 
 
@@ -96,10 +102,11 @@ async def create_gravity_list(
     background_tasks: BackgroundTasks,
     gravity_service: GravityService = Depends(get_gravity_service),
 ) -> List[models.Gravity]:
+    """Create multiple gravity readings in batch."""
     logger.info("Endpoint GET /api/gravity/list/")
-    gravity_list = gravity_service.createList(gravity_list)
+    gravity_list = gravity_service.create_list(gravity_list)
     background_tasks.add_task(
-        notifyClients, "batch", "update", gravity_list[0].batch_id
+        notify_clients, "batch", "update", gravity_list[0].batch_id
     )
     return gravity_list
 
@@ -115,9 +122,10 @@ async def update_gravity_by_id(
     background_tasks: BackgroundTasks,
     gravity_service: GravityService = Depends(get_gravity_service),
 ) -> Optional[models.Gravity]:
-    logger.info(f"Endpoint PATCH /api/gravity/{gravity_id}")
+    """Update a gravity reading by ID."""
+    logger.info("Endpoint PATCH /api/gravity/%s", gravity_id)
     gravity = gravity_service.update(gravity_id, gravity)
-    background_tasks.add_task(notifyClients, "batch", "update", gravity.batch_id)
+    background_tasks.add_task(notify_clients, "batch", "update", gravity.batch_id)
     return gravity
 
 
@@ -127,40 +135,42 @@ async def delete_gravity_by_id(
     background_tasks: BackgroundTasks,
     gravity_service: GravityService = Depends(get_gravity_service),
 ):
-    logger.info(f"Endpoint DELETE /api/gravity/{gravity_id}")
+    """Delete a gravity reading by ID."""
+    logger.info("Endpoint DELETE /api/gravity/%s", gravity_id)
     gravity = gravity_service.get(gravity_id)
-    background_tasks.add_task(notifyClients, "batch", "update", gravity.batch_id)
+    background_tasks.add_task(notify_clients, "batch", "update", gravity.batch_id)
     gravity_service.delete(gravity_id)
 
 
-@router.post("/public", status_code=200)
-async def create_gravity_using_ispindel_format(
+@router.post("/public", status_code=200, response_class=Response)
+async def create_gravity_using_ispindel_format(  # pylint: disable=too-many-locals,too-many-branches,too-many-statements,duplicate-code
     request: Request,
     background_tasks: BackgroundTasks,
     gravity_service: GravityService = Depends(get_gravity_service),
     batch_service: BatchService = Depends(get_batch_service),
     device_service: DeviceService = Depends(get_device_service),
 ):
+    """Create gravity reading from iSpindel or Tilt format data."""
     logger.info("Endpoint POST /api/gravity/public")
 
     try:
         req_json = await request.json()
 
-        logger.info(f"Payload: {req_json}")
+        logger.info("Payload: %s", req_json)
 
-        # This means the post is in TILT format so we need to look up the correct device and add the missing data.
+        # Post is in TILT format, look up the correct device and add missing data.
         if "color" in req_json:
             logger.info(
                 "Detected tilt post, searching for device id for %s", req_json["color"]
             )
 
-            deviceList = device_service.search_ble_color(req_json["color"])
-            if len(deviceList) == 0:
+            device_list = device_service.search_ble_color(req_json["color"])
+            if len(device_list) == 0:
                 raise HTTPException(
                     status_code=404, detail="Device with color not found"
                 )
 
-            req_json["ID"] = deviceList[0].chip_id
+            req_json["ID"] = device_list[0].chip_id
             req_json["temp_units"] = "F"
             req_json["angle"] = 0
             req_json["battery"] = 0
@@ -181,9 +191,9 @@ async def create_gravity_using_ispindel_format(
             velocity = req_json["velocity"]
 
         # Check if there is an active batch
-        batchList = batch_service.search_chipId_active(req_json["ID"], True)
+        batch_list = batch_service.search_chip_id_active(req_json["ID"], True)
 
-        if len(batchList) == 0:
+        if len(batch_list) == 0:
             batch = schemas.BatchCreate(
                 name="Batch for " + req_json["ID"],
                 chipIdGravity=req_json["ID"],
@@ -202,16 +212,16 @@ async def create_gravity_using_ispindel_format(
                 tap_list=True,
             )
             batch = batch_service.create(batch)
-            batchList = batch_service.search_chipId_active(req_json["ID"], True)
-            background_tasks.add_task(notifyClients, "batch", "create", batch.id)
+            batch_list = batch_service.search_chip_id_active(req_json["ID"], True)
+            background_tasks.add_task(notify_clients, "batch", "create", batch.id)
 
-        if len(batchList) == 0:
+        if len(batch_list) == 0:
             raise HTTPException(status_code=409, detail="No batch found")
 
         # Check if there is an device
-        deviceList = device_service.search_chipId(req_json["ID"])
+        device_list = device_service.search_chip_id(req_json["ID"])
 
-        if len(deviceList) == 0:
+        if len(device_list) == 0:
             device = schemas.DeviceCreate(
                 chipId=req_json["ID"],
                 chipFamily="",
@@ -224,12 +234,12 @@ async def create_gravity_using_ispindel_format(
                 collectLogs=False,
             )
             device = device_service.create(device)
-            background_tasks.add_task(notifyClients, "device", "create", device.id)
+            background_tasks.add_task(notify_clients, "device", "create", device.id)
 
-        chamberId = batchList[0].fermentation_chamber
+        chamber_id = batch_list[0].fermentation_chamber
 
         logger.info(
-            f"Saving gravity request for batch {batchList[0].id}",
+            "Saving gravity request for batch %s", batch_list[0].id
         )
 
         # Extract temperature and validate it early
@@ -237,11 +247,13 @@ async def create_gravity_using_ispindel_format(
         # Treat temperature values less than -270 as null (below absolute zero, sensor error)
         if temperature is not None and temperature < -270:
             temperature = None
-        
+
         # Convert temperature from Fahrenheit to Celsius if needed
-        if temperature is not None and "temp_units" in req_json and req_json["temp_units"].upper() == "F":
+        has_temp_unit = "temp_units" in req_json
+        is_fahrenheit = has_temp_unit and req_json["temp_units"].upper() == "F"
+        if temperature is not None and is_fahrenheit:
             temperature = float(
-                "%.2f" % ((temperature - 32) * 5 / 9)
+                f"{(temperature - 32) * 5 / 9:.2f}"
             )  # °C = (°F − 32) x 5/9
 
         gravity = schemas.GravityCreate(
@@ -253,45 +265,37 @@ async def create_gravity_using_ispindel_format(
             rssi=req_json["RSSI"],
             corr_gravity=corr_gravity,
             run_time=run_time,
-            batch_id=batchList[0].id,
+            batch_id=batch_list[0].id,
             created=datetime.now(),
             active=True,
         )
 
         # If there is a tagged chamber controller device lets use the value from that
-        if chamberId is not None and chamberId > 1:
-            key = "chamber_" + str(chamberId) + "_beer_temp"
-            if existKey(key):
-                beerTemp = readKey(key)
-                gravity.beer_temperature = float(beerTemp)
-            key = "chamber_" + str(chamberId) + "_fridge_temp"
-            if existKey(key):
-                chamberTemp = readKey(key)
-                gravity.chamber_temperature = float(chamberTemp)
+        if chamber_id is not None and chamber_id > 1:
+            key = "chamber_" + str(chamber_id) + "_beer_temp"
+            if exist_key(key):
+                beer_temp = read_key(key)
+                gravity.beer_temperature = float(beer_temp)
+            key = "chamber_" + str(chamber_id) + "_fridge_temp"
+            if exist_key(key):
+                chamber_temp = read_key(key)
+                gravity.chamber_temperature = float(chamber_temp)
 
         if gravity_units.upper() == "P":
             gravity.gravity = float(
-                "%.4f"
-                % (
-                    1
-                    + (gravity.gravity / (258.6 - ((gravity.gravity / 258.2) * 227.1)))
-                )
+                f"{1 + (gravity.gravity / (258.6 - ((gravity.gravity / 258.2) * 227.1))):.4f}"
             )  # SG = 1+ (plato / (258.6 – ((plato/258.2) *227.1)))
 
         g = gravity_service.create(gravity)
-        background_tasks.add_task(notifyClients, "batch", "update", g.batch_id)
+        background_tasks.add_task(notify_clients, "batch", "update", g.batch_id)
 
         # Save the record in redis for background job to forward
-        if len(deviceList) > 0:
-            key = "gravity_" + deviceList[0].chip_id
-            writeKey(key, json.dumps(req_json), ttl=None)
+        if len(device_list) > 0:
+            key = "gravity_" + device_list[0].chip_id
+            write_key(key, json.dumps(req_json), ttl=None)
 
-        return g
+        return Response(content="", status_code=200)
 
-    except KeyError as e:
+    except (KeyError, JSONDecodeError) as e:
         logging.error(e)
-        raise HTTPException(status_code=422, detail="Unable to parse request")
-
-    except JSONDecodeError as e:
-        logging.error(e)
-        raise HTTPException(status_code=422, detail="Unable to parse request")
+        raise HTTPException(status_code=422, detail="Unable to parse request") from e

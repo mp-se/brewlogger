@@ -317,11 +317,15 @@ def test_public_with_none_values(app_client):
     }
     r = app_client.post("/api/gravity/public", json=gravity_data)
     assert r.status_code == 200
-    res = json.loads(r.text)
-    assert res["gravity"] == 1.05
-    assert res["velocity"] is None
-    assert res["temperature"] == 20.2
-    assert res["battery"] == 3.85
+    
+    # Verify the first gravity reading was stored
+    r = app_client.get("/api/gravity/latest?limit=1", headers=headers)
+    assert r.status_code == 200
+    gravities = json.loads(r.text)
+    assert len(gravities) > 0
+    assert gravities[0]["gravity"] == 1.05
+    assert gravities[0]["temperature"] == 20.2
+    assert gravities[0]["battery"] == 3.85
     
     # Test with all optional extension fields as None
     gravity_data = {
@@ -342,11 +346,15 @@ def test_public_with_none_values(app_client):
     }
     r = app_client.post("/api/gravity/public", json=gravity_data)
     assert r.status_code == 200
-    res = json.loads(r.text)
-    assert res["gravity"] == 1.08
-    assert res["temperature"] == 22.5
-    assert res["velocity"] is None
-    assert res["battery"] == 3.5
+    
+    # Verify the second gravity reading was stored
+    r = app_client.get("/api/gravity/latest?limit=1", headers=headers)
+    assert r.status_code == 200
+    gravities = json.loads(r.text)
+    assert len(gravities) > 0
+    assert gravities[0]["gravity"] == 1.08
+    assert gravities[0]["temperature"] == 22.5
+    assert gravities[0]["battery"] == 3.5
 
 
 def test_validation(app_client):

@@ -1,28 +1,35 @@
-from typing import List
-from sqlalchemy import select, or_, and_
-from sqlalchemy.orm import Session
-from api.db import models, schemas
-from .base import BaseService
+"""Batch service for managing brewing batch data and operations."""
 import logging
+from typing import List
+
+from sqlalchemy import and_, or_, select
+from sqlalchemy.orm import Session
+
+from api.db import models, schemas
+
+from .base import BaseService
 
 logger = logging.getLogger(__name__)
 
 
 class BatchService(BaseService[models.Batch, schemas.BatchCreate, schemas.BatchUpdate]):
+    """Service for managing brewing batch data and operations."""
     def __init__(self, db_session: Session):
-        super(BatchService, self).__init__(models.Batch, db_session)
+        super().__init__(models.Batch, db_session)
 
-    def search_chipId(self, chipId: str) -> List[models.Batch]:
-        filters = or_(self.model.chip_id_gravity == chipId, self.model.chip_id_pressure == chipId)
+    def search_chip_id(self, chip_id: str) -> List[models.Batch]:
+        """Search batches by gravity or pressure chip ID."""
+        filters = or_(self.model.chip_id_gravity == chip_id, self.model.chip_id_pressure == chip_id)
         objs: List[self.model] = self.db_session.scalars(
             select(self.model).filter(filters)
         ).all()
         logger.info(
-            "Fetched batches based on chipId=%s, records found %d", chipId, len(objs)
+            "Fetched batches based on chipId=%s, records found %d", chip_id, len(objs)
         )
         return objs
 
-    def search_tapList(self) -> List[models.Batch]:
+    def search_tap_list(self) -> List[models.Batch]:
+        """Search batches that are on tap list."""
         filters = {"tap_list": True}
         objs: List[self.model] = self.db_session.scalars(
             select(self.model).filter_by(**filters)
@@ -33,6 +40,7 @@ class BatchService(BaseService[models.Batch, schemas.BatchCreate, schemas.BatchU
         return objs
 
     def search_active(self, active: bool) -> List[models.Batch]:
+        """Search batches by active status."""
         filters = {"active": active}
         objs: List[self.model] = self.db_session.scalars(
             select(self.model).filter_by(**filters)
@@ -42,9 +50,10 @@ class BatchService(BaseService[models.Batch, schemas.BatchCreate, schemas.BatchU
         )
         return objs
 
-    def search_chipId_active(self, chipId: str, active: bool) -> List[models.Batch]:
+    def search_chip_id_active(self, chip_id: str, active: bool) -> List[models.Batch]:
+        """Search batches by chip ID and active status."""
         filters = and_(
-            or_(self.model.chip_id_gravity == chipId, self.model.chip_id_pressure == chipId),
+            or_(self.model.chip_id_gravity == chip_id, self.model.chip_id_pressure == chip_id),
             self.model.active == active
         )
         objs: List[self.model] = self.db_session.scalars(
@@ -53,17 +62,18 @@ class BatchService(BaseService[models.Batch, schemas.BatchCreate, schemas.BatchU
         logger.info(
             "Fetched batches based on active=%s + chipId=%s, records found %d",
             active,
-            chipId,
+            chip_id,
             len(objs),
         )
         return objs
 
-    def search_brewfatherId(self, id: int) -> List[models.Batch]:
-        filters = {"brewfather_id": id}
+    def search_brewfather_id(self, brewfather_id: int) -> List[models.Batch]:
+        """Search batches by Brewfather batch ID."""
+        filters = {"brewfather_id": brewfather_id}
         objs: List[self.model] = self.db_session.scalars(
             select(self.model).filter_by(**filters)
         ).all()
         logger.info(
-            "Fetched batches based on brewfather_id=%s, records found %d", id, len(objs)
+            "Fetched batches based on brewfather_id=%s, records found %d", brewfather_id, len(objs)
         )
         return objs

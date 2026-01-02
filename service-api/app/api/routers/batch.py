@@ -1,3 +1,4 @@
+"""Batch management API endpoints for creating, updating, and managing brewing batches."""
 import logging
 from typing import List, Optional
 from fastapi import Depends, BackgroundTasks
@@ -6,7 +7,7 @@ from starlette.exceptions import HTTPException
 from api.db import models, schemas
 from api.services import BatchService, get_batch_service
 from ..security import api_key_auth
-from ..ws import notifyClients
+from ..ws import notify_clients
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/api/batch")
@@ -15,38 +16,38 @@ router = APIRouter(prefix="/api/batch")
 @router.get(
     "/",
     response_model=List[schemas.BatchList],
+    dependencies=[Depends(api_key_auth)],
 )
 async def list_batches(
-    chipId: str = "*",
+    chipId: str = "*",  # pylint: disable=invalid-name
     active: str = "*",
     batch_service: BatchService = Depends(get_batch_service),
-    dependencies=[Depends(api_key_auth)],
 ) -> List[schemas.BatchList]:
-    logger.info(f"Endpoint GET /api/batch/?chipId={chipId}&active={active}")
-    
+    """List all batches with optional filtering by chip ID and active status."""
+    logger.info("Endpoint GET /api/batch/?chipId=%s&active=%s", chipId, active)
     if chipId != "*":  # ChipId + Active flas
-        if active == "True" or active == "true":
-            batches = batch_service.search_chipId_active(chipId, True)
-        elif active == "False" or active == "false":
-            batches = batch_service.search_chipId_active(chipId, False)
+        if active in ("True", "true"):
+            batches = batch_service.search_chip_id_active(chipId, True)
+        elif active in ("False", "false"):
+            batches = batch_service.search_chip_id_active(chipId, False)
         else:
-            batches = batch_service.search_chipId(chipId)
+            batches = batch_service.search_chip_id(chipId)
     elif active != "*":  # Active flag only
-        if active == "True" or active == "true":
+        if active in ("True", "true"):
             batches = batch_service.search_active(True)
-        elif active == "False" or active == "false":
+        elif active in ("False", "false"):
             batches = batch_service.search_active(False)
         else:
             batches = batch_service.list()
     else:  # return all records
         batches = batch_service.list()
-    
+
     # Enrich batches with counts and last pour data
     for batch in batches:
         batch.gravity_count = len(batch.gravity) if batch.gravity else 0
         batch.pressure_count = len(batch.pressure) if batch.pressure else 0
         batch.pour_count = len(batch.pour) if batch.pour else 0
-        
+
         last_pour_volume = None
         last_pour_max_volume = None
         if batch.pour:
@@ -55,10 +56,10 @@ async def list_batches(
                 active_pours.sort(key=lambda x: x.created, reverse=True)
                 last_pour_volume = active_pours[0].volume
                 last_pour_max_volume = active_pours[0].max_volume
-        
+
         batch.last_pour_volume = last_pour_volume
         batch.last_pour_max_volume = last_pour_max_volume
-    
+
     return batches
 
 
@@ -69,9 +70,10 @@ async def list_batches(
 async def get_tap_list(
     batch_service: BatchService = Depends(get_batch_service),
 ) -> List[models.Batch]:
+    """Get list of batches configured for tap list display."""
     logger.info("Endpoint GET /api/batch/taplist")
-    tapList = []
-    for b in batch_service.search_tapList():
+    tap_list = []
+    for b in batch_service.search_tap_list():
         tap = schemas.TapListBatch(
             name=b.name,
             brewDate=b.brew_date,
@@ -82,8 +84,8 @@ async def get_tap_list(
             id=b.id,
             brewfatherId=b.brewfather_id,
         )
-        tapList.append(tap)
-    return tapList
+        tap_list.append(tap)
+    return tap_list
 
 
 @router.get(
@@ -95,6 +97,7 @@ async def get_tap_list(
 async def get_batch_by_id(
     batch_id: int, batch_service: BatchService = Depends(get_batch_service)
 ) -> Optional[models.Batch]:
+    """Retrieve a specific batch by ID."""
     logger.info("Endpoint GET /api/batch/%d", batch_id)
     return batch_service.get(batch_id)
 
@@ -108,12 +111,17 @@ async def get_batch_by_id(
 async def get_batch_dashboard_by_id(
     batch_id: int, batch_service: BatchService = Depends(get_batch_service)
 ) -> Optional[models.Batch]:
+    """Get dashboard view for a specific batch."""
     logger.info("Endpoint GET /api/batch/%d/dashboard", batch_id)
 
     b = batch_service.get(batch_id)
     if b.active:
         dash = schemas.BatchDashboard(
-            id=b.id, name=b.name, chip_id_gravity=b.chip_id_gravity, chip_id_pressure=b.chip_id_pressure, active=b.active
+            id=b.id,
+            name=b.name,
+            chip_id_gravity=b.chip_id_gravity,
+            chip_id_pressure=b.chip_id_pressure,
+            active=b.active,
         )
 
         # Add gravity
@@ -155,7 +163,6 @@ async def get_batch_dashboard_by_id(
         return dash
 
     raise HTTPException(status_code=404, detail="Batch not found or not active batch.")
-    return None
 
 
 @router.post(
@@ -170,9 +177,10 @@ async def create_batch(
     background_tasks: BackgroundTasks,
     batch_service: BatchService = Depends(get_batch_service),
 ) -> models.Batch:
+    """Create a new batch."""
     logger.info("Endpoint POST /api/batch/")
     batch = batch_service.create(batch)
-    background_tasks.add_task(notifyClients, "batch", "create", batch.id)
+    background_tasks.add_task(notify_clients, "batch", "create", batch.id)
     return batch
 
 
@@ -185,8 +193,9 @@ async def update_batch_by_id(
     background_tasks: BackgroundTasks,
     batch_service: BatchService = Depends(get_batch_service),
 ) -> Optional[models.Batch]:
+    """Update a batch by ID."""
     logger.info("Endpoint PATCH /api/batch/%d", batch_id)
-    background_tasks.add_task(notifyClients, "batch", "update", batch_id)
+    background_tasks.add_task(notify_clients, "batch", "update", batch_id)
     return batch_service.update(batch_id, batch)
 
 
@@ -196,6 +205,7 @@ async def delete_batch_by_id(
     background_tasks: BackgroundTasks,
     batch_service: BatchService = Depends(get_batch_service),
 ):
+    """Delete a batch by ID."""
     logger.info("Endpoint DELETE /api/batch/%d", batch_id)
     batch_service.delete(batch_id)
-    background_tasks.add_task(notifyClients, "batch", "delete", batch_id)
+    background_tasks.add_task(notify_clients, "batch", "delete", batch_id)
