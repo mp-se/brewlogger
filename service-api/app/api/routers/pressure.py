@@ -79,7 +79,7 @@ async def create_pressure(
 ) -> Union[models.Pressure, List[models.Pressure]]:
     """Create one or multiple pressure readings in a single request."""
     logger.info("Endpoint POST /api/pressure/")
-    
+
     # Handle single pressure reading
     if isinstance(pressure, schemas.PressureCreate):
         if pressure.created is None:
@@ -88,7 +88,7 @@ async def create_pressure(
         result = pressure_service.create(pressure)
         background_tasks.add_task(notify_clients, "batch", "update", result.batch_id)
         return result
-    
+
     # Handle multiple pressure readings
     for p in pressure:
         if p.created is None:

@@ -82,7 +82,7 @@ async def create_gravity(
 ) -> Union[models.Gravity, List[models.Gravity]]:
     """Create one or multiple gravity readings in a single request."""
     logger.info("Endpoint POST /api/gravity/")
-    
+
     # Handle single gravity reading
     if isinstance(gravity, schemas.GravityCreate):
         if gravity.created is None:
@@ -91,7 +91,7 @@ async def create_gravity(
         result = gravity_service.create(gravity)
         background_tasks.add_task(notify_clients, "batch", "update", result.batch_id)
         return result
-    
+
     # Handle multiple gravity readings
     if gravity.created is None:
         gravity.created = datetime.now()

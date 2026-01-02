@@ -72,7 +72,7 @@ async def create_pour(
 ) -> Union[models.Pour, List[models.Pour]]:
     """Create one or multiple pour events in a single request."""
     logger.info("Endpoint POST /api/pour/")
-    
+
     # Handle single pour event
     if isinstance(pour, schemas.PourCreate):
         if pour.created is None:
@@ -81,7 +81,7 @@ async def create_pour(
         result = pour_service.create(pour)
         background_tasks.add_task(notify_clients, "batch", "update", result.batch_id)
         return result
-    
+
     # Handle multiple pour events
     for p in pour:
         if p.created is None:
