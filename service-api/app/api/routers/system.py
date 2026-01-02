@@ -130,9 +130,6 @@ async def websocket_endpoint(websocket: WebSocket):
     Requires API key authentication via query parameter:
     ws://host/api/system/notify?apiKey=YOUR_API_KEY
     """
-    # Log all query parameters for debugging
-    logger.info("WebSocket connection query params: %s", dict(websocket.query_params))
-    
     # Extract and validate API key from query parameters
     api_key = websocket.query_params.get("apiKey")
 
