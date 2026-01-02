@@ -126,8 +126,17 @@ watch(disabled, () => {
 })
 
 function connect() {
+  // Get API key from global config
+  const apiKey = global.apiKey || localStorage.getItem('apiKey')
+  
+  if (!apiKey) {
+    logInfo('App.connect()', 'No API key found, WebSocket connection skipped')
+    return
+  }
+  
   var host = global.baseURL.replaceAll('http://', 'ws://')
-  socket.value = new WebSocket(host + 'api/system/notify')
+  var wsUrl = host + 'api/system/notify?api_key=' + encodeURIComponent(apiKey)
+  socket.value = new WebSocket(wsUrl)
 
   socket.value.onopen = function () {
     logInfo('App.connect()', 'Established webocket with server for notifications.')
@@ -149,12 +158,21 @@ function connect() {
     }
   }
 
-  socket.value.onclose = function () {
+  socket.value.onerror = function (event) {
+    logInfo('App.connect()', 'WebSocket error: ' + event)
+  }
+
+  socket.value.onclose = function (event) {
+    if (event.code === 1008) {
+      logInfo('App.connect()', 'WebSocket authentication failed: ' + event.reason)
+      // Don't retry if auth failed
+      return
+    }
     logInfo('App.connect()', 'Disconnected webocket from server, retry connection.')
     socket.value = null
     setTimeout(() => {
       connect()
-    }, 100)
+    }, 3000)
   }
 }
 
