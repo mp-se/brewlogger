@@ -11,6 +11,9 @@ services:
       - brew_net
     ports:
       - 80:80
+      - 443:443 # Optional, for https support
+    volumes:
+      - ./certs:/etc/nginx/ssl:ro # Optional, for https support
     depends_on:
       - brew_api
 
