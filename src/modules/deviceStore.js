@@ -530,7 +530,7 @@ export const useDeviceStore = defineStore('deviceStore', {
           signal: AbortSignal.timeout(global.fetchTimout)
         })
         logDebug('deviceStore.proxyRequest()', res.status)
-        if (res.status != 201) throw res
+        if (res.status != 200) throw res
         const json = await res.json()
         logDebug('deviceStore.proxyRequest()', json)
         return json
