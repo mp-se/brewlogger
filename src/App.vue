@@ -136,7 +136,7 @@ function connect() {
   // Strip 'bearer ' prefix if present
   const keyOnly = apiKey.replace(/^bearer\s+/i, '')
   
-  var host = global.baseURL.replaceAll('http://', 'ws://')
+  var host = global.baseURL.replaceAll('https://', 'wss://').replaceAll('http://', 'ws://')
   var wsUrl = host + 'api/system/notify?apiKey=' + encodeURIComponent(keyOnly)
   logInfo('App.connect()', 'WebSocket URL: ' + wsUrl)
   socket.value = new WebSocket(wsUrl)
