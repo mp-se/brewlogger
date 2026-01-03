@@ -54,89 +54,6 @@ async def get_latest_gravities(
     return gravity_service.get_latest(limit)
 
 
-@router.get(
-    "/{gravity_id}",
-    response_model=schemas.Gravity,
-    responses={404: {"description": "Gravity not found"}},
-    dependencies=[Depends(api_key_auth)],
-)
-async def get_gravity_by_id(
-    gravity_id: int, gravity_service: GravityService = Depends(get_gravity_service)
-) -> Optional[models.Gravity]:
-    """Retrieve a specific gravity reading by ID."""
-    logger.info("Endpoint GET /api/gravity/%s", gravity_id)
-    return gravity_service.get(gravity_id)
-
-
-@router.post(
-    "/",
-    response_model=Union[schemas.Gravity, List[schemas.Gravity]],
-    status_code=201,
-    responses={409: {"description": "Conflict Error"}},
-    dependencies=[Depends(api_key_auth)],
-)
-async def create_gravity(
-    gravity: Union[schemas.GravityCreate, List[schemas.GravityCreate]],
-    background_tasks: BackgroundTasks,
-    gravity_service: GravityService = Depends(get_gravity_service),
-) -> Union[models.Gravity, List[models.Gravity]]:
-    """Create one or multiple gravity readings in a single request."""
-    logger.info("Endpoint POST /api/gravity/")
-
-    # Handle single gravity reading
-    if isinstance(gravity, schemas.GravityCreate):
-        if gravity.created is None:
-            gravity.created = datetime.now()
-            logger.info("Added timestamp to gravity record %s", gravity.created)
-        result = gravity_service.create(gravity)
-        background_tasks.add_task(notify_clients, "batch", "update", result.batch_id)
-        return result
-
-    # Handle multiple gravity readings
-    if gravity.created is None:
-        gravity.created = datetime.now()
-        logger.info("Added timestamp to gravity records")
-    for g in gravity:
-        if g.created is None:
-            g.created = datetime.now()
-    result = gravity_service.create_list(gravity)
-    background_tasks.add_task(notify_clients, "batch", "update", result[0].batch_id)
-    return result
-
-
-@router.patch(
-    "/{gravity_id}",
-    response_model=schemas.Gravity,
-    dependencies=[Depends(api_key_auth)],
-)
-async def update_gravity_by_id(
-    gravity_id: int,
-    gravity: schemas.GravityUpdate,
-    background_tasks: BackgroundTasks,
-    gravity_service: GravityService = Depends(get_gravity_service),
-) -> Optional[models.Gravity]:
-    """Update a gravity reading by ID."""
-    logger.info("Endpoint PATCH /api/gravity/%s", gravity_id)
-    gravity = gravity_service.update(gravity_id, gravity)
-    background_tasks.add_task(notify_clients, "batch", "update", gravity.batch_id)
-    return gravity
-
-
-@router.delete("/{gravity_id}", status_code=204, dependencies=[Depends(api_key_auth)])
-async def delete_gravity_by_id(
-    gravity_id: int,
-    background_tasks: BackgroundTasks,
-    gravity_service: GravityService = Depends(get_gravity_service),
-):
-    """Delete a gravity reading by ID."""
-    logger.info("Endpoint DELETE /api/gravity/%s", gravity_id)
-    gravity = gravity_service.get(gravity_id)
-    if not gravity:
-        raise HTTPException(status_code=404, detail="Gravity not found")
-    background_tasks.add_task(notify_clients, "batch", "update", gravity.batch_id)
-    gravity_service.delete(gravity_id)
-
-
 @router.post("/public", status_code=200, response_class=Response)
 async def create_gravity_using_ispindel_format(  # pylint: disable=too-many-locals,too-many-branches,too-many-statements,duplicate-code
     request: Request,
@@ -294,3 +211,86 @@ async def create_gravity_using_ispindel_format(  # pylint: disable=too-many-loca
     except (KeyError, JSONDecodeError) as e:
         logging.error(e)
         raise HTTPException(status_code=422, detail="Unable to parse request") from e
+
+
+@router.get(
+    "/{gravity_id}",
+    response_model=schemas.Gravity,
+    responses={404: {"description": "Gravity not found"}},
+    dependencies=[Depends(api_key_auth)],
+)
+async def get_gravity_by_id(
+    gravity_id: int, gravity_service: GravityService = Depends(get_gravity_service)
+) -> Optional[models.Gravity]:
+    """Retrieve a specific gravity reading by ID."""
+    logger.info("Endpoint GET /api/gravity/%s", gravity_id)
+    return gravity_service.get(gravity_id)
+
+
+@router.post(
+    "/",
+    response_model=Union[schemas.Gravity, List[schemas.Gravity]],
+    status_code=201,
+    responses={409: {"description": "Conflict Error"}},
+    dependencies=[Depends(api_key_auth)],
+)
+async def create_gravity(
+    gravity: Union[schemas.GravityCreate, List[schemas.GravityCreate]],
+    background_tasks: BackgroundTasks,
+    gravity_service: GravityService = Depends(get_gravity_service),
+) -> Union[models.Gravity, List[models.Gravity]]:
+    """Create one or multiple gravity readings in a single request."""
+    logger.info("Endpoint POST /api/gravity/")
+
+    # Handle single gravity reading
+    if isinstance(gravity, schemas.GravityCreate):
+        if gravity.created is None:
+            gravity.created = datetime.now()
+            logger.info("Added timestamp to gravity record %s", gravity.created)
+        result = gravity_service.create(gravity)
+        background_tasks.add_task(notify_clients, "batch", "update", result.batch_id)
+        return result
+
+    # Handle multiple gravity readings
+    if gravity.created is None:
+        gravity.created = datetime.now()
+        logger.info("Added timestamp to gravity records")
+    for g in gravity:
+        if g.created is None:
+            g.created = datetime.now()
+    result = gravity_service.create_list(gravity)
+    background_tasks.add_task(notify_clients, "batch", "update", result[0].batch_id)
+    return result
+
+
+@router.patch(
+    "/{gravity_id}",
+    response_model=schemas.Gravity,
+    dependencies=[Depends(api_key_auth)],
+)
+async def update_gravity_by_id(
+    gravity_id: int,
+    gravity: schemas.GravityUpdate,
+    background_tasks: BackgroundTasks,
+    gravity_service: GravityService = Depends(get_gravity_service),
+) -> Optional[models.Gravity]:
+    """Update a gravity reading by ID."""
+    logger.info("Endpoint PATCH /api/gravity/%s", gravity_id)
+    gravity = gravity_service.update(gravity_id, gravity)
+    background_tasks.add_task(notify_clients, "batch", "update", gravity.batch_id)
+    return gravity
+
+
+@router.delete("/{gravity_id}", status_code=204, dependencies=[Depends(api_key_auth)])
+async def delete_gravity_by_id(
+    gravity_id: int,
+    background_tasks: BackgroundTasks,
+    gravity_service: GravityService = Depends(get_gravity_service),
+):
+    """Delete a gravity reading by ID."""
+    logger.info("Endpoint DELETE /api/gravity/%s", gravity_id)
+    gravity = gravity_service.get(gravity_id)
+    if not gravity:
+        raise HTTPException(status_code=404, detail="Gravity not found")
+    background_tasks.add_task(notify_clients, "batch", "update", gravity.batch_id)
+    gravity_service.delete(gravity_id)

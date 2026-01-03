@@ -51,86 +51,6 @@ async def get_latest_pressures(
     return pressure_service.get_latest(limit)
 
 
-@router.get(
-    "/{pressure_id}",
-    response_model=schemas.Pressure,
-    responses={404: {"description": "Pressure not found"}},
-    dependencies=[Depends(api_key_auth)],
-)
-async def get_pressure_by_id(
-    pressure_id: int, pressure_service: PressureService = Depends(get_pressure_service)
-) -> Optional[models.Pressure]:
-    """Retrieve a specific pressure reading by ID."""
-    logger.info("Endpoint GET /api/pressure/%d", pressure_id)
-    return pressure_service.get(pressure_id)
-
-
-@router.post(
-    "/",
-    response_model=Union[schemas.Pressure, List[schemas.Pressure]],
-    status_code=201,
-    responses={409: {"description": "Conflict Error"}},
-    dependencies=[Depends(api_key_auth)],
-)
-async def create_pressure(
-    pressure: Union[schemas.PressureCreate, List[schemas.PressureCreate]],
-    background_tasks: BackgroundTasks,
-    pressure_service: PressureService = Depends(get_pressure_service),
-) -> Union[models.Pressure, List[models.Pressure]]:
-    """Create one or multiple pressure readings in a single request."""
-    logger.info("Endpoint POST /api/pressure/")
-
-    # Handle single pressure reading
-    if isinstance(pressure, schemas.PressureCreate):
-        if pressure.created is None:
-            pressure.created = datetime.now()
-            logger.info("Added timestamp to pressure record %s", pressure.created)
-        result = pressure_service.create(pressure)
-        background_tasks.add_task(notify_clients, "batch", "update", result.batch_id)
-        return result
-
-    # Handle multiple pressure readings
-    for p in pressure:
-        if p.created is None:
-            p.created = datetime.now()
-    result = pressure_service.create_list(pressure)
-    background_tasks.add_task(notify_clients, "batch", "update", result[0].batch_id)
-    return result
-
-
-@router.patch(
-    "/{pressure_id}",
-    response_model=schemas.Pressure,
-    dependencies=[Depends(api_key_auth)],
-)
-async def update_pressure_by_id(
-    pressure_id: int,
-    pressure: schemas.PressureUpdate,
-    background_tasks: BackgroundTasks,
-    pressure_service: PressureService = Depends(get_pressure_service),
-) -> Optional[models.Pressure]:
-    """Update a specific pressure reading by ID."""
-    logger.info("Endpoint PATCH /api/pressure/%d", pressure_id)
-    pressure = pressure_service.update(pressure_id, pressure)
-    background_tasks.add_task(notify_clients, "batch", "update", pressure.batch_id)
-    return pressure
-
-
-@router.delete("/{pressure_id}", status_code=204, dependencies=[Depends(api_key_auth)])
-async def delete_pressure_by_id(
-    pressure_id: int,
-    background_tasks: BackgroundTasks,
-    pressure_service: PressureService = Depends(get_pressure_service),
-):
-    """Delete a specific pressure reading by ID."""
-    logger.info("Endpoint DELETE /api/pressure/%d", pressure_id)
-    pressure = pressure_service.get(pressure_id)
-    if not pressure:
-        raise HTTPException(status_code=404, detail="Pressure not found")
-    background_tasks.add_task(notify_clients, "batch", "update", pressure.batch_id)
-    pressure_service.delete(pressure_id)
-
-
 @router.post("/public", response_model=schemas.Pressure, status_code=200)
 async def create_pressure_using_json(  # pylint: disable=too-many-locals,duplicate-code
     request: Request,
@@ -257,3 +177,83 @@ async def create_pressure_using_json(  # pylint: disable=too-many-locals,duplica
 
     except JSONDecodeError as exc:
         raise HTTPException(status_code=422, detail="Unable to parse request") from exc
+
+
+@router.get(
+    "/{pressure_id}",
+    response_model=schemas.Pressure,
+    responses={404: {"description": "Pressure not found"}},
+    dependencies=[Depends(api_key_auth)],
+)
+async def get_pressure_by_id(
+    pressure_id: int, pressure_service: PressureService = Depends(get_pressure_service)
+) -> Optional[models.Pressure]:
+    """Retrieve a specific pressure reading by ID."""
+    logger.info("Endpoint GET /api/pressure/%d", pressure_id)
+    return pressure_service.get(pressure_id)
+
+
+@router.post(
+    "/",
+    response_model=Union[schemas.Pressure, List[schemas.Pressure]],
+    status_code=201,
+    responses={409: {"description": "Conflict Error"}},
+    dependencies=[Depends(api_key_auth)],
+)
+async def create_pressure(
+    pressure: Union[schemas.PressureCreate, List[schemas.PressureCreate]],
+    background_tasks: BackgroundTasks,
+    pressure_service: PressureService = Depends(get_pressure_service),
+) -> Union[models.Pressure, List[models.Pressure]]:
+    """Create one or multiple pressure readings in a single request."""
+    logger.info("Endpoint POST /api/pressure/")
+
+    # Handle single pressure reading
+    if isinstance(pressure, schemas.PressureCreate):
+        if pressure.created is None:
+            pressure.created = datetime.now()
+            logger.info("Added timestamp to pressure record %s", pressure.created)
+        result = pressure_service.create(pressure)
+        background_tasks.add_task(notify_clients, "batch", "update", result.batch_id)
+        return result
+
+    # Handle multiple pressure readings
+    for p in pressure:
+        if p.created is None:
+            p.created = datetime.now()
+    result = pressure_service.create_list(pressure)
+    background_tasks.add_task(notify_clients, "batch", "update", result[0].batch_id)
+    return result
+
+
+@router.patch(
+    "/{pressure_id}",
+    response_model=schemas.Pressure,
+    dependencies=[Depends(api_key_auth)],
+)
+async def update_pressure_by_id(
+    pressure_id: int,
+    pressure: schemas.PressureUpdate,
+    background_tasks: BackgroundTasks,
+    pressure_service: PressureService = Depends(get_pressure_service),
+) -> Optional[models.Pressure]:
+    """Update a specific pressure reading by ID."""
+    logger.info("Endpoint PATCH /api/pressure/%d", pressure_id)
+    pressure = pressure_service.update(pressure_id, pressure)
+    background_tasks.add_task(notify_clients, "batch", "update", pressure.batch_id)
+    return pressure
+
+
+@router.delete("/{pressure_id}", status_code=204, dependencies=[Depends(api_key_auth)])
+async def delete_pressure_by_id(
+    pressure_id: int,
+    background_tasks: BackgroundTasks,
+    pressure_service: PressureService = Depends(get_pressure_service),
+):
+    """Delete a specific pressure reading by ID."""
+    logger.info("Endpoint DELETE /api/pressure/%d", pressure_id)
+    pressure = pressure_service.get(pressure_id)
+    if not pressure:
+        raise HTTPException(status_code=404, detail="Pressure not found")
+    background_tasks.add_task(notify_clients, "batch", "update", pressure.batch_id)
+    pressure_service.delete(pressure_id)

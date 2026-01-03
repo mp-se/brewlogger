@@ -156,17 +156,17 @@ async def fetch_data_from_device(proxy_req: schemas.ProxyRequest):
             logger.info("Header provided %s", headers)
 
         async with httpx.AsyncClient(timeout=timeout) as client:
-            if proxy_req.method == "post":
+            if proxy_req.method.lower() == "post":
                 logger.info("Request using post %s", proxy_req.url)
                 res = await client.post(
                     proxy_req.url, data=proxy_req.body, headers=headers
                 )
-            elif proxy_req.method == "put":
+            elif proxy_req.method.lower() == "put":
                 logger.info("Request using put %s", proxy_req.url)
                 res = await client.put(
                     proxy_req.url, data=proxy_req.body, headers=headers
                 )
-            elif proxy_req.method == "delete":
+            elif proxy_req.method.lower() == "delete":
                 logger.info("Request using delete %s", proxy_req.url)
                 res = await client.delete(proxy_req.url, headers=headers)
             else:
