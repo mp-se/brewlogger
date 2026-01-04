@@ -113,7 +113,7 @@ async def task_fermentation_control():
 async def task_check_database():
     """Check database health and purge old records."""
     logger.info("Task: task_check_database is running at %s", datetime.now())
-    system_log_purge(days=60)
+    system_log_purge(days=90)
     receive_log_purge(days=90)
 
 
