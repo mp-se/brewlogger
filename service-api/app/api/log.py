@@ -57,7 +57,7 @@ def receive_log_purge(days: int = 90) -> None:
         cutoff_date = datetime.now() - timedelta(days=days)
 
         deleted_count = session.query(models.ReceiveLog).filter(
-            models.ReceiveLog.created < cutoff_date
+            models.ReceiveLog.timestamp < cutoff_date
         ).delete()
 
         session.commit()

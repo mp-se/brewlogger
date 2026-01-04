@@ -460,7 +460,7 @@ class ReceiveLogCreate(ReceiveLogBase):
 class ReceiveLog(ReceiveLogBase):
     model_config = ConfigDict(from_attributes=True, alias_generator=to_camel, populate_by_name=True)
     id: int
-    created: datetime = Field(description="Timestamp when the request was received")
+    timestamp: datetime = Field(description="Timestamp when the request was received")
 
 
 class ReceiveLogPaginatedResponse(BaseModel):

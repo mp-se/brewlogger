@@ -173,7 +173,7 @@ class ReceiveLog(Base):
 
     id = Column(Integer, primary_key=True, index=True, nullable=False)
     ip_address = Column(String(45), nullable=False)
-    created = Column(DateTime, nullable=False, default=datetime.now)
+    timestamp = Column(DateTime, nullable=False, default=datetime.now)
     payload = Column(Text, nullable=False)
 
 

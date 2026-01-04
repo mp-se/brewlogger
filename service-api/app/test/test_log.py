@@ -105,7 +105,7 @@ def test_receive_log_purge_no_old_records(app_client):
     receive_log = models.ReceiveLog(
         ip_address="127.0.0.1",
         payload=json.dumps({"test": "data"}),
-        created=datetime.now()
+        timestamp=datetime.now()
     )
     session.add(receive_log)
     session.commit()
@@ -138,7 +138,7 @@ def test_receive_log_purge_with_old_records(app_client):
     old_log = models.ReceiveLog(
         ip_address="192.168.1.1",
         payload=json.dumps({"old": "data"}),
-        created=datetime.now() - timedelta(days=120)
+        timestamp=datetime.now() - timedelta(days=120)
     )
     session.add(old_log)
     
@@ -146,7 +146,7 @@ def test_receive_log_purge_with_old_records(app_client):
     recent_log = models.ReceiveLog(
         ip_address="127.0.0.1",
         payload=json.dumps({"recent": "data"}),
-        created=datetime.now()
+        timestamp=datetime.now()
     )
     session.add(recent_log)
     session.commit()

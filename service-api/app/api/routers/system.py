@@ -189,7 +189,7 @@ async def add_mdns_to_cache(mdns: schemas.Mdns) -> None:
 
 
 @router.get(
-    "/receive_logs",
+    "/receive",
     response_model=schemas.ReceiveLogPaginatedResponse,
     dependencies=[Depends(api_key_auth)],
 )
@@ -204,7 +204,7 @@ async def get_receive_logs(
         session = create_session()
         total = session.query(models.ReceiveLog).count()
         records = session.query(models.ReceiveLog).order_by(
-            models.ReceiveLog.created.desc()
+            models.ReceiveLog.timestamp.desc()
         ).offset(skip).limit(limit).all()
 
         return schemas.ReceiveLogPaginatedResponse(

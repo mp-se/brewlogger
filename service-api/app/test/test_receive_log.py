@@ -17,7 +17,7 @@ def test_init(app_client):
 
 
 def test_receive_logs_requires_auth(app_client):
-    """Test that GET /api/system/receive_logs requires authentication"""
+    """Test that GET /api/system/receive requires authentication"""
     test_init(app_client)
     
     # Try with invalid API key
@@ -25,15 +25,15 @@ def test_receive_logs_requires_auth(app_client):
         "Authorization": "Bearer invalid_key",
         "Content-Type": "application/json",
     }
-    r = app_client.get("/api/system/receive_logs", headers=bad_headers)
+    r = app_client.get("/api/system/receive", headers=bad_headers)
     assert r.status_code == 401
 
 
 def test_receive_logs_empty(app_client):
-    """Test GET /api/system/receive_logs returns empty list when no records exist"""
+    """Test GET /api/system/receive returns empty list when no records exist"""
     test_init(app_client)
     
-    r = app_client.get("/api/system/receive_logs", headers=headers)
+    r = app_client.get("/api/system/receive", headers=headers)
     assert r.status_code == 200
     data = r.json()
     assert data["total"] == 0
@@ -43,7 +43,7 @@ def test_receive_logs_empty(app_client):
 
 
 def test_receive_logs_with_single_record(app_client):
-    """Test GET /api/system/receive_logs returns single record"""
+    """Test GET /api/system/receive returns single record"""
     test_init(app_client)
     
     # Insert a test record directly into the database
@@ -51,13 +51,13 @@ def test_receive_logs_with_single_record(app_client):
     log = models.ReceiveLog(
         ip_address="192.168.1.100",
         payload='{"test": "data"}',
-        created=datetime.now()
+        timestamp=datetime.now()
     )
     session.add(log)
     session.commit()
     session.close()
     
-    r = app_client.get("/api/system/receive_logs", headers=headers)
+    r = app_client.get("/api/system/receive", headers=headers)
     assert r.status_code == 200
     data = r.json()
     assert data["total"] == 1
@@ -76,14 +76,14 @@ def test_receive_logs_pagination_skip(app_client):
         log = models.ReceiveLog(
             ip_address=f"192.168.1.{100 + i}",
             payload=f'{{"index": {i}}}',
-            created=datetime.now()
+            timestamp=datetime.now()
         )
         session.add(log)
     session.commit()
     session.close()
     
     # Get with skip=2
-    r = app_client.get("/api/system/receive_logs?skip=2&limit=2", headers=headers)
+    r = app_client.get("/api/system/receive?skip=2&limit=2", headers=headers)
     assert r.status_code == 200
     data = r.json()
     assert data["total"] == 5
@@ -102,14 +102,14 @@ def test_receive_logs_pagination_limit(app_client):
         log = models.ReceiveLog(
             ip_address=f"192.168.1.{100 + i}",
             payload=f'{{"index": {i}}}',
-            created=datetime.now()
+            timestamp=datetime.now()
         )
         session.add(log)
     session.commit()
     session.close()
     
     # Get with limit=3
-    r = app_client.get("/api/system/receive_logs?limit=3", headers=headers)
+    r = app_client.get("/api/system/receive?limit=3", headers=headers)
     assert r.status_code == 200
     data = r.json()
     assert data["total"] == 10
@@ -128,14 +128,14 @@ def test_receive_logs_default_limit(app_client):
         log = models.ReceiveLog(
             ip_address=f"192.168.1.{100 + (i % 254)}",
             payload=f'{{"index": {i}}}',
-            created=datetime.now()
+            timestamp=datetime.now()
         )
         session.add(log)
     session.commit()
     session.close()
     
     # Get without limit specified
-    r = app_client.get("/api/system/receive_logs", headers=headers)
+    r = app_client.get("/api/system/receive", headers=headers)
     assert r.status_code == 200
     data = r.json()
     assert data["total"] == 60
@@ -148,12 +148,12 @@ def test_receive_logs_max_limit(app_client):
     test_init(app_client)
     
     # Try with limit > 500
-    r = app_client.get("/api/system/receive_logs?limit=600", headers=headers)
+    r = app_client.get("/api/system/receive?limit=600", headers=headers)
     assert r.status_code == 422  # Validation error
 
 
 def test_receive_logs_ordering(app_client):
-    """Test that records are ordered by created timestamp descending"""
+    """Test that records are ordered by timestamp descending"""
     test_init(app_client)
     
     # Insert records with different timestamps
@@ -165,13 +165,13 @@ def test_receive_logs_ordering(app_client):
         log = models.ReceiveLog(
             ip_address=f"192.168.1.{100 + i}",
             payload=f'{{"index": {i}}}',
-            created=now - timedelta(minutes=i)  # First is newest, last is oldest
+            timestamp=now - timedelta(minutes=i)  # First is newest, last is oldest
         )
         session.add(log)
     session.commit()
     session.close()
     
-    r = app_client.get("/api/system/receive_logs", headers=headers)
+    r = app_client.get("/api/system/receive", headers=headers)
     assert r.status_code == 200
     data = r.json()
     assert len(data["data"]) == 3
@@ -190,20 +190,20 @@ def test_receive_logs_ip_address_formats(app_client):
     log1 = models.ReceiveLog(
         ip_address="192.168.1.1",
         payload='{"type": "ipv4"}',
-        created=datetime.now()
+        timestamp=datetime.now()
     )
     # Test IPv6
     log2 = models.ReceiveLog(
         ip_address="2001:0db8:85a3:0000:0000:8a2e:0370:7334",
         payload='{"type": "ipv6"}',
-        created=datetime.now()
+        timestamp=datetime.now()
     )
     session.add(log1)
     session.add(log2)
     session.commit()
     session.close()
     
-    r = app_client.get("/api/system/receive_logs?limit=10", headers=headers)
+    r = app_client.get("/api/system/receive?limit=10", headers=headers)
     assert r.status_code == 200
     data = r.json()
     assert data["total"] == 2

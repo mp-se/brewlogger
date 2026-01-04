@@ -60,7 +60,7 @@ def log_public_request(ip_address: str, payload: dict) -> None:
         receive_log = models.ReceiveLog(
             ip_address=ip_address,
             payload=json.dumps(payload),
-            created=datetime.now()
+            timestamp=datetime.now()
         )
         session.add(receive_log)
         session.commit()
