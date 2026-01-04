@@ -23,7 +23,8 @@ import AboutView from '@/views/AboutView.vue'
 import SettingsView from '@/views/SettingsView.vue'
 import BackupView from '@/views/BackupView.vue'
 import SupportView from '@/views/SupportView.vue'
-import LogListView from '@/views/LogListView.vue'
+import SystemLogView from '@/views/SystemLogView.vue'
+import ReceiveLogView from '@/views/ReceiveLogView.vue'
 import NotFoundView from '@/views/NotFoundView.vue'
 import { logDebug } from '@/modules/logger'
 
@@ -134,9 +135,14 @@ const routes = [
     component: SupportView
   },
   {
-    path: '/other/log',
-    name: 'log',
-    component: LogListView
+    path: '/other/system_log',
+    name: 'system_log',
+    component: SystemLogView
+  },
+  {
+    path: '/other/receive_log',
+    name: 'receive_log',
+    component: ReceiveLogView
   },
   {
     path: '/other/about',
@@ -208,7 +214,11 @@ const items = ref([
       },
       {
         label: 'System log',
-        path: '/other/log'
+        path: '/other/system_log'
+      },
+      {
+        label: 'Receive log',
+        path: '/other/receive_log'
       },
       // {
       //   label: 'Support',

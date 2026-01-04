@@ -100,6 +100,7 @@
                 </a>
               </div>
             </th>
+            <th scope="col" class="col-sm-1">Velocity</th>
             <th scope="col" class="col-sm-1">Temp ({{ config.isTempC ? 'C' : 'F' }})</th>
             <th scope="col" class="col-sm-1">
               <div :class="sortedClass('battery')">
@@ -138,6 +139,7 @@
               }}
             </td>
             <td class="fs-5">{{ new Number(g.angle).toFixed(2) }}</td>
+            <td class="fs-5">{{ new Number(g.velocity).toFixed(3) }}</td>
             <td class="fs-5">{{ getFormattedTemperature(g.temperature) }}</td>
             <td class="fs-5">{{ new Number(g.battery).toFixed(2) }}</td>
             <td class="fs-5">{{ g.rssi }}</td>
