@@ -151,7 +151,80 @@ def test_delete(app_client):
     assert len(data) == 0
 
 
+def test_create_multiple_gravities(app_client):
+    """Test creating multiple gravity readings in a single request."""
+    truncate_database()
+    
+    # First create a batch for the gravity readings
+    batch_data = {
+        "name": "test_batch_multi",
+        "chipIdGravity": "BBBBBB",
+        "chipIdPressure": "",
+        "description": "test",
+        "brewDate": "2025-01-01",
+        "style": "IPA",
+        "brewer": "Test",
+        "brewfatherId": "",
+        "active": True,
+        "abv": 0.1,
+        "ebc": 0.2,
+        "ibu": 0.3,
+        "fermentationChamber": 0,
+        "fermentationSteps": "",
+        "tapList": False,
+    }
+    
+    batch_response = app_client.post("/api/batch/", json=batch_data, headers=headers)
+    assert batch_response.status_code == 201
+    batch_id = json.loads(batch_response.text)["id"]
+    
+    # Now create multiple gravity readings
+    data = [
+        {
+            "batchId": batch_id,
+            "temperature": 0.2,
+            "gravity": 0.3,
+            "velocity": 0.1,
+            "angle": 0.4,
+            "battery": 0.5,
+            "rssi": 0.6,
+            "corrGravity": 0.7,
+            "runTime": 0.8,
+            "active": True,
+            "chamberTemperature": 0,
+            "beerTemperature": 0,
+            "fermentationSteps": "",
+        },
+        {
+            "batchId": batch_id,
+            "temperature": 0.5,
+            "gravity": 0.6,
+            "velocity": 0.2,
+            "angle": 0.5,
+            "battery": 0.6,
+            "rssi": 0.7,
+            "corrGravity": 0.8,
+            "runTime": 0.9,
+            "active": True,
+            "chamberTemperature": 1,
+            "beerTemperature": 1,
+            "fermentationSteps": "",
+        }
+    ]
+
+    # Add multiple gravities
+    r = app_client.post("/api/gravity/", json=data, headers=headers)
+    assert r.status_code == 201
+    response = json.loads(r.text)
+    assert isinstance(response, list)
+    assert len(response) == 2
+    assert response[0]["temperature"] == 0.2
+    assert response[1]["temperature"] == 0.5
+
+
 def test_gravity_batch(app_client):
+    test_init(app_client)
+    
     data = {
         "batchId": 1,
         "temperature": 0.2,

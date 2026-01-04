@@ -252,12 +252,10 @@ async def create_gravity(
         return result
 
     # Handle multiple gravity readings
-    if gravity.created is None:
-        gravity.created = datetime.now()
-        logger.info("Added timestamp to gravity records")
     for g in gravity:
         if g.created is None:
             g.created = datetime.now()
+    logger.info("Added timestamp to gravity records")
     result = gravity_service.create_list(gravity)
     background_tasks.add_task(notify_clients, "batch", "update", result[0].batch_id)
     return result
