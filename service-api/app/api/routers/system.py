@@ -6,7 +6,7 @@ from datetime import datetime, timezone
 from typing import List
 import redis
 from sqlalchemy.exc import SQLAlchemyError
-from fastapi import Depends, WebSocket, WebSocketDisconnect
+from fastapi import Depends, WebSocket, WebSocketDisconnect, Query
 from fastapi.routing import APIRouter
 from api.db import models, schemas
 from api.db.session import create_session
@@ -22,8 +22,12 @@ router = APIRouter(prefix="/api/system")
 
 
 @router.get("/self_test/", response_model=schemas.SelfTestResult)
-async def self_test():
-    """Perform system self-test checking database, redis, and scheduler connectivity."""
+async def self_test() -> schemas.SelfTestResult:
+    """Perform system self-test checking database, redis, and scheduler connectivity.
+    
+    Returns:
+        SelfTestResult containing status of all system components
+    """
     logger.info("Endpoint GET /api/system/self_test/")
 
     # Check for database connectivity
@@ -74,8 +78,12 @@ async def self_test():
 
 
 @router.get("/scheduler/", response_model=List[schemas.Job])
-async def scheduler_status():
-    """Get status of all scheduled background jobs with next run times."""
+async def scheduler_status() -> List[schemas.Job]:
+    """Get status of all scheduled background jobs with next run times.
+    
+    Returns:
+        List of scheduled jobs with their names and next run times
+    """
     logger.info("Endpoint GET /api/system/scheduler/")
 
     jobs = scheduler.get_jobs()
@@ -124,11 +132,14 @@ async def create_device(
 
 
 @router.websocket("/notify")
-async def websocket_endpoint(websocket: WebSocket):
-    """WebSocket endpoint for real-time notifications.
-
+async def websocket_endpoint(websocket: WebSocket) -> None:
+    """WebSocket endpoint for real-time notifications of data changes.
+    
     Requires API key authentication via query parameter:
     ws://host/api/system/notify?apiKey=YOUR_API_KEY
+    
+    Args:
+        websocket: The WebSocket connection
     """
     # Extract and validate API key from query parameters
     api_key = websocket.query_params.get("apiKey")
@@ -175,3 +186,38 @@ async def add_mdns_to_cache(mdns: schemas.Mdns) -> None:
         logger.error("Unable to parse JSON response %s", mdns)
 
     return None
+
+
+@router.get(
+    "/receive_logs",
+    response_model=schemas.ReceiveLogPaginatedResponse,
+    dependencies=[Depends(api_key_auth)],
+)
+async def get_receive_logs(
+    skip: int = Query(0, ge=0, description="Number of records to skip"),
+    limit: int = Query(50, ge=1, le=500, description="Number of records to return"),
+) -> schemas.ReceiveLogPaginatedResponse:
+    """Retrieve receive logs with pagination support."""
+    logger.info("Endpoint GET /api/system/receive_logs/ (skip=%d, limit=%d)", skip, limit)
+
+    try:
+        session = create_session()
+        total = session.query(models.ReceiveLog).count()
+        records = session.query(models.ReceiveLog).order_by(
+            models.ReceiveLog.created.desc()
+        ).offset(skip).limit(limit).all()
+
+        return schemas.ReceiveLogPaginatedResponse(
+            total=total,
+            skip=skip,
+            limit=limit,
+            data=records
+        )
+    except SQLAlchemyError as e:
+        logger.error("Database error retrieving receive logs: %s", e)
+        return schemas.ReceiveLogPaginatedResponse(
+            total=0,
+            skip=skip,
+            limit=limit,
+            data=[]
+        )

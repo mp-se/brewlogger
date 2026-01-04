@@ -3,7 +3,7 @@ import json
 import logging
 import os
 from json import JSONDecodeError
-from typing import List, Optional
+from typing import Any, List, Optional
 
 import httpx
 from fastapi import Depends, BackgroundTasks
@@ -141,8 +141,15 @@ async def delete_device_by_id(
 
 
 @router.post("/proxy_fetch/", status_code=200, dependencies=[Depends(api_key_auth)])
-async def fetch_data_from_device(proxy_req: schemas.ProxyRequest):
-    """Fetch data from a device via proxy request."""
+async def fetch_data_from_device(proxy_req: schemas.ProxyRequest) -> Any:
+    """Fetch data from a device via proxy request.
+    
+    Args:
+        proxy_req: Proxy request containing URL, method, body, and headers
+    
+    Returns:
+        JSON object if response is JSON, otherwise string of response text
+    """
     logger.info("Endpoint POST /api/device/proxy_fetch: %s %s", proxy_req.method, proxy_req.url)
 
     try:
@@ -215,8 +222,12 @@ async def fetch_data_from_device(proxy_req: schemas.ProxyRequest):
 
 
 @router.get("/mdns/", status_code=200, dependencies=[Depends(api_key_auth)])
-async def scan_for_mdns_devices():
-    """Scan for mDNS devices on the network."""
+async def scan_for_mdns_devices() -> list[schemas.Mdns]:
+    """Scan for mDNS devices on the network.
+    
+    Returns:
+        List of discovered mDNS devices on the local network
+    """
     logger.info("Endpoint GET /api/device/mdns/")
 
     mdns = []

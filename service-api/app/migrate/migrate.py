@@ -138,6 +138,9 @@ def migrate_database():
         "ALTER TABLE pressure ALTER COLUMN pressure1 DROP NOT NULL",
         "ALTER TABLE pressure ALTER COLUMN battery DROP NOT NULL",
         "ALTER TABLE pressure ALTER COLUMN run_time DROP NOT NULL",
+
+        # Changes from v0.10 -> v0.11
+        "CREATE TABLE IF NOT EXISTS receivelog (id SERIAL PRIMARY KEY, ip_address VARCHAR(45) NOT NULL, created TIMESTAMP NOT NULL, payload TEXT NOT NULL)",
     ]
 
     with engine.connect() as con:

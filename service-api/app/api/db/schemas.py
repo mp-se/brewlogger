@@ -445,3 +445,28 @@ class BatchDashboard(BaseModel):
 
 
 ################################################################################
+
+
+class ReceiveLogBase(BaseModel):
+    model_config = ConfigDict(alias_generator=to_camel, populate_by_name=True)
+    ip_address: str = Field(description="IP address of the client")
+    payload: str = Field(description="JSON payload received as string")
+
+
+class ReceiveLogCreate(ReceiveLogBase):
+    pass
+
+
+class ReceiveLog(ReceiveLogBase):
+    model_config = ConfigDict(from_attributes=True, alias_generator=to_camel, populate_by_name=True)
+    id: int
+    created: datetime = Field(description="Timestamp when the request was received")
+
+
+class ReceiveLogPaginatedResponse(BaseModel):
+    model_config = ConfigDict(alias_generator=to_camel, populate_by_name=True)
+    total: int = Field(description="Total number of records")
+    skip: int = Field(description="Number of records skipped")
+    limit: int = Field(description="Number of records returned")
+    data: List[ReceiveLog] = Field(description="List of receive logs")
+

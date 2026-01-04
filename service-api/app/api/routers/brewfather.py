@@ -59,8 +59,18 @@ async def get_fermenting_batches_from_brewfather(
     return batches
 
 
-async def fetch_batch_list(status):  # pylint: disable=too-many-locals,too-many-branches
-    """Fetch batch list from Brewfather API for a given status."""
+async def fetch_batch_list(status: str) -> list[schemas.BrewfatherBatch]:  # pylint: disable=too-many-locals,too-many-branches
+    """Fetch batch list from Brewfather API for a given status.
+    
+    Args:
+        status: The batch status to filter by (e.g. 'Planning', 'Brewing', 'Complete')
+    
+    Returns:
+        List of batches from Brewfather API
+    
+    Raises:
+        HTTPException: If Brewfather credentials are not configured
+    """
     batches = []
 
     if (

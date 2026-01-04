@@ -18,6 +18,7 @@ from api.services import (
 )
 from ..security import api_key_auth
 from ..ws import notify_clients
+from ..utils import log_public_request, get_client_ip
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/api/pressure")
@@ -64,6 +65,10 @@ async def create_pressure_using_json(  # pylint: disable=too-many-locals,duplica
 
     try:
         req_json = await request.json()
+
+        # Get client IP address and log the request
+        client_host = get_client_ip(request)
+        background_tasks.add_task(log_public_request, client_host, req_json)
 
         logger.info("Payload: %s", req_json)
 

@@ -43,8 +43,12 @@ async def lifespan(application: FastAPI):
     scheduler_shutdown()
 
 
-def register_handlers(application: FastAPI):
-    """Register CORS and exception handlers for the FastAPI application."""
+def register_handlers(application: FastAPI) -> None:
+    """Register CORS and exception handlers for the FastAPI application.
+    
+    Args:
+        application: The FastAPI application instance to register handlers on
+    """
     origins = [
         "*",
         "http://localhost:5173",
@@ -61,7 +65,12 @@ def register_handlers(application: FastAPI):
     )
 
     @application.get("/health")
-    async def health():
+    async def health() -> dict[str, str]:
+        """Health check endpoint.
+        
+        Returns:
+            Dictionary with status field
+        """
         return {"status": "ok"}
 
     application.include_router(apiDevice.router)
@@ -77,7 +86,16 @@ def register_handlers(application: FastAPI):
     @application.exception_handler(RequestValidationError)
     async def validation_exception_handler(
         request: Request, exc: RequestValidationError
-    ):
+    ) -> JSONResponse:
+        """Handle validation errors with consistent error response format.
+        
+        Args:
+            request: The request that failed validation
+            exc: The validation error exception
+        
+        Returns:
+            JSON response with error details and 422 status code
+        """
         exc_str = f"{exc}".replace("\n", " ").replace("   ", " ")
         logger.error("%s: %s", request, exc_str)
         content = {"status_code": 10422, "message": exc_str, "data": None}

@@ -14,7 +14,7 @@ from .config import get_settings
 from .cache import write_key, find_key, read_key, delete_key
 from .chamberctrl import chamberctrl_temps
 from .fermentationcontrol import fermentation_controller_run
-from .log import system_log_scheduler, system_log_purge
+from .log import system_log_scheduler, system_log_purge, receive_log_purge
 
 logger = logging.getLogger(__name__)
 scheduler = AsyncIOScheduler()
@@ -113,7 +113,8 @@ async def task_fermentation_control():
 async def task_check_database():
     """Check database health and purge old records."""
     logger.info("Task: task_check_database is running at %s", datetime.now())
-    system_log_purge()
+    system_log_purge(days=60)
+    receive_log_purge(days=90)
 
 
 def scheduler_setup(application: FastAPI):  # pylint: disable=unused-argument

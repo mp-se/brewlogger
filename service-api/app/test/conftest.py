@@ -74,3 +74,9 @@ def truncate_database():
         except Exception as e:
             con.rollback()
             print(e)
+        try:
+            con.execute(text("DELETE FROM receivelog"))
+            con.commit()
+        except Exception as e:
+            con.rollback()
+            print(e)

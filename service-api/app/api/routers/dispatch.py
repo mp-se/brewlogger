@@ -3,19 +3,34 @@ import logging
 from json import JSONDecodeError
 
 import httpx
-from fastapi import Request, Response
+from fastapi import Request, Response, BackgroundTasks
 from fastapi.routing import APIRouter
 from starlette.exceptions import HTTPException
+from ..utils import log_public_request, get_client_ip
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/api/dispatch")
 
 @router.post("/public", status_code=200, response_class=Response)
-async def dispatch_post_to_correct_endpoint(request: Request):
-    """Forward gravity and pressure data to appropriate endpoints."""
+async def dispatch_post_to_correct_endpoint(
+    request: Request, background_tasks: BackgroundTasks
+) -> Response:
+    """Forward gravity and pressure data to appropriate endpoints.
+    
+    Args:
+        request: The incoming HTTP request with JSON body
+        background_tasks: FastAPI background tasks for async logging
+    
+    Returns:
+        Response object with result or error status
+    """
     logger.info("Endpoint POST /dispatch/public")
     try:
         j = await request.json()
+
+        # Get client IP address and log the request
+        client_host = get_client_ip(request)
+        background_tasks.add_task(log_public_request, client_host, j)
 
         if "gravity" in j:
             logger.info("Detected gravitymon data")

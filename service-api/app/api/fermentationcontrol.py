@@ -11,8 +11,12 @@ from .log import system_log_fermentationcontrol
 logger = logging.getLogger(__name__)
 
 
-async def fermentation_controller_run(curr_date):
-    """Check and update fermentation profiles for active fermentation steps."""
+async def fermentation_controller_run(curr_date: datetime) -> None:
+    """Check and update fermentation profiles for active fermentation steps.
+    
+    Args:
+        curr_date: Current date to check against fermentation step dates
+    """
     curr_date = datetime(curr_date.year, curr_date.month, curr_date.day)
     logger.info("Fermentation controller checking profile for date %s", curr_date)
 

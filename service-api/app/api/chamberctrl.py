@@ -2,6 +2,7 @@
 import json
 import logging
 from json import JSONDecodeError
+from typing import Optional, Any
 
 import httpx
 
@@ -10,8 +11,15 @@ from .log import system_log_fermentationcontrol
 logger = logging.getLogger(__name__)
 
 
-async def chamberctrl_temps(url):
-    """Fetch current temperature readings from chamber controller device."""
+async def chamberctrl_temps(url: str) -> Optional[dict[str, Any]]:
+    """Fetch current temperature readings from chamber controller device.
+    
+    Args:
+        url: The base URL of the chamber controller device
+    
+    Returns:
+        Dictionary containing temperature data if successful, None if error or invalid URL
+    """
     timeout = httpx.Timeout(10.0, connect=10.0, read=10.0)
     headers = {
         "Content-Type": "application/json",
@@ -73,8 +81,17 @@ async def chamberctrl_temps(url):
     return None
 
 
-async def chamberctrl_set_fridge_temp(url, temp, chipid):
-    """Set target fridge temperature on chamber controller device."""
+async def chamberctrl_set_fridge_temp(url: str, temp: float, chipid: str) -> bool:
+    """Set target fridge temperature on chamber controller device.
+    
+    Args:
+        url: The base URL of the chamber controller device
+        temp: Target temperature in Celsius
+        chipid: Chip ID for authorization header
+    
+    Returns:
+        True if successful, False if error or invalid URL
+    """
     logger.info("Set fridge temperature %s, %s, %s", url, temp, chipid)
 
     timeout = httpx.Timeout(10.0, connect=10.0, read=10.0)

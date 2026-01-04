@@ -20,6 +20,7 @@ from api.services import (
 from ..security import api_key_auth
 from ..cache import exist_key, read_key, write_key
 from ..ws import notify_clients
+from ..utils import log_public_request, get_client_ip
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/api/gravity")
@@ -67,6 +68,11 @@ async def create_gravity_using_ispindel_format(  # pylint: disable=too-many-loca
 
     try:
         req_json = await request.json()
+
+        # Get client IP address and log the request
+        client_host = get_client_ip(request)
+        logger.debug("Request from IP: %s", client_host)
+        background_tasks.add_task(log_public_request, client_host, req_json)
 
         logger.info("Payload: %s", req_json)
 

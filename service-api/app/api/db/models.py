@@ -166,3 +166,14 @@ class Pour(Base):
 
     batch_id = Column(Integer, ForeignKey(Batch.__table__.c.id))
     batch = relationship("Batch", back_populates="pour")
+
+
+class ReceiveLog(Base):
+    __tablename__ = "receivelog"
+
+    id = Column(Integer, primary_key=True, index=True, nullable=False)
+    ip_address = Column(String(45), nullable=False)
+    created = Column(DateTime, nullable=False, default=datetime.now)
+    payload = Column(Text, nullable=False)
+
+

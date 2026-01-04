@@ -15,8 +15,12 @@ if get_settings().cache_enabled:
     pool = redis.ConnectionPool(host=get_settings().redis_host, port=6379, db=0)
 
 
-def delete_key(key):
-    """Delete a key from the Redis cache."""
+def delete_key(key: str | bytes) -> None:
+    """Delete a key from the Redis cache.
+    
+    Args:
+        key: The key to delete from cache (str or bytes)
+    """
     if pool is None:
         return
 
@@ -29,8 +33,15 @@ def delete_key(key):
     return
 
 
-def find_key(key):
-    """Find keys in Redis cache matching the given pattern."""
+def find_key(key: str) -> list[bytes]:
+    """Find keys in Redis cache matching the given pattern.
+    
+    Args:
+        key: Pattern to search for (supports wildcards like *)
+    
+    Returns:
+        List of matching keys as bytes, or empty list if none found or cache disabled
+    """
     if pool is None:
         return []
 
@@ -43,8 +54,17 @@ def find_key(key):
     return []
 
 
-def write_key(key, value, ttl):
-    """Write a key-value pair to Redis cache with optional TTL."""
+def write_key(key: str, value: str, ttl: int) -> bool:
+    """Write a key-value pair to Redis cache with optional TTL.
+    
+    Args:
+        key: The key to write
+        value: The value to store (will be converted to string)
+        ttl: Time to live in seconds
+    
+    Returns:
+        True if successful, False if cache disabled or connection error
+    """
     if pool is None:
         return True
 
@@ -58,8 +78,15 @@ def write_key(key, value, ttl):
     return False
 
 
-def read_key(key):
-    """Read a value from Redis cache by key."""
+def read_key(key: str | bytes) -> bytes | None:
+    """Read a value from Redis cache by key.
+    
+    Args:
+        key: The key to read (str or bytes)
+    
+    Returns:
+        The value as bytes if found, None if key doesn't exist or cache disabled
+    """
     if pool is None:
         return None
 
@@ -73,8 +100,15 @@ def read_key(key):
     return None
 
 
-def exist_key(key):
-    """Check if a key exists in Redis cache."""
+def exist_key(key: str | bytes) -> bool:
+    """Check if a key exists in Redis cache.
+    
+    Args:
+        key: The key to check (str or bytes)
+    
+    Returns:
+        True if key exists, False if it doesn't exist or cache disabled
+    """
     if pool is None:
         return False
 

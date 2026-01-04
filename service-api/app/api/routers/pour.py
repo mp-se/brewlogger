@@ -11,6 +11,7 @@ from api.db import models, schemas
 from api.services import PourService, get_pour_service, BatchService, get_batch_service
 from ..security import api_key_auth
 from ..ws import notify_clients
+from ..utils import log_public_request, get_client_ip
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/api/pour")
@@ -134,6 +135,10 @@ async def create_pour_using_kegmon_format(
 
     try:
         req_json = await request.json()
+
+        # Get client IP address and log the request
+        client_host = get_client_ip(request)
+        background_tasks.add_task(log_public_request, client_host, req_json)
 
         logger.info("Payload: %s", req_json)
 

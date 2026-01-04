@@ -1,10 +1,13 @@
 """Tests for utility functions."""
+import json
 import logging
 from unittest.mock import patch, MagicMock
 import pytest
 from sqlalchemy.exc import SQLAlchemyError
 
-from api.utils import load_settings
+from api.utils import load_settings, get_client_ip, log_public_request
+from api.db import models
+from api.db.session import create_session
 from .conftest import truncate_database
 
 
@@ -112,3 +115,104 @@ def test_load_settings_creates_default_via_service(mock_engine, mock_service_cla
     
     # Verify create() was called
     assert mock_service.create.called
+
+
+def test_get_client_ip_from_x_real_ip():
+    """Test get_client_ip() extracts IP from X-Real-IP header"""
+    mock_request = MagicMock()
+    mock_request.headers = {"x-real-ip": "203.0.113.1"}
+    mock_request.client = MagicMock(host="127.0.0.1")
+    
+    ip = get_client_ip(mock_request)
+    assert ip == "203.0.113.1"
+
+
+def test_get_client_ip_from_x_forwarded_for():
+    """Test get_client_ip() extracts IP from X-Forwarded-For header when X-Real-IP missing"""
+    mock_request = MagicMock()
+    mock_request.headers = {"x-forwarded-for": "203.0.113.2, 192.0.2.1"}
+    mock_request.client = MagicMock(host="127.0.0.1")
+    
+    ip = get_client_ip(mock_request)
+    assert ip == "203.0.113.2"
+
+
+def test_get_client_ip_from_client_host():
+    """Test get_client_ip() falls back to request.client.host"""
+    mock_request = MagicMock()
+    mock_request.headers = {}
+    mock_request.client = MagicMock(host="198.51.100.1")
+    
+    ip = get_client_ip(mock_request)
+    assert ip == "198.51.100.1"
+
+
+def test_get_client_ip_returns_unknown_when_no_source():
+    """Test get_client_ip() returns 'unknown' when no IP source available"""
+    mock_request = MagicMock()
+    mock_request.headers = {}
+    mock_request.client = None
+    
+    ip = get_client_ip(mock_request)
+    assert ip == "unknown"
+
+
+def test_get_client_ip_ignores_empty_real_ip():
+    """Test get_client_ip() ignores empty X-Real-IP and uses fallback"""
+    mock_request = MagicMock()
+    mock_request.headers = {"x-real-ip": "   "}
+    mock_request.client = MagicMock(host="192.0.2.100")
+    
+    ip = get_client_ip(mock_request)
+    assert ip == "192.0.2.100"
+
+
+def test_log_public_request_creates_database_entry():
+    """Test log_public_request() stores request to database"""
+    truncate_database()
+    
+    payload = {"test_key": "test_value", "sensor": "gravity"}
+    log_public_request("192.168.1.100", payload)
+    
+    # Verify it was stored
+    session = create_session()
+    receive_log = session.query(models.ReceiveLog).first()
+    session.close()
+    
+    assert receive_log is not None
+    assert receive_log.ip_address == "192.168.1.100"
+    assert json.loads(receive_log.payload) == payload
+
+
+def test_log_public_request_handles_complex_payload():
+    """Test log_public_request() handles complex nested payloads"""
+    truncate_database()
+    
+    complex_payload = {
+        "device": "iSpindel",
+        "data": {"gravity": 1.050, "temp": 20.5},
+        "nested": {"deep": {"value": "test"}}
+    }
+    log_public_request("10.0.0.50", complex_payload)
+    
+    session = create_session()
+    receive_log = session.query(models.ReceiveLog).first()
+    session.close()
+    
+    assert receive_log is not None
+    assert json.loads(receive_log.payload) == complex_payload
+
+
+def test_log_public_request_multiple_entries():
+    """Test log_public_request() can create multiple entries"""
+    truncate_database()
+    
+    log_public_request("192.168.1.1", {"id": 1})
+    log_public_request("192.168.1.2", {"id": 2})
+    log_public_request("192.168.1.3", {"id": 3})
+    
+    session = create_session()
+    count = session.query(models.ReceiveLog).count()
+    session.close()
+    
+    assert count == 3

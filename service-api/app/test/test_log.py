@@ -1,13 +1,16 @@
 """Tests for logging module functions."""
 import json
+from datetime import datetime, timedelta
 from api.log import (
     system_log,
     system_log_purge,
     system_log_scheduler,
     system_log_fermentationcontrol,
     system_log_security,
+    receive_log_purge,
 )
 from api.services import SystemLogService
+from api.db import models
 from api.db.session import create_session
 from .conftest import truncate_database
 
@@ -91,3 +94,91 @@ def test_system_log_purge(app_client):
     # Recent logs should still be there
     logs_after = len(service.list())
     assert logs_after >= 2
+
+
+def test_receive_log_purge_no_old_records(app_client):
+    """Test receive_log_purge when no records are old enough to delete"""
+    test_init(app_client)
+    
+    # Add a recent receive log
+    session = create_session()
+    receive_log = models.ReceiveLog(
+        ip_address="127.0.0.1",
+        payload=json.dumps({"test": "data"}),
+        created=datetime.now()
+    )
+    session.add(receive_log)
+    session.commit()
+    session.close()
+    
+    # Count before purge
+    session = create_session()
+    count_before = session.query(models.ReceiveLog).count()
+    session.close()
+    
+    # Purge records older than 90 days
+    receive_log_purge(days=90)
+    
+    # Recent record should still exist
+    session = create_session()
+    count_after = session.query(models.ReceiveLog).count()
+    session.close()
+    
+    assert count_after == count_before
+    assert count_after == 1
+
+
+def test_receive_log_purge_with_old_records(app_client):
+    """Test receive_log_purge deletes records older than specified days"""
+    test_init(app_client)
+    
+    session = create_session()
+    
+    # Add an old receive log (120 days ago)
+    old_log = models.ReceiveLog(
+        ip_address="192.168.1.1",
+        payload=json.dumps({"old": "data"}),
+        created=datetime.now() - timedelta(days=120)
+    )
+    session.add(old_log)
+    
+    # Add a recent receive log
+    recent_log = models.ReceiveLog(
+        ip_address="127.0.0.1",
+        payload=json.dumps({"recent": "data"}),
+        created=datetime.now()
+    )
+    session.add(recent_log)
+    session.commit()
+    session.close()
+    
+    # Count before purge
+    session = create_session()
+    count_before = session.query(models.ReceiveLog).count()
+    session.close()
+    assert count_before == 2
+    
+    # Purge records older than 90 days
+    receive_log_purge(days=90)
+    
+    # Old record should be deleted, recent should remain
+    session = create_session()
+    count_after = session.query(models.ReceiveLog).count()
+    remaining = session.query(models.ReceiveLog).all()
+    session.close()
+    
+    assert count_after == 1
+    assert remaining[0].payload == json.dumps({"recent": "data"})
+
+
+def test_receive_log_purge_empty_table(app_client):
+    """Test receive_log_purge handles empty table gracefully"""
+    test_init(app_client)
+    
+    # Should not raise any exceptions on empty table
+    receive_log_purge(days=90)
+    
+    session = create_session()
+    count = session.query(models.ReceiveLog).count()
+    session.close()
+    assert count == 0
