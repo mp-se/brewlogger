@@ -114,6 +114,9 @@ async def chamberctrl_set_fridge_temp(url: str, temp: float, chipid: str) -> boo
                 )
 
                 if res.status_code == 200:
+                    system_log_fermentationcontrol(
+                        f"Successfully set fridge temperature on device {url} to {temp}°C", 100
+                    )
                     return True
                 system_log_fermentationcontrol(
                     f"Http response {res.status_code} from chamber controller device {url}",

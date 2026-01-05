@@ -21,25 +21,42 @@ async def fermentation_controller_run(curr_date: datetime) -> None:
     logger.info("Fermentation controller checking profile for date %s", curr_date)
 
     devices = DeviceService(create_session()).search_software("Chamber-Controller")
+    
+    if not devices:
+        return
+
+    active_steps_count = 0
+    temp_changes_count = 0
 
     for device in devices:
         logger.info("Processing chamber controller device %s, %s", device.id, device.url)
+        
+        if not device.fermentation_step:
+            continue
 
         for step in device.fermentation_step:
             first_date = datetime.strptime(step.date, "%Y-%m-%d")
             last_date = first_date + timedelta(days=step.days - 1)
 
             if first_date <= curr_date <= last_date:
+                active_steps_count += 1
                 logger.info(
                     "Found step that is active; %s => %s - %s, Temp: %s",
                     step.order, first_date, last_date, step.temp
                 )
+                
+                # Log fermentation step activation (only on first day)
+                if curr_date == first_date:
+                    system_log_fermentationcontrol(
+                        f"Fermentation step {step.order} activated: {step.temp}°C "
+                        f"for {step.days} days ({first_date.date()} to {last_date.date()})", 100
+                    )
 
-                # Check the current temperature of the chamber controller controller.
+                # Check the current temperature of the chamber controller.
                 url = device.url
                 res = await chamberctrl_temps(url)
                 if res is not None:
-                    # Set target temperature of the chamber controller controller
+                    # Set target temperature of the chamber controller
                     if res["pid_fridge_target_temp"] != step.temp:
                         old_temp = res['pid_fridge_target_temp']
                         msg = (
@@ -52,6 +69,25 @@ async def fermentation_controller_run(curr_date: datetime) -> None:
                             "Setting new target temperature to %s, current %s",
                             step.temp, res['pid_fridge_target_temp']
                         )
-                        await chamberctrl_set_fridge_temp(
+                        success = await chamberctrl_set_fridge_temp(
                             url, step.temp, device.chip_id
                         )
+                        
+                        if success:
+                            system_log_fermentationcontrol(
+                                f"Successfully set chamber controller to {step.temp}°C (was {old_temp}°C)", 100
+                            )
+                            temp_changes_count += 1
+            
+            # Log fermentation step completion (on last day when step ends)
+            elif curr_date == last_date + timedelta(days=1):
+                system_log_fermentationcontrol(
+                    f"Fermentation step {step.order} completed (ended {last_date.date()})", 100
+                )
+    
+    # Summary log for task completion
+    if active_steps_count > 0:
+        system_log_fermentationcontrol(
+            f"Fermentation control task completed: {active_steps_count} active step(s), "
+            f"{temp_changes_count} temperature change(s) applied", 100
+        )

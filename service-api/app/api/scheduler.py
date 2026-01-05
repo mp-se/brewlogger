@@ -63,6 +63,12 @@ async def task_forward_gravity():
 
     url = settings.gravity_forward_url
     keys = find_key("gravity_*")
+    
+    if not keys:
+        return
+    
+    successful_count = 0
+    
     for k in keys:
         value = read_key(k).decode()
 
@@ -84,6 +90,8 @@ async def task_forward_gravity():
                 logger.info("Request using get %s", url)
                 res = await client.post(url, headers=headers, data=json.dumps(value))
                 logger.info("Reqeust to %s returned code %s", url, res.status_code)
+                if res.status_code == 200:
+                    successful_count += 1
                 delete_key(k)
 
         except httpx.ReadTimeout:
@@ -102,6 +110,11 @@ async def task_forward_gravity():
                 f"Failed to forward gravity to {url}, Uknown error {e}", 0
             )
             logger.error("Unknown exception %s", e)
+    
+    if successful_count > 0:
+        system_log_scheduler(
+            f"Successfully forwarded {successful_count} gravity entries", 100
+        )
 
 
 async def task_fermentation_control():
@@ -115,6 +128,7 @@ async def task_check_database():
     logger.info("Task: task_check_database is running at %s", datetime.now())
     system_log_purge(days=90)
     receive_log_purge(days=90)
+    system_log_scheduler("Database maintenance task completed: purged old logs", 100)
 
 
 def scheduler_setup(application: FastAPI):  # pylint: disable=unused-argument
