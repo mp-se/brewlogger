@@ -131,6 +131,14 @@ class SystemLog(SystemLogCreate):
     id: int
 
 
+class SystemLogPaginatedResponse(BaseModel):
+    model_config = ConfigDict(alias_generator=to_camel, populate_by_name=True)
+    total: int = Field(description="Total number of records")
+    skip: int = Field(description="Number of records skipped")
+    limit: int = Field(description="Number of records returned")
+    data: List[SystemLog] = Field(description="List of system logs")
+
+
 ################################################################################
 
 

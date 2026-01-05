@@ -56,8 +56,13 @@ def test_system_log_get_all(app_client):
     assert r.status_code == 200
     data = json.loads(r.text)
     
-    # Should be a list (may be empty)
-    assert isinstance(data, list)
+    # Should be a paginated response
+    assert isinstance(data, dict)
+    assert "data" in data
+    assert "total" in data
+    assert "skip" in data
+    assert "limit" in data
+    assert isinstance(data["data"], list)
 
 
 def test_system_log_get_by_id_not_found(app_client):
@@ -152,7 +157,8 @@ def test_system_log_with_limit(app_client):
     r = app_client.get("/api/system/log/?limit=2", headers=headers)
     assert r.status_code == 200
     data = json.loads(r.text)
-    assert len(data) <= 2
+    assert len(data["data"]) <= 2
+    assert data["limit"] == 2
 
 
 def test_system_mdns_post(app_client):

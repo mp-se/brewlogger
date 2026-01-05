@@ -102,16 +102,37 @@ async def scheduler_status() -> List[schemas.Job]:
 
 @router.get(
     "/log/",
-    response_model=List[schemas.SystemLog],
+    response_model=schemas.SystemLogPaginatedResponse,
     dependencies=[Depends(api_key_auth)],
 )
 async def system_log(
-    limit: int = 100,
-    systemlog_service: SystemLogService = Depends(get_systemlog_service),
-):
-    """Retrieve system logs with optional limit parameter."""
-    logger.info("Endpoint GET /api/system/log/")
-    return systemlog_service.list(limit)
+    skip: int = Query(0, ge=0, description="Number of records to skip"),
+    limit: int = Query(50, ge=1, le=500, description="Number of records to return"),
+) -> schemas.SystemLogPaginatedResponse:
+    """Retrieve system logs with pagination support."""
+    logger.info("Endpoint GET /api/system/log/ (skip=%d, limit=%d)", skip, limit)
+    
+    try:
+        session = create_session()
+        total = session.query(models.SystemLog).count()
+        records = session.query(models.SystemLog).order_by(
+            models.SystemLog.timestamp.desc()
+        ).offset(skip).limit(limit).all()
+        
+        return schemas.SystemLogPaginatedResponse(
+            total=total,
+            skip=skip,
+            limit=limit,
+            data=records
+        )
+    except SQLAlchemyError as e:
+        logger.error("Database error retrieving system logs: %s", e)
+        return schemas.SystemLogPaginatedResponse(
+            total=0,
+            skip=skip,
+            limit=limit,
+            data=[]
+        )
 
 
 @router.post(
@@ -189,7 +210,7 @@ async def add_mdns_to_cache(mdns: schemas.Mdns) -> None:
 
 
 @router.get(
-    "/receive",
+    "/receive/",
     response_model=schemas.ReceiveLogPaginatedResponse,
     dependencies=[Depends(api_key_auth)],
 )
