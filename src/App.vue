@@ -127,15 +127,15 @@ watch(disabled, () => {
 
 function connect() {
   const apiKey = global.token
-  
+
   if (!apiKey) {
     logInfo('App.connect()', 'No API key found, WebSocket connection skipped')
     return
   }
-  
+
   // Strip 'bearer ' prefix if present
   const keyOnly = apiKey.replace(/^bearer\s+/i, '')
-  
+
   var host = global.baseURL.replaceAll('https://', 'wss://').replaceAll('http://', 'ws://')
   var wsUrl = host + 'api/system/notify?apiKey=' + encodeURIComponent(keyOnly)
   logInfo('App.connect()', 'WebSocket URL: ' + wsUrl)

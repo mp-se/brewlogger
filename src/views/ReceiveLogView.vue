@@ -3,7 +3,17 @@
     <div class="row align-items-center">
       <div class="col-md-10">
         <p></p>
-        <p class="h3">Receive log - Latest 50 data received</p>
+        <p class="h3">Receive log - Latest data received</p>
+      </div>
+    </div>
+    <hr />
+
+    <div class="row">
+      <div class="col-md-10">
+        <p>
+          Total log entries: {{ total }}, Showing the first: {{ logList ? logList.length : 0 }}, Use
+          download to fetch all entires.
+        </p>
       </div>
       <div class="col-md-2 d-flex gap-2">
         <button
@@ -24,7 +34,6 @@
         </button>
       </div>
     </div>
-    <hr />
 
     <div class="row" v-if="logList != null">
       <table class="table table-striped">
@@ -102,14 +111,11 @@ async function downloadAllRecords() {
 
   try {
     while (true) {
-      const res = await fetch(
-        global.baseURL + `api/system/receive/?limit=${limit}&skip=${skip}`,
-        {
-          method: 'GET',
-          headers: { Authorization: global.token },
-          signal: AbortSignal.timeout(global.fetchTimout)
-        }
-      )
+      const res = await fetch(global.baseURL + `api/system/receive/?limit=${limit}&skip=${skip}`, {
+        method: 'GET',
+        headers: { Authorization: global.token },
+        signal: AbortSignal.timeout(global.fetchTimout)
+      })
 
       logDebug('ReceiveLogView.downloadAllRecords()', res.status)
       if (!res.ok) throw res

@@ -164,11 +164,7 @@
 import { onMounted, ref } from 'vue'
 import { config, gravityStore, batchStore, global } from '@/modules/pinia'
 import router from '@/modules/router'
-import {
-  gravityToPlato,
-  getGravityDataAnalytics,
-  getFormattedTemperature
-} from '@/modules/utils'
+import { gravityToPlato, getGravityDataAnalytics, getFormattedTemperature } from '@/modules/utils'
 import { logDebug, logError } from '@/modules/logger'
 import {
   sortedIconClass,
