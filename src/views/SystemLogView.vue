@@ -58,8 +58,9 @@
                 </a>
               </div>
             </th>
-            <th scope="col" class="col-sm-7">Message</th>
-            <th scope="col" class="col-sm-1">Code</th>
+            <th scope="col" class="col-sm-6">Message</th>
+            <th scope="col" class="col-sm-1">Log level</th>
+            <th scope="col" class="col-sm-1">Error Code</th>
           </tr>
         </thead>
         <tbody>
@@ -69,6 +70,7 @@
             </td>
             <td>{{ l.module }}</td>
             <td>{{ l.message }}</td>
+            <td>{{ mapLogLevel(l.logLevel) }}</td>
             <td>{{ l.errorCode }}</td>
           </tr>
         </tbody>
@@ -92,6 +94,17 @@ import {
 const logList = ref(null)
 const total = ref(0)
 const skip = ref(0)
+
+function mapLogLevel(level) {
+  const logLevelMap = {
+    0: 'DEBUG',
+    1: 'INFO',
+    2: 'WARNING',
+    3: 'ERROR',
+    4: 'CRITICAL'
+  }
+  return logLevelMap[level] || String(level)
+}
 
 onMounted(() => {
   logDebug('LogListView.onMounted()')
