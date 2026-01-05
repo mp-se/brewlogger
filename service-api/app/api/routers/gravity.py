@@ -21,6 +21,7 @@ from ..security import api_key_auth
 from ..cache import exist_key, read_key, write_key
 from ..ws import notify_clients
 from ..utils import log_public_request, get_client_ip
+from ..log import system_log, LogLevel
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/api/gravity")
@@ -130,10 +131,12 @@ async def create_gravity_using_ispindel_format(  # pylint: disable=too-many-loca
                 tap_list=True,
             )
             batch = batch_service.create(batch)
+            system_log("gravity", f"Batch auto-created from public endpoint: {batch.name}", error_code=0, log_level=LogLevel.INFO)
             batch_list = batch_service.search_chip_id_active(req_json["ID"], True)
             background_tasks.add_task(notify_clients, "batch", "create", batch.id)
 
         if len(batch_list) == 0:
+            system_log("gravity", f"No batch found for device {req_json['ID']}", error_code=409, log_level=LogLevel.WARNING)
             raise HTTPException(status_code=409, detail="No batch found")
 
         # Check if there is an device
@@ -152,6 +155,7 @@ async def create_gravity_using_ispindel_format(  # pylint: disable=too-many-loca
                 collectLogs=False,
             )
             device = device_service.create(device)
+            system_log("gravity", f"Device auto-created from public endpoint: {device.chip_id}", error_code=0, log_level=LogLevel.INFO)
             background_tasks.add_task(notify_clients, "device", "create", device.id)
 
         chamber_id = batch_list[0].fermentation_chamber
@@ -216,6 +220,7 @@ async def create_gravity_using_ispindel_format(  # pylint: disable=too-many-loca
 
     except (KeyError, JSONDecodeError) as e:
         logging.error(e)
+        system_log("gravity", f"Failed to parse gravity data: {type(e).__name__}", error_code=0, log_level=LogLevel.ERROR)
         raise HTTPException(status_code=422, detail="Unable to parse request") from e
 
 
@@ -230,7 +235,10 @@ async def get_gravity_by_id(
 ) -> Optional[models.Gravity]:
     """Retrieve a specific gravity reading by ID."""
     logger.info("Endpoint GET /api/gravity/%s", gravity_id)
-    return gravity_service.get(gravity_id)
+    gravity = gravity_service.get(gravity_id)
+    if gravity is None:
+        raise HTTPException(status_code=404, detail="Gravity not found")
+    return gravity
 
 
 @router.post(
@@ -281,6 +289,8 @@ async def update_gravity_by_id(
     """Update a gravity reading by ID."""
     logger.info("Endpoint PATCH /api/gravity/%s", gravity_id)
     gravity = gravity_service.update(gravity_id, gravity)
+    if gravity is None:
+        raise HTTPException(status_code=404, detail="Gravity not found")
     background_tasks.add_task(notify_clients, "batch", "update", gravity.batch_id)
     return gravity
 

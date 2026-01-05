@@ -6,7 +6,7 @@ from api.db.session import create_session
 from api.services import DeviceService
 
 from .chamberctrl import chamberctrl_temps, chamberctrl_set_fridge_temp
-from .log import system_log_fermentationcontrol
+from .log import system_log_fermentationcontrol, LogLevel
 
 logger = logging.getLogger(__name__)
 
@@ -48,46 +48,50 @@ async def fermentation_controller_run(curr_date: datetime) -> None:
                 # Log fermentation step activation (only on first day)
                 if curr_date == first_date:
                     system_log_fermentationcontrol(
-                        f"Fermentation step {step.order} activated: {step.temp}°C "
-                        f"for {step.days} days ({first_date.date()} to {last_date.date()})", 100
+                        f"Device {device.id}: Fermentation step {step.order} activated: {step.temp}°C "
+                        f"for {step.days} days ({first_date.date()} to {last_date.date()})",
+                        error_code=0, log_level=LogLevel.INFO
                     )
 
                 # Check the current temperature of the chamber controller.
                 url = device.url
-                res = await chamberctrl_temps(url)
+                res = await chamberctrl_temps(device.id, url)
                 if res is not None:
                     # Set target temperature of the chamber controller
                     if res["pid_fridge_target_temp"] != step.temp:
                         old_temp = res['pid_fridge_target_temp']
                         msg = (
-                            f"Assigning chamber controller device at {url} a new "
-                            f"Fridge temperature of {step.temp}, old setting {old_temp}"
+                            f"Device {device.id}: Assigning new fridge temperature of {step.temp}°C, "
+                            f"old setting {old_temp}°C"
                         )
-                        system_log_fermentationcontrol(msg, 0)
+                        system_log_fermentationcontrol(msg, error_code=0, log_level=LogLevel.WARNING)
 
                         logger.info(
                             "Setting new target temperature to %s, current %s",
                             step.temp, res['pid_fridge_target_temp']
                         )
                         success = await chamberctrl_set_fridge_temp(
-                            url, step.temp, device.chip_id
+                            device.id, url, step.temp, device.chip_id
                         )
                         
                         if success:
                             system_log_fermentationcontrol(
-                                f"Successfully set chamber controller to {step.temp}°C (was {old_temp}°C)", 100
+                                f"Device {device.id}: Successfully set chamber controller to {step.temp}°C (was {old_temp}°C)",
+                                error_code=0, log_level=LogLevel.INFO
                             )
                             temp_changes_count += 1
             
             # Log fermentation step completion (on last day when step ends)
             elif curr_date == last_date + timedelta(days=1):
                 system_log_fermentationcontrol(
-                    f"Fermentation step {step.order} completed (ended {last_date.date()})", 100
+                    f"Device {device.id}: Fermentation step {step.order} completed (ended {last_date.date()})",
+                    error_code=0, log_level=LogLevel.INFO
                 )
     
     # Summary log for task completion
     if active_steps_count > 0:
         system_log_fermentationcontrol(
             f"Fermentation control task completed: {active_steps_count} active step(s), "
-            f"{temp_changes_count} temperature change(s) applied", 100
+            f"{temp_changes_count} temperature change(s) applied",
+            error_code=0, log_level=LogLevel.INFO
         )

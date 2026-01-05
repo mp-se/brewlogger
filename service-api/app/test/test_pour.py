@@ -159,7 +159,7 @@ def test_public(app_client):
 
     # Add new (should fail - batch 2 doesn't exist)
     r = app_client.post("/api/pour/public", json=data, headers=headers)
-    assert r.status_code == 404
+    assert r.status_code == 409
 
     data = {"volume": 0.1, "maxVolume": 1, "id": "1"}
 

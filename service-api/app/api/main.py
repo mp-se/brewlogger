@@ -21,7 +21,7 @@ from api.routers import system as apiSystem
 
 from .cache import write_key
 from .config import get_settings
-from .log import system_log
+from .log import system_log, LogLevel
 from .scheduler import scheduler_setup, scheduler_shutdown
 from .utils import load_settings
 
@@ -36,7 +36,7 @@ async def lifespan(application: FastAPI):
     load_settings()
     scheduler_setup(application)
     write_key("brewlogger", get_settings().version, ttl=None)
-    system_log("main", "System started", 0)
+    system_log("main", "System started", error_code=0, log_level=LogLevel.INFO)
     yield
     # Running on closedown
     logger.info("Running shutdown handler")

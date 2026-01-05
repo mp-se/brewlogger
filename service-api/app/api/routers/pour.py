@@ -12,6 +12,7 @@ from api.services import PourService, get_pour_service, BatchService, get_batch_
 from ..security import api_key_auth
 from ..ws import notify_clients
 from ..utils import log_public_request, get_client_ip
+from ..log import system_log, LogLevel
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/api/pour")
@@ -56,7 +57,10 @@ async def get_pour_by_id(
 ) -> Optional[models.Pour]:
     """Retrieve a specific pour event by ID."""
     logger.info("Endpoint GET /api/pour/%s", pour_id)
-    return pour_service.get(pour_id)
+    pour = pour_service.get(pour_id)
+    if pour is None:
+        raise HTTPException(status_code=404, detail="Pour not found")
+    return pour
 
 
 @router.post(
@@ -104,6 +108,8 @@ async def update_pour_by_id(
     """Update a specific pour event by ID."""
     logger.info("Endpoint PATCH /api/pour/%s", pour_id)
     pour = pour_service.update(pour_id, gravity)
+    if pour is None:
+        raise HTTPException(status_code=404, detail="Pour not found")
     background_tasks.add_task(notify_clients, "batch", "update", pour.batch_id)
     return pour
 
@@ -156,7 +162,20 @@ async def create_pour_using_kegmon_format(
             max_volume_val = req_json["maxVolume"]
 
         # Check if there is an active batch
-        batch = batch_service.get(int(req_json["id"]))
+        try:
+            batch_id = int(req_json["id"])
+        except (KeyError, ValueError) as e:
+            logger.error("Invalid batch ID: %s", e)
+            system_log("pour", f"Invalid batch ID in request: {req_json.get('id')}", error_code=400, log_level=LogLevel.WARNING)
+            raise HTTPException(status_code=400, detail="Invalid batch ID") from e
+        
+        logger.info("Looking up batch with ID: %s", batch_id)
+        batch = batch_service.get(batch_id)
+        
+        if batch is None:
+            logger.warning("No batch found for batch ID %s", batch_id)
+            system_log("pour", f"No batch found for batch ID {batch_id}", error_code=404, log_level=LogLevel.WARNING)
+            raise HTTPException(status_code=409, detail="No batch found")
 
         pour_list = pour_service.search_by_batch_id(batch.id)
         pour_list.sort(key=lambda x: x.created, reverse=True)
@@ -187,4 +206,5 @@ async def create_pour_using_kegmon_format(
 
     except (KeyError, JSONDecodeError) as e:
         logging.error(e)
+        system_log("pour", f"Failed to parse pour data: {type(e).__name__}", error_code=0, log_level=LogLevel.ERROR)
         raise HTTPException(status_code=422, detail="Unable to parse request") from e

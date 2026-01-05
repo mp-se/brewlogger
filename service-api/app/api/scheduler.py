@@ -14,7 +14,7 @@ from .config import get_settings
 from .cache import write_key, find_key, read_key, delete_key
 from .chamberctrl import chamberctrl_temps
 from .fermentationcontrol import fermentation_controller_run
-from .log import system_log_scheduler, system_log_purge, receive_log_purge
+from .log import system_log_scheduler, system_log_purge, receive_log_purge, LogLevel
 
 logger = logging.getLogger(__name__)
 scheduler = AsyncIOScheduler()
@@ -40,7 +40,7 @@ async def task_fetch_chamberctrl_temps():
         url = device.url
 
         if url != "":
-            res = await chamberctrl_temps(url)
+            res = await chamberctrl_temps(device.id, url)
             if res is not None:
                 logger.info(
                     'Chamber controller temps, beer=%s, chamber=%s',
@@ -95,25 +95,26 @@ async def task_forward_gravity():
                 delete_key(k)
 
         except httpx.ReadTimeout:
-            system_log_scheduler(f"Failed to forward gravity to {url}, ReadTimeout", 0)
+            system_log_scheduler(f"Failed to forward gravity to {url}, ReadTimeout", error_code=0, log_level=LogLevel.ERROR)
             logger.error("Unable to connect to device %s", url)
         except httpx.ConnectError:
-            system_log_scheduler(f"Failed to forward gravity to {url}, ConnectError", 0)
+            system_log_scheduler(f"Failed to forward gravity to {url}, ConnectError", error_code=0, log_level=LogLevel.ERROR)
             logger.error("Unable to read from device %s", url)
         except httpx.ConnectTimeout:
             system_log_scheduler(
-                f"Failed to forward gravity to {url}, ConnectTimeout", 0
+                f"Failed to forward gravity to {url}, ConnectTimeout", error_code=0, log_level=LogLevel.ERROR
             )
             logger.error("Unable to connect to device %s", url)
         except httpx.RequestError as e:
             system_log_scheduler(
-                f"Failed to forward gravity to {url}, Uknown error {e}", 0
+                f"Failed to forward gravity to {url}, Uknown error {e}", error_code=0, log_level=LogLevel.ERROR
             )
             logger.error("Unknown exception %s", e)
     
     if successful_count > 0:
         system_log_scheduler(
-            f"Successfully forwarded {successful_count} gravity entries", 100
+            f"Successfully forwarded {successful_count} gravity entries",
+            error_code=0, log_level=LogLevel.INFO
         )
 
 
@@ -128,7 +129,10 @@ async def task_check_database():
     logger.info("Task: task_check_database is running at %s", datetime.now())
     system_log_purge(days=90)
     receive_log_purge(days=90)
-    system_log_scheduler("Database maintenance task completed: purged old logs", 100)
+    system_log_scheduler(
+        "Database maintenance task completed: purged old logs",
+        error_code=0, log_level=LogLevel.INFO
+    )
 
 
 def scheduler_setup(application: FastAPI):  # pylint: disable=unused-argument

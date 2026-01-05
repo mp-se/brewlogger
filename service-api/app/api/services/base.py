@@ -25,10 +25,8 @@ class BaseService(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
         self.db_session = db_session
 
     def get(self, item_id: Any) -> Optional[ModelType]:
-        """Retrieve a single item by ID, raises 404 if not found."""
+        """Retrieve a single item by ID, returns None if not found."""
         obj: Optional[ModelType] = self.db_session.get(self.model, item_id)
-        if obj is None:
-            raise HTTPException(status_code=404, detail="Not Found")
         return obj
 
     def list(self) -> List[ModelType]:
@@ -68,21 +66,24 @@ class BaseService(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
         return db_obj_lst
 
     def update(self, item_id: Any, obj: UpdateSchemaType) -> Optional[ModelType]:
-        """Update an existing item in the database."""
+        """Update an existing item in the database, returns None if not found."""
         db_obj = self.get(item_id)
+        if db_obj is None:
+            return None
         for column, value in obj.model_dump(exclude_unset=True).items():
             setattr(db_obj, column, value)
         self.db_session.commit()
         return db_obj
 
     def delete(self, item_id: Any):
-        """Delete an item from the database by ID."""
+        """Delete an item from the database by ID, returns False if not found."""
         db_obj = self.db_session.get(self.model, item_id)
         if db_obj is None:
-            raise HTTPException(status_code=404, detail="Not Found")
+            return False
 
         self.db_session.delete(db_obj)
         self.db_session.commit()
+        return True
 
     def _validate_batch_exists(self, batch_id: int) -> models.Batch:
         """Validate that a batch exists and return it. Raises HTTPException if not found."""

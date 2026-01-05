@@ -141,6 +141,11 @@ def migrate_database():
 
         # Changes from v0.10 -> v0.11
         "CREATE TABLE IF NOT EXISTS receivelog (id SERIAL PRIMARY KEY, ip_address VARCHAR(45) NOT NULL, timestamp TIMESTAMP NOT NULL, payload TEXT NOT NULL)",
+
+        # Changes from v0.11 -> v0.12 (logging refactoring)
+        "ALTER TABLE systemlog ADD COLUMN log_level INTEGER DEFAULT 3",
+        "UPDATE systemlog SET log_level = 3 WHERE log_level IS NULL",
+        "ALTER TABLE systemlog ALTER COLUMN log_level SET NOT NULL",
     ]
 
     with engine.connect() as con:

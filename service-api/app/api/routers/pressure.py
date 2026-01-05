@@ -19,6 +19,7 @@ from api.services import (
 from ..security import api_key_auth
 from ..ws import notify_clients
 from ..utils import log_public_request, get_client_ip
+from ..log import system_log, LogLevel
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/api/pressure")
@@ -96,10 +97,12 @@ async def create_pressure_using_json(  # pylint: disable=too-many-locals,duplica
                 tapList=True,
             )
             batch = batch_service.create(batch)
+            system_log("pressure", f"Batch auto-created from public endpoint: {batch.name}", error_code=0, log_level=LogLevel.INFO)
             background_tasks.add_task(notify_clients, "batch", "create", batch.id)
             batch_list = batch_service.search_chip_id_active(chip_id, True)
 
         if len(batch_list) == 0:
+            system_log("pressure", f"No batch found for device {req_json['ID']}", error_code=409, log_level=LogLevel.WARNING)
             raise HTTPException(status_code=409, detail="No batch found")
 
         # Check if there is an device registered
@@ -118,6 +121,7 @@ async def create_pressure_using_json(  # pylint: disable=too-many-locals,duplica
                 collectLogs=False,
             )
             device = device_service.create(device)
+            system_log("pressure", f"Device auto-created from public endpoint: {device.chip_id}", error_code=0, log_level=LogLevel.INFO)
             background_tasks.add_task(notify_clients, "device", "create", device.id)
 
         # Example payload from pressuremon v0.4
@@ -181,6 +185,7 @@ async def create_pressure_using_json(  # pylint: disable=too-many-locals,duplica
         return Response(content="", status_code=200)
 
     except JSONDecodeError as exc:
+        system_log("pressure", "Failed to parse pressure data: JSONDecodeError", error_code=0, log_level=LogLevel.ERROR)
         raise HTTPException(status_code=422, detail="Unable to parse request") from exc
 
 
@@ -195,7 +200,10 @@ async def get_pressure_by_id(
 ) -> Optional[models.Pressure]:
     """Retrieve a specific pressure reading by ID."""
     logger.info("Endpoint GET /api/pressure/%d", pressure_id)
-    return pressure_service.get(pressure_id)
+    pressure = pressure_service.get(pressure_id)
+    if pressure is None:
+        raise HTTPException(status_code=404, detail="Pressure not found")
+    return pressure
 
 
 @router.post(
@@ -245,6 +253,8 @@ async def update_pressure_by_id(
     """Update a specific pressure reading by ID."""
     logger.info("Endpoint PATCH /api/pressure/%d", pressure_id)
     pressure = pressure_service.update(pressure_id, pressure)
+    if pressure is None:
+        raise HTTPException(status_code=404, detail="Pressure not found")
     background_tasks.add_task(notify_clients, "batch", "update", pressure.batch_id)
     return pressure
 

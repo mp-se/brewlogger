@@ -26,7 +26,7 @@ async def test_chamberctrl_temps_success():
         
         mock_client_class.return_value = mock_client
         
-        result = await chamberctrl_temps(test_url)
+        result = await chamberctrl_temps(1, test_url)
         
         assert result == expected_response
 
@@ -49,7 +49,7 @@ async def test_chamberctrl_temps_with_trailing_slash():
         
         mock_client_class.return_value = mock_client
         
-        result = await chamberctrl_temps(test_url)
+        result = await chamberctrl_temps(1, test_url)
         
         assert result == expected_response
 
@@ -60,7 +60,7 @@ async def test_chamberctrl_temps_empty_url():
     test_url = ""
     
     with patch("api.chamberctrl.system_log_fermentationcontrol") as mock_log:
-        result = await chamberctrl_temps(test_url)
+        result = await chamberctrl_temps(1, test_url)
         
         assert result is None
         mock_log.assert_called_once()
@@ -72,7 +72,7 @@ async def test_chamberctrl_temps_protocol_only_url():
     test_url = "http://"
     
     with patch("api.chamberctrl.system_log_fermentationcontrol") as mock_log:
-        result = await chamberctrl_temps(test_url)
+        result = await chamberctrl_temps(1, test_url)
         
         assert result is None
 
@@ -95,7 +95,7 @@ async def test_chamberctrl_temps_http_error():
         
         mock_client_class.return_value = mock_client
         
-        result = await chamberctrl_temps(test_url)
+        result = await chamberctrl_temps(1, test_url)
         
         assert result is None
         mock_log.assert_called_once()
@@ -120,7 +120,7 @@ async def test_chamberctrl_temps_json_decode_error():
         
         mock_client_class.return_value = mock_client
         
-        result = await chamberctrl_temps(test_url)
+        result = await chamberctrl_temps(1, test_url)
         
         assert result is None
         mock_log.assert_called_once()
@@ -141,7 +141,7 @@ async def test_chamberctrl_temps_read_timeout():
         
         mock_client_class.return_value = mock_client
         
-        result = await chamberctrl_temps(test_url)
+        result = await chamberctrl_temps(1, test_url)
         
         assert result is None
         mock_log.assert_called_once()
@@ -162,7 +162,7 @@ async def test_chamberctrl_temps_connect_error():
         
         mock_client_class.return_value = mock_client
         
-        result = await chamberctrl_temps(test_url)
+        result = await chamberctrl_temps(1, test_url)
         
         assert result is None
         mock_log.assert_called_once()
@@ -183,7 +183,7 @@ async def test_chamberctrl_temps_connect_timeout():
         
         mock_client_class.return_value = mock_client
         
-        result = await chamberctrl_temps(test_url)
+        result = await chamberctrl_temps(1, test_url)
         
         assert result is None
         mock_log.assert_called_once()
@@ -207,7 +207,7 @@ async def test_chamberctrl_set_fridge_temp_success():
         
         mock_client_class.return_value = mock_client
         
-        result = await chamberctrl_set_fridge_temp(test_url, test_temp, test_chipid)
+        result = await chamberctrl_set_fridge_temp(1, test_url, test_temp, test_chipid)
         
         assert result is True
 
@@ -230,7 +230,7 @@ async def test_chamberctrl_set_fridge_temp_with_trailing_slash():
         
         mock_client_class.return_value = mock_client
         
-        result = await chamberctrl_set_fridge_temp(test_url, test_temp, test_chipid)
+        result = await chamberctrl_set_fridge_temp(1, test_url, test_temp, test_chipid)
         
         assert result is True
 
@@ -243,7 +243,7 @@ async def test_chamberctrl_set_fridge_temp_empty_url():
     test_chipid = "ABC123"
     
     with patch("api.chamberctrl.system_log_fermentationcontrol") as mock_log:
-        result = await chamberctrl_set_fridge_temp(test_url, test_temp, test_chipid)
+        result = await chamberctrl_set_fridge_temp(1, test_url, test_temp, test_chipid)
         
         assert result is False
         mock_log.assert_called_once()
@@ -269,7 +269,7 @@ async def test_chamberctrl_set_fridge_temp_http_error():
         
         mock_client_class.return_value = mock_client
         
-        result = await chamberctrl_set_fridge_temp(test_url, test_temp, test_chipid)
+        result = await chamberctrl_set_fridge_temp(1, test_url, test_temp, test_chipid)
         
         assert result is False
         mock_log.assert_called_once()
@@ -292,7 +292,7 @@ async def test_chamberctrl_set_fridge_temp_read_timeout():
         
         mock_client_class.return_value = mock_client
         
-        result = await chamberctrl_set_fridge_temp(test_url, test_temp, test_chipid)
+        result = await chamberctrl_set_fridge_temp(1, test_url, test_temp, test_chipid)
         
         assert result is False
 
@@ -314,7 +314,7 @@ async def test_chamberctrl_set_fridge_temp_connect_error():
         
         mock_client_class.return_value = mock_client
         
-        result = await chamberctrl_set_fridge_temp(test_url, test_temp, test_chipid)
+        result = await chamberctrl_set_fridge_temp(1, test_url, test_temp, test_chipid)
         
         assert result is False
 
@@ -336,6 +336,6 @@ async def test_chamberctrl_set_fridge_temp_connect_timeout():
         
         mock_client_class.return_value = mock_client
         
-        result = await chamberctrl_set_fridge_temp(test_url, test_temp, test_chipid)
+        result = await chamberctrl_set_fridge_temp(1, test_url, test_temp, test_chipid)
         
         assert result is False

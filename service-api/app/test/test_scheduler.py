@@ -75,7 +75,7 @@ async def test_task_fetch_chamberctrl_temps_success():
         
         await task_fetch_chamberctrl_temps()
         
-        mock_temps.assert_called_once_with("http://localhost:8080")
+        mock_temps.assert_called_once_with(1, "http://localhost:8080")
         assert mock_write.call_count == 2
         
         # Verify cache keys were written

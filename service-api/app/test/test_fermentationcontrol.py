@@ -95,7 +95,7 @@ async def test_fermentation_controller_step_active_temp_match():
         await fermentation_controller_run(today)
         
         # Should fetch temps but not set new temp
-        mock_temps.assert_called_once_with("http://localhost:8080")
+        mock_temps.assert_called_once_with(1, "http://localhost:8080")
 
 
 @pytest.mark.asyncio
@@ -131,8 +131,8 @@ async def test_fermentation_controller_step_active_temp_mismatch():
         await fermentation_controller_run(today)
         
         # Should fetch temps and set new temp
-        mock_temps.assert_called_once_with("http://localhost:8080")
-        mock_set_temp.assert_called_once_with("http://localhost:8080", 20.0, "ABC123")
+        mock_temps.assert_called_once_with(1, "http://localhost:8080")
+        mock_set_temp.assert_called_once_with(1, "http://localhost:8080", 20.0, "ABC123")
         assert mock_log.call_count == 4
         # Check that the calls include temp-related logs
         call_args = [str(call) for call in mock_log.call_args_list]
@@ -172,7 +172,7 @@ async def test_fermentation_controller_step_active_no_temps():
         await fermentation_controller_run(today)
         
         # Should attempt to fetch temps but handle None gracefully
-        mock_temps.assert_called_once_with("http://localhost:8080")
+        mock_temps.assert_called_once_with(1, "http://localhost:8080")
 
 
 @pytest.mark.asyncio
@@ -211,7 +211,7 @@ async def test_fermentation_controller_multiple_devices():
         await fermentation_controller_run(today)
         
         # Should process both devices, but only fetch temps for first
-        mock_temps.assert_called_once_with("http://localhost:8080")
+        mock_temps.assert_called_once_with(1, "http://localhost:8080")
 
 
 @pytest.mark.asyncio
@@ -252,8 +252,8 @@ async def test_fermentation_controller_multiple_steps():
         await fermentation_controller_run(today)
         
         # Should only process the active step
-        mock_temps.assert_called_once_with("http://localhost:8080")
-        mock_set_temp.assert_called_once_with("http://localhost:8080", 20.0, "ABC123")
+        mock_temps.assert_called_once_with(1, "http://localhost:8080")
+        mock_set_temp.assert_called_once_with(1, "http://localhost:8080", 20.0, "ABC123")
 
 
 @pytest.mark.asyncio

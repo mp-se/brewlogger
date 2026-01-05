@@ -8,6 +8,7 @@ from api.db import models, schemas
 from api.services import BatchService, get_batch_service
 from ..security import api_key_auth
 from ..ws import notify_clients
+from ..log import system_log, LogLevel
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/api/batch")
@@ -85,7 +86,10 @@ async def get_batch_by_id(
 ) -> Optional[models.Batch]:
     """Retrieve a specific batch by ID."""
     logger.info("Endpoint GET /api/batch/%d", batch_id)
-    return batch_service.get(batch_id)
+    batch = batch_service.get(batch_id)
+    if batch is None:
+        raise HTTPException(status_code=404, detail="Batch not found")
+    return batch
 
 
 @router.get(
@@ -101,6 +105,8 @@ async def get_batch_dashboard_by_id(
     logger.info("Endpoint GET /api/batch/%d/dashboard", batch_id)
 
     b = batch_service.get(batch_id)
+    if b is None:
+        raise HTTPException(status_code=404, detail="Batch not found")
     if b.active:
         dash = schemas.BatchDashboard(
             id=b.id,
@@ -166,6 +172,7 @@ async def create_batch(
     """Create a new batch."""
     logger.info("Endpoint POST /api/batch/")
     batch = batch_service.create(batch)
+    system_log("batch", f"Batch created: {batch.name}", error_code=0, log_level=LogLevel.INFO)
     background_tasks.add_task(notify_clients, "batch", "create", batch.id)
     return batch
 
@@ -181,8 +188,12 @@ async def update_batch_by_id(
 ) -> Optional[models.Batch]:
     """Update a batch by ID."""
     logger.info("Endpoint PATCH /api/batch/%d", batch_id)
+    updated_batch = batch_service.update(batch_id, batch)
+    if updated_batch is None:
+        raise HTTPException(status_code=404, detail="Batch not found")
+    system_log("batch", f"Batch {updated_batch.name} updated", error_code=0, log_level=LogLevel.INFO)
     background_tasks.add_task(notify_clients, "batch", "update", batch_id)
-    return batch_service.update(batch_id, batch)
+    return updated_batch
 
 
 @router.delete("/{batch_id}", status_code=204, dependencies=[Depends(api_key_auth)])
@@ -196,5 +207,6 @@ async def delete_batch_by_id(
     batch = batch_service.get(batch_id)
     if not batch:
         raise HTTPException(status_code=404, detail="Batch not found")
+    system_log("batch", f"Batch {batch.name} deleted", error_code=0, log_level=LogLevel.INFO)
     batch_service.delete(batch_id)
     background_tasks.add_task(notify_clients, "batch", "delete", batch_id)

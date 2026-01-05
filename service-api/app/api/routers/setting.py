@@ -2,9 +2,11 @@
 import logging
 from fastapi import Depends
 from fastapi.routing import APIRouter
+from starlette.exceptions import HTTPException
 from api.services import BrewLoggerService, get_brewlogger_service
 from api.db import schemas
 from ..security import api_key_auth, get_settings
+from ..log import system_log, LogLevel
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/api/config")
@@ -40,5 +42,8 @@ async def update_configuration(
     logger.info("Endpoint PATCH /api/config/%d", item_id)
     brew_logger.version = get_settings().version
     bl = brewlogger_service.update(item_id, brew_logger)
+    if bl is None:
+        raise HTTPException(status_code=404, detail="Configuration not found")
     bl.api_key_enabled = get_settings().api_key_enabled
+    system_log("config", f"Configuration updated: gravity_forward_url={bool(bl.gravity_forward_url)}", error_code=0, log_level=LogLevel.INFO)
     return bl
