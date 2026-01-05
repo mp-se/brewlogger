@@ -135,12 +135,12 @@ const routes = [
     component: SupportView
   },
   {
-    path: '/other/system_log',
+    path: '/other/system',
     name: 'system_log',
     component: SystemLogView
   },
   {
-    path: '/other/receive_log',
+    path: '/other/receive',
     name: 'receive_log',
     component: ReceiveLogView
   },
@@ -214,11 +214,11 @@ const items = ref([
       },
       {
         label: 'System log',
-        path: '/other/system_log'
+        path: '/other/system'
       },
       {
         label: 'Receive log',
-        path: '/other/receive_log'
+        path: '/other/receive'
       },
       // {
       //   label: 'Support',
