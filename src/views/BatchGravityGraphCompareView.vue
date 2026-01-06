@@ -161,6 +161,9 @@ function createGraph() {
     if (document.getElementById('gravityChart') == null) {
       logError('BatchGravityGraphCompareView.onMounted()', 'Unable to find the chart canvas')
     } else {
+      if (chart != null) {
+        chart.destroy()
+      }
       chart = new Chart(document.getElementById('gravityChart').getContext('2d'), chartOptions)
       chart.update()
     }

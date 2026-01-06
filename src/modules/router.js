@@ -65,7 +65,7 @@ const routes = [
     component: BatchListView
   },
   {
-    path: '/development/compare',
+    path: '/dev/compare',
     name: 'batch-compare-view',
     component: BatchGravityGraphCompareView
   },
