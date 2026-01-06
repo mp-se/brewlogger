@@ -5,12 +5,32 @@
     <hr />
 
     <div class="row">
-      <div class="col-md-6">
+      <div class="col-md-12">
+        <p class="fw-normal">
+          Compare up to 3 batches of gravity data on the same graph. Select batches
+        </p>
+      </div>
+
+      <div class="col-md-3">
         <BsSelect v-model="batchId1" :options="batchList" label="Batch 1" with="4"></BsSelect>
       </div>
 
-      <div class="col-md-6">
+      <div class="col-md-3">
         <BsSelect v-model="batchId2" :options="batchList" label="Batch 2" with="4"></BsSelect>
+      </div>
+
+      <div class="col-md-3">
+        <BsSelect v-model="batchId3" :options="batchList" label="Batch 3" with="4"></BsSelect>
+      </div>
+
+      <div class="col-md-3">
+        <BsSelect
+          v-model="timeAdjustment"
+          :options="timeAdjustmentOptions"
+          label="Time Adjustment"
+          with="4"
+        >
+        </BsSelect>
       </div>
 
       <div class="col-md-12">
@@ -26,7 +46,7 @@ import { Chart, registerables } from 'chart.js'
 import zoomPlugin from 'chartjs-plugin-zoom'
 import 'date-fns'
 import 'chartjs-adapter-date-fns'
-import { config, gravityStore, batchStore, global } from '@/modules/pinia'
+import { config, gravityStore, batchStore } from '@/modules/pinia'
 import { gravityToPlato } from '@/modules/utils'
 import { logDebug, logError } from '@/modules/logger'
 
@@ -35,15 +55,24 @@ var chart = null // Do not use ref for this, will cause stack overflow...
 Chart.register(...registerables, zoomPlugin)
 
 const batchList = ref([])
+const timeAdjustmentOptions = ref([
+  { value: 'none', label: 'No adjustment' },
+  { value: 'start', label: 'Align by start date' },
+  { value: 'end', label: 'Align by end date' }
+])
 
-const batchId1 = ref(208)
+const batchId1 = ref(0)
 const batchId2 = ref(0)
+const batchId3 = ref(0)
+const timeAdjustment = ref('none')
 
 const gravityList1 = ref(null)
 const gravityList2 = ref(null)
+const gravityList3 = ref(null)
 
 const gravityData1 = ref([])
 const gravityData2 = ref([])
+const gravityData3 = ref([])
 
 watch(batchId1, () => {
   updateGraph()
@@ -53,63 +82,90 @@ watch(batchId2, () => {
   updateGraph()
 })
 
+watch(batchId3, () => {
+  updateGraph()
+})
+
+watch(timeAdjustment, () => {
+  createGraph()
+})
+
 async function updateGraph() {
-  if (batchId1.value != 0 && batchId2.value != 0) {
+  gravityList1.value = []
+  gravityList2.value = []
+  gravityList3.value = []
+
+  if (batchId1.value != 0) {
     const gl1 = await gravityStore.getGravityListForBatch(batchId1.value)
     if (gl1) {
       gravityList1.value = gl1
-
-      const gl2 = await gravityStore.getGravityListForBatch(batchId2.value)
-      if (gl2) {
-        gravityList2.value = gl2
-
-        // Sort data to make sure the points are in date order
-        gravityList1.value.sort((a, b) => Date.parse(a.created) - Date.parse(b.created))
-        gravityList2.value.sort((a, b) => Date.parse(a.created) - Date.parse(b.created))
-
-        createGraph()
-      } else {
-        global.messageError = 'Failed to load batch ' + batchId2.value
-      }
-    } else {
-      global.messageError = 'Failed to load batch ' + batchId1.value
+      gravityList1.value.sort((a, b) => Date.parse(a.created) - Date.parse(b.created))
     }
   }
+
+  if (batchId2.value != 0) {
+    const gl2 = await gravityStore.getGravityListForBatch(batchId2.value)
+    if (gl2) {
+      gravityList2.value = gl2
+      gravityList2.value.sort((a, b) => Date.parse(a.created) - Date.parse(b.created))
+    }
+  }
+
+  if (batchId3.value != 0) {
+    const gl3 = await gravityStore.getGravityListForBatch(batchId3.value)
+    if (gl3) {
+      gravityList3.value = gl3
+      gravityList3.value.sort((a, b) => Date.parse(a.created) - Date.parse(b.created))
+    }
+  }
+
+  createGraph()
 }
 
 function createGraph() {
-  gravityData1.value = mapGravityData(gravityList1.value)
-  gravityData2.value = mapGravityData(gravityList2.value)
+  // Calculate minimum and maximum timestamps for each batch
+  const minTime1 =
+    gravityList1.value && gravityList1.value.length > 0
+      ? Math.min(...gravityList1.value.map((g) => Date.parse(g.created)))
+      : null
+  const maxTime1 =
+    gravityList1.value && gravityList1.value.length > 0
+      ? Math.max(...gravityList1.value.map((g) => Date.parse(g.created)))
+      : null
 
-  console.log(gravityData1.value)
-  console.log(gravityData2.value)
+  const minTime2 =
+    gravityList2.value && gravityList2.value.length > 0
+      ? Math.min(...gravityList2.value.map((g) => Date.parse(g.created)))
+      : null
+  const maxTime2 =
+    gravityList2.value && gravityList2.value.length > 0
+      ? Math.max(...gravityList2.value.map((g) => Date.parse(g.created)))
+      : null
+
+  const minTime3 =
+    gravityList3.value && gravityList3.value.length > 0
+      ? Math.min(...gravityList3.value.map((g) => Date.parse(g.created)))
+      : null
+  const maxTime3 =
+    gravityList3.value && gravityList3.value.length > 0
+      ? Math.max(...gravityList3.value.map((g) => Date.parse(g.created)))
+      : null
+
+  // Calculate durations and find max
+  const duration1 = maxTime1 && minTime1 ? maxTime1 - minTime1 : 0
+  const duration2 = maxTime2 && minTime2 ? maxTime2 - minTime2 : 0
+  const duration3 = maxTime3 && minTime3 ? maxTime3 - minTime3 : 0
+  const maxDuration = Math.max(duration1, duration2, duration3)
+
+  gravityData1.value = mapGravityData(gravityList1.value, minTime1, maxTime1, maxDuration)
+  gravityData2.value = mapGravityData(gravityList2.value, minTime2, maxTime2, maxDuration)
+  gravityData3.value = mapGravityData(gravityList3.value, minTime3, maxTime3, maxDuration)
 
   try {
-    const chartOptions = {
+    var chartOptions = {
       type: 'line',
       data: {
-        datasets: [
-          {
-            label: 'Batch 1',
-            data: gravityData1.value,
-            borderColor: 'blue',
-            backgroundColor: 'blue',
-            yAxisID: 'yGravity',
-            pointRadius: 0,
-            cubicInterpolationMode: 'monotone',
-            tension: 0.4
-          },
-          {
-            label: 'Batch 2',
-            data: gravityData2.value,
-            borderColor: 'red',
-            backgroundColor: 'red',
-            yAxisID: 'yGravity',
-            pointRadius: 0,
-            cubicInterpolationMode: 'monotone',
-            tension: 0.4
-          }
-        ]
+        datasets: []
       },
       options: {
         scales: {
@@ -158,6 +214,45 @@ function createGraph() {
       }
     }
 
+    if (gravityData1.value.length > 0) {
+      chartOptions.data.datasets.push({
+        label: 'Batch 1',
+        data: gravityData1.value,
+        borderColor: 'blue',
+        backgroundColor: 'blue',
+        yAxisID: 'yGravity',
+        pointRadius: 0,
+        cubicInterpolationMode: 'monotone',
+        tension: 0.4
+      })
+    }
+
+    if (gravityData2.value.length > 0) {
+      chartOptions.data.datasets.push({
+        label: 'Batch 2',
+        data: gravityData2.value,
+        borderColor: 'green',
+        backgroundColor: 'green',
+        yAxisID: 'yGravity',
+        pointRadius: 0,
+        cubicInterpolationMode: 'monotone',
+        tension: 0.4
+      })
+    }
+
+    if (gravityData3.value.length > 0) {
+      chartOptions.data.datasets.push({
+        label: 'Batch 3',
+        data: gravityData3.value,
+        borderColor: 'red',
+        backgroundColor: 'red',
+        yAxisID: 'yGravity',
+        pointRadius: 0,
+        cubicInterpolationMode: 'monotone',
+        tension: 0.4
+      })
+    }
+
     if (document.getElementById('gravityChart') == null) {
       logError('BatchGravityGraphCompareView.onMounted()', 'Unable to find the chart canvas')
     } else {
@@ -183,12 +278,36 @@ onMounted(() => {
   })
 })
 
-function mapGravityData(gList) {
+function mapGravityData(gList, minTime, maxTime, maxDuration) {
   var result = []
 
+  if (gList == null) {
+    return result
+  }
+
   gList.forEach((g) => {
+    let x = g.created
+
+    if (timeAdjustment.value !== 'none' && minTime != null) {
+      const referenceDate = new Date('2000-01-01T00:00:00Z').getTime()
+      let timeInMs = 0
+
+      if (timeAdjustment.value === 'start') {
+        // Align by start date
+        timeInMs = Date.parse(g.created) - minTime
+      } else if (timeAdjustment.value === 'end') {
+        // Align by end date
+        const currentDuration = maxTime - minTime
+        const offset = maxDuration - currentDuration
+        timeInMs = offset + (Date.parse(g.created) - minTime)
+      }
+
+      const normalizedDate = new Date(referenceDate + timeInMs)
+      x = normalizedDate
+    }
+
     result.push({
-      x: g.created,
+      x: x,
       y: parseFloat(
         new Number(config.isGravitySG ? g.gravity : gravityToPlato(g.gravity)).toFixed(4)
       )

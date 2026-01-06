@@ -6,7 +6,6 @@ import DeviceView from '@/views/DeviceView.vue'
 import DeviceFlashView from '@/views/DeviceFlashView.vue'
 import DeviceLogView from '@/views/DeviceLogView.vue'
 import DeviceListView from '@/views/DeviceListView.vue'
-import DeviceBatchView from '@/views/DeviceBatchView.vue'
 import BatchView from '@/views/BatchView.vue'
 import BatchListView from '@/views/BatchListView.vue'
 import TapListView from '@/views/TapListView.vue'
@@ -55,17 +54,12 @@ const routes = [
     component: DeviceFlashView
   },
   {
-    path: '/device/:id/batch',
-    name: 'device-batch',
-    component: DeviceBatchView
-  },
-  {
     path: '/batch',
     name: 'batch-list',
     component: BatchListView
   },
   {
-    path: '/dev/compare',
+    path: '/batch/compare',
     name: 'batch-compare-view',
     component: BatchGravityGraphCompareView
   },
