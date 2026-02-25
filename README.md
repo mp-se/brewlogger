@@ -44,7 +44,13 @@ There are a few public endpoints in brewlogger for receving data.
   - Refactored all API's to support null values when there is no data for better consistency
   - Added the latest data points to the home view to a better overview.
   - Update ble scanning code to support latest products
-  
+  - Added more system events to the system log for helping out with issue tracking
+  - Added log for all recevied data on /public endpoints
+  - Set retention to 90 days for system log and received.
+  - Documeneted code and marked all paramters with type
+  - Fixed all lint recommendations (10/10)
+  - Increased test coverage where possible (+90%)
+
 - 0.9.0 Updated with new features
   - Feature: Added support for pressuremon and new post format
   - Updated web flasher

@@ -7,11 +7,7 @@ https://www.patrick-muehlbauer.com/articles/python-docker-compose-vscode
 # Compile the requirements
 
 To create the requirements use these options to determine the correct versions.
-
-Postgres needs to be on the to PATH for the scripts to work. On MacOS use this command.
-```
-export PATH="$PATH:/Applications/Postgres.app/Contents/Versions/latest/bin"
-```
+It uses the dependencies defined in `pyproject.toml`.
 
 From repository root:
 ```
@@ -27,7 +23,14 @@ These commands will create a virtual environment so it can be run locally withou
 
 ```
 python -m venv .env
+
+# Mac/Linux
+source .env/bin/activate
+
+# Windows
+.env\Scripts\activate
 .env/Scripts/Activate.ps1
+
 python -m pip install -r service-api/requirements/test-requirements.txt
 python -m pip install -e . --no-deps
 ```

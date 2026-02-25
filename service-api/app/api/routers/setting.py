@@ -45,5 +45,6 @@ async def update_configuration(
     if bl is None:
         raise HTTPException(status_code=404, detail="Configuration not found")
     bl.api_key_enabled = get_settings().api_key_enabled
-    system_log("config", f"Configuration updated: gravity_forward_url={bool(bl.gravity_forward_url)}", error_code=0, log_level=LogLevel.INFO)
+    message = f"Configuration updated: gravity_forward_url={bool(bl.gravity_forward_url)}"
+    system_log("config", message, error_code=0, log_level=LogLevel.INFO)
     return bl

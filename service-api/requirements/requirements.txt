@@ -8,13 +8,13 @@ annotated-doc==0.0.4
     # via fastapi
 annotated-types==0.7.0
     # via pydantic
-anyio==4.12.0
+anyio==4.12.1
     # via
     #   httpx
     #   starlette
 apscheduler==3.11.2
-    # via brewlogger_api (setup.py)
-certifi==2025.11.12
+    # via brewlogger (pyproject.toml)
+certifi==2026.2.25
     # via
     #   httpcore
     #   httpx
@@ -22,9 +22,9 @@ click==8.3.1
     # via uvicorn
 distlib==0.4.0
     # via virtualenv
-fastapi==0.128.0
-    # via brewlogger_api (setup.py)
-filelock==3.20.1
+fastapi==0.133.0
+    # via brewlogger (pyproject.toml)
+filelock==3.24.3
     # via virtualenv
 h11==0.16.0
     # via
@@ -33,35 +33,35 @@ h11==0.16.0
 httpcore==1.0.9
     # via httpx
 httpx==0.28.1
-    # via brewlogger_api (setup.py)
+    # via brewlogger (pyproject.toml)
 idna==3.11
     # via
     #   anyio
     #   httpx
 ifaddr==0.2.0
     # via zeroconf
-platformdirs==4.5.1
+platformdirs==4.9.2
     # via virtualenv
 psycopg2-binary==2.9.11
-    # via brewlogger_api (setup.py)
+    # via brewlogger (pyproject.toml)
 pydantic==2.12.5
     # via
-    #   brewlogger_api (setup.py)
+    #   brewlogger (pyproject.toml)
     #   fastapi
     #   pydantic-settings
 pydantic-core==2.41.5
     # via pydantic
-pydantic-settings==2.12.0
-    # via brewlogger_api (setup.py)
+pydantic-settings==2.13.1
+    # via brewlogger (pyproject.toml)
 python-dotenv==1.2.1
     # via pydantic-settings
 pyyaml==6.0.3
-    # via brewlogger_api (setup.py)
-redis==7.1.0
-    # via brewlogger_api (setup.py)
-sqlalchemy==2.0.45
-    # via brewlogger_api (setup.py)
-starlette==0.50.0
+    # via brewlogger (pyproject.toml)
+redis==7.2.0
+    # via brewlogger (pyproject.toml)
+sqlalchemy==2.0.47
+    # via brewlogger (pyproject.toml)
+starlette==0.52.1
     # via fastapi
 typing-extensions==4.15.0
     # via
@@ -74,17 +74,18 @@ typing-extensions==4.15.0
     #   typing-inspection
 typing-inspection==0.4.2
     # via
+    #   fastapi
     #   pydantic
     #   pydantic-settings
 tzlocal==5.3.1
     # via apscheduler
-urllib3==2.6.2
-    # via brewlogger_api (setup.py)
-uvicorn==0.40.0
-    # via brewlogger_api (setup.py)
-virtualenv==20.35.4
-    # via brewlogger_api (setup.py)
-websockets==15.0.1
-    # via brewlogger_api (setup.py)
+urllib3==2.6.3
+    # via brewlogger (pyproject.toml)
+uvicorn==0.41.0
+    # via brewlogger (pyproject.toml)
+virtualenv==20.39.0
+    # via brewlogger (pyproject.toml)
+websockets==16.0
+    # via brewlogger (pyproject.toml)
 zeroconf==0.148.0
-    # via brewlogger_api (setup.py)
+    # via brewlogger (pyproject.toml)
