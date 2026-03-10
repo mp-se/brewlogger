@@ -14,20 +14,6 @@ construct==2.10.70
     # via -r requirements.in
 idna==3.11
     # via requests
-pyobjc-core==10.3.2
-    # via
-    #   bleak
-    #   pyobjc-framework-cocoa
-    #   pyobjc-framework-corebluetooth
-    #   pyobjc-framework-libdispatch
-pyobjc-framework-cocoa==10.3.2
-    # via
-    #   pyobjc-framework-corebluetooth
-    #   pyobjc-framework-libdispatch
-pyobjc-framework-corebluetooth==10.3.2
-    # via bleak
-pyobjc-framework-libdispatch==10.3.2
-    # via bleak
 redis==7.2.0
     # via -r requirements.in
 requests==2.32.5
