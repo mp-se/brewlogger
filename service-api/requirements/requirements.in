@@ -1,0 +1,14 @@
+fastapi
+uvicorn
+sqlalchemy
+pydantic
+pydantic-settings
+pyyaml
+httpx
+psycopg2-binary
+zeroconf
+apscheduler
+redis
+websockets
+virtualenv>=20.26.6
+urllib3>=2.2.2

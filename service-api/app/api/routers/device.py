@@ -1,13 +1,16 @@
-import httpx
-import logging
+"""Device management API endpoints for registering, configuring, and monitoring brewery devices."""
 import json
+import logging
 import os
 from json import JSONDecodeError
-from typing import List, Optional
+from typing import Any, List, Optional
+
+import httpx
 from fastapi import Depends, BackgroundTasks
-from fastapi.routing import APIRouter
 from fastapi.responses import Response
+from fastapi.routing import APIRouter
 from starlette.exceptions import HTTPException
+
 from api.db import models, schemas
 from api.services import (
     DeviceService,
@@ -15,9 +18,11 @@ from api.services import (
     FermentationStepService,
     get_fermentationstep_service,
 )
+
+from ..cache import find_key, read_key
 from ..security import api_key_auth
-from ..cache import findKey, readKey
-from ..ws import notifyClients
+from ..ws import notify_clients
+from ..log import system_log, LogLevel
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/api/device")
@@ -30,7 +35,8 @@ async def list_devices(
     software: str = "*",
     devices_service: DeviceService = Depends(get_device_service),
 ) -> List[models.Device]:
-    logger.info(f"Endpoint GET /api/device/?software={software}")
+    """List all devices, optionally filtered by software type."""
+    logger.info("Endpoint GET /api/device/?software=%s", software)
     if software != "*":
         return devices_service.search_software(software=software)
     return devices_service.list()
@@ -45,8 +51,12 @@ async def list_devices(
 async def get_device_by_id(
     device_id: int, devices_service: DeviceService = Depends(get_device_service)
 ) -> Optional[models.Device]:
+    """Retrieve a specific device by ID."""
     logger.info("Endpoint GET /api/device/%d", device_id)
-    return devices_service.get(device_id)
+    device = devices_service.get(device_id)
+    if device is None:
+        raise HTTPException(status_code=404, detail="Device not found")
+    return device
 
 
 @router.get(
@@ -54,6 +64,7 @@ async def get_device_by_id(
     dependencies=[Depends(api_key_auth)],
 )
 async def get_device_logs() -> List[str]:
+    """Retrieve list of device log files."""
     logger.info("Endpoint GET /api/device/logs/")
     files = [f for f in os.listdir(path="log") if os.path.isfile("log/" + f)]
     return files
@@ -64,14 +75,15 @@ async def get_device_logs() -> List[str]:
     dependencies=[Depends(api_key_auth)],
 )
 async def delete_device_log_for_chip_id(chip_id: str) -> None:
-    logger.info(f"Endpoint DEL /api/device/logs/{chip_id}")
+    """Delete device log file for a specific chip ID."""
+    logger.info("Endpoint DEL /api/device/logs/%s", chip_id)
     try:
         os.remove("log/" + chip_id + ".log")
-    except Exception:
+    except FileNotFoundError:
         pass
     try:
         os.remove("log/" + chip_id + ".log.1")
-    except Exception:
+    except FileNotFoundError:
         pass
 
 
@@ -87,14 +99,19 @@ async def create_device(
     background_tasks: BackgroundTasks,
     devices_service: DeviceService = Depends(get_device_service),
 ) -> models.Device:
+    """Create a new device."""
     logger.info("Endpoint POST /api/device/")
     if device.chip_id != "000000":
-        device_list = devices_service.search_chipId(device.chip_id)
+        device_list = devices_service.search_chip_id(device.chip_id)
         if len(device_list) > 0:
-            raise HTTPException(status_code=409, detail="Conflict Error")
+            raise HTTPException(
+                status_code=409,
+                detail=f"Device with chip_id '{device.chip_id}' already exists"
+            )
     logger.info("Creating device: %s", device)
     device = devices_service.create(device)
-    background_tasks.add_task(notifyClients, "device", "create", device.id)
+    system_log("device", f"Device created: {device.chip_id}", error_code=0, log_level=LogLevel.INFO)
+    background_tasks.add_task(notify_clients, "device", "create", device.id)
     return device
 
 
@@ -107,9 +124,14 @@ async def update_device_by_id(
     background_tasks: BackgroundTasks,
     devices_service: DeviceService = Depends(get_device_service),
 ) -> Optional[models.Device]:
+    """Update a specific device by ID."""
     logger.info("Endpoint PATCH /api/device/%d", device_id)
-    background_tasks.add_task(notifyClients, "device", "update", device_id)
-    return devices_service.update(device_id, device)
+    updated_device = devices_service.update(device_id, device)
+    if updated_device is None:
+        raise HTTPException(status_code=404, detail="Device not found")
+    system_log("device", f"Device {device_id} updated", error_code=0, log_level=LogLevel.INFO)
+    background_tasks.add_task(notify_clients, "device", "update", device_id)
+    return updated_device
 
 
 @router.delete("/{device_id}", status_code=204, dependencies=[Depends(api_key_auth)])
@@ -118,14 +140,27 @@ async def delete_device_by_id(
     background_tasks: BackgroundTasks,
     devices_service: DeviceService = Depends(get_device_service),
 ):
+    """Delete a specific device by ID."""
     logger.info("Endpoint DELETE /api/device/%d", device_id)
+    device = devices_service.get(device_id)
+    if not device:
+        raise HTTPException(status_code=404, detail="Device not found")
+    system_log("device", f"Device {device_id} ({device.chip_id}) deleted", error_code=0, log_level=LogLevel.INFO)
     devices_service.delete(device_id)
-    background_tasks.add_task(notifyClients, "device", "delete", device_id)
+    background_tasks.add_task(notify_clients, "device", "delete", device_id)
 
 
 @router.post("/proxy_fetch/", status_code=200, dependencies=[Depends(api_key_auth)])
-async def fetch_data_from_device(proxy_req: schemas.ProxyRequest):
-    logger.info("Endpoint POST /api/device/proxy_fetch")
+async def fetch_data_from_device(proxy_req: schemas.ProxyRequest) -> Any:
+    """Fetch data from a device via proxy request.
+    
+    Args:
+        proxy_req: Proxy request containing URL, method, body, and headers
+    
+    Returns:
+        JSON object if response is JSON, otherwise string of response text
+    """
+    logger.info("Endpoint POST /api/device/proxy_fetch: %s %s", proxy_req.method, proxy_req.url)
 
     try:
         timeout = httpx.Timeout(10.0, connect=10.0, read=10.0)
@@ -138,17 +173,17 @@ async def fetch_data_from_device(proxy_req: schemas.ProxyRequest):
             logger.info("Header provided %s", headers)
 
         async with httpx.AsyncClient(timeout=timeout) as client:
-            if proxy_req.method == "post":
+            if proxy_req.method.lower() == "post":
                 logger.info("Request using post %s", proxy_req.url)
                 res = await client.post(
                     proxy_req.url, data=proxy_req.body, headers=headers
                 )
-            elif proxy_req.method == "put":
+            elif proxy_req.method.lower() == "put":
                 logger.info("Request using put %s", proxy_req.url)
                 res = await client.put(
                     proxy_req.url, data=proxy_req.body, headers=headers
                 )
-            elif proxy_req.method == "delete":
+            elif proxy_req.method.lower() == "delete":
                 logger.info("Request using delete %s", proxy_req.url)
                 res = await client.delete(proxy_req.url, headers=headers)
             else:
@@ -164,47 +199,52 @@ async def fetch_data_from_device(proxy_req: schemas.ProxyRequest):
 
             # if the data is not pure Json, return it as text
             try:
-                json = res.json()
-            except Exception:
-                json = res.text
-            logger.info("Payload from external service: %s", json)
-            return json
-    except JSONDecodeError:
+                response_data = res.json()
+            except ValueError:
+                response_data = res.text
+            logger.info("Payload from external service: %s", response_data)
+            return response_data
+    except JSONDecodeError as exc:
         logger.error("Unable to parse JSON response")
         raise HTTPException(
             status_code=400, detail="Unable to parse JSON from remote endpoint."
-        )
-    except httpx.ReadTimeout:
+        ) from exc
+    except httpx.ReadTimeout as exc:
         logger.error("Unable to connect to device")
         raise HTTPException(
             status_code=400,
             detail="Unable to connect to remote endpoint (ConnectError).",
-        )
-    except httpx.ConnectError:
+        ) from exc
+    except httpx.ConnectError as exc:
         logger.error("Unable to read from device")
         raise HTTPException(
             status_code=400,
             detail="Unable to connect to remote endpoint (ReadTimeout).",
-        )
-    except httpx.ConnectTimeout:
+        ) from exc
+    except httpx.ConnectTimeout as exc:
         logger.error("Unable to connect to device")
         raise HTTPException(
             status_code=400,
             detail="Unable to connect to remote endpoint (ConnectTimeout).",
-        )
+        ) from exc
     # except:
     #    logger.error("Unknown error occured when trying to fetch data from remote")
 
 
 @router.get("/mdns/", status_code=200, dependencies=[Depends(api_key_auth)])
-async def scan_for_mdns_devices():
+async def scan_for_mdns_devices() -> list[schemas.Mdns]:
+    """Scan for mDNS devices on the network.
+    
+    Returns:
+        List of discovered mDNS devices on the local network
+    """
     logger.info("Endpoint GET /api/device/mdns/")
 
     mdns = []
 
-    keys = findKey("*.local.")
+    keys = find_key("*.local.")
     for k in keys:
-        value = readKey(k).decode()
+        value = read_key(k).decode()
         logger.info("Found {key} = {value}")
         mdns.append(json.loads(value))
 
@@ -225,13 +265,14 @@ async def create_fermentation_step(
         get_fermentationstep_service
     ),
 ) -> List[models.FermentationStep]:
-    logger.info(f"Endpoint POST /api/device/{device_id}/step")
+    """Create fermentation steps for a device."""
+    logger.info("Endpoint POST /api/device/%s/step", device_id)
 
-    step_list = fermentation_step_service.search_by_deviceId(device_id)
+    step_list = fermentation_step_service.search_by_device_id(device_id)
     if len(step_list) > 0:
         raise HTTPException(status_code=409, detail="Conflict Error")
 
-    return fermentation_step_service.createList(fermentation_step_list)
+    return fermentation_step_service.create_list(fermentation_step_list)
 
 
 @router.delete(
@@ -243,5 +284,6 @@ async def delete_fermentation_step_by_device_id(
         get_fermentationstep_service
     ),
 ):
-    logger.info(f"Endpoint DELETE /api/fermentation_step/{device_id}")
-    fermentation_step_service.delete_by_deviceId(device_id)
+    """Delete fermentation steps for a device."""
+    logger.info("Endpoint DELETE /api/fermentation_step/%s", device_id)
+    fermentation_step_service.delete_by_device_id(device_id)

@@ -1,3 +1,4 @@
+"""Redis cache management for storing temporary data and session information."""
 import logging
 import redis
 from .config import get_settings
@@ -5,7 +6,7 @@ from .config import get_settings
 logger = logging.getLogger(__name__)
 
 logger.info(
-    f"Creating connection pool to redis using redis://{get_settings().redis_host}:6379."
+    "Creating connection pool to redis using redis://%s:6379.", get_settings().redis_host
 )
 
 pool = None
@@ -14,69 +15,108 @@ if get_settings().cache_enabled:
     pool = redis.ConnectionPool(host=get_settings().redis_host, port=6379, db=0)
 
 
-def deleteKey(key):
+def delete_key(key: str | bytes) -> None:
+    """Delete a key from the Redis cache.
+    
+    Args:
+        key: The key to delete from cache (str or bytes)
+    """
     if pool is None:
         return
 
-    logger.info(f"Removing {key}.")
+    logger.info("Removing %s.", key)
     try:
         r = redis.Redis(connection_pool=pool)
         r.delete(key)
     except redis.exceptions.ConnectionError as e:
-        logger.error(f"Failed to connect with redis {e}.")
+        logger.error("Failed to connect with redis %s.", e)
     return
 
 
-def findKey(key):
+def find_key(key: str) -> list[bytes]:
+    """Find keys in Redis cache matching the given pattern.
+    
+    Args:
+        key: Pattern to search for (supports wildcards like *)
+    
+    Returns:
+        List of matching keys as bytes, or empty list if none found or cache disabled
+    """
     if pool is None:
         return []
 
-    logger.info(f"Searching key {key}.")
+    logger.info("Searching key %s.", key)
     try:
         r = redis.Redis(connection_pool=pool)
         return r.keys(key)
     except redis.exceptions.ConnectionError as e:
-        logger.error(f"Failed to connect with redis {e}.")
+        logger.error("Failed to connect with redis %s.", e)
     return []
 
 
-def writeKey(key, value, ttl):
+def write_key(key: str, value: str, ttl: int) -> bool:
+    """Write a key-value pair to Redis cache with optional TTL.
+    
+    Args:
+        key: The key to write
+        value: The value to store (will be converted to string)
+        ttl: Time to live in seconds
+    
+    Returns:
+        True if successful, False if cache disabled or connection error
+    """
     if pool is None:
         return True
 
-    logger.info(f"Writing key {key} = {value} ttl:{ttl}.")
+    logger.info("Writing key %s = %s ttl:%s.", key, value, ttl)
     try:
         r = redis.Redis(connection_pool=pool)
         r.set(name=key, value=str(value), ex=ttl)
         return True
     except redis.exceptions.ConnectionError as e:
-        logger.error(f"Failed to connect with redis {e}.")
+        logger.error("Failed to connect with redis %s.", e)
     return False
 
 
-def readKey(key):
+def read_key(key: str | bytes) -> bytes | None:
+    """Read a value from Redis cache by key.
+    
+    Args:
+        key: The key to read (str or bytes)
+    
+    Returns:
+        The value as bytes if found, None if key doesn't exist or cache disabled
+    """
     if pool is None:
         return None
 
-    logger.info(f"Reading key {key}.")
+    logger.info("Reading key %s.", key)
     try:
         r = redis.Redis(connection_pool=pool)
         return r.get(name=key)
     except redis.exceptions.ConnectionError as e:
-        logger.error(f"Failed to connect with redis {e}.")
+        logger.error("Failed to connect with redis %s.", e)
 
     return None
 
 
-def existKey(key):
+def exist_key(key: str | bytes) -> bool:
+    """Check if a key exists in Redis cache.
+    
+    Args:
+        key: The key to check (str or bytes)
+    
+    Returns:
+        True if key exists, False if it doesn't exist or cache disabled
+    """
     if pool is None:
         return False
 
-    logger.info(f"Check key {key}.")
+    logger.info("Check key %s.", key)
     try:
         r = redis.Redis(connection_pool=pool)
         return r.exists(key)
     except redis.exceptions.ConnectionError as e:
-        logger.error(f"Failed to connect with redis {e}.")
+        logger.error("Failed to connect with redis %s.", e)
 
     return False

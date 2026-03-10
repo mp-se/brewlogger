@@ -1,10 +1,12 @@
 
-FROM alpine
-ADD mdns-repeater.c mdns-repeater.c
-RUN apk add --no-cache build-base bash docker-cli \
-    && gcc -O3 -o /bin/mdns-repeater mdns-repeater.c -DHGVERSION="\"1\"" \
-    && apk del build-base \
-    && rm -rf /var/cache/apk/* /tmp/*
+FROM python:3.13
+WORKDIR /app
+ENV PYTHONFAULTHANDLER=1
+ENV PYTHONUNBUFFERED=1
+RUN apt-get update && apt-get install -y avahi-utils libnss-mdns
+COPY requirements.txt /app/requirements.txt
+RUN pip install --no-cache-dir --upgrade -r /app/requirements.txt
+COPY *.py /app
 COPY entrypoint.sh /entrypoint.sh
-RUN chmod a+x entrypoint.sh
+RUN chmod a+x /entrypoint.sh
 ENTRYPOINT [ "/entrypoint.sh" ]

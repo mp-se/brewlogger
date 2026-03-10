@@ -1,14 +1,18 @@
+"""Pour event API endpoints for recording and managing beer pour operations."""
 import logging
 from json.decoder import JSONDecodeError
 from datetime import datetime
-from typing import List, Optional
-from fastapi import Depends, Request, BackgroundTasks
+from typing import List, Optional, Union
+from fastapi import Depends, Request, BackgroundTasks, Query
+from fastapi.responses import Response
 from fastapi.routing import APIRouter
 from starlette.exceptions import HTTPException
 from api.db import models, schemas
 from api.services import PourService, get_pour_service, BatchService, get_batch_service
 from ..security import api_key_auth
-from ..ws import notifyClients
+from ..ws import notify_clients
+from ..utils import log_public_request, get_client_ip
+from ..log import system_log, LogLevel
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/api/pour")
@@ -18,13 +22,28 @@ router = APIRouter(prefix="/api/pour")
     "/", response_model=List[schemas.Pour], dependencies=[Depends(api_key_auth)]
 )
 async def list_pours(
-    chipId: str = "*",
+    batch_id: Optional[int] = Query(None, alias="batchId"),
     pour_service: PourService = Depends(get_pour_service),
 ) -> List[models.Pour]:
-    logger.info(f"Endpoint GET /api/pour/?chipId={chipId}")
-    if chipId != "*":
-        return pour_service.search(chipId)
+    """List pour events, optionally filtered by batch ID."""
+    logger.info("Endpoint GET /api/pour/?batch_id=%s", batch_id)
+    if batch_id is not None:
+        return pour_service.search_by_batch_id(batch_id)
     return pour_service.list()
+
+
+@router.get(
+    "/latest",
+    response_model=List[schemas.PourLatest],
+    dependencies=[Depends(api_key_auth)],
+)
+async def get_latest_pours(
+    limit: int = 10,
+    pour_service: PourService = Depends(get_pour_service),
+) -> List[dict]:
+    """Get the most recent pour events with limit."""
+    logger.info("Endpoint GET /api/pour/latest?limit=%s", limit)
+    return pour_service.get_latest(limit)
 
 
 @router.get(
@@ -36,47 +55,45 @@ async def list_pours(
 async def get_pour_by_id(
     pour_id: int, pour_service: PourService = Depends(get_pour_service)
 ) -> Optional[models.Pour]:
-    logger.info(f"Endpoint GET /api/pour/{pour_id}")
-    return pour_service.get(pour_id)
+    """Retrieve a specific pour event by ID."""
+    logger.info("Endpoint GET /api/pour/%s", pour_id)
+    pour = pour_service.get(pour_id)
+    if pour is None:
+        raise HTTPException(status_code=404, detail="Pour not found")
+    return pour
 
 
 @router.post(
     "/",
-    response_model=schemas.Pour,
+    response_model=Union[schemas.Pour, List[schemas.Pour]],
     status_code=201,
     responses={409: {"description": "Conflict Error"}},
     dependencies=[Depends(api_key_auth)],
 )
 async def create_pour(
-    pour: schemas.PourCreate,
+    pour: Union[schemas.PourCreate, List[schemas.PourCreate]],
     background_tasks: BackgroundTasks,
     pour_service: PourService = Depends(get_pour_service),
-) -> models.Pour:
+) -> Union[models.Pour, List[models.Pour]]:
+    """Create one or multiple pour events in a single request."""
     logger.info("Endpoint POST /api/pour/")
-    if pour.created is None:
-        pour.created = datetime.now()
-        logger.info(f"Added timestamp to pour record {pour.created}")
-    pour = pour_service.create(pour)
-    background_tasks.add_task(notifyClients, "batch", "update", pour.batch_id)
-    return pour
 
+    # Handle single pour event
+    if isinstance(pour, schemas.PourCreate):
+        if pour.created is None:
+            pour.created = datetime.now()
+            logger.info("Added timestamp to pour record %s", pour.created)
+        result = pour_service.create(pour)
+        background_tasks.add_task(notify_clients, "batch", "update", result.batch_id)
+        return result
 
-@router.post(
-    "/list/",
-    response_model=List[schemas.Pour],
-    status_code=201,
-    responses={409: {"description": "Conflict Error"}},
-    dependencies=[Depends(api_key_auth)],
-)
-async def create_pour_list(
-    pour_list: List[schemas.PourCreate],
-    background_tasks: BackgroundTasks,
-    pour_service: PourService = Depends(get_pour_service),
-) -> List[models.Pour]:
-    logger.info("Endpoint POST /api/pour/list/")
-    pour_list = pour_service.createList(pour_list)
-    background_tasks.add_task(notifyClients, "batch", "update", pour_list[0].batch_id)
-    return pour_list
+    # Handle multiple pour events
+    for p in pour:
+        if p.created is None:
+            p.created = datetime.now()
+    result = pour_service.create_list(pour)
+    background_tasks.add_task(notify_clients, "batch", "update", result[0].batch_id)
+    return result
 
 
 @router.patch(
@@ -88,9 +105,12 @@ async def update_pour_by_id(
     background_tasks: BackgroundTasks,
     pour_service: PourService = Depends(get_pour_service),
 ) -> Optional[models.Pour]:
-    logger.info(f"Endpoint PATCH /api/pour/{pour_id}")
+    """Update a specific pour event by ID."""
+    logger.info("Endpoint PATCH /api/pour/%s", pour_id)
     pour = pour_service.update(pour_id, gravity)
-    background_tasks.add_task(notifyClients, "batch", "update", pour.batch_id)
+    if pour is None:
+        raise HTTPException(status_code=404, detail="Pour not found")
+    background_tasks.add_task(notify_clients, "batch", "update", pour.batch_id)
     return pour
 
 
@@ -100,73 +120,91 @@ async def delete_pour_by_id(
     background_tasks: BackgroundTasks,
     pour_service: PourService = Depends(get_pour_service),
 ):
-    logger.info(f"Endpoint DELETE /api/pour/{pour_id}")
+    """Delete a pour event by ID."""
+    logger.info("Endpoint DELETE /api/pour/%s", pour_id)
     pour = pour_service.get(pour_id)
-    background_tasks.add_task(notifyClients, "batch", "update", pour.batch_id)
+    if not pour:
+        raise HTTPException(status_code=404, detail="Pour not found")
+    background_tasks.add_task(notify_clients, "batch", "update", pour.batch_id)
     pour_service.delete(pour_id)
 
 
-@router.post("/public", response_model=schemas.Pour, status_code=200)
+@router.post("/public", response_class=Response, status_code=200)
 async def create_pour_using_kegmon_format(
     request: Request,
     background_tasks: BackgroundTasks,
     pour_service: PourService = Depends(get_pour_service),
     batch_service: BatchService = Depends(get_batch_service),
-) -> models.Pour:
+) -> Response:
+    """Create a pour event from Kegmon format data."""
     logger.info("Endpoint POST /api/pour/public")
 
     try:
         req_json = await request.json()
 
-        logger.info(f"Payload: {req_json}")
+        # Get client IP address and log the request
+        client_host = get_client_ip(request)
+        background_tasks.add_task(log_public_request, client_host, req_json)
 
-        pourVal = 0
-        volumeVal = 0
-        maxVolumeVal = 0
+        logger.info("Payload: %s", req_json)
 
-        if "pour" in req_json:
-            pourVal = req_json["pour"]
+        pour_val = 0
+        volume_val = 0
+        max_volume_val = 0
 
-        if "volume" in req_json:
-            volumeVal = req_json["volume"]
+        if "pour" in req_json and req_json["pour"] is not None:
+            pour_val = req_json["pour"]
 
-        if "maxVolume" in req_json:
-            maxVolumeVal = req_json["maxVolume"]
+        if "volume" in req_json and req_json["volume"] is not None:
+            volume_val = req_json["volume"]
+
+        if "maxVolume" in req_json and req_json["maxVolume"] is not None:
+            max_volume_val = req_json["maxVolume"]
 
         # Check if there is an active batch
-        batch = batch_service.get(int(req_json["id"]))
+        try:
+            batch_id = int(req_json["id"])
+        except (KeyError, ValueError) as e:
+            logger.error("Invalid batch ID: %s", e)
+            system_log("pour", f"Invalid batch ID in request: {req_json.get('id')}", error_code=400, log_level=LogLevel.WARNING)
+            raise HTTPException(status_code=400, detail="Invalid batch ID") from e
+        
+        logger.info("Looking up batch with ID: %s", batch_id)
+        batch = batch_service.get(batch_id)
+        
+        if batch is None:
+            logger.warning("No batch found for batch ID %s", batch_id)
+            system_log("pour", f"No batch found for batch ID {batch_id}", error_code=404, log_level=LogLevel.WARNING)
+            raise HTTPException(status_code=409, detail="No batch found")
 
-        pour_list = pour_service.search_by_batchId(batch.id)
+        pour_list = pour_service.search_by_batch_id(batch.id)
         pour_list.sort(key=lambda x: x.created, reverse=True)
 
         for p in pour_list:
-            logging.info(f"{p.created} {p.volume}")
+            logging.info("%s %s", p.created, p.volume)
 
         # If we get a volume update and no pour, check if the value has changed
-        if len(pour_list) > 0 and pourVal == 0:
-            if pour_list[0].volume == volumeVal:
+        if len(pour_list) > 0 and pour_val == 0:
+            if pour_list[0].volume == volume_val:
                 logging.info(
                     "Volume recevied in pour update has not changed, ignoring data."
                 )
                 return None
 
         pour = schemas.PourCreate(
-            pour=pourVal,
-            volume=volumeVal,
-            maxVolume=maxVolumeVal,
+            pour=pour_val,
+            volume=volume_val,
+            maxVolume=max_volume_val,
             batch_id=batch.id,
             created=datetime.now(),
             active=True,
         )
 
         pour = pour_service.create(pour)
-        background_tasks.add_task(notifyClients, "batch", "update", pour.batch_id)
-        return pour
+        background_tasks.add_task(notify_clients, "batch", "update", pour.batch_id)
+        return Response(content="", status_code=200)
 
-    except KeyError as e:
+    except (KeyError, JSONDecodeError) as e:
         logging.error(e)
-        raise HTTPException(status_code=422, detail="Unable to parse request")
-
-    except JSONDecodeError as e:
-        logging.error(e)
-        raise HTTPException(status_code=422, detail="Unable to parse request")
+        system_log("pour", f"Failed to parse pour data: {type(e).__name__}", error_code=0, log_level=LogLevel.ERROR)
+        raise HTTPException(status_code=422, detail="Unable to parse request") from e

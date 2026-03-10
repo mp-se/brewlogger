@@ -1,3 +1,4 @@
+"""Configuration management and settings for BrewLogger API application."""
 import string
 import random
 import logging
@@ -10,13 +11,15 @@ config = Config()
 
 
 def generate_api_key(key_length):
+    """Generate a random API key of specified length."""
     characters = string.ascii_letters + string.digits
     api_key = "".join(random.choice(characters) for _ in range(key_length))
     return api_key
 
 
 class Settings(BaseSettings):
-    version: str = "0.9.0"
+    """Application settings and configuration parameters."""
+    version: str = "1.0.0"
     app_name: str = "BrewLogger API"
     database_url: str = config(
         "DATABASE_URL", cast=str, default="sqlite:///./brewlogger.sqlite"
@@ -32,17 +35,18 @@ class Settings(BaseSettings):
     if api_key == "":
         api_key = generate_api_key(20)
 
-    logger.info(f"db_url: {database_url}")
-    logger.info(f"redis_host: {redis_host}")
-    logger.info(f"api_key: {api_key}")
-    logger.info(f"api_key_enabled: {api_key_enabled}")
-    logger.info(f"scheduler_enabled: {scheduler_enabled}")
-    logger.info(f"cache_enabled: {cache_enabled}")
-    logger.info(f"brewfather_api_key: {brewfather_api_key}")
-    logger.info(f"brewfather_user_key: {brewfather_user_key}")
+    logger.info("db_url: %s", database_url)
+    logger.info("redis_host: %s", redis_host)
+    logger.info("api_key: %s", api_key)
+    logger.info("api_key_enabled: %s", api_key_enabled)
+    logger.info("scheduler_enabled: %s", scheduler_enabled)
+    logger.info("cache_enabled: %s", cache_enabled)
+    logger.info("brewfather_api_key: %s", brewfather_api_key)
+    logger.info("brewfather_user_key: %s", brewfather_user_key)
 
 
 @lru_cache
 def get_settings() -> Settings:
+    """Get or create cached application settings instance."""
     settings = Settings()
     return settings

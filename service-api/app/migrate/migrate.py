@@ -130,6 +130,22 @@ def migrate_database():
         "ALTER TABLE gravity ADD COLUMN velocity FLOAT",
         "UPDATE gravity SET velocity = 0 WHERE velocity IS NULL",
         "ALTER TABLE gravity ALTER COLUMN velocity SET NOT NULL",
+        "ALTER TABLE gravity ALTER COLUMN temperature DROP NOT NULL",
+        "ALTER TABLE gravity ALTER COLUMN velocity DROP NOT NULL",
+        "ALTER TABLE gravity ALTER COLUMN corr_gravity DROP NOT NULL",
+        "ALTER TABLE gravity ALTER COLUMN run_time DROP NOT NULL",
+        "ALTER TABLE pressure ALTER COLUMN temperature DROP NOT NULL",
+        "ALTER TABLE pressure ALTER COLUMN pressure1 DROP NOT NULL",
+        "ALTER TABLE pressure ALTER COLUMN battery DROP NOT NULL",
+        "ALTER TABLE pressure ALTER COLUMN run_time DROP NOT NULL",
+
+        # Changes from v0.10 -> v0.11
+        "CREATE TABLE IF NOT EXISTS receivelog (id SERIAL PRIMARY KEY, ip_address VARCHAR(45) NOT NULL, timestamp TIMESTAMP NOT NULL, payload TEXT NOT NULL)",
+
+        # Changes from v0.11 -> v0.12 (logging refactoring)
+        "ALTER TABLE systemlog ADD COLUMN log_level INTEGER DEFAULT 3",
+        "UPDATE systemlog SET log_level = 3 WHERE log_level IS NULL",
+        "ALTER TABLE systemlog ALTER COLUMN log_level SET NOT NULL",
     ]
 
     with engine.connect() as con:

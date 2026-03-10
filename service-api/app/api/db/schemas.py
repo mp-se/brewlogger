@@ -31,12 +31,16 @@ class Job(BaseModel):
     name: str
     nextRunIn: int
 
+class Cache(BaseModel):
+    name: str
+    value: str
 
 class SelfTestResult(BaseModel):
     databaseConnection: bool
     redisConnection: bool
     backgroundJobs: List[str]
-
+    log: List[Cache]
+    ble: List[Cache]
 
 class BrewfatherBatch(BaseModel):
     name: str
@@ -127,6 +131,14 @@ class SystemLog(SystemLogCreate):
     id: int
 
 
+class SystemLogPaginatedResponse(BaseModel):
+    model_config = ConfigDict(alias_generator=to_camel, populate_by_name=True)
+    total: int = Field(description="Total number of records")
+    skip: int = Field(description="Number of records skipped")
+    limit: int = Field(description="Number of records returned")
+    data: List[SystemLog] = Field(description="List of system logs")
+
+
 ################################################################################
 
 
@@ -207,14 +219,14 @@ class Device(DeviceCreate):
 class GravityBase(BaseModel):
     model_config = ConfigDict(alias_generator=to_camel, populate_by_name=True)
 
-    temperature: float = Field(description="Temperature value in C")
+    temperature: Optional[float] = Field(None, description="Temperature value in C")
     gravity: float = Field(description="Calculated gravity in SG")
-    velocity: float = Field(description="Gravity velocity, points per day")
+    velocity: Optional[float] = Field(None, description="Gravity velocity, points per day")
     angle: float = Field(description="Tilt or angle of the device")
     battery: float = Field(description="Battery voltage")
     rssi: float = Field(description="WIFI signal strenght")
-    corr_gravity: float = Field(description="Temperature corrected gravity")
-    run_time: float = Field(description="Number of seconds the execution took")
+    corr_gravity: Optional[float] = Field(None, description="Temperature corrected gravity")
+    run_time: Optional[float] = Field(None, description="Number of seconds the execution took")
     created: Optional[datetime] | None = Field(
         default=None, description="If undefined the current time will be used"
     )
@@ -242,18 +254,23 @@ class Gravity(GravityCreate):
     id: int
 
 
+class GravityLatest(Gravity):
+    batch_name: str = Field(description="Name of the parent batch")
+    chip_id_gravity: str = Field(description="Chip ID for gravity from parent batch")
+
+
 ################################################################################
 
 
 class PressureBase(BaseModel):
     model_config = ConfigDict(alias_generator=to_camel, populate_by_name=True)
 
-    temperature: float = Field(description="Temperature value in C")
+    temperature: Optional[float] = Field(None, description="Temperature value in C")
     pressure: float = Field(description="Measured pressure in kPa")
-    pressure1: float = Field(description="Measured pressure1 in kPa")
-    battery: float = Field(description="Battery voltage")
+    pressure1: Optional[float] = Field(None, description="Measured pressure1 in kPa")
+    battery: Optional[float] = Field(None, description="Battery voltage")
     rssi: float = Field(description="WIFI signal strenght")
-    run_time: float = Field(description="Number of seconds the execution took")
+    run_time: Optional[float] = Field(None, description="Number of seconds the execution took")
     created: Optional[datetime] | None = Field(
         default=None, description="If undefined the current time will be used"
     )
@@ -273,6 +290,11 @@ class PressureCreate(PressureBase):
 class Pressure(PressureCreate):
     model_config = ConfigDict(from_attributes=True)
     id: int
+
+
+class PressureLatest(Pressure):
+    batch_name: str = Field(description="Name of the parent batch")
+    chip_id_pressure: str = Field(description="Chip ID for pressure from parent batch")
 
 
 ################################################################################
@@ -304,6 +326,11 @@ class PourCreate(PourBase):
 class Pour(PourCreate):
     model_config = ConfigDict(from_attributes=True)
     id: int
+
+
+class PourLatest(Pour):
+    batch_name: str = Field(description="Name of the parent batch")
+
 
 
 ################################################################################
@@ -380,6 +407,16 @@ class Batch(BatchCreate):
     pour: List[Pour] = None
 
 
+class BatchList(BatchBase):
+    model_config = ConfigDict(from_attributes=True, alias_generator=to_camel, populate_by_name=True)
+    id: int
+    gravity_count: int = Field(default=0, description="Count of gravity readings")
+    pressure_count: int = Field(default=0, description="Count of pressure readings")
+    pour_count: int = Field(default=0, description="Count of pour readings")
+    last_pour_volume: Optional[float] = Field(None, description="Latest pour volume")
+    last_pour_max_volume: Optional[float] = Field(None, description="Latest pour max volume")
+
+
 class BatchDashboard(BaseModel):
     model_config = ConfigDict(alias_generator=to_camel, populate_by_name=True)
     id: int
@@ -416,3 +453,28 @@ class BatchDashboard(BaseModel):
 
 
 ################################################################################
+
+
+class ReceiveLogBase(BaseModel):
+    model_config = ConfigDict(alias_generator=to_camel, populate_by_name=True)
+    ip_address: str = Field(description="IP address of the client")
+    payload: str = Field(description="JSON payload received as string")
+
+
+class ReceiveLogCreate(ReceiveLogBase):
+    pass
+
+
+class ReceiveLog(ReceiveLogBase):
+    model_config = ConfigDict(from_attributes=True, alias_generator=to_camel, populate_by_name=True)
+    id: int
+    timestamp: datetime = Field(description="Timestamp when the request was received")
+
+
+class ReceiveLogPaginatedResponse(BaseModel):
+    model_config = ConfigDict(alias_generator=to_camel, populate_by_name=True)
+    total: int = Field(description="Total number of records")
+    skip: int = Field(description="Number of records skipped")
+    limit: int = Field(description="Number of records returned")
+    data: List[ReceiveLog] = Field(description="List of receive logs")
+

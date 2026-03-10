@@ -1,3 +1,36 @@
 [build-system]
-requires = ["setuptools >= 64"]
+requires = ["setuptools>=64", "setuptools_scm>=8"]
 build-backend = "setuptools.build_meta"
+
+[project]
+name = "brewlogger"
+dynamic = ["version"]
+description = "BrewLogger server"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "fastapi",
+    "uvicorn",
+    "sqlalchemy",
+    "pydantic",
+    "pydantic-settings",
+    "pyyaml",
+    "httpx",
+    "psycopg2-binary",
+    "zeroconf",
+    "apscheduler",
+    "redis",
+    "websockets",
+    "virtualenv>=20.26.6",
+    "urllib3>=2.2.2",
+]
+
+[tool.setuptools]
+package-dir = {"" = "service-api/app"}
+include-package-data = true
+
+[tool.setuptools.packages.find]
+where = ["service-api/app"]
+include = ["api*"]
+
+[tool.setuptools_scm]

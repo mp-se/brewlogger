@@ -1,9 +1,12 @@
+"""Configuration settings API endpoints for managing application settings."""
 import logging
 from fastapi import Depends
 from fastapi.routing import APIRouter
+from starlette.exceptions import HTTPException
 from api.services import BrewLoggerService, get_brewlogger_service
 from api.db import schemas
 from ..security import api_key_auth, get_settings
+from ..log import system_log, LogLevel
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/api/config")
@@ -15,27 +18,33 @@ router = APIRouter(prefix="/api/config")
 async def get_configuration(
     brewlogger_service: BrewLoggerService = Depends(get_brewlogger_service),
 ):
+    """Retrieve application configuration settings."""
     logger.info("Endpoint GET /api/config/")
-    list = brewlogger_service.list()
+    settings_list = brewlogger_service.list()
 
     # The following settings are defined during bootstrap and values in db are ignored
-    if len(list) > 0:
-        list[0].api_key_enabled = get_settings().api_key_enabled
-        return list[0]
+    if len(settings_list) > 0:
+        settings_list[0].api_key_enabled = get_settings().api_key_enabled
+        return settings_list[0]
 
     return None
 
 
 @router.patch(
-    "/{id}", response_model=schemas.BrewLogger, dependencies=[Depends(api_key_auth)]
+    "/{item_id}", response_model=schemas.BrewLogger, dependencies=[Depends(api_key_auth)]
 )
 async def update_configuration(
-    id: int,
-    brewLogger: schemas.BrewLoggerUpdate,
+    item_id: int,
+    brew_logger: schemas.BrewLoggerUpdate,
     brewlogger_service: BrewLoggerService = Depends(get_brewlogger_service),
 ):
-    logger.info("Endpoint PATCH /api/config/%d", id)
-    brewLogger.version = get_settings().version
-    bl = brewlogger_service.update(id, brewLogger)
+    """Update application configuration settings."""
+    logger.info("Endpoint PATCH /api/config/%d", item_id)
+    brew_logger.version = get_settings().version
+    bl = brewlogger_service.update(item_id, brew_logger)
+    if bl is None:
+        raise HTTPException(status_code=404, detail="Configuration not found")
     bl.api_key_enabled = get_settings().api_key_enabled
+    message = f"Configuration updated: gravity_forward_url={bool(bl.gravity_forward_url)}"
+    system_log("config", message, error_code=0, log_level=LogLevel.INFO)
     return bl

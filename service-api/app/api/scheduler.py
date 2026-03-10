@@ -1,15 +1,20 @@
-import logging
-import httpx
+"""Background job scheduler for periodic tasks like syncing Brewfather data and cleaning logs."""
 import json
+import logging
 from datetime import datetime
+
+from fastapi import FastAPI
+import httpx
+from apscheduler.schedulers.asyncio import AsyncIOScheduler
+
 from api.db.session import create_session
 from api.services import BrewLoggerService, DeviceService
-from apscheduler.schedulers.asyncio import AsyncIOScheduler
+
 from .config import get_settings
-from .cache import writeKey, findKey, readKey, deleteKey
-from .fermentationcontrol import fermentation_controller_run
+from .cache import write_key, find_key, read_key, delete_key
 from .chamberctrl import chamberctrl_temps
-from .log import system_log_scheduler, system_log_purge
+from .fermentationcontrol import fermentation_controller_run
+from .log import system_log_scheduler, system_log_purge, receive_log_purge, LogLevel
 
 logger = logging.getLogger(__name__)
 scheduler = AsyncIOScheduler()
@@ -20,32 +25,36 @@ headers = {
 
 
 def scheduler_shutdown():
+    """Gracefully shutdown the background job scheduler."""
     logger.info("Shutting down scheduler")
     scheduler.shutdown()
 
 
 async def task_fetch_chamberctrl_temps():
-    logger.info(f"Task: fetch_chamberctrl_temps is running at {datetime.now()}")
+    """Fetch current temperatures from chamber controller devices."""
+    logger.info("Task: fetch_chamberctrl_temps is running at %s", datetime.now())
 
     devices = DeviceService(create_session()).search_software("Chamber-Controller")
     for device in devices:
-        logger.info(f"Processing chamber controller device {device.id}, {device.url}")
+        logger.info("Processing chamber controller device %s, %s", device.id, device.url)
         url = device.url
 
         if url != "":
-            res = await chamberctrl_temps(url)
+            res = await chamberctrl_temps(device.id, url)
             if res is not None:
                 logger.info(
-                    f'Chamber controller temps, beer={res["pid_beer_temp"]}, chamber={res["pid_fridge_temp"]}'
+                    'Chamber controller temps, beer=%s, chamber=%s',
+                    res["pid_beer_temp"], res["pid_fridge_temp"]
                 )
                 key = "chamber_" + str(device.id) + "_beer_temp"
-                writeKey(key, res["pid_beer_temp"], ttl=300)
+                write_key(key, res["pid_beer_temp"], ttl=300)
                 key = "chamber_" + str(device.id) + "_fridge_temp"
-                writeKey(key, res["pid_fridge_temp"], ttl=300)
+                write_key(key, res["pid_fridge_temp"], ttl=300)
 
 
 async def task_forward_gravity():
-    logger.info(f"Task: task_forward_gravity is running at {datetime.now()}")
+    """Forward gravity data to configured external URL."""
+    logger.info("Task: task_forward_gravity is running at %s", datetime.now())
 
     settings = BrewLoggerService(create_session()).list()[0]
 
@@ -53,14 +62,20 @@ async def task_forward_gravity():
         return  # Nothing to do
 
     url = settings.gravity_forward_url
-    keys = findKey("gravity_*")
+    keys = find_key("gravity_*")
+    
+    if not keys:
+        return
+    
+    successful_count = 0
+    
     for k in keys:
-        value = readKey(k).decode()
+        value = read_key(k).decode()
 
         try:
             value = json.loads(value)
 
-            # If we are using brewfather it requires [SG] in the name if that is the gravity unit used.
+            # If using brewfather, requires [SG] in name if that is the gravity unit used.
             if (
                 settings.gravity_format == "SG"
                 and value["name"].find("[SG]") == -1
@@ -68,47 +83,61 @@ async def task_forward_gravity():
             ):
                 value["name"] = value["name"] + "[SG]"
 
-            logger.info(f"Task: Processing {k} with value {value} forwarding to {url}")
+            logger.info("Task: Processing %s with value %s forwarding to %s", k, value, url)
 
             timeout = httpx.Timeout(10.0, connect=10.0, read=10.0)
             async with httpx.AsyncClient(timeout=timeout) as client:
                 logger.info("Request using get %s", url)
                 res = await client.post(url, headers=headers, data=json.dumps(value))
-                logger.info(f"Reqeust to {url} returned code {res.status_code}")
-                deleteKey(k)
+                logger.info("Reqeust to %s returned code %s", url, res.status_code)
+                if res.status_code == 200:
+                    successful_count += 1
+                delete_key(k)
 
         except httpx.ReadTimeout:
-            system_log_scheduler(f"Failed to forward gravity to {url}, ReadTimeout", 0)
-            logger.error(f"Unable to connect to device {url}")
+            system_log_scheduler(f"Failed to forward gravity to {url}, ReadTimeout", error_code=0, log_level=LogLevel.ERROR)
+            logger.error("Unable to connect to device %s", url)
         except httpx.ConnectError:
-            system_log_scheduler(f"Failed to forward gravity to {url}, ConnectError", 0)
-            logger.error(f"Unable to read from device {url}")
+            system_log_scheduler(f"Failed to forward gravity to {url}, ConnectError", error_code=0, log_level=LogLevel.ERROR)
+            logger.error("Unable to read from device %s", url)
         except httpx.ConnectTimeout:
             system_log_scheduler(
-                f"Failed to forward gravity to {url}, ConnectTimeout", 0
+                f"Failed to forward gravity to {url}, ConnectTimeout", error_code=0, log_level=LogLevel.ERROR
             )
-            logger.error(f"Unable to connect to device {url}")
-        except Exception as e:
+            logger.error("Unable to connect to device %s", url)
+        except httpx.RequestError as e:
             system_log_scheduler(
-                f"Failed to forward gravity to {url}, Uknown error {e}", 0
+                f"Failed to forward gravity to {url}, Uknown error {e}", error_code=0, log_level=LogLevel.ERROR
             )
-            logger.error(f"Unknown exception {e}")
+            logger.error("Unknown exception %s", e)
+    
+    if successful_count > 0:
+        system_log_scheduler(
+            f"Successfully forwarded {successful_count} gravity entries",
+            error_code=0, log_level=LogLevel.INFO
+        )
 
 
 async def task_fermentation_control():
-    logger.info(f"Task: task_fermentation_control is running at {datetime.now()}")
+    """Run fermentation control logic for active batches."""
+    logger.info("Task: task_fermentation_control is running at %s", datetime.now())
     await fermentation_controller_run(datetime.now())
 
 
 async def task_check_database():
-    logger.info(f"Task: task_check_database is running at {datetime.now()}")
-    system_log_purge()
+    """Check database health and purge old records."""
+    logger.info("Task: task_check_database is running at %s", datetime.now())
+    system_log_purge(days=90)
+    receive_log_purge(days=90)
+    system_log_scheduler(
+        "Database maintenance task completed: purged old logs",
+        error_code=0, log_level=LogLevel.INFO
+    )
 
 
-def scheduler_setup(app):
-    global app_client
+def scheduler_setup(application: FastAPI):  # pylint: disable=unused-argument
+    """Initialize and configure background job scheduler with tasks."""
     logger.info("Setting up scheduler")
-    app_client = app
 
     if get_settings().scheduler_enabled:
         # Setting up task to fetch chamber controller temperatures and store these in redis cache
