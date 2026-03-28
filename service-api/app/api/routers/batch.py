@@ -1,10 +1,13 @@
 """Batch management API endpoints for creating, updating, and managing brewing batches."""
 import logging
 from typing import List, Optional
+from datetime import datetime, timedelta
 from fastapi import Depends, BackgroundTasks, Query
 from fastapi.routing import APIRouter
+from sqlalchemy import and_, select
 from starlette.exceptions import HTTPException
 from api.db import models, schemas
+from api.db.session import get_session
 from api.services import BatchService, get_batch_service
 from ..security import api_key_auth
 from ..ws import notify_clients
@@ -210,3 +213,83 @@ async def delete_batch_by_id(
     system_log("batch", f"Batch {batch.name} deleted", error_code=0, log_level=LogLevel.INFO)
     batch_service.delete(batch_id)
     background_tasks.add_task(notify_clients, "batch", "delete", batch_id)
+
+
+@router.get(
+    "/{batch_id}/prediction",
+    response_model=schemas.BatchPrediction,
+    responses={404: {"description": "Batch not found"}},
+    dependencies=[Depends(api_key_auth)],
+)
+async def get_batch_prediction(
+    batch_id: int,
+    date: str = Query(None, description="Reference date (ISO format: YYYY-MM-DDTHH:MM:SS). Defaults to current date/time if not supplied"),
+    db = Depends(get_session),
+) -> schemas.BatchPrediction:
+    """
+    Get gravity data points from 24 hours prior to the given date for prediction.
+    
+    Returns gravity readings from 24 hours before the specified date for the batch.
+    Used for fermentation progress prediction models.
+    """
+    # Use current date/time if not provided
+    if date is None:
+        reference_date = datetime.now()
+        logger.info("Endpoint GET /api/batch/%d/prediction (using current date: %s)", batch_id, reference_date)
+    else:
+        logger.info("Endpoint GET /api/batch/%d/prediction?date=%s", batch_id, date)
+        # Parse the input date
+        try:
+            reference_date = datetime.fromisoformat(date.replace('Z', '+00:00'))
+        except ValueError:
+            raise HTTPException(
+                status_code=400,
+                detail="Invalid date format. Use ISO format: YYYY-MM-DDTHH:MM:SS"
+            )
+    
+    # Get the batch
+    batch = db.scalars(select(models.Batch).filter(models.Batch.id == batch_id)).first()
+    if not batch:
+        raise HTTPException(status_code=404, detail="Batch not found")
+    
+    # Calculate 24 hours prior
+    start_date = reference_date - timedelta(hours=24)
+    
+    # Query gravity data from 24 hours before reference_date up to reference_date
+    gravity_readings = db.scalars(
+        select(models.Gravity).filter(
+            and_(
+                models.Gravity.batch_id == batch_id,
+                models.Gravity.created >= start_date,
+                models.Gravity.created <= reference_date
+            )
+        ).order_by(models.Gravity.created)
+    ).all()
+    
+    logger.info(
+        "Fetched %d gravity records for batch %d between %s and %s",
+        len(gravity_readings),
+        batch_id,
+        start_date,
+        reference_date
+    )
+    
+    # Convert gravity models to GravityPrediction schemas
+    gravity_predictions = [
+        schemas.GravityPrediction(
+            temperature=g.temperature,
+            gravity=g.gravity,
+            velocity=g.velocity,
+            angle=g.angle,
+            created=g.created
+        )
+        for g in gravity_readings
+    ]
+    
+    # Return BatchPrediction with batch info and gravity data
+    return schemas.BatchPrediction(
+        name=batch.name,
+        fg=batch.fg,
+        og=batch.og,
+        gravity=gravity_predictions
+    )

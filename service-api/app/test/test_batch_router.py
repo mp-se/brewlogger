@@ -1,8 +1,10 @@
 """Tests for batch router endpoints with filtering and dashboard."""
+from datetime import datetime, timedelta
 from api.config import get_settings
 from api.db.session import create_session
-from api.db.schemas import BatchCreate
+from api.db.schemas import BatchCreate, GravityCreate
 from api.services.batch import BatchService
+from api.services.gravity import GravityService
 from .conftest import truncate_database
 
 headers = {
@@ -171,3 +173,319 @@ def test_get_batch_unauthorized(app_client):
     # Try without auth header
     response = app_client.get("/api/batch/1")
     assert response.status_code == 401
+
+
+def test_get_batch_prediction_with_gravity_data(app_client):
+    """Test GET /api/batch/{batch_id}/prediction with gravity data in 24-hour window"""
+    test_init(app_client)
+    
+    # Create a batch
+    session = create_session()
+    batch_service = BatchService(session)
+    batch_data = BatchCreate(
+        name="Prediction Test Batch",
+        description="Test batch for prediction",
+        chip_id_gravity="ABC123",
+        chip_id_pressure="DEF456",
+        active=True,
+        tap_list=True,
+        brew_date="2024-01-01",
+        style="IPA",
+        brewer="Test Brewer",
+        abv=6.5,
+        ebc=20,
+        ibu=60,
+        fg=1.010,
+        og=1.080,
+        brewfather_id="",
+        fermentation_steps="[]",
+    )
+    batch = batch_service.create(batch_data)
+    batch_id = batch.id
+    
+    # Create gravity service and add gravity data points
+    gravity_service = GravityService(session)
+    now = datetime.now()
+    
+    # Add 3 gravity readings within the 24-hour window
+    for i in range(3):
+        gravity_data = GravityCreate(
+            batch_id=batch_id,
+            temperature=20.0 + i,
+            gravity=1.050 + (i * 0.005),
+            velocity=0.1 * i,
+            angle=45.0,
+            battery=85.0,
+            rssi=90.0,
+            created=now - timedelta(hours=12-i),
+            active=True,
+        )
+        gravity_service.create(gravity_data)
+    
+    session.close()
+    
+    # Query prediction endpoint with reference date 24 hours from now
+    reference_date = (now + timedelta(hours=12)).isoformat()
+    response = app_client.get(
+        f"/api/batch/{batch_id}/prediction",
+        params={"date": reference_date},
+        headers=headers
+    )
+    
+    assert response.status_code == 200
+    data = response.json()
+    assert data["name"] == "Prediction Test Batch"
+    assert data["fg"] == 1.010
+    assert data["og"] == 1.080
+    assert isinstance(data["gravity"], list)
+    assert len(data["gravity"]) == 3
+    
+    # Verify gravity data points have correct fields
+    for gravity in data["gravity"]:
+        assert "gravity" in gravity
+        assert "temperature" in gravity
+        assert "velocity" in gravity
+        assert "angle" in gravity
+        assert "created" in gravity
+
+
+def test_get_batch_prediction_invalid_batch_id(app_client):
+    """Test GET /api/batch/{batch_id}/prediction with non-existent batch"""
+    test_init(app_client)
+    
+    now = datetime.now()
+    reference_date = now.isoformat()
+    
+    response = app_client.get(
+        "/api/batch/9999/prediction",
+        params={"date": reference_date},
+        headers=headers
+    )
+    
+    assert response.status_code == 404
+    assert "not found" in response.json()["detail"].lower()
+
+
+def test_get_batch_prediction_invalid_date_format(app_client):
+    """Test GET /api/batch/{batch_id}/prediction with invalid date format"""
+    test_init(app_client)
+    
+    # Create a batch first
+    session = create_session()
+    batch_service = BatchService(session)
+    batch_data = BatchCreate(
+        name="Test Batch",
+        description="Test",
+        chip_id_gravity="ABC123",
+        chip_id_pressure="DEF456",
+        active=True,
+        tap_list=True,
+        brew_date="2024-01-01",
+        style="IPA",
+        brewer="Brewer",
+        abv=6.5,
+        ebc=20,
+        ibu=60,
+        fg=1.010,
+        og=1.080,
+        brewfather_id="",
+        fermentation_steps="[]",
+    )
+    batch = batch_service.create(batch_data)
+    batch_id = batch.id
+    session.close()
+    
+    response = app_client.get(
+        f"/api/batch/{batch_id}/prediction",
+        params={"date": "invalid-date"},
+        headers=headers
+    )
+    
+    assert response.status_code == 400
+    assert "Invalid date format" in response.json()["detail"]
+
+
+def test_get_batch_prediction_no_gravity_data(app_client):
+    """Test GET /api/batch/{batch_id}/prediction with batch but no gravity data"""
+    test_init(app_client)
+    
+    # Create a batch without gravity data
+    session = create_session()
+    batch_service = BatchService(session)
+    batch_data = BatchCreate(
+        name="Empty Batch",
+        description="Test batch with no gravity",
+        chip_id_gravity="ABC123",
+        chip_id_pressure="DEF456",
+        active=True,
+        tap_list=True,
+        brew_date="2024-01-01",
+        style="IPA",
+        brewer="Brewer",
+        abv=6.5,
+        ebc=20,
+        ibu=60,
+        fg=1.010,
+        og=1.080,
+        brewfather_id="",
+        fermentation_steps="[]",
+    )
+    batch = batch_service.create(batch_data)
+    batch_id = batch.id
+    session.close()
+    
+    now = datetime.now()
+    reference_date = now.isoformat()
+    
+    response = app_client.get(
+        f"/api/batch/{batch_id}/prediction",
+        params={"date": reference_date},
+        headers=headers
+    )
+    
+    assert response.status_code == 200
+    data = response.json()
+    assert data["name"] == "Empty Batch"
+    assert data["gravity"] is None or data["gravity"] == []
+
+
+def test_get_batch_prediction_gravity_outside_window(app_client):
+    """Test GET /api/batch/{batch_id}/prediction filters gravity data correctly"""
+    test_init(app_client)
+    
+    # Create a batch
+    session = create_session()
+    batch_service = BatchService(session)
+    batch_data = BatchCreate(
+        name="Window Test Batch",
+        description="Test gravity window filtering",
+        chip_id_gravity="ABC123",
+        chip_id_pressure="DEF456",
+        active=True,
+        tap_list=True,
+        brew_date="2024-01-01",
+        style="IPA",
+        brewer="Brewer",
+        abv=6.5,
+        ebc=20,
+        ibu=60,
+        fg=1.010,
+        og=1.080,
+        brewfather_id="",
+        fermentation_steps="[]",
+    )
+    batch = batch_service.create(batch_data)
+    batch_id = batch.id
+    
+    # Create gravity service
+    gravity_service = GravityService(session)
+    now = datetime.now()
+    
+    # Add gravity reading WAY outside 24-hour window (30 days ago)
+    old_gravity = GravityCreate(
+        batch_id=batch_id,
+        temperature=20.0,
+        gravity=1.050,
+        velocity=0.1,
+        angle=45.0,
+        battery=85.0,
+        rssi=90.0,
+        created=now - timedelta(days=30),
+        active=True,
+    )
+    gravity_service.create(old_gravity)
+    
+    # Add gravity reading within 24-hour window
+    recent_gravity = GravityCreate(
+        batch_id=batch_id,
+        temperature=21.0,
+        gravity=1.045,
+        velocity=0.2,
+        angle=45.0,
+        battery=85.0,
+        rssi=90.0,
+        created=now - timedelta(hours=12),
+        active=True,
+    )
+    gravity_service.create(recent_gravity)
+    
+    session.close()
+    
+    # Query with reference date 24 hours from now
+    reference_date = (now + timedelta(hours=12)).isoformat()
+    response = app_client.get(
+        f"/api/batch/{batch_id}/prediction",
+        params={"date": reference_date},
+        headers=headers
+    )
+    
+    assert response.status_code == 200
+    data = response.json()
+    # Should only return the recent gravity reading, not the old one
+    assert len(data["gravity"]) == 1
+    assert data["gravity"][0]["gravity"] == 1.045
+
+
+def test_get_batch_prediction_default_current_date(app_client):
+    """Test GET /api/batch/{batch_id}/prediction uses current date when not supplied"""
+    test_init(app_client)
+    
+    # Create a batch
+    session = create_session()
+    batch_service = BatchService(session)
+    batch_data = BatchCreate(
+        name="Default Date Test Batch",
+        description="Test default date parameter",
+        chip_id_gravity="ABC123",
+        chip_id_pressure="DEF456",
+        active=True,
+        tap_list=True,
+        brew_date="2024-01-01",
+        style="IPA",
+        brewer="Brewer",
+        abv=6.5,
+        ebc=20,
+        ibu=60,
+        fg=1.010,
+        og=1.080,
+        brewfather_id="",
+        fermentation_steps="[]",
+    )
+    batch = batch_service.create(batch_data)
+    batch_id = batch.id
+    
+    # Create gravity service and add some gravity data within last 24 hours
+    gravity_service = GravityService(session)
+    now = datetime.now()
+    
+    # Add gravity reading 12 hours ago
+    recent_gravity = GravityCreate(
+        batch_id=batch_id,
+        temperature=20.5,
+        gravity=1.048,
+        velocity=0.15,
+        angle=45.0,
+        battery=85.0,
+        rssi=90.0,
+        created=now - timedelta(hours=12),
+        active=True,
+    )
+    gravity_service.create(recent_gravity)
+    
+    session.close()
+    
+    # Query prediction endpoint WITHOUT date parameter (should use current time)
+    response = app_client.get(
+        f"/api/batch/{batch_id}/prediction",
+        headers=headers
+    )
+    
+    assert response.status_code == 200
+    data = response.json()
+    assert data["name"] == "Default Date Test Batch"
+    assert data["fg"] == 1.010
+    assert data["og"] == 1.080
+    assert isinstance(data["gravity"], list)
+    # Should return the gravity reading from 12 hours ago
+    assert len(data["gravity"]) == 1
+    assert data["gravity"][0]["gravity"] == 1.048
