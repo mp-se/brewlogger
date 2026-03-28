@@ -26,6 +26,8 @@ describe('BrewfatherBatch - Data Class', () => {
         6.8,
         50,
         65,
+        1.065,
+        1.010,
         'step-data'
       )
       expect(batch.brewfatherId).toBe('bf-123')
@@ -36,6 +38,8 @@ describe('BrewfatherBatch - Data Class', () => {
       expect(batch.abv).toBe(6.8)
       expect(batch.ebc).toBe(50)
       expect(batch.ibu).toBe(65)
+      expect(batch.og).toBe(1.065)
+      expect(batch.fg).toBe(1.010)
       expect(batch.fermentationSteps).toBe('step-data')
     })
 
@@ -59,6 +63,8 @@ describe('BrewfatherBatch - Data Class', () => {
         abv: 8.5,
         ebc: 65,
         ibu: 85,
+        og: 1.075,
+        fg: 1.010,
         fermentationSteps: 'fermentation-data'
       }
       const batch = BrewfatherBatch.fromJson(json)
@@ -70,6 +76,8 @@ describe('BrewfatherBatch - Data Class', () => {
       expect(batch.abv).toBe(8.5)
       expect(batch.ebc).toBe(65)
       expect(batch.ibu).toBe(85)
+      expect(batch.og).toBe(1.075)
+      expect(batch.fg).toBe(1.010)
       expect(batch.fermentationSteps).toBe('fermentation-data')
     })
 
@@ -92,6 +100,8 @@ describe('BrewfatherBatch - Data Class', () => {
       batch.abv = 5.5
       batch.ebc = 40
       batch.ibu = 40
+      batch.og = 1.055
+      batch.fg = 1.012
       batch.fermentationSteps = 'porter-steps'
 
       expect(batch.brewfatherId).toBe('bf-999')
@@ -102,6 +112,8 @@ describe('BrewfatherBatch - Data Class', () => {
       expect(batch.abv).toBe(5.5)
       expect(batch.ebc).toBe(40)
       expect(batch.ibu).toBe(40)
+      expect(batch.og).toBe(1.055)
+      expect(batch.fg).toBe(1.012)
       expect(batch.fermentationSteps).toBe('porter-steps')
     })
 
@@ -127,15 +139,17 @@ describe('BrewfatherBatch - Data Class', () => {
     })
 
     it('should handle very high ABV values', () => {
-      const batch = new BrewfatherBatch('bf-123', 'Barley Wine', '2024-01-01', 'Barley Wine', 'Brewer', 12.5)
+      const batch = new BrewfatherBatch('bf-123', 'Barley Wine', '2024-01-01', 'Barley Wine', 'Brewer', 12.5, 0, 0, 1.100, 1.020)
       expect(batch.abv).toBe(12.5)
     })
 
     it('should handle zero values', () => {
-      const batch = new BrewfatherBatch('bf-123', 'Test', '2024-01-01', 'Test', 'Test', 0, 0, 0)
+      const batch = new BrewfatherBatch('bf-123', 'Test', '2024-01-01', 'Test', 'Test', 0, 0, 0, 0, 0)
       expect(batch.abv).toBe(0)
       expect(batch.ebc).toBe(0)
       expect(batch.ibu).toBe(0)
+      expect(batch.og).toBe(0)
+      expect(batch.fg).toBe(0)
     })
 
     it('should handle empty brewfatherId', () => {
@@ -144,9 +158,25 @@ describe('BrewfatherBatch - Data Class', () => {
       expect(batch.name).toBe('Local Batch')
     })
 
+    it('should initialize og and fg to 0 by default', () => {
+      const batch = new BrewfatherBatch()
+      expect(batch.og).toBe(0)
+      expect(batch.fg).toBe(0)
+    })
+
+    it('should handle realistic gravity values for og and fg', () => {
+      const batch = new BrewfatherBatch('bf-456', 'Session IPA', '2024-01-15', 'IPA', 'Brewer', 5.2, 35, 50, 1.045, 1.008)
+      expect(batch.og).toBe(1.045)
+      expect(batch.fg).toBe(1.008)
+      // Verify ABV and other properties also set correctly
+      expect(batch.abv).toBe(5.2)
+      expect(batch.ebc).toBe(35)
+      expect(batch.ibu).toBe(50)
+    })
+
     it('should handle JSON string in fermentationSteps', () => {
       const stepsJson = '{"step1": "mash", "step2": "sparge"}'
-      const batch = new BrewfatherBatch('bf-123', 'Test', '2024-01-01', 'Test', 'Test', 0, 0, 0, stepsJson)
+      const batch = new BrewfatherBatch('bf-123', 'Test', '2024-01-01', 'Test', 'Test', 0, 0, 0, 0, 0, stepsJson)
       expect(batch.fermentationSteps).toBe(stepsJson)
     })
   })

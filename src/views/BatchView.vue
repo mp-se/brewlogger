@@ -592,6 +592,8 @@ function brewfatherChanged(id) {
       batch.value.ebc = b.ebc
       batch.value.abv = b.abv
       batch.value.ibu = b.ibu
+      batch.value.og = b.og
+      batch.value.fg = b.fg
       batch.value.fermentationSteps = b.fermentationSteps
       return
     }

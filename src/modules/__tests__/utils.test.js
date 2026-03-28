@@ -1,7 +1,8 @@
-import { describe, it, expect, vi } from 'vitest'
+import { describe, it, expect, vi, beforeEach } from 'vitest'
 import {
   abv,
   gravityToPlato,
+  platoToGravity,
   tempToF,
   tempToC,
   volumeLtoUSGallon,
@@ -18,21 +19,31 @@ import {
   getFormattedTemperature,
   getFormattedPressure,
   getFormattedVolume,
-  getFormattedPourVolume
+  getFormattedPourVolume,
+  roundValue,
+  validateCurrentForm,
+  download,
+  getPressureDataAnalytics,
+  getGravityDataAnalytics
 } from '../utils'
 
-// Mock the logger and config
+// Mock the logger
 vi.mock('../logger', () => ({
   logDebug: vi.fn()
 }))
 
+// Get the mocked pinia module to access config
 vi.mock('../pinia', () => ({
-  config: {
-    isTempF: false,
-    isPressurePSI: false,
-    isPressureKPA: false,
-    isVolumeUs: false,
-    isVolumeUk: false
+  get config() {
+    return {
+      isTempF: false,
+      isTempC: true,
+      isPressurePSI: false,
+      isPressureKPA: false,
+      isPressureBAR: true,
+      isVolumeUs: false,
+      isVolumeUk: false
+    }
   }
 }))
 
@@ -322,6 +333,329 @@ describe('utils.js - Unit Conversions', () => {
         const result = getFormattedPourVolume(0)
         expect(result).toContain('0')
       })
+    })
+  })
+
+  describe('platoToGravity', () => {
+    it('should convert Plato to specific gravity', () => {
+      const plato = 10
+      const result = platoToGravity(plato)
+      expect(result).toBeGreaterThan(1)
+      expect(typeof result).toBe('number')
+    })
+
+    it('should return 1.0 for 0 Plato', () => {
+      const result = platoToGravity(0)
+      expect(result).toBeCloseTo(1.0, 5)
+    })
+
+    it('should be inverse of gravityToPlato', () => {
+      const gravity = 1.050
+      const plato = gravityToPlato(gravity)
+      const backToGravity = platoToGravity(plato)
+      expect(backToGravity).toBeCloseTo(gravity, 5)
+    })
+  })
+
+  describe('roundValue', () => {
+    it('should round to specified decimal places', () => {
+      expect(roundValue(1.234, 1)).toBe(1.2)
+      expect(roundValue(1.234, 2)).toBe(1.23)
+      expect(roundValue(1.234, 3)).toBe(1.234)
+    })
+
+    it('should return 0 for null or undefined', () => {
+      expect(roundValue(null)).toBe(0)
+      expect(roundValue(undefined)).toBe(0)
+    })
+
+    it('should handle negative numbers', () => {
+      expect(roundValue(-1.567, 2)).toBe(-1.57)
+    })
+
+    it('should default to 1 decimal place', () => {
+      expect(roundValue(3.14159)).toBe(3.1)
+    })
+
+    it('should handle zero', () => {
+      expect(roundValue(0, 2)).toBe(0)
+    })
+  })
+
+  describe('validateCurrentForm', () => {
+    it('should return true when no forms exist', () => {
+      const result = validateCurrentForm()
+      expect(typeof result).toBe('boolean')
+    })
+
+    it('should add was-validated class to forms', () => {
+      const form = document.createElement('form')
+      form.classList.add('needs-validation')
+      document.body.appendChild(form)
+
+      validateCurrentForm()
+
+      expect(form.classList.contains('was-validated')).toBe(true)
+
+      document.body.removeChild(form)
+    })
+
+    it('should check form validity', () => {
+      const form = document.createElement('form')
+      form.classList.add('needs-validation')
+      const input = document.createElement('input')
+      input.required = true
+      form.appendChild(input)
+      document.body.appendChild(form)
+
+      const result = validateCurrentForm()
+
+      expect(typeof result).toBe('boolean')
+      expect(form.classList.contains('was-validated')).toBe(true)
+
+      document.body.removeChild(form)
+    })
+  })
+
+  describe('download', () => {
+    let createElementSpy, setAttributeSpy, clickSpy
+
+    beforeEach(() => {
+      clickSpy = vi.fn()
+      setAttributeSpy = vi.fn()
+      createElementSpy = vi.spyOn(document, 'createElement').mockReturnValue({
+        setAttribute: setAttributeSpy,
+        click: clickSpy
+      })
+    })
+
+    it('should create link element for text content', () => {
+      download('test content', 'text/plain', 'test.txt')
+
+      expect(createElementSpy).toHaveBeenCalledWith('a')
+      expect(setAttributeSpy).toHaveBeenCalledWith('download', 'test.txt')
+      expect(clickSpy).toHaveBeenCalled()
+    })
+
+    it('should use data URL for text mime types', () => {
+      download('test content', 'text/csv', 'data.csv')
+
+      expect(setAttributeSpy).toHaveBeenCalledWith(
+        'href',
+        expect.stringContaining('data:text/csv')
+      )
+    })
+
+    it('should handle special characters in content', () => {
+      const content = 'test & <content>'
+      download(content, 'text/plain', 'test.txt')
+
+      // The content should be encoded in the data URL
+      const callArgs = setAttributeSpy.mock.calls.find(call => call[0] === 'href')
+      expect(callArgs).toBeDefined()
+      expect(callArgs[1]).toContain('data:text/plain')
+      expect(clickSpy).toHaveBeenCalled()
+    })
+  })
+
+  describe('getFormattedTemperature with config variants', () => {
+    it('should format temperature in Celsius by default', () => {
+      const result = getFormattedTemperature(20)
+      expect(result).toContain('20.0')
+      expect(result).toContain('°C')
+    })
+
+    it('should handle temperature rounding', () => {
+      const result = getFormattedTemperature(20.456)
+      expect(result).toContain('20.5')
+    })
+  })
+
+  describe('getFormattedPressure with config variants', () => {
+    it('should format pressure in Bar by default', () => {
+      const result = getFormattedPressure(1)
+      expect(result).toContain('Bar')
+    })
+
+    it('should round pressure values', () => {
+      const result = getFormattedPressure(10.5)
+      expect(result).toBeTruthy()
+      expect(result).toMatch(/\d+\.\d/)
+    })
+  })
+
+  describe('getFormattedVolume with config variants', () => {
+    it('should format in liters by default', () => {
+      const result = getFormattedVolume(1)
+      expect(result).toContain('1.00')
+      expect(result).toContain('L')
+    })
+
+    it('should handle large volumes', () => {
+      const result = getFormattedVolume(1000)
+      expect(result).toContain('L')
+    })
+  })
+
+  describe('getFormattedPourVolume with config variants', () => {
+    it('should format in centiliters by default', () => {
+      const result = getFormattedPourVolume(50)
+      expect(result).toContain('cl')
+    })
+
+    it('should handle zero pour volume', () => {
+      const result = getFormattedPourVolume(0)
+      expect(result).toContain('0')
+    })
+  })
+
+  describe('getPressureDataAnalytics', () => {
+    it('should process pressure data and return stats', () => {
+      const now = new Date()
+      const pressureList = [
+        {
+          active: true,
+          pressure: 10,
+          temperature: 20,
+          created: now.toISOString()
+        },
+        {
+          active: true,
+          pressure: 12,
+          temperature: 22,
+          created: new Date(now.getTime() + 3600000).toISOString()
+        }
+      ]
+
+      const result = getPressureDataAnalytics(pressureList)
+
+      expect(result.readings).toBe(2)
+      expect(result.pressure.min).toBeLessThanOrEqual(result.pressure.max)
+      expect(result.temperature.min).toBeLessThanOrEqual(result.temperature.max)
+    })
+
+    it('should filter inactive readings', () => {
+      const now = new Date()
+      const pressureList = [
+        { active: true, pressure: 10, temperature: 20, created: now.toISOString() },
+        { active: false, pressure: 15, temperature: 25, created: now.toISOString() }
+      ]
+
+      const result = getPressureDataAnalytics(pressureList)
+
+      expect(result.readings).toBe(1)
+    })
+
+    it('should handle invalid temperatures', () => {
+      const now = new Date()
+      const pressureList = [
+        { active: true, pressure: 10, temperature: -280, created: now.toISOString() },
+        { active: true, pressure: 12, temperature: 20, created: now.toISOString() }
+      ]
+
+      const result = getPressureDataAnalytics(pressureList)
+
+      expect(result.readings).toBe(2)
+      expect(result.temperature.min).toBeGreaterThan(-270)
+    })
+
+    it('should handle empty pressure list', () => {
+      const result = getPressureDataAnalytics([])
+
+      expect(result.readings).toBe(0)
+      expect(result.date.first).toBe('')
+    })
+
+    it('should calculate average interval', () => {
+      const now = new Date()
+      const pressureList = [
+        { active: true, pressure: 10, temperature: 20, created: now.toISOString() },
+        { active: true, pressure: 12, temperature: 22, created: new Date(now.getTime() + 60000).toISOString() }
+      ]
+
+      const result = getPressureDataAnalytics(pressureList)
+
+      expect(result.averageIntervalString).toBeDefined()
+      // averageInterval is a string, so convert to number before comparing
+      const avgNum = Number(result.averageInterval)
+      expect(avgNum).toBeGreaterThan(0)
+    })
+  })
+
+  describe('getGravityDataAnalytics', () => {
+    it('should process gravity data and return stats', () => {
+      const now = new Date()
+      const gravityList = [
+        {
+          active: true,
+          gravity: 1.050,
+          temperature: 20,
+          created: now.toISOString()
+        },
+        {
+          active: true,
+          gravity: 1.020,
+          temperature: 22,
+          created: new Date(now.getTime() + 3600000).toISOString()
+        }
+      ]
+
+      const result = getGravityDataAnalytics(gravityList)
+
+      expect(result.readings).toBe(2)
+      expect(result.gravity.min).toBeLessThanOrEqual(result.gravity.max)
+    })
+
+    it('should calculate ABV from OG and FG', () => {
+      const now = new Date()
+      const gravityList = [
+        {
+          active: true,
+          gravity: 1.050,
+          temperature: 20,
+          created: now.toISOString()
+        },
+        {
+          active: true,
+          gravity: 1.010,
+          temperature: 20,
+          created: new Date(now.getTime() + 3600000).toISOString()
+        }
+      ]
+
+      const result = getGravityDataAnalytics(gravityList)
+
+      expect(result.abv).toBeGreaterThan(0)
+    })
+
+    it('should filter inactive readings', () => {
+      const now = new Date()
+      const gravityList = [
+        { active: true, gravity: 1.050, temperature: 20, created: now.toISOString() },
+        { active: false, gravity: 1.040, temperature: 20, created: now.toISOString() }
+      ]
+
+      const result = getGravityDataAnalytics(gravityList)
+
+      expect(result.readings).toBe(1)
+    })
+
+    it('should handle empty gravity list', () => {
+      const result = getGravityDataAnalytics([])
+
+      expect(result.readings).toBe(0)
+    })
+
+    it('should handle invalid temperatures', () => {
+      const now = new Date()
+      const gravityList = [
+        { active: true, gravity: 1.050, temperature: -280, created: now.toISOString() },
+        { active: true, gravity: 1.020, temperature: 20, created: now.toISOString() }
+      ]
+
+      const result = getGravityDataAnalytics(gravityList)
+
+      expect(result.readings).toBe(2)
     })
   })
 })

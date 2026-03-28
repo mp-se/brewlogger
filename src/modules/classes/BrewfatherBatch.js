@@ -12,9 +12,11 @@ export class BrewfatherBatch {
    * @param {number} [abv=0] - Alcohol by volume
    * @param {number} [ebc=0] - Color in EBC units
    * @param {number} [ibu=0] - Bitterness in IBU
+   * @param {number} [og=0] - Original gravity (SG)
+   * @param {number} [fg=0] - Final gravity (SG)
    * @param {string} [fermentationSteps=''] - Fermentation profile
    */
-  constructor(brewfatherId, name, brewDate, style, brewer, abv, ebc, ibu, fermentationSteps) {
+  constructor(brewfatherId, name, brewDate, style, brewer, abv, ebc, ibu, og, fg, fermentationSteps) {
     this.name = name === undefined ? '' : name
     this.brewDate = brewDate === undefined ? '' : brewDate
     this.style = style === undefined ? '' : style
@@ -22,6 +24,8 @@ export class BrewfatherBatch {
     this.abv = abv === undefined ? 0 : abv
     this.ebc = ebc === undefined ? 0 : ebc
     this.ibu = ibu === undefined ? 0 : ibu
+    this.og = og === undefined ? 0 : og
+    this.fg = fg === undefined ? 0 : fg
     this.brewfatherId = brewfatherId === undefined ? '' : brewfatherId
     this.fermentationSteps = fermentationSteps === undefined ? '' : fermentationSteps
   }
@@ -42,6 +46,8 @@ export class BrewfatherBatch {
       d.abv,
       d.ebc,
       d.ibu,
+      d.og,
+      d.fg,
       d.fermentationSteps
     )
   }
@@ -70,6 +76,12 @@ export class BrewfatherBatch {
   get ibu() {
     return this._ibu
   }
+  get og() {
+    return this._og
+  }
+  get fg() {
+    return this._fg
+  }
   get fermentationSteps() {
     return this._fermentationSteps
   }
@@ -97,6 +109,12 @@ export class BrewfatherBatch {
   }
   set ibu(ibu) {
     this._ibu = ibu
+  }
+  set og(og) {
+    this._og = og
+  }
+  set fg(fg) {
+    this._fg = fg
   }
   set fermentationSteps(fermentationSteps) {
     this._fermentationSteps = fermentationSteps

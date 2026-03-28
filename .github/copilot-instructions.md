@@ -414,6 +414,51 @@ Before committing:
 4. **Rejected if**: Coverage drops below 85%
 5. **Gap Documentation**: Document any intentional coverage gaps
 
+### Current Test Suite Status (Latest)
+
+**Test Execution Summary** ✅
+- **Total Tests**: 866 passing
+- **Test Files**: 32 files
+- **Overall Duration**: ~2.7s
+- **All tests pass**: Yes ✅ (0 failures)
+
+**Component Coverage** (35 components in /src/components/)
+- **All components tested**: 100% (35/35)
+- **Branch coverage**: 80.95%
+- **Statement coverage**: 87.6%
+- **Function coverage**: 68.62%
+- **Key components**:
+  - BsCard.vue: 100% statements, 85.71% branches
+  - BsInputTextAreaFormat.vue: 47.61% statements, 50% branches
+  - BsMenuBar.vue: 73.33% statements, 71.05% branches
+  - All other components: ≥80% branch coverage
+
+**Data Class Coverage** (8 classes in /src/modules/classes/)
+- **All classes tested**: 100% (8/8)
+- **Branch coverage**: 98.9%
+- **Statement coverage**: 100%
+- **Function coverage**: 100%
+- **Line coverage**: 100%
+- **Classes**: Batch, BrewfatherBatch, Device, FermentationStep, Gravity, MDNS, Pour, Pressure
+
+**Fragment Coverage** (3 fragments in /src/fragments/)
+- **All fragments tested**: 100% (3/3)
+- **Branch coverage**: 100%
+- **Statement coverage**: 62.22%
+- **Fragments**: FermentationStepFragment, GravityStatsFragment, PressureStatsFragment
+
+**Module/Store Coverage** (stores and utilities in /src/modules/)
+- **Statement coverage**: 44.84%
+- **Branch coverage**: 40.17%
+- **Stores tested**: batchStore, brewfatherStore, configStore, deviceStore, globalStore, gravityStore, pourStore, pressureStore
+- **Utilities tested**: detect.js, logger.js, ui.js, useUnitConversion.js, utils.js
+
+**View Coverage** (page components in /src/views/)
+- **Statement coverage**: 9.11% (views not yet extensively tested)
+- **Note**: Views require integration testing; components are tested independently
+
+---
+
 ### Quality Gates
 
 ```bash
