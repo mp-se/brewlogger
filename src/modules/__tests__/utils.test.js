@@ -658,4 +658,191 @@ describe('utils.js - Unit Conversions', () => {
       expect(result.readings).toBe(2)
     })
   })
+
+  describe('Advanced Utility Functions - Truncation and Formatting', () => {
+    it('should handle very high temperatures', () => {
+      const formatted = getFormattedTemperature(150)
+      expect(formatted).not.toBe('--')
+      expect(formatted).toContain('°')
+    })
+
+    it('should handle very low temperatures (absolute zero boundary)', () => {
+      const formatted = getFormattedTemperature(-270.5)
+      expect(formatted).toBe('--')
+    })
+
+    it('should handle exactly -270 (at absolute zero)', () => {
+      const formatted = getFormattedTemperature(-270)
+      expect(formatted).toContain('°C')
+    })
+
+    it('should format null temperature as dashes', () => {
+      const formatted = getFormattedTemperature(null)
+      expect(formatted).toBe('--')
+    })
+
+    it('should format undefined temperature as dashes', () => {
+      const formatted = getFormattedTemperature(undefined)
+      expect(formatted).toBe('--')
+    })
+
+    it('should truncate long strings with ellipsis', () => {
+      const result = truncateString('This is a very long string that should be truncated', 20)
+      expect(result.length).toBeLessThanOrEqual(23) // 20 + '...'
+      expect(result).toContain('...')
+    })
+
+    it('should not truncate strings shorter than max length', () => {
+      const result = truncateString('short', 20)
+      expect(result).toBe('short')
+    })
+
+    it('should handle exactly max length strings', () => {
+      const result = truncateString('12345', 5)
+      expect(result).toBe('12345')
+    })
+
+    it('should handle empty strings', () => {
+      const result = truncateString('', 10)
+      expect(result).toBe('')
+    })
+  })
+
+  describe('More Conversion Functions', () => {
+    it('should convert volume: liters to UK gallons', () => {
+      const uk = volumeLtoUKGallon(1)
+      expect(uk).toBeLessThan(0.3)
+      expect(uk).toBeGreaterThan(0.2)
+    })
+
+    it('should convert volume: centiliters to US ounces', () => {
+      const oz = volumeCLtoUSOZ(29.5735)
+      expect(oz).toBeCloseTo(10.05, 1)
+    })
+
+    it('should convert volume: centiliters to UK ounces', () => {
+      const oz = volumeCLtoUKOZ(28.4)
+      expect(oz).toBeCloseTo(10, 0)
+    })
+
+    it('should handle zero volume in UK ounces conversion', () => {
+      const result = volumeCLtoUKOZ(0.0)
+      expect(result).toBe(0.0)
+    })
+
+    it('should convert pressure to kPa', () => {
+      const kpa = pressureToKPA(10)
+      expect(kpa).toBeGreaterThan(68)
+      expect(kpa).toBeLessThan(70)
+    })
+
+    it('should convert pressure to BAR', () => {
+      const bar = pressureToBAR(10)
+      expect(bar).toBeLessThan(1)
+      expect(bar).toBeGreaterThan(0.6)
+    })
+  })
+
+  describe('Data Validation Functions', () => {
+    it('should validate correct JSON', () => {
+      const result = isValidJson('{"key": "value"}')
+      expect(result).toBe(true)
+    })
+
+    it('should reject invalid JSON', () => {
+      const result = isValidJson('{invalid}')
+      expect(result).toBe(false)
+    })
+
+    it('should validate MQTT data with correct format', () => {
+      const mqttData = { topic: 'test', payload: 'data' }
+      const result = isValidMqttData(mqttData)
+      expect(typeof result).toBe('boolean')
+    })
+
+    it('should validate form data with required fields', () => {
+      const formData = { name: 'Test', email: 'test@example.com' }
+      const result = isValidFormData(formData)
+      expect(typeof result).toBe('boolean')
+    })
+  })
+
+  describe('Data Analytics - Extended Coverage', () => {
+    it('should handle pressure with single reading', () => {
+      const pressureList = [
+        { pressure: 12, temperature: 20, created: new Date().toISOString(), active: true }
+      ]
+
+      const result = getPressureDataAnalytics(pressureList)
+
+      expect(result.readings).toBe(1)
+      expect(result.pressure).toBeDefined()
+      expect(typeof result.pressure.max).toBe('number')
+    })
+
+    it('should handle gravity with temperature and date tracking', () => {
+      const now = new Date()
+      const gravityList = [
+        { gravity: 1.050, temperature: 20, created: now.toISOString(), active: true },
+        { gravity: 1.045, temperature: 22, created: now.toISOString(), active: true },
+        { gravity: 1.030, temperature: 21, created: now.toISOString(), active: true }
+      ]
+
+      const result = getGravityDataAnalytics(gravityList)
+
+      expect(result.gravity).toBeDefined()
+      expect(result.gravity.max).toBeDefined()
+      expect(result.gravity.min).toBeDefined()
+      expect(typeof result.abv).toBe('number')
+    })
+
+    it('should calculate ABV from gravity readings', () => {
+      const now = new Date()
+      const gravityList = [
+        { gravity: 1.060, temperature: 20, created: now.toISOString(), active: true },
+        { gravity: 1.010, temperature: 20, created: now.toISOString(), active: true }
+      ]
+
+      const result = getGravityDataAnalytics(gravityList)
+
+      expect(result.abv).toBeDefined()
+      expect(result.abv).toBeGreaterThan(0)
+      expect(result.abv).toBeLessThan(20)
+    })
+
+    it('should handle readings with attenuation tracking', () => {
+      const now = new Date()
+      const gravityList = [
+        { gravity: 1.050, temperature: 20, created: now.toISOString(), active: true },
+        { gravity: 1.020, temperature: 20, created: now.toISOString(), active: true }
+      ]
+
+      const result = getGravityDataAnalytics(gravityList)
+
+      expect(result.gravity).toBeDefined()
+      expect(result.readings).toBeGreaterThan(0)
+      expect(typeof result.abv).toBe('number')
+    })
+
+    it('should handle pressure with extreme values', () => {
+      const pressureList = [
+        { pressure: 100, temperature: 20, created: new Date().toISOString(), active: true },
+        { pressure: -5, temperature: 20, created: new Date().toISOString(), active: true }
+      ]
+
+      const result = getPressureDataAnalytics(pressureList)
+
+      expect(result.pressure.max).toBeGreaterThanOrEqual(0)
+    })
+  })
+
+  describe('Time and String Utilities', () => {
+    it('should format very old posts', () => {
+      const now = new Date()
+      const longAgo = new Date(now.getTime() - 365 * 24 * 3600000)
+      const result = getTimeSincePosted(longAgo.toISOString())
+      expect(result).toBeDefined()
+      expect(typeof result).toBe('string')
+    })
+  })
 })

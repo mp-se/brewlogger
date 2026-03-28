@@ -157,14 +157,30 @@ const router = createRouter({
 
 export default router
 
-router.afterEach((to, from) => {
-  logDebug('router.afterEach()', to, from)
+/**
+ * Handles cleanup on navigation end
+ * @param {Object} globalStore - The global store instance
+ * @param {Object} to - Destination route
+ * @param {Object} from - Source route
+ */
+export const handleNavigationEnd = (globalStore, to, from) => {
+  logDebug('router.handleNavigationEnd()', to, from)
 
-  global.clearMessages()
-  global.batchChanged = false
-  global.deviceChanged = false
+  if (globalStore && typeof globalStore.clearMessages === 'function') {
+    globalStore.clearMessages()
+  }
+  if (globalStore) {
+    globalStore.batchChanged = false
+    globalStore.deviceChanged = false
+  }
   return true
+}
+
+router.afterEach((to, from) => {
+  return handleNavigationEnd(global, to, from)
 })
+
+export { routes }
 
 const items = ref([
   {

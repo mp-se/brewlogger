@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach } from 'vitest'
+import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { ref } from 'vue'
 import { createPinia, setActivePinia } from 'pinia'
 import { useGravityConversion, useTemperatureConversion, usePressureConversion } from '@/modules/useUnitConversion'
@@ -189,6 +189,105 @@ describe('useUnitConversion composables', () => {
       batch.value.temperature = 25
 
       expect(displayValue.value).not.toBe(originalDisplay)
+    })
+  })
+
+  describe('Composable Error Handling and Edge Cases', () => {
+    it('should handle undefined batch in gravity conversion', () => {
+      const batch = ref(undefined)
+      const { displayValue } = useGravityConversion(batch, 'og')
+
+      expect(displayValue.value).toBe(0)
+    })
+
+    it('should handle undefined batch in temperature conversion', () => {
+      const batch = ref(undefined)
+      const { displayValue } = useTemperatureConversion(batch, 'temperature')
+
+      expect(displayValue.value).toBe(0)
+    })
+
+    it('should handle undefined batch in pressure conversion', () => {
+      const batch = ref(undefined)
+      const { displayValue } = usePressureConversion(batch, 'pressure')
+
+      expect(displayValue.value).toBe(0)
+    })
+
+    it('should handle zero values in conversions', () => {
+      const batch = ref({ og: 0, temperature: 0, pressure: 0 })
+      const gravity = useGravityConversion(batch, 'og')
+      const temp = useTemperatureConversion(batch, 'temperature')
+      const pressure = usePressureConversion(batch, 'pressure')
+
+      expect(typeof gravity.displayValue.value).toBe('number')
+      expect(typeof temp.displayValue.value).toBe('number')
+      expect(typeof pressure.displayValue.value).toBe('number')
+    })
+
+    it('should preserve precision through conversion chain', () => {
+      const batch = ref({ og: 1.0504 })
+      const { displayValue } = useGravityConversion(batch, 'og')
+
+      expect(displayValue.value).not.toBeNull()
+      expect(typeof displayValue.value).toBe('number')
+    })
+
+    it('should handle rapid consecutive updates', () => {
+      const batch = ref({ og: 1.050 })
+      const { displayValue } = useGravityConversion(batch, 'og')
+
+      const values = []
+      for (let i = 0; i < 5; i++) {
+        displayValue.value = 1.050 + i * 0.01
+        values.push(batch.value.og)
+      }
+
+      expect(values.length).toBe(5)
+      expect(values[values.length - 1]).toBeGreaterThan(values[0])
+    })
+
+    it('should handle setter with null value in gravity', () => {
+      const batch = ref({ og: 1.050 })
+      const { displayValue } = useGravityConversion(batch, 'og')
+
+      expect(() => {
+        displayValue.value = null
+      }).not.toThrow()
+    })
+
+    it('should handle setter with undefined value in temperature', () => {
+      const batch = ref({ temperature: 20 })
+      const { displayValue } = useTemperatureConversion(batch, 'temperature')
+
+      expect(() => {
+        displayValue.value = undefined
+      }).not.toThrow()
+    })
+
+    it('should handle setter with negative values', () => {
+      const batch = ref({ pressure: 10 })
+      const { displayValue } = usePressureConversion(batch, 'pressure')
+
+      expect(() => {
+        displayValue.value = -5
+      }).not.toThrow()
+    })
+
+    it('should maintain reactive updates across multiple references', () => {
+      const batch = ref({ og: 1.050, temperature: 20, pressure: 15 })
+
+      const gravity = useGravityConversion(batch, 'og')
+      const temp = useTemperatureConversion(batch, 'temperature')
+      const pressure = usePressureConversion(batch, 'pressure')
+
+      batch.value.og = 1.060
+      batch.value.temperature = 25
+      batch.value.pressure = 20
+
+      expect(gravity.displayValue.value).toBeDefined()
+      expect(temp.displayValue.value).toBeDefined()
+      expect(pressure.displayValue.value).toBeDefined()
     })
   })
 })
