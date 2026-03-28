@@ -7,3 +7,5 @@ npm-debug.log*
 docker-compose.yaml
 dist/
 deploy.sh
+coverage/
+logs/

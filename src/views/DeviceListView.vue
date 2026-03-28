@@ -227,7 +227,7 @@
 <script setup>
 import { onMounted, ref, watch } from 'vue'
 import { storeToRefs } from 'pinia'
-import { Device } from '@/modules/deviceStore'
+import { Device } from '@/modules/classes'
 import { global, deviceStore, batchStore } from '@/modules/pinia'
 import { logDebug, logInfo, logError } from '@/modules/logger'
 import {

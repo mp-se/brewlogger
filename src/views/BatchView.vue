@@ -148,6 +148,32 @@
             >
             </BsInputNumber>
           </div>
+          <div class="col-md-4">
+            <BsInputNumber
+              v-model="ogDisplayValue"
+              width="5"
+              label="Original Gravity"
+              :unit="gravityUnit"
+              min="0"
+              max="40"
+              :step="ogStep"
+              :disabled="global.disabled"
+            >
+            </BsInputNumber>
+          </div>
+          <div class="col-md-4">
+            <BsInputNumber
+              v-model="fgDisplayValue"
+              width="5"
+              label="Final Gravity"
+              :unit="gravityUnit"
+              min="0"
+              max="40"
+              :step="fgStep"
+              :disabled="global.disabled"
+            >
+            </BsInputNumber>
+          </div>
 
           <div class="col-md-12" v-if="batch.fermentationSteps != ''">
             <hr />
@@ -237,10 +263,11 @@
 import { onMounted, ref } from 'vue'
 import { global, deviceStore, batchStore, brewfatherStore } from '@/modules/pinia'
 import { validateCurrentForm } from '@/modules/utils'
-import { Batch } from '@/modules/batchStore'
+import { Batch } from '@/modules/classes'
 import router from '@/modules/router'
 import { logDebug } from '@/modules/logger'
 import FermentationStepFragment from '@/fragments/FermentationStepFragment.vue'
+import { useGravityConversion } from '@/modules/useUnitConversion'
 
 const batch = ref(null)
 const batchSaved = ref(null)
@@ -536,6 +563,10 @@ const styleOptions = ref([
   { label: 'Wood- and Barrel-Aged Strong Stout', value: 'Wood- and Barrel-Aged Strong Stout' }
 ])
 
+// Use reusable gravity conversion composable for OG and FG fields
+const { displayValue: ogDisplayValue, unit: gravityUnit, step: ogStep } = useGravityConversion(batch, 'og')
+const { displayValue: fgDisplayValue, step: fgStep } = useGravityConversion(batch, 'fg')
+
 function batchChanged() {
   logDebug('BatchView.batchChanged()')
 
@@ -595,7 +626,7 @@ onMounted(async () => {
         batchSaved.value = Batch.fromJson(batchResult.toJson())
         batch.value = batchResult
 
-        if (batchResult.fermentationChamber > 0 || batchResult.fermentationChamber !== null) {
+        if (batchResult.fermentationChamber > 0) {
           const deviceResult = await deviceStore.getDevice(batchResult.fermentationChamber)
           if (deviceResult && deviceResult.device) {
             const { stepList } = deviceResult

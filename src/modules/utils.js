@@ -22,6 +22,10 @@ export const gravityToPlato = (sg) => {
   return 259 - 259 / sg
 }
 
+export const platoToGravity = (plato) => {
+  return 259 / (259 - plato)
+}
+
 export function tempToF(c) {
   return c * 1.8 + 32.0
 }
@@ -52,6 +56,17 @@ export function pressureToKPA(p) {
 
 export function pressureToBAR(p) {
   return p * 0.0689475729
+}
+
+/**
+ * Unified rounding function for consistent decimal formatting across units
+ * @param {number} value - Value to round
+ * @param {number} decimals - Number of decimal places
+ * @returns {number} - Rounded value
+ */
+export function roundValue(value, decimals = 1) {
+  if (value === null || value === undefined) return 0
+  return Math.round(value * Math.pow(10, decimals)) / Math.pow(10, decimals)
 }
 
 export function getFormattedTemperature(temp) {

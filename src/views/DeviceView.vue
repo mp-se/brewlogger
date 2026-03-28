@@ -206,7 +206,7 @@
 import { computed, onMounted, ref } from 'vue'
 import { global, deviceStore } from '@/modules/pinia'
 import { validateCurrentForm } from '@/modules/utils'
-import { Device } from '@/modules/deviceStore'
+import { Device } from '@/modules/classes'
 import FermentationStepFragment from '@/fragments/FermentationStepFragment.vue'
 import router from '@/modules/router'
 import { logDebug, logError, logInfo } from '@/modules/logger'

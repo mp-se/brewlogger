@@ -72,7 +72,7 @@
 <script setup>
 import { onMounted, ref } from 'vue'
 import { batchStore, deviceStore, global } from '@/modules/pinia'
-import { FermentationStep } from '@/modules/deviceStore'
+import { FermentationStep } from '@/modules/classes'
 import FermentationStepFragment from '@/fragments/FermentationStepFragment.vue'
 import router from '@/modules/router'
 import { logDebug, logInfo, logError } from '@/modules/logger'

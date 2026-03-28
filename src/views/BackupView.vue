@@ -250,6 +250,8 @@ async function createBackup() {
               abv: b.abv,
               ebc: b.ebc,
               ibu: b.ibu,
+              fg: b.fg,
+              og: b.og,
               brewfatherId: b.brewfatherId,
               fermentationChamber: b.fermentationChamber,
               fermentationSteps: b.fermentationSteps,
@@ -426,6 +428,14 @@ async function restoreBatches(bl) {
         b.chipIdGravity = b.chipId
         b.chipIdPressure = ''
       }
+
+      if (b.fg === undefined || b.fg === null)
+        // New in 0.10
+        b.fg = 0
+
+      if (b.og === undefined || b.og === null)
+        // New in 0.10
+        b.og = 0
 
       b.fermentationChamber = 0
 

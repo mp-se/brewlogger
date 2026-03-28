@@ -126,7 +126,7 @@ import {
   sortList,
   applySortList
 } from '@/modules/ui'
-import { Pour } from '@/modules/pourStore'
+import { Pour } from '@/modules/classes'
 
 const batchList = ref(null)
 

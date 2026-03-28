@@ -1,285 +1,7 @@
 import { defineStore } from 'pinia'
 import { global } from '@/modules/pinia'
 import { logDebug, logError } from '@/modules/logger'
-
-export class Device {
-  constructor(
-    id,
-    chipId,
-    chipFamily,
-    software,
-    mdns,
-    config,
-    bleColor,
-    url,
-    description,
-    collectLogs
-  ) {
-    this.id = id === undefined ? 0 : id
-    this.chipId = chipId === undefined ? '' : chipId
-    this.chipFamily = chipFamily === undefined ? '' : chipFamily
-    this.software = software === undefined ? '' : software
-    this.mdns = mdns === undefined ? '' : mdns
-    this.config = config === undefined ? '' : config
-    this.bleColor = bleColor === undefined ? '' : bleColor
-    this.description = description === undefined ? '' : description
-    this.url = url === undefined ? '' : url
-    this.collectLogs = collectLogs === undefined ? false : collectLogs
-
-    if (this.url === 'http://' || this.url === 'https://') this.url = ''
-  }
-
-  static compare(d1, d2) {
-    return (
-      d1.chipId == d2.chipId &&
-      d1.chipFamily == d2.chipFamily &&
-      d1.software == d2.software &&
-      d1.mdns == d2.mdns &&
-      d1.config == d2.config &&
-      d1.bleColor == d2.bleColor &&
-      d1.url == d2.url &&
-      d1.description == d2.description &&
-      d1.collectLogs == d2.collectLogs
-    )
-  }
-
-  static fromJson(d) {
-    return new Device(
-      d.id,
-      d.chipId,
-      d.chipFamily,
-      d.software,
-      d.mdns,
-      d.config,
-      d.bleColor,
-      d.url,
-      d.description,
-      d.collectLogs
-    )
-  }
-
-  toJson() {
-    return {
-      chipId: this.chipId,
-      chipFamily: this.chipFamily,
-      software: this.software,
-      mdns: this.mdns,
-      config: this.config,
-      bleColor: this.bleColor,
-      url: this.url,
-      description: this.description,
-      collectLogs: this.collectLogs,
-      fermentationSteps: []
-    }
-  }
-
-  get id() {
-    return this._id
-  }
-  get chipId() {
-    return this._chipId
-  }
-  get chipFamily() {
-    return this._chipFamily
-  }
-  get software() {
-    return this._software
-  }
-  get mdns() {
-    return this._mdns
-  }
-  get config() {
-    return this._config
-  }
-  get bleColor() {
-    return this._bleColor
-  }
-  get url() {
-    return this._url
-  }
-  get description() {
-    return this._description
-  }
-  get collectLogs() {
-    return this._collectLogs
-  }
-
-  set id(id) {
-    this._id = id
-  }
-  set chipId(chipId) {
-    this._chipId = chipId
-  }
-  set chipFamily(chipFamily) {
-    this._chipFamily = chipFamily
-  }
-  set software(software) {
-    this._software = software
-  }
-  set mdns(mdns) {
-    this._mdns = mdns
-  }
-  set config(config) {
-    this._config = config
-  }
-  set bleColor(bleColor) {
-    this._bleColor = bleColor
-  }
-  set url(url) {
-    this._url = url
-  }
-  set description(description) {
-    this._description = description
-  }
-  set collectLogs(collectLogs) {
-    this._collectLogs = collectLogs
-  }
-}
-
-export class FermentationStep {
-  constructor(order, name, type, date, temp, days) {
-    this.order = order
-    this.name = name === undefined ? '' : name
-    this.type = type
-    this.date = date
-    this.temp = temp
-    this.days = days
-  }
-
-  static fromJson(fs) {
-    return new FermentationStep(fs.order, fs.name, fs.type, fs.date, fs.temp, fs.days)
-  }
-
-  static listFromJson(fsList, updateDates) {
-    var list = []
-
-    fsList.forEach((fs) => {
-      var step = FermentationStep.fromJson(fs)
-      list.push(step)
-    })
-
-    if (updateDates) {
-      var day = new Date()
-
-      list.forEach((fs) => {
-        fs.date = new Date(day).toISOString().substring(0, 10)
-        day.setDate(day.getDate() + fs.days)
-      })
-    }
-
-    return list
-  }
-
-  // THis is for the API payload which needs to include deviceId
-  static listToJson(fsList, deviceId) {
-    var list = []
-
-    fsList.forEach((fs) => {
-      // TODO: Figure out why I the object type has been lost..... This works for now.
-      var step = new FermentationStep(
-        fs.order,
-        fs.name,
-        fs.type,
-        fs.date,
-        fs.temp,
-        fs.days
-      ).toJson()
-      step.deviceId = deviceId
-      list.push(step)
-    })
-
-    return list
-  }
-
-  toJson() {
-    return {
-      order: this.order,
-      name: this.name,
-      type: this.type,
-      date: this.date,
-      temp: this.temp,
-      days: this.days
-    }
-  }
-
-  get order() {
-    return this._order
-  }
-  get name() {
-    return this._name
-  }
-  get type() {
-    return this._type
-  }
-  get date() {
-    return this._date
-  }
-  get temp() {
-    return this._temp
-  }
-  get days() {
-    return this._days
-  }
-
-  set order(order) {
-    this._order = order
-  }
-  set name(name) {
-    this._name = name
-  }
-  set type(type) {
-    this._type = type
-  }
-  set date(date) {
-    this._date = date
-  }
-  set temp(temp) {
-    this._temp = temp
-  }
-  set days(days) {
-    this._days = days
-  }
-}
-
-export class MDNS {
-  constructor(host, name, type) {
-    this.host = host
-    this.name = name
-    this.type = type
-  }
-
-  static fromJson(m) {
-    return new MDNS(m.host, m.name, m.type)
-  }
-
-  toJson() {
-    return {
-      host: this.host,
-      name: this.name,
-      type: this.type
-    }
-  }
-
-  get host() {
-    return this._host
-  }
-  get name() {
-    return this._name
-  }
-  get type() {
-    return this._type
-  }
-
-  set host(host) {
-    this._host = host
-  }
-  set name(name) {
-    this._name = name
-  }
-  set type(type) {
-    this._type = type
-  }
-}
+import { Device, FermentationStep, MDNS } from '@/modules/classes'
 
 export const useDeviceStore = defineStore('deviceStore', {
   state: () => {
@@ -352,6 +74,13 @@ export const useDeviceStore = defineStore('deviceStore', {
       // returns {device, stepList} or null
 
       logDebug('deviceStore.getDevice()', id)
+      
+      // Handle invalid device IDs
+      if (id === undefined || id === null || id === 0) {
+        logDebug('deviceStore.getDevice()', 'Invalid device ID, returning null')
+        return null
+      }
+      
       global.disabled = true
       try {
         const res = await fetch(global.baseURL + 'api/device/' + id, {
@@ -450,6 +179,13 @@ export const useDeviceStore = defineStore('deviceStore', {
       // returns stepList[] or null
 
       logDebug('deviceStore.getDeviceFermentationSteps()', id)
+      
+      // Handle invalid device IDs
+      if (id === undefined || id === null || id === 0) {
+        logDebug('deviceStore.getDeviceFermentationSteps()', 'Invalid device ID, returning null')
+        return null
+      }
+      
       global.disabled = true
       try {
         const res = await fetch(global.baseURL + 'api/device/' + id, {

@@ -447,7 +447,7 @@ onMounted(async () => {
   }
 
   for (const device of deviceStore.deviceList) {
-    if (device.software == 'Chamber-Controller') {
+    if (device.software == 'Chamber-Controller' && device.id > 0) {
       const result = await deviceStore.getDevice(device.id)
       if (result && result.stepList && result.stepList.length > 0) {
         result.device.fermentationSteps = result.stepList
