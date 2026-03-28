@@ -85,8 +85,8 @@ async def fetch_batch_list(status: str) -> list[schemas.BrewfatherBatch]:  # pyl
     try:
         async with httpx.AsyncClient() as client:
             url = "https://api.brewfather.app/v2/batches"
-            abv_color_ibu = "recipe.abv,recipe.color,recipe.ibu"
-            include_fields = f"{abv_color_ibu},recipe.style.name,recipe.fermentation"
+            recipe_fields = "recipe.abv,recipe.color,recipe.ibu,recipe.og,recipe.fg"
+            include_fields = f"{recipe_fields},recipe.style.name,recipe.fermentation"
             data = {
                 "include": include_fields,
                 "complete": False,
@@ -116,6 +116,8 @@ async def fetch_batch_list(status: str) -> list[schemas.BrewfatherBatch]:  # pyl
                 abv = 0
                 ebc = 0
                 ibu = 0
+                og = 0.0
+                fg = 0.0
                 style = ""
                 name = batch["name"]
                 steps = []
@@ -196,6 +198,10 @@ async def fetch_batch_list(status: str) -> list[schemas.BrewfatherBatch]:  # pyl
                     ebc = batch["recipe"]["color"]
                 if "ibu" in batch["recipe"]:
                     ibu = batch["recipe"]["ibu"]
+                if "og" in batch["recipe"]:
+                    og = batch["recipe"]["og"]
+                if "fg" in batch["recipe"]:
+                    fg = batch["recipe"]["fg"]
 
                 batches.append(
                     schemas.BrewfatherBatch(
@@ -208,6 +214,8 @@ async def fetch_batch_list(status: str) -> list[schemas.BrewfatherBatch]:  # pyl
                         abv=abv,
                         ebc=ebc,
                         ibu=ibu,
+                        fg=fg,
+                        og=og,
                         brewfatherId=batch["_id"],
                         fermentationSteps=json.dumps(steps),
                     )

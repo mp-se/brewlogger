@@ -93,7 +93,9 @@ class Batch(Base):
     abv = Column(Float, default=0.0, nullable=False)
     ebc = Column(Float, default=0.0, nullable=False)
     ibu = Column(Float, default=0.0, nullable=False)
-
+    fg = Column(Float, default=0.0, nullable=False) # New 1.1
+    og = Column(Float, default=0.0, nullable=False) # New 1.1
+    
     brewfather_id = Column(String(30), nullable=False)
 
     # Chamber controller specific

@@ -27,6 +27,8 @@ def test_add(app_client):
         "abv": 0.1,
         "ebc": 0.2,
         "ibu": 0.3,
+        "fg": 1.050,
+        "og": 1.060,
         "fermentationChamber": 0,
         "fermentationSteps": "",
         "tapList": True,
@@ -48,6 +50,8 @@ def test_add(app_client):
     assert data1["abv"] == data["abv"]
     assert data1["ebc"] == data["ebc"]
     assert data1["ibu"] == data["ibu"]
+    assert data1["fg"] == data["fg"]
+    assert data1["og"] == data["og"]
     assert data1["brewfatherId"] == data["brewfatherId"]
     assert data1["fermentationChamber"] == data["fermentationChamber"]
     assert data1["fermentationSteps"] == data["fermentationSteps"]
@@ -76,6 +80,8 @@ def test_add(app_client):
         "abv": 0.1,
         "ebc": 0.2,
         "ibu": 0.3,
+        "fg": 1.050,
+        "og": 1.060,
         "fermentationSteps": "",
         "tapList": True,
     }
@@ -106,6 +112,8 @@ def test_update(app_client):
         "abv": 1.1,
         "ebc": 1.2,
         "ibu": 1.3,
+        "fg": 1.050,
+        "og": 1.060,
         "fermentationChamber": 0,
         "fermentationSteps": "",
         "tapList": True,
@@ -166,6 +174,8 @@ def test_query(app_client):
         "abv": 0.1,
         "ebc": 0.2,
         "ibu": 0.3,
+        "fg": 1.050,
+        "og": 1.060,
         "fermentationChamber": 0,
         "fermentationSteps": "",
         "tapList": True,

@@ -50,6 +50,8 @@ class BrewfatherBatch(BaseModel):
     abv: float
     ebc: float
     ibu: float
+    fg: float = 0.0
+    og: float = 0.0
     brewfatherId: str
     fermentationSteps: str
 
@@ -254,6 +256,7 @@ class Gravity(GravityCreate):
     id: int
 
 
+# Used for the latest api and main dashboard
 class GravityLatest(Gravity):
     batch_name: str = Field(description="Name of the parent batch")
     chip_id_gravity: str = Field(description="Chip ID for gravity from parent batch")
@@ -377,6 +380,8 @@ class BatchBase(BaseModel):
     abv: float = Field(description="Alcohol level of the batch")
     ebc: float = Field(description="Color of the batch")
     ibu: float = Field(description="Bitterness of the batch")
+    fg: float = Field(default=0.0, description="Final gravity of the batch") # New 1.1
+    og: float = Field(default=0.0, description="Original gravity of the batch") # New 1.1
     brewfather_id: str = Field(
         min_length=0, max_length=30, description="ID used in brewfather"
     )
@@ -451,6 +456,27 @@ class BatchDashboard(BaseModel):
     pressure: List[Pressure] = None
     pour: List[Pour] = None
 
+
+# Used for fetching data for AI prediction of fermentation progress
+# class GravityPrediction(BaseModel):
+#     model_config = ConfigDict(alias_generator=to_camel, populate_by_name=True)
+
+#     temperature: Optional[float] = Field(None, description="Temperature value in C")
+#     gravity: float = Field(description="Calculated gravity in SG")
+#     velocity: Optional[float] = Field(None, description="Gravity velocity, points per day")
+#     angle: float = Field(description="Tilt or angle of the device")
+#     created: Optional[datetime] | None = Field(
+#         default=None, description="If undefined the current time will be used"
+#     )
+
+# class BatchPrediction(BaseModel):
+#     model_config = ConfigDict(alias_generator=to_camel, populate_by_name=True)
+
+#     name: str = Field(
+#         min_length=0, max_length=40, description="Short name of the batch"
+#     )
+
+#     gravity: List[GravityPrediction] = None
 
 ################################################################################
 

@@ -94,39 +94,27 @@ def migrate_database():
         # Changes from 0.7 to 0.8
         "ALTER TABLE device DROP COLUMN gravity_poly",
         "ALTER TABLE device DROP COLUMN gravity_formula",
-
         "ALTER TABLE batch ADD COLUMN tap_list BOOLEAN",
         "UPDATE batch SET tap_list = true WHERE tap_list IS NULL",
-
         "ALTER TABLE pour ADD COLUMN max_volume FLOAT",
         "UPDATE pour SET max_volume = 0 WHERE max_volume IS NULL",
         "ALTER TABLE pour ALTER COLUMN max_volume SET NOT NULL",
-
         "ALTER TABLE brewlogger ADD COLUMN volume_format VARCHAR(3)",
-
         "UPDATE brewlogger SET volume_format = 'L' WHERE volume_format IS NULL",
-
         "ALTER TABLE brewlogger ALTER COLUMN volume_format SET NOT NULL",
-
         "ALTER TABLE systemlog ALTER COLUMN message TYPE varchar(300)",
-
         "ALTER TABLE device ADD COLUMN collect_logs BOOLEAN",
         "UPDATE device SET collect_logs = false WHERE collect_logs IS NULL",
         "ALTER TABLE device ALTER COLUMN collect_logs SET NOT NULL",
-
         # Changes from v0.8 -> v0.9
         "ALTER TABLE pressure ADD COLUMN pressure1 FLOAT",
         "UPDATE pressure SET pressure1 = 0 WHERE pressure1 IS NULL",
         "ALTER TABLE pressure ALTER COLUMN pressure1 SET NOT NULL",
-
         "ALTER TABLE batch RENAME COLUMN chip_id TO chip_id_gravity",
-
         "ALTER TABLE batch ADD COLUMN chip_id_pressure VARCHAR(6)",
         "UPDATE batch SET chip_id_pressure = '' WHERE chip_id_pressure IS NULL",
         "ALTER TABLE batch ALTER COLUMN chip_id_pressure SET NOT NULL",
-
-        # Changes from v0.9 -> v0.10
-
+        # Changes from v0.9 -> v1.0
         "ALTER TABLE gravity ADD COLUMN velocity FLOAT",
         "UPDATE gravity SET velocity = 0 WHERE velocity IS NULL",
         "ALTER TABLE gravity ALTER COLUMN velocity SET NOT NULL",
@@ -138,14 +126,17 @@ def migrate_database():
         "ALTER TABLE pressure ALTER COLUMN pressure1 DROP NOT NULL",
         "ALTER TABLE pressure ALTER COLUMN battery DROP NOT NULL",
         "ALTER TABLE pressure ALTER COLUMN run_time DROP NOT NULL",
-
-        # Changes from v0.10 -> v0.11
         "CREATE TABLE IF NOT EXISTS receivelog (id SERIAL PRIMARY KEY, ip_address VARCHAR(45) NOT NULL, timestamp TIMESTAMP NOT NULL, payload TEXT NOT NULL)",
-
-        # Changes from v0.11 -> v0.12 (logging refactoring)
         "ALTER TABLE systemlog ADD COLUMN log_level INTEGER DEFAULT 3",
         "UPDATE systemlog SET log_level = 3 WHERE log_level IS NULL",
         "ALTER TABLE systemlog ALTER COLUMN log_level SET NOT NULL",
+        # Changes from v1.0 -> v1.1 
+        "ALTER TABLE batch ADD COLUMN fg FLOAT",
+        "UPDATE batch SET fg = 0 WHERE fg IS NULL",
+        "ALTER TABLE batch ALTER COLUMN fg SET NOT NULL",
+        "ALTER TABLE batch ADD COLUMN og FLOAT",
+        "UPDATE batch SET og = 0 WHERE og IS NULL",
+        "ALTER TABLE batch ALTER COLUMN og SET NOT NULL",
     ]
 
     with engine.connect() as con:

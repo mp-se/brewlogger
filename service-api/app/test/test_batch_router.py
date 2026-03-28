@@ -33,6 +33,8 @@ def test_init(app_client):
         abv=6.5,
         ebc=20,
         ibu=60,
+        fg=1.010,
+        og=1.080,
         brewfather_id="",
         fermentation_steps="[]",  # Required field - provide as JSON string
     )
