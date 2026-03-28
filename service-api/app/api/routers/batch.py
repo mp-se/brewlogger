@@ -255,13 +255,14 @@ async def get_batch_prediction(
     # Calculate 24 hours prior
     start_date = reference_date - timedelta(hours=24)
     
-    # Query gravity data from 24 hours before reference_date up to reference_date
+    # Query gravity data from 24 hours before reference_date up to reference_date (active only)
     gravity_readings = db.scalars(
         select(models.Gravity).filter(
             and_(
                 models.Gravity.batch_id == batch_id,
                 models.Gravity.created >= start_date,
-                models.Gravity.created <= reference_date
+                models.Gravity.created <= reference_date,
+                models.Gravity.active == True
             )
         ).order_by(models.Gravity.created)
     ).all()

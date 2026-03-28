@@ -489,3 +489,97 @@ def test_get_batch_prediction_default_current_date(app_client):
     # Should return the gravity reading from 12 hours ago
     assert len(data["gravity"]) == 1
     assert data["gravity"][0]["gravity"] == 1.048
+
+
+def test_get_batch_prediction_filters_inactive_gravity(app_client):
+    """Test GET /api/batch/{batch_id}/prediction filters out inactive gravity readings"""
+    test_init(app_client)
+    
+    # Create a batch
+    session = create_session()
+    batch_service = BatchService(session)
+    batch_data = BatchCreate(
+        name="Inactive Filter Test Batch",
+        description="Test filtering of inactive gravity",
+        chip_id_gravity="ABC123",
+        chip_id_pressure="DEF456",
+        active=True,
+        tap_list=True,
+        brew_date="2024-01-01",
+        style="IPA",
+        brewer="Brewer",
+        abv=6.5,
+        ebc=20,
+        ibu=60,
+        fg=1.010,
+        og=1.080,
+        brewfather_id="",
+        fermentation_steps="[]",
+    )
+    batch = batch_service.create(batch_data)
+    batch_id = batch.id
+    
+    # Create gravity service
+    gravity_service = GravityService(session)
+    now = datetime.now()
+    
+    # Add 2 active gravity readings
+    active_gravity_1 = GravityCreate(
+        batch_id=batch_id,
+        temperature=20.0,
+        gravity=1.050,
+        velocity=0.1,
+        angle=45.0,
+        battery=85.0,
+        rssi=90.0,
+        created=now - timedelta(hours=18),
+        active=True,
+    )
+    gravity_service.create(active_gravity_1)
+    
+    active_gravity_2 = GravityCreate(
+        batch_id=batch_id,
+        temperature=20.5,
+        gravity=1.045,
+        velocity=0.15,
+        angle=45.0,
+        battery=85.0,
+        rssi=90.0,
+        created=now - timedelta(hours=6),
+        active=True,
+    )
+    gravity_service.create(active_gravity_2)
+    
+    # Add 1 inactive gravity reading (should be filtered out)
+    inactive_gravity = GravityCreate(
+        batch_id=batch_id,
+        temperature=19.5,
+        gravity=1.055,
+        velocity=0.05,
+        angle=45.0,
+        battery=85.0,
+        rssi=90.0,
+        created=now - timedelta(hours=12),
+        active=False,
+    )
+    gravity_service.create(inactive_gravity)
+    
+    session.close()
+    
+    # Query prediction endpoint without date (uses current time)
+    response = app_client.get(
+        f"/api/batch/{batch_id}/prediction",
+        headers=headers
+    )
+    
+    assert response.status_code == 200
+    data = response.json()
+    assert data["name"] == "Inactive Filter Test Batch"
+    # Should only return 2 active gravity readings, not the inactive one
+    assert len(data["gravity"]) == 2
+    
+    # Verify the inactive reading (gravity=1.055) is NOT in the results
+    gravity_values = [g["gravity"] for g in data["gravity"]]
+    assert 1.050 in gravity_values
+    assert 1.045 in gravity_values
+    assert 1.055 not in gravity_values
