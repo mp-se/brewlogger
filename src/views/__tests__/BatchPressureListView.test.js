@@ -1,312 +1,183 @@
-import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest'
-import { mount } from '@vue/test-utils'
-import { setActivePinia } from 'pinia'
-import { createRouter, createMemoryHistory } from 'vue-router'
-import BatchPressureListView from '../BatchPressureListView.vue'
-import piniaInstance from '@/modules/pinia'
-import { useBatchStore } from '@/modules/batchStore'
-import { usePressureStore } from '@/modules/pressureStore'
-import { useConfigStore } from '@/modules/configStore'
-import { useGlobalStore } from '@/modules/globalStore'
-import * as logger from '@/modules/logger'
-import * as ui from '@/modules/ui'
+import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest';
+import { mount } from '@vue/test-utils';
+import { createPinia, setActivePinia } from 'pinia';
+import BatchPressureListView from '../BatchPressureListView.vue';
+import { nextTick } from 'vue';
+
+const mockStores = vi.hoisted(() => ({
+  batch: {
+    getBatch: vi.fn(),
+  },
+  pressure: {
+    getPressureListForBatch: vi.fn(),
+    updatePressure: vi.fn(),
+  },
+  config: {
+    isPressurePSI: true,
+    isPressureBAR: false,
+    isTempC: true,
+    $subscribe: vi.fn(),
+    $patch: vi.fn(),
+  },
+  global: {
+    disabled: false,
+    messageError: '',
+    $subscribe: vi.fn(),
+    $patch: vi.fn()
+  },
+  analytics: {
+    date: {
+      firstDate: '2023-01-01',
+      lastDate: '2023-01-03',
+    }
+  },
+  router: {
+    currentRoute: {
+      value: {
+        params: { id: '1' }
+      }
+    }
+  }
+}));
+
+vi.mock('@/modules/pinia', () => ({
+  config: mockStores.config,
+  pressureStore: mockStores.pressure,
+  batchStore: mockStores.batch,
+  global: mockStores.global,
+  default: {}
+}));
+
+vi.mock('@/modules/router', () => ({
+  default: mockStores.router
+}));
 
 vi.mock('@/modules/logger', () => ({
   logDebug: vi.fn(),
   logError: vi.fn()
-}))
+}));
+
+vi.mock('@/modules/utils', () => ({
+  getPressureDataAnalytics: vi.fn(() => mockStores.analytics),
+  getFormattedTemperature: vi.fn((t) => `${t} C`),
+  getFormattedPressure: vi.fn((p) => `${p} PSI`)
+}));
 
 vi.mock('@/modules/ui', () => ({
   sortedIconClass: 'bi-sort-down',
   setSortingDefault: vi.fn(),
   sortedClass: vi.fn(() => 'sorted'),
-  sortList: vi.fn(() => []),
+  sortList: vi.fn(),
   applySortList: vi.fn()
-}))
+}));
 
 describe('BatchPressureListView', () => {
-  let batchStore, pressureStore, configStore, globalStore, router
-
   beforeEach(() => {
-    setActivePinia(piniaInstance)
-    batchStore = useBatchStore()
-    pressureStore = usePressureStore()
-    configStore = useConfigStore()
-    globalStore = useGlobalStore()
-    vi.clearAllMocks()
+    setActivePinia(createPinia());
+    vi.clearAllMocks();
 
-    router = createRouter({
-      history: createMemoryHistory(),
-      routes: [
-        { path: '/batch/:id/pressure/list', name: 'batch-pressure-list' },
-        { path: '/batch/:id', name: 'batch' }
-      ]
-    })
-  })
+    mockStores.batch.getBatch.mockResolvedValue({ id: '1', name: 'Batch 1' });
+    mockStores.pressure.getPressureListForBatch.mockResolvedValue([
+      { id: 1, pressure: 10, created: '2023-01-01T10:00:00Z', active: true, temperature: 20, battery: 4.2, rssi: -60, runTime: 1.5 },
+      { id: 2, pressure: 12, created: '2023-01-02T10:00:00Z', active: true, temperature: 21, battery: 4.1, rssi: -65, runTime: 1.6 }
+    ]);
+    mockStores.pressure.updatePressure.mockResolvedValue(true);
+  });
 
-  afterEach(() => {
-    vi.restoreAllMocks()
-  })
-
-  describe('Component Structure', () => {
-    it('should render container', () => {
-      const wrapper = mount(BatchPressureListView, {
-        global: {
-          stubs: { 'router-link': { template: '<a><slot></slot></a>' }, 'BsInputDate': true, 'BsInputBase': true },
-          plugins: [router]
+  const mountWrapper = async () => {
+    const wrapper = mount(BatchPressureListView, {
+      global: {
+        stubs: {
+          'router-link': { template: '<a><slot></slot></a>' },
+          'BsInputDate': { template: '<input v-model="modelValue" />', props: ['modelValue'] },
+          'BsInputBase': { template: '<div><slot></slot></div>' }
         }
-      })
-      expect(wrapper.find('.container').exists()).toBe(true)
-    })
+      }
+    });
 
-    it('should render page title', () => {
-      const wrapper = mount(BatchPressureListView, {
-        global: {
-          stubs: { 'router-link': { template: '<a><slot></slot></a>' }, 'BsInputDate': true, 'BsInputBase': true },
-          plugins: [router]
-        }
-      })
-      expect(wrapper.find('.h3').exists()).toBe(true)
-      expect(wrapper.text()).toContain('Batch Pressure List')
-    })
+    await nextTick();
+    await nextTick();
+    return wrapper;
+  };
 
-    it('should render data table', () => {
-      const wrapper = mount(BatchPressureListView, {
-        global: {
-          stubs: { 'router-link': { template: '<a><slot></slot></a>' }, 'BsInputDate': true, 'BsInputBase': true },
-          plugins: [router]
-        }
-      })
-      expect(wrapper.find('table').exists()).toBe(true)
-    })
+  it('initializes and loads data on mount', async () => {
+    const wrapper = await mountWrapper();
+    expect(mockStores.batch.getBatch).toHaveBeenCalledWith('1');
+    expect(mockStores.pressure.getPressureListForBatch).toHaveBeenCalledWith('1');
+    expect(wrapper.vm.batchName).toBe('Batch 1');
+    expect(wrapper.vm.pressureList.length).toBe(2);
+  });
 
-    it('should render table headers', () => {
-      const wrapper = mount(BatchPressureListView, {
-        global: {
-          stubs: { 'router-link': { template: '<a><slot></slot></a>' }, 'BsInputDate': true, 'BsInputBase': true },
-          plugins: [router]
-        }
-      })
-      const thead = wrapper.find('thead')
-      expect(thead.exists()).toBe(true)
-      const headers = thead.findAll('th')
-      expect(headers.length).toBeGreaterThan(0)
-    })
+  it('handles loading error for batch', async () => {
+    mockStores.batch.getBatch.mockResolvedValue(null);
+    const wrapper = await mountWrapper();
+    expect(wrapper.vm.batchName).toBe('');
+  });
 
-    it('should have filter input components', () => {
-      const wrapper = mount(BatchPressureListView, {
-        global: {
-          stubs: { 'router-link': { template: '<a><slot></slot></a>' }, 'BsInputDate': true, 'BsInputBase': true },
-          plugins: [router]
-        }
-      })
-      expect(wrapper.findAllComponents({ name: 'BsInputDate' }).length).toBeGreaterThan(0)
-    })
+  it('updates pressure when checkbox clicked', async () => {
+    const wrapper = await mountWrapper();
+    const checkbox = wrapper.find('input[type="checkbox"]');
+    
+    await checkbox.trigger('click');
+    expect(mockStores.pressure.updatePressure).toHaveBeenCalled();
+  });
 
-    it('should have filter and sort buttons', () => {
-      const wrapper = mount(BatchPressureListView, {
-        global: {
-          stubs: { 'router-link': { template: '<a><slot></slot></a>' }, 'BsInputDate': true, 'BsInputBase': true },
-          plugins: [router]
-        }
-      })
-      const buttons = wrapper.findAll('button')
-      expect(buttons.length).toBeGreaterThan(0)
-    })
-  })
+  it('handles update failure', async () => {
+    mockStores.pressure.updatePressure.mockResolvedValue(false);
+    const wrapper = await mountWrapper();
+    const checkbox = wrapper.find('input[type="checkbox"]');
+    
+    await checkbox.trigger('click');
+    expect(mockStores.global.messageError).toContain('Failed to load pressure');
+  });
 
-  describe('State Initialization', () => {
-    it('should initialize with null pressure list', () => {
-      const wrapper = mount(BatchPressureListView, {
-        global: {
-          stubs: { 'router-link': { template: '<a><slot></slot></a>' }, 'BsInputDate': true, 'BsInputBase': true },
-          plugins: [router]
-        }
-      })
-      expect(wrapper.vm.pressureList).toBe(null)
-    })
+  it('applies filters', async () => {
+    const wrapper = await mountWrapper();
+    wrapper.vm.infoFirstDay = '2023-01-01';
+    wrapper.vm.infoLastDay = '2023-01-02';
+    
+    await wrapper.vm.apply();
+    expect(mockStores.pressure.updatePressure).toHaveBeenCalled();
+  });
 
-    it('should initialize with empty batch name', () => {
-      const wrapper = mount(BatchPressureListView, {
-        global: {
-          stubs: { 'router-link': { template: '<a><slot></slot></a>' }, 'BsInputDate': true, 'BsInputBase': true },
-          plugins: [router]
-        }
-      })
-      expect(wrapper.vm.batchName).toBe('')
-    })
+  it('handles apply failure', async () => {
+    mockStores.pressure.updatePressure.mockResolvedValue(false);
+    const wrapper = await mountWrapper();
+    wrapper.vm.infoFirstDay = '2023-01-01';
+    wrapper.vm.infoLastDay = '2023-01-02';
+    
+    await wrapper.vm.apply();
+    // It should have logged error
+    const logger = await import('@/modules/logger');
+    expect(logger.logError).toHaveBeenCalled();
+  });
 
-    it('should initialize filter dates as null', () => {
-      const wrapper = mount(BatchPressureListView, {
-        global: {
-          stubs: { 'router-link': { template: '<a><slot></slot></a>' }, 'BsInputDate': true, 'BsInputBase': true },
-          plugins: [router]
-        }
-      })
-      expect(wrapper.vm.infoFirstDay).toBe(null)
-      expect(wrapper.vm.infoLastDay).toBe(null)
-    })
+  it('activates all records', async () => {
+    mockStores.pressure.getPressureListForBatch.mockResolvedValue([
+      { id: 1, pressure: 10, created: '2023-01-01T10:00:00Z', active: false, temperature: 20 },
+    ]);
+    const wrapper = await mountWrapper();
+    
+    await wrapper.vm.activateAll();
+    expect(mockStores.pressure.updatePressure).toHaveBeenCalled();
+    expect(wrapper.vm.pressureList[0].active).toBe(true);
+  });
 
-    it('should call onMounted on component mount', () => {
-      mount(BatchPressureListView, {
-        global: {
-          stubs: { 'router-link': { template: '<a><slot></slot></a>' }, 'BsInputDate': true, 'BsInputBase': true },
-          plugins: [router]
-        }
-      })
-      expect(logger.logDebug).toHaveBeenCalledWith('BatchPressureListView.onMounted()')
-    })
-  })
+  it('handles activateAll failure', async () => {
+    mockStores.pressure.getPressureListForBatch.mockResolvedValue([
+      { id: 1, pressure: 10, created: '2023-01-01T10:00:00Z', active: false, temperature: 20 },
+    ]);
+    mockStores.pressure.updatePressure.mockResolvedValue(false);
+    const wrapper = await mountWrapper();
+    
+    await wrapper.vm.activateAll();
+    const logger = await import('@/modules/logger');
+    expect(logger.logError).toHaveBeenCalled();
+  });
 
-  describe('Store Access', () => {
-    it('should have access to batch store', () => {
-      const wrapper = mount(BatchPressureListView, {
-        global: {
-          stubs: { 'router-link': { template: '<a><slot></slot></a>' }, 'BsInputDate': true, 'BsInputBase': true },
-          plugins: [router]
-        }
-      })
-      expect(wrapper.vm.batchStore).toBeDefined()
-    })
-
-    it('should have access to pressure store', () => {
-      const wrapper = mount(BatchPressureListView, {
-        global: {
-          stubs: { 'router-link': { template: '<a><slot></slot></a>' }, 'BsInputDate': true, 'BsInputBase': true },
-          plugins: [router]
-        }
-      })
-      expect(wrapper.vm.pressureStore).toBeDefined()
-    })
-
-    it('should have access to config store', () => {
-      const wrapper = mount(BatchPressureListView, {
-        global: {
-          stubs: { 'router-link': { template: '<a><slot></slot></a>' }, 'BsInputDate': true, 'BsInputBase': true },
-          plugins: [router]
-        }
-      })
-      expect(wrapper.vm.config).toBeDefined()
-    })
-
-    it('should have access to global store', () => {
-      const wrapper = mount(BatchPressureListView, {
-        global: {
-          stubs: { 'router-link': { template: '<a><slot></slot></a>' }, 'BsInputDate': true, 'BsInputBase': true },
-          plugins: [router]
-        }
-      })
-      expect(wrapper.vm.global).toBeDefined()
-    })
-  })
-
-  describe('Router Integration', () => {
-    it('should have router instance', () => {
-      const wrapper = mount(BatchPressureListView, {
-        global: {
-          stubs: { 'router-link': { template: '<a><slot></slot></a>' }, 'BsInputDate': true, 'BsInputBase': true },
-          plugins: [router]
-        }
-      })
-      expect(wrapper.vm.router).toBeDefined()
-    })
-
-    it('should read batch id from route params', () => {
-      const wrapper = mount(BatchPressureListView, {
-        global: {
-          stubs: { 'router-link': { template: '<a><slot></slot></a>' }, 'BsInputDate': true, 'BsInputBase': true },
-          plugins: [router]
-        }
-      })
-      expect(wrapper.vm.router.currentRoute.value.params).toBeDefined()
-    })
-  })
-
-  describe('Component Methods', () => {
-    it('should have apply method', () => {
-      const wrapper = mount(BatchPressureListView, {
-        global: {
-          stubs: { 'router-link': { template: '<a><slot></slot></a>' }, 'BsInputDate': true, 'BsInputBase': true },
-          plugins: [router]
-        }
-      })
-      expect(typeof wrapper.vm.apply).toBe('function')
-    })
-
-    it('should have activateAll method', () => {
-      const wrapper = mount(BatchPressureListView, {
-        global: {
-          stubs: { 'router-link': { template: '<a><slot></slot></a>' }, 'BsInputDate': true, 'BsInputBase': true },
-          plugins: [router]
-        }
-      })
-      expect(typeof wrapper.vm.activateAll).toBe('function')
-    })
-
-    it('should have sortList method', () => {
-      const wrapper = mount(BatchPressureListView, {
-        global: {
-          stubs: { 'router-link': { template: '<a><slot></slot></a>' }, 'BsInputDate': true, 'BsInputBase': true },
-          plugins: [router]
-        }
-      })
-      expect(typeof wrapper.vm.sortList).toBe('function')
-    })
-
-    it('should have sortedClass method', () => {
-      const wrapper = mount(BatchPressureListView, {
-        global: {
-          stubs: { 'router-link': { template: '<a><slot></slot></a>' }, 'BsInputDate': true, 'BsInputBase': true },
-          plugins: [router]
-        }
-      })
-      expect(typeof wrapper.vm.sortedClass).toBe('function')
-    })
-  })
-
-  describe('Table Rendering', () => {
-    it('should have no data rows initially', () => {
-      const wrapper = mount(BatchPressureListView, {
-        global: {
-          stubs: { 'router-link': { template: '<a><slot></slot></a>' }, 'BsInputDate': true, 'BsInputBase': true },
-          plugins: [router]
-        }
-      })
-      const rows = wrapper.findAll('tbody tr')
-      expect(rows.length).toBe(0)
-    })
-
-    it('should have table body for data', () => {
-      const wrapper = mount(BatchPressureListView, {
-        global: {
-          stubs: { 'router-link': { template: '<a><slot></slot></a>' }, 'BsInputDate': true, 'BsInputBase': true },
-          plugins: [router]
-        }
-      })
-      expect(wrapper.find('tbody').exists()).toBe(true)
-    })
-
-    it('should have column headers for pressure analysis', () => {
-      const wrapper = mount(BatchPressureListView, {
-        global: {
-          stubs: { 'router-link': { template: '<a><slot></slot></a>' }, 'BsInputDate': true, 'BsInputBase': true },
-          plugins: [router]
-        }
-      })
-      const headerTexts = wrapper.findAll('th').map(h => h.text().toLowerCase())
-      // Check for key columns (may vary by config)
-      expect(headerTexts.some(h => h.includes('date') || h.includes('pressure'))).toBe(true)
-    })
-
-    it('should have proper table class', () => {
-      const wrapper = mount(BatchPressureListView, {
-        global: {
-          stubs: { 'router-link': { template: '<a><slot></slot></a>' }, 'BsInputDate': true, 'BsInputBase': true },
-          plugins: [router]
-        }
-      })
-      const table = wrapper.find('table')
-      expect(table.classes()).toContain('table')
-    })
-  })
-})
+  it('should render table headers and icons', async () => {
+    const wrapper = await mountWrapper();
+    expect(wrapper.find('th').exists()).toBe(true);
+    expect(wrapper.find('.icon-link').exists()).toBe(true);
+  });
+});
