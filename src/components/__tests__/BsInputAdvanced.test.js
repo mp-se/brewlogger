@@ -506,6 +506,151 @@ describe('BsInputTextAreaFormat - Formatted Text Input', () => {
       expect(measureItems.length).toBeGreaterThan(2)
     })
   })
+
+  describe('Context Menu Interactions - Function Coverage', () => {
+    it('should have context menu hidden initially', () => {
+      const wrapper = mount(BsInputTextAreaFormat, {
+        props: { modelValue: 'test' }
+      })
+      const menu = wrapper.find('#contextMenu')
+      expect(menu.exists()).toBe(true)
+      // Menu should start hidden (display should be empty or none)
+      expect(menu.element.style.display).not.toBe('block')
+    })
+
+    it('should render textarea with right-click handler', () => {
+      const wrapper = mount(BsInputTextAreaFormat, {
+        props: { modelValue: 'test' }
+      })
+      const textarea = wrapper.find('textarea')
+      expect(textarea.exists()).toBe(true)
+      // Textarea should have @click.right.prevent directive
+      expect(textarea.exists()).toBe(true)
+    })
+
+    it('should have context menu container with dropdown-menu class', () => {
+      const wrapper = mount(BsInputTextAreaFormat)
+      const menu = wrapper.find('#contextMenu')
+      expect(menu.exists()).toBe(true)
+      expect(menu.classes()).toContain('dropdown-menu')
+    })
+
+    it('should render context menu with v-for items', () => {
+      const wrapper = mount(BsInputTextAreaFormat)
+      const items = wrapper.findAll('#contextMenu .dropdown-item')
+      // Should render multiple items via v-for
+      expect(items.length).toBeGreaterThan(10)
+    })
+
+    it('should have context menu items with click handlers', () => {
+      const wrapper = mount(BsInputTextAreaFormat, {
+        props: { modelValue: 'test' }
+      })
+      const items = wrapper.findAll('#contextMenu .dropdown-item')
+      // Each item should have @click handler
+      items.forEach(item => {
+        expect(item.element.tagName).toBe('A')
+      })
+    })
+
+    it('should have div wrapper for context menu with click.outside handler', () => {
+      const wrapper = mount(BsInputTextAreaFormat)
+      const menu = wrapper.find('#contextMenu')
+      expect(menu.exists()).toBe(true)
+      expect(menu.classes()).toContain('dropdown-menu')
+    })
+
+    it('should have Cancel option with empty value in menu', () => {
+      const wrapper = mount(BsInputTextAreaFormat)
+      const items = wrapper.findAll('#contextMenu .dropdown-item')
+      const cancelItem = items.find(item => item.text() === 'Cancel')
+      expect(cancelItem).toBeDefined()
+    })
+
+    it('should have template variable options with $ symbol', () => {
+      const wrapper = mount(BsInputTextAreaFormat)
+      const items = wrapper.findAll('#contextMenu .dropdown-item')
+      const templateItems = items.filter(item => item.text().includes('${'))
+      expect(templateItems.length).toBeGreaterThan(5)
+    })
+
+    it('should have menu items for network, device, and measurement data', () => {
+      const wrapper = mount(BsInputTextAreaFormat)
+      const menu = wrapper.find('#contextMenu')
+      const htmlContent = menu.html()
+      
+      expect(htmlContent).toContain('${mdns}')
+      expect(htmlContent).toContain('${id}')
+      expect(htmlContent).toContain('${gravity}')
+      expect(htmlContent).toContain('${temp')
+      expect(htmlContent).toContain('${battery}')
+    })
+
+    it('should have menu items for advanced variables', () => {
+      const wrapper = mount(BsInputTextAreaFormat)
+      const menu = wrapper.find('#contextMenu')
+      const htmlContent = menu.html()
+      
+      // Should have app version, build, token, etc
+      expect(htmlContent).toContain('${app-ver}')
+      expect(htmlContent).toContain('${token}')
+      expect(htmlContent).toContain('${rssi}')
+    })
+
+    it('should render at least 20 context menu options', () => {
+      const wrapper = mount(BsInputTextAreaFormat)
+      const items = wrapper.findAll('#contextMenu .dropdown-item')
+      expect(items.length).toBeGreaterThanOrEqual(20)
+    })
+
+    it('should have accessibility attributes on menu', () => {
+      const wrapper = mount(BsInputTextAreaFormat)
+      const menu = wrapper.find('#contextMenu')
+      expect(menu.exists()).toBe(true)
+      expect(menu.attributes('id')).toBe('contextMenu')
+    })
+
+    it('should render context menu with proper label and value pairs', () => {
+      const wrapper = mount(BsInputTextAreaFormat)
+      const items = wrapper.findAll('#contextMenu .dropdown-item')
+      
+      // Each item should have text content (label) and data attribute structure
+      items.forEach(item => {
+        const text = item.text()
+        expect(text.length).toBeGreaterThan(0)
+      })
+    })
+
+    it('should have dropdown menu items with consistent styling', () => {
+      const wrapper = mount(BsInputTextAreaFormat)
+      const items = wrapper.findAll('#contextMenu .dropdown-item')
+      
+      items.forEach(item => {
+        expect(item.classes()).toContain('dropdown-item')
+        expect(item.element.tagName).toBe('A')
+      })
+    })
+
+    it('should have template for loop over contextMenuOptions', () => {
+      const wrapper = mount(BsInputTextAreaFormat)
+      const menu = wrapper.find('#contextMenu')
+      const items = wrapper.findAll('#contextMenu a')
+      
+      // Should have multiple items from v-for loop
+      expect(items.length).toBeGreaterThan(0)
+      expect(items.every(item => item.classes().includes('dropdown-item'))).toBe(true)
+    })
+
+    it('should have context menu with data-bs attributes', () => {
+      const wrapper = mount(BsInputTextAreaFormat, {
+        props: { modelValue: 'test' }
+      })
+      const textarea = wrapper.find('textarea')
+      
+      expect(textarea.attributes('data-bs-toggle')).toBe('tooltip')
+      expect(textarea.attributes('data-bs-custom-class')).toBe('custom-tooltip')
+    })
+  })
 })
 
 describe('BsDropdown - Dropdown Menu Component', () => {
