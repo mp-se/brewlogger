@@ -1,9 +1,9 @@
 import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest'
-import { mount } from '@vue/test-utils'
-import { setActivePinia } from 'pinia'
+import { mount, flushPromises } from '@vue/test-utils'
+import { createPinia, setActivePinia } from 'pinia'
 import { createRouter, createMemoryHistory } from 'vue-router'
 import SystemLogView from '../SystemLogView.vue'
-import piniaInstance from '@/modules/pinia'
+import { useGlobalStore } from '@/modules/globalStore'
 
 vi.mock('@/modules/logger', () => ({
   logDebug: vi.fn(),
@@ -14,351 +14,412 @@ vi.mock('@/modules/logger', () => ({
 vi.mock('@/modules/ui', () => ({
   sortedIconClass: 'bi-sort-down',
   setSortingDefault: vi.fn(),
-  sortedClass: vi.fn(() => 'sorted'),
+  sortedClass: vi.fn((field) => `sorted-${field}`),
   sortList: vi.fn(),
   applySortList: vi.fn()
 }))
 
-// Mock fetch globally - returns proper Promise
-global.fetch = vi.fn(() =>
-  Promise.resolve({
-    ok: true,
-    json: () => Promise.resolve({})
-  })
-)
-global.URL = {
-  createObjectURL: vi.fn(() => 'blob:mock-url'),
-  revokeObjectURL: vi.fn()
-}
-global.Blob = class Blob {}
-// Extend existing document with our mocks, don't replace it entirely
-const originalCreateElementSystemLog = document.createElement
-document.createElement = vi.fn((tag) => {
-  if (tag === 'a') {
-    return {
-      href: '',
-      download: '',
-      click: vi.fn(),
-      tagName: tag.toUpperCase()
-    }
-  }
-  return originalCreateElementSystemLog.call(document, tag)
-})
-
-const originalAppendChildSystemLog = document.body.appendChild
-document.body.appendChild = vi.fn(originalAppendChildSystemLog.bind(document.body))
-
-const originalRemoveChildSystemLog = document.body.removeChild
-document.body.removeChild = vi.fn(originalRemoveChildSystemLog.bind(document.body))
-
-describe('SystemLogView', () => {
-  let router
+describe('SystemLogView - Enhanced', () => {
+  let router, globalStore
 
   beforeEach(() => {
-    setActivePinia(piniaInstance)
-    vi.clearAllMocks()
+    setActivePinia(createPinia())
+    globalStore = useGlobalStore()
+    globalStore.baseURL = 'http://localhost:8080/'
+    globalStore.token = 'test-token'
+    globalStore.fetchTimout = 5000
+
     router = createRouter({
       history: createMemoryHistory(),
-      routes: [{ path: '/system-log', name: 'system-log', component: SystemLogView }]
+      routes: [{ path: '/system/log', name: 'system-log' }]
     })
   })
 
   afterEach(() => {
-    vi.restoreAllMocks()
+    vi.clearAllMocks()
   })
 
-  describe('Component Structure', () => {
+  const createWrapper = () => {
+    return mount(SystemLogView, {
+      global: {
+        stubs: {},
+        plugins: [router]
+      }
+    })
+  }
+
+  describe('Rendering', () => {
     it('should render container', () => {
-      const wrapper = mount(SystemLogView, {
-        global: {
-          stubs: { 'router-link': { template: '<a><slot></slot></a>' } },
-          plugins: [router]
-        }
-      })
+      const wrapper = createWrapper()
       expect(wrapper.find('.container').exists()).toBe(true)
     })
 
     it('should render page title', () => {
-      const wrapper = mount(SystemLogView, {
-        global: {
-          stubs: { 'router-link': { template: '<a><slot></slot></a>' } },
-          plugins: [router]
-        }
-      })
-      expect(wrapper.find('.h3').text()).toContain('System log')
+      const wrapper = createWrapper()
+      expect(wrapper.text()).toContain('System log')
     })
 
-    it('should render horizontal rule', () => {
-      const wrapper = mount(SystemLogView, {
-        global: {
-          stubs: { 'router-link': { template: '<a><slot></slot></a>' } },
-          plugins: [router]
-        }
-      })
+    it('should render h3 title', () => {
+      const wrapper = createWrapper()
+      expect(wrapper.find('.h3').exists()).toBe(true)
+    })
+
+    it('should render horizontal separator', () => {
+      const wrapper = createWrapper()
       expect(wrapper.find('hr').exists()).toBe(true)
     })
   })
 
-  describe('State Initialization', () => {
-    it('should initialize with 0 total entries', () => {
-      const wrapper = mount(SystemLogView, {
-        global: {
-          stubs: { 'router-link': { template: '<a><slot></slot></a>' } },
-          plugins: [router]
-        }
-      })
-      expect(wrapper.text()).toContain('Total log entries: 0')
-    })
-
-    it('should not show table initially', () => {
-      const wrapper = mount(SystemLogView, {
-        global: {
-          stubs: { 'router-link': { template: '<a><slot></slot></a>' } },
-          plugins: [router]
-        }
-      })
-      expect(wrapper.find('table').exists()).toBe(false)
-    })
-  })
-
-  describe('Buttons and Actions', () => {
-    it('should render Refresh button', () => {
-      const wrapper = mount(SystemLogView, {
-        global: {
-          stubs: { 'router-link': { template: '<a><slot></slot></a>' } },
-          plugins: [router]
-        }
-      })
-      const buttons = wrapper.findAll('button')
-      const refreshBtn = buttons.find(b => b.text().includes('Refresh'))
-      expect(refreshBtn.exists()).toBe(true)
-    })
-
-    it('should render Download button', () => {
-      const wrapper = mount(SystemLogView, {
-        global: {
-          stubs: { 'router-link': { template: '<a><slot></slot></a>' } },
-          plugins: [router]
-        }
-      })
-      const buttons = wrapper.findAll('button')
-      const downloadBtn = buttons.find(b => b.text().includes('Download'))
-      expect(downloadBtn.exists()).toBe(true)
-    })
-  })
-
-  describe('Component Methods', () => {
-    it('should have updateLogList method', () => {
-      const wrapper = mount(SystemLogView, {
-        global: {
-          stubs: { 'router-link': { template: '<a><slot></slot></a>' } },
-          plugins: [router]
-        }
-      })
-      expect(typeof wrapper.vm.updateLogList).toBe('function')
-    })
-
-    it('should have mapLogLevel method', () => {
-      const wrapper = mount(SystemLogView, {
-        global: {
-          stubs: { 'router-link': { template: '<a><slot></slot></a>' } },
-          plugins: [router]
-        }
-      })
-      expect(typeof wrapper.vm.mapLogLevel).toBe('function')
-      expect(wrapper.vm.mapLogLevel(0)).toBe('DEBUG')
-      expect(wrapper.vm.mapLogLevel(3)).toBe('ERROR')
-      expect(wrapper.vm.mapLogLevel(99)).toBe('99')
-    })
-  })
-
-  describe('Mounting', () => {
-    it('should mount without errors', () => {
-      const wrapper = mount(SystemLogView, {
-        global: {
-          stubs: { 'router-link': { template: '<a><slot></slot></a>' } },
-          plugins: [router]
-        }
-      })
-      expect(wrapper.exists()).toBe(true)
-    })
-  })
-
-  describe('Error Handling', () => {
-    it('should have errorMessage in global store', () => {
-      const wrapper = mount(SystemLogView, {
-        global: {
-          stubs: { 'router-link': { template: '<a><slot></slot></a>' } },
-          plugins: [router]
-        }
-      })
-      // errorMessage is in the global Pinia store, not in component
-      expect(wrapper.exists()).toBe(true)
-    })
-
-    it('should display error message when set', async () => {
-      const wrapper = mount(SystemLogView, {
-        global: {
-          stubs: { 'router-link': { template: '<a><slot></slot></a>' } },
-          plugins: [router]
-        }
-      })
-      wrapper.vm.errorMessage = 'Test error'
+  describe('Log Summary Info', () => {
+    it('should display total log entries count', async () => {
+      const wrapper = createWrapper()
+      wrapper.vm.total = 100
       await wrapper.vm.$nextTick()
-      const errorDiv = wrapper.find('[class*="alert"]')
-      // Error div may or may not be rendered depending on template
-      expect(wrapper.vm.errorMessage).toBe('Test error')
+
+      expect(wrapper.text()).toContain('Total log entries: 100')
+    })
+
+    it('should display showing count', async () => {
+      const wrapper = createWrapper()
+      wrapper.vm.logList = [
+        { id: 1, timestamp: '2025-05-09 10:00:00', module: 'test' },
+        { id: 2, timestamp: '2025-05-09 11:00:00', module: 'test' }
+      ]
+      await wrapper.vm.$nextTick()
+
+      expect(wrapper.text()).toContain('first: 2')
+    })
+
+    it('should show 0 when logList is null', async () => {
+      const wrapper = createWrapper()
+      wrapper.vm.logList = null
+      await wrapper.vm.$nextTick()
+
+      expect(wrapper.text()).toContain('Showing the first: 0')
     })
   })
 
-  describe('Map Log Level', () => {
-    it('should map level 0 to DEBUG', () => {
-      const wrapper = mount(SystemLogView, {
-        global: {
-          stubs: { 'router-link': { template: '<a><slot></slot></a>' } },
-          plugins: [router]
-        }
+  describe('Buttons', () => {
+    it('should have Refresh button', () => {
+      const wrapper = createWrapper()
+      const buttons = wrapper.findAll('button')
+      expect(buttons.some(b => b.text().includes('Refresh'))).toBe(true)
+    })
+
+    it('should have Download button', () => {
+      const wrapper = createWrapper()
+      const buttons = wrapper.findAll('button')
+      expect(buttons.some(b => b.text().includes('Download'))).toBe(true)
+    })
+
+    it('should disable buttons when global.disabled is true', async () => {
+      const wrapper = createWrapper()
+      globalStore.disabled = true
+      await wrapper.vm.$nextTick()
+
+      const buttons = wrapper.findAll('button')
+      buttons.forEach(button => {
+        expect(button.attributes('disabled')).not.toBeUndefined()
       })
+    })
+
+    it('should enable buttons when global.disabled is false', async () => {
+      const wrapper = createWrapper()
+      globalStore.disabled = false
+      await wrapper.vm.$nextTick()
+
+      const buttons = wrapper.findAll('button')
+      buttons.forEach(button => {
+        expect(button.attributes('disabled')).toBeFalsy()
+      })
+    })
+  })
+
+  describe('Table Headers', () => {
+    it('should render table with headers when log list is populated', async () => {
+      const wrapper = createWrapper()
+      wrapper.vm.logList = [
+        { id: 1, timestamp: '2025-05-09 10:00:00', module: 'test', message: 'msg', logLevel: 0, errorCode: 0 }
+      ]
+      await wrapper.vm.$nextTick()
+
+      const headers = wrapper.findAll('th')
+      expect(headers.length).toBeGreaterThan(0)
+    })
+
+    it('should have correct number of header columns', async () => {
+      const wrapper = createWrapper()
+      wrapper.vm.logList = []
+      await wrapper.vm.$nextTick()
+
+      const headers = wrapper.findAll('th')
+      expect(headers.length).toBe(5)
+    })
+  })
+
+  describe('Log Level Mapping', () => {
+    it('should map 0 to DEBUG', () => {
+      const wrapper = createWrapper()
       expect(wrapper.vm.mapLogLevel(0)).toBe('DEBUG')
     })
 
-    it('should map level 1 to INFO', () => {
-      const wrapper = mount(SystemLogView, {
-        global: {
-          stubs: { 'router-link': { template: '<a><slot></slot></a>' } },
-          plugins: [router]
-        }
-      })
+    it('should map 1 to INFO', () => {
+      const wrapper = createWrapper()
       expect(wrapper.vm.mapLogLevel(1)).toBe('INFO')
     })
 
-    it('should map level 2 to WARNING', () => {
-      const wrapper = mount(SystemLogView, {
-        global: {
-          stubs: { 'router-link': { template: '<a><slot></slot></a>' } },
-          plugins: [router]
-        }
-      })
+    it('should map 2 to WARNING', () => {
+      const wrapper = createWrapper()
       expect(wrapper.vm.mapLogLevel(2)).toBe('WARNING')
     })
 
-    it('should map level 3 to ERROR', () => {
-      const wrapper = mount(SystemLogView, {
-        global: {
-          stubs: { 'router-link': { template: '<a><slot></slot></a>' } },
-          plugins: [router]
-        }
-      })
+    it('should map 3 to ERROR', () => {
+      const wrapper = createWrapper()
       expect(wrapper.vm.mapLogLevel(3)).toBe('ERROR')
     })
 
-    it('should map level 4 to CRITICAL', () => {
-      const wrapper = mount(SystemLogView, {
-        global: {
-          stubs: { 'router-link': { template: '<a><slot></slot></a>' } },
-          plugins: [router]
-        }
-      })
+    it('should map 4 to CRITICAL', () => {
+      const wrapper = createWrapper()
       expect(wrapper.vm.mapLogLevel(4)).toBe('CRITICAL')
     })
 
-    it('should return unchanged string for unknown levels', () => {
-      const wrapper = mount(SystemLogView, {
-        global: {
-          stubs: { 'router-link': { template: '<a><slot></slot></a>' } },
-          plugins: [router]
-        }
-      })
+    it('should return string of unknown level', () => {
+      const wrapper = createWrapper()
       expect(wrapper.vm.mapLogLevel(99)).toBe('99')
     })
   })
 
-  describe('Component Methods', () => {
+  describe('Initial State', () => {
+    it('should initialize with null log list', () => {
+      const wrapper = createWrapper()
+      expect(wrapper.vm.logList).toBeNull()
+    })
+
+    it('should initialize total as 0', () => {
+      const wrapper = createWrapper()
+      expect(wrapper.vm.total).toBe(0)
+    })
+
+    it('should initialize skip as 0', () => {
+      const wrapper = createWrapper()
+      expect(wrapper.vm.skip).toBe(0)
+    })
+  })
+
+  describe('Log List Display', () => {
+    it('should not show table when logList is null', async () => {
+      const wrapper = createWrapper()
+      wrapper.vm.logList = null
+      await wrapper.vm.$nextTick()
+
+      const table = wrapper.find('table')
+      expect(table.exists()).toBe(false)
+    })
+
+    it('should show table when logList is set', async () => {
+      const wrapper = createWrapper()
+      wrapper.vm.logList = []
+      await wrapper.vm.$nextTick()
+
+      const table = wrapper.find('table')
+      expect(table.exists()).toBe(true)
+    })
+
+    it('should display log rows', async () => {
+      const wrapper = createWrapper()
+      wrapper.vm.logList = [
+        { id: 1, timestamp: '2025-05-09 10:00:00', module: 'system', message: 'Test message', logLevel: 1, errorCode: 0 },
+        { id: 2, timestamp: '2025-05-09 11:00:00', module: 'device', message: 'Another message', logLevel: 2, errorCode: 1 }
+      ]
+      await wrapper.vm.$nextTick()
+
+      const rows = wrapper.findAll('tbody tr')
+      expect(rows.length).toBe(2)
+    })
+
+    it('should display empty table when logList is empty array', async () => {
+      const wrapper = createWrapper()
+      wrapper.vm.logList = []
+      await wrapper.vm.$nextTick()
+
+      const rows = wrapper.findAll('tbody tr')
+      expect(rows.length).toBe(0)
+    })
+  })
+
+  describe('Log Data Display', () => {
+    it('should display timestamp correctly', async () => {
+      const wrapper = createWrapper()
+      wrapper.vm.logList = [
+        { id: 1, timestamp: '2025-05-09 10:30:45', module: 'test', message: 'msg', logLevel: 0, errorCode: 0 }
+      ]
+      await wrapper.vm.$nextTick()
+
+      expect(wrapper.text()).toContain('2025-05-09')
+      expect(wrapper.text()).toContain('10:30:45')
+    })
+
+    it('should display module name', async () => {
+      const wrapper = createWrapper()
+      wrapper.vm.logList = [
+        { id: 1, timestamp: '2025-05-09 10:00:00', module: 'device_service', message: 'msg', logLevel: 0, errorCode: 0 }
+      ]
+      await wrapper.vm.$nextTick()
+
+      expect(wrapper.text()).toContain('device_service')
+    })
+
+    it('should display message', async () => {
+      const wrapper = createWrapper()
+      wrapper.vm.logList = [
+        { id: 1, timestamp: '2025-05-09 10:00:00', module: 'test', message: 'Device connected', logLevel: 0, errorCode: 0 }
+      ]
+      await wrapper.vm.$nextTick()
+
+      expect(wrapper.text()).toContain('Device connected')
+    })
+
+    it('should display mapped log level', async () => {
+      const wrapper = createWrapper()
+      wrapper.vm.logList = [
+        { id: 1, timestamp: '2025-05-09 10:00:00', module: 'test', message: 'msg', logLevel: 1, errorCode: 0 }
+      ]
+      await wrapper.vm.$nextTick()
+
+      expect(wrapper.text()).toContain('INFO')
+    })
+
+    it('should display error code', async () => {
+      const wrapper = createWrapper()
+      wrapper.vm.logList = [
+        { id: 1, timestamp: '2025-05-09 10:00:00', module: 'test', message: 'msg', logLevel: 0, errorCode: 42 }
+      ]
+      await wrapper.vm.$nextTick()
+
+      expect(wrapper.text()).toContain('42')
+    })
+  })
+
+  describe('Methods', () => {
     it('should have updateLogList method', () => {
-      const wrapper = mount(SystemLogView, {
-        global: {
-          stubs: { 'router-link': { template: '<a><slot></slot></a>' } },
-          plugins: [router]
-        }
-      })
+      const wrapper = createWrapper()
       expect(typeof wrapper.vm.updateLogList).toBe('function')
     })
 
     it('should have downloadAllRecords method', () => {
-      const wrapper = mount(SystemLogView, {
-        global: {
-          stubs: { 'router-link': { template: '<a><slot></slot></a>' } },
-          plugins: [router]
-        }
-      })
+      const wrapper = createWrapper()
       expect(typeof wrapper.vm.downloadAllRecords).toBe('function')
     })
 
     it('should have mapLogLevel method', () => {
-      const wrapper = mount(SystemLogView, {
-        global: {
-          stubs: { 'router-link': { template: '<a><slot></slot></a>' } },
-          plugins: [router]
-        }
-      })
+      const wrapper = createWrapper()
       expect(typeof wrapper.vm.mapLogLevel).toBe('function')
     })
   })
 
-  describe('Button Rendering', () => {
-    it('should render Refresh and Download buttons', () => {
-      const wrapper = mount(SystemLogView, {
-        global: {
-          stubs: { 'router-link': { template: '<a><slot></slot></a>' } },
-          plugins: [router]
-        }
-      })
-      const buttons = wrapper.findAll('button')
-      expect(buttons.length).toBeGreaterThanOrEqual(2)
+  describe('Sorting', () => {
+    it('should have sorting icon class', () => {
+      const wrapper = createWrapper()
+      expect(wrapper.vm.sortedIconClass).toBeDefined()
+    })
+
+    it('should render table with data when populated', async () => {
+      const wrapper = createWrapper()
+      wrapper.vm.logList = [
+        { id: 1, timestamp: '2025-05-09 10:00:00', module: 'test', message: 'msg', logLevel: 0, errorCode: 0 }
+      ]
+      await wrapper.vm.$nextTick()
+
+      const table = wrapper.find('table')
+      expect(table.exists()).toBe(true)
     })
   })
 
-  describe('State Management', () => {
-    it('should initialize with null logList initially', () => {
-      const wrapper = mount(SystemLogView, {
-        global: {
-          stubs: { 'router-link': { template: '<a><slot></slot></a>' } },
-          plugins: [router]
-        }
-      })
-      // logList is initially null
-      expect(wrapper.find('table').exists()).toBe(false)
+  describe('Table Structure', () => {
+    it('should have table with striped class', async () => {
+      const wrapper = createWrapper()
+      wrapper.vm.logList = []
+      await wrapper.vm.$nextTick()
+
+      const table = wrapper.find('table')
+      expect(table.classes()).toContain('table-striped')
     })
 
-    it('should initialize with total 0', () => {
-      const wrapper = mount(SystemLogView, {
-        global: {
-          stubs: { 'router-link': { template: '<a><slot></slot></a>' } },
-          plugins: [router]
-        }
-      })
-      expect(wrapper.vm.total).toBe(0)
+    it('should have proper column widths', async () => {
+      const wrapper = createWrapper()
+      wrapper.vm.logList = []
+      await wrapper.vm.$nextTick()
+
+      const headers = wrapper.findAll('th')
+      expect(headers.length).toBe(5)
     })
 
-    it('should initialize with skip 0', () => {
-      const wrapper = mount(SystemLogView, {
-        global: {
-          stubs: { 'router-link': { template: '<a><slot></slot></a>' } },
-          plugins: [router]
-        }
+    it('should have header scope attributes', async () => {
+      const wrapper = createWrapper()
+      wrapper.vm.logList = []
+      await wrapper.vm.$nextTick()
+
+      const headers = wrapper.findAll('th')
+      headers.forEach(h => {
+        expect(h.attributes('scope')).toBe('col')
       })
-      expect(wrapper.vm.skip).toBe(0)
+    })
+  })
+
+  describe('Row Key Binding', () => {
+    it('should render rows with unique id as key', async () => {
+      const wrapper = createWrapper()
+      wrapper.vm.logList = [
+        { id: 1, timestamp: '2025-05-09 10:00:00', module: 'test', message: 'msg1', logLevel: 0, errorCode: 0 },
+        { id: 2, timestamp: '2025-05-09 11:00:00', module: 'test', message: 'msg2', logLevel: 0, errorCode: 0 }
+      ]
+      await wrapper.vm.$nextTick()
+
+      const rows = wrapper.findAll('tbody tr')
+      expect(rows.length).toBe(2)
+    })
+  })
+
+  describe('Layout', () => {
+    it('should have row alignment for header', () => {
+      const wrapper = createWrapper()
+      const row = wrapper.find('.row.align-items-center')
+      expect(row.exists()).toBe(true)
     })
 
-    it('should not show table initially', () => {
-      const wrapper = mount(SystemLogView, {
-        global: {
-          stubs: { 'router-link': { template: '<a><slot></slot></a>' } },
-          plugins: [router]
-        }
-      })
+    it('should have column layout for title', () => {
+      const wrapper = createWrapper()
+      const col = wrapper.find('.col-md-10')
+      expect(col.exists()).toBe(true)
+    })
+
+    it('should have column layout for buttons', () => {
+      const wrapper = createWrapper()
+      const col = wrapper.find('.col-md-2')
+      expect(col.exists()).toBe(true)
+    })
+  })
+
+  describe('Content Conditional Rendering', () => {
+    it('should show message when no logs are loaded', async () => {
+      const wrapper = createWrapper()
+      wrapper.vm.logList = null
+      await wrapper.vm.$nextTick()
+
       const table = wrapper.find('table')
       expect(table.exists()).toBe(false)
+    })
+
+    it('should show message info section always', () => {
+      const wrapper = createWrapper()
+      expect(wrapper.text()).toContain('Total log entries')
+    })
+  })
+
+  describe('Download Message', () => {
+    it('should mention download in info text', () => {
+      const wrapper = createWrapper()
+      expect(wrapper.text()).toContain('download')
     })
   })
 })

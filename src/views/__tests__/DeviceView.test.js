@@ -3,6 +3,9 @@ import { mount, flushPromises } from '@vue/test-utils'
 import { createPinia, setActivePinia } from 'pinia'
 import { createRouter, createMemoryHistory } from 'vue-router'
 import DeviceView from '../DeviceView.vue'
+import { useDeviceStore } from '@/modules/deviceStore'
+import { useGlobalStore } from '@/modules/globalStore'
+import { Device } from '@/modules/classes'
 
 vi.mock('@/modules/logger', () => ({
   logDebug: vi.fn(),
@@ -10,11 +13,23 @@ vi.mock('@/modules/logger', () => ({
   logInfo: vi.fn()
 }))
 
-describe('DeviceView', () => {
-  let router
+vi.mock('@/modules/utils', () => ({
+  validateCurrentForm: vi.fn(() => true),
+  gravityToPlato: vi.fn()
+}))
+
+vi.mock('@/modules/detect', () => ({
+  detectMdns: vi.fn(() => 'test.local'),
+  detectPlatform: vi.fn(() => 'esp32'),
+  detectSoftware: vi.fn(() => 'Gravitymon')
+}))
+
+describe('DeviceView - Enhanced', () => {
+  let router, pinia
 
   beforeEach(() => {
-    setActivePinia(createPinia())
+    pinia = createPinia()
+    setActivePinia(pinia)
     router = createRouter({
       history: createMemoryHistory(),
       routes: [
@@ -28,407 +43,137 @@ describe('DeviceView', () => {
     vi.clearAllMocks()
   })
 
-  describe('Basic Rendering', () => {
-    it('should render device view container', () => {
-      const wrapper = mount(DeviceView, {
-        global: {
-          stubs: {
-            BsInputText: true,
-            BsInputNumber: true,
-            BsInputDate: true,
-            BsCard: true,
-            BsInputSwitch: true,
-            BsFileUpload: true,
-            'router-link': true
-          },
-          plugins: [router]
-        }
-      })
-      const container = wrapper.find('.container')
-      expect(container.exists()).toBe(true)
+  const createWrapper = async (routeParams = { id: 'new' }) => {
+    await router.push({ name: 'device', params: routeParams })
+    return mount(DeviceView, {
+      global: {
+        stubs: {
+          BsInputText: true,
+          BsInputNumber: true,
+          BsInputDate: true,
+          BsCard: true,
+          BsInputSwitch: true,
+          BsInputRadio: true,
+          BsInputBase: true,
+          BsFileUpload: true,
+          BsModal: true,
+          BsModalConfirm: true,
+          BsMessage: true,
+          FermentationStepFragment: true,
+          'router-link': true
+        },
+        plugins: [router]
+      }
     })
+  }
 
-    it('should render page title', () => {
-      const wrapper = mount(DeviceView, {
-        global: {
-          stubs: {
-            BsInputText: true,
-            BsInputNumber: true,
-            BsInputDate: true,
-            BsCard: true,
-            BsInputSwitch: true,
-            BsFileUpload: true,
-            'router-link': true
-          },
-          plugins: [router]
-        }
-      })
-      expect(wrapper.text()).toContain('Device')
-    })
-
-    it('should have h3 class for title', () => {
-      const wrapper = mount(DeviceView, {
-        global: {
-          stubs: {
-            BsInputText: true,
-            BsInputNumber: true,
-            BsInputDate: true,
-            BsCard: true,
-            BsInputSwitch: true,
-            BsFileUpload: true,
-            'router-link': true
-          },
-          plugins: [router]
-        }
-      })
-      const h3 = wrapper.find('.h3')
-      expect(h3.exists()).toBe(true)
-    })
-  })
-
-  describe('Form Structure', () => {
-    it('should render form element structure', () => {
-      const wrapper = mount(DeviceView, {
-        global: {
-          stubs: {
-            BsInputText: true,
-            BsInputNumber: true,
-            BsInputDate: true,
-            BsCard: true,
-            BsInputSwitch: true,
-            BsFileUpload: true,
-            'router-link': true
-          },
-          plugins: [router]
-        }
-      })
-      // Component renders with input components
-      const inputStubs = wrapper.findAll('[class*="input"], bsinput-stub')
+  describe('Rendering', () => {
+    it('should render device view container', async () => {
+      const wrapper = await createWrapper()
       expect(wrapper.find('.container').exists()).toBe(true)
     })
 
-    it('should have form structure', () => {
-      const wrapper = mount(DeviceView, {
-        global: {
-          stubs: {
-            BsInputText: true,
-            BsInputNumber: true,
-            BsInputDate: true,
-            BsCard: true,
-            BsInputSwitch: true,
-            BsFileUpload: true,
-            'router-link': true
-          },
-          plugins: [router]
-        }
-      })
+    it('should render page title', async () => {
+      const wrapper = await createWrapper()
+      expect(wrapper.text()).toContain('Device')
+    })
 
-      // Verify component renders
-      expect(wrapper.exists()).toBe(true)
+    it('should render h3 title element', async () => {
+      const wrapper = await createWrapper()
+      expect(wrapper.find('.h3').exists()).toBe(true)
     })
   })
 
-  describe('Initialization', () => {
-    it('should initialize with empty device object', () => {
-      const wrapper = mount(DeviceView, {
-        global: {
-          stubs: {
-            BsInputText: true,
-            BsInputNumber: true,
-            BsInputDate: true,
-            BsCard: true,
-            BsInputSwitch: true,
-            BsFileUpload: true,
-            'router-link': true
-          },
-          plugins: [router]
-        }
-      })
 
-      expect(wrapper.vm.device).toBeDefined()
-    })
 
-    it('should mount component successfully', () => {
-      const wrapper = mount(DeviceView, {
-        global: {
-          stubs: {
-            BsInputText: true,
-            BsInputNumber: true,
-            BsInputDate: true,
-            BsCard: true,
-            BsInputSwitch: true,
-            BsFileUpload: true,
-            'router-link': true
-          },
-          plugins: [router]
-        }
-      })
 
-      // Should mount without errors
-      expect(wrapper.exists()).toBe(true)
-    })
-  })
 
-  describe('Layout', () => {
-    it('should render container with bootstrap grid', () => {
-      const wrapper = mount(DeviceView, {
-        global: {
-          stubs: {
-            BsInputText: true,
-            BsInputNumber: true,
-            BsInputDate: true,
-            BsCard: true,
-            BsInputSwitch: true,
-            BsFileUpload: true,
-            'router-link': true
-          },
-          plugins: [router]
-        }
-      })
 
-      expect(wrapper.find('.row').exists()).toBe(true)
-    })
-
-    it('should render horizontal rules', () => {
-      const wrapper = mount(DeviceView, {
-        global: {
-          stubs: {
-            BsInputText: true,
-            BsInputNumber: true,
-            BsInputDate: true,
-            BsCard: true,
-            BsInputSwitch: true,
-            BsFileUpload: true,
-            'router-link': true
-          },
-          plugins: [router]
-        }
-      })
-
-      const hrs = wrapper.findAll('hr')
-      expect(hrs.length).toBeGreaterThan(0)
-    })
-  })
-
-  describe('Device Configuration Sections', () => {
-    it('should have fermentation steps section', () => {
-      const wrapper = mount(DeviceView, {
-        global: {
-          stubs: {
-            BsInputText: true,
-            BsInputNumber: true,
-            BsInputDate: true,
-            BsCard: true,
-            BsInputSwitch: true,
-            BsFileUpload: true,
-            'router-link': true
-          },
-          plugins: [router]
-        }
-      })
-
-      // FermentationStepFragment should be stubbed
-      const text = wrapper.text()
-      expect(text).toBeDefined()
-    })
-  })
-
-  describe('Navigation', () => {
-    it('should have router links for navigation', () => {
-      const wrapper = mount(DeviceView, {
-        global: {
-          stubs: {
-            BsInputText: true,
-            BsInputNumber: true,
-            BsInputDate: true,
-            BsCard: true,
-            BsInputSwitch: true,
-            BsFileUpload: true,
-            'router-link': true
-          },
-          plugins: [router]
-        }
-      })
-
-      const routerLinks = wrapper.findAll('router-link-stub')
-      expect(routerLinks.length).toBeGreaterThanOrEqual(0)
-    })
-  })
-
-  describe('Chip ID Validation', () => {
-    it('should return true for valid hex chip ID', () => {
-      // Create simple object to test regex without mounting component
-      const testObj = { chipId: 'abc123' }
-      const regex = new RegExp(/^([0-9,a-f]){6}$/)
-      expect(regex.test(testObj.chipId)).toBe(true)
-    })
-
-    it('should return false for invalid chip ID (too short)', () => {
-      const testObj = { chipId: 'abc12' }
-      const regex = new RegExp(/^([0-9,a-f]){6}$/)
-      expect(regex.test(testObj.chipId)).toBe(false)
-    })
-
-    it('should return false for invalid chip ID (uppercase)', () => {
-      const testObj = { chipId: 'ABC123' }
-      const regex = new RegExp(/^([0-9,a-f]){6}$/)
-      expect(regex.test(testObj.chipId)).toBe(false)
-    })
-
-    it('should return true for numeric chip ID', () => {
-      const testObj = { chipId: '123456' }
-      const regex = new RegExp(/^([0-9,a-f]){6}$/)
-      expect(regex.test(testObj.chipId)).toBe(true)
-    })
-
-    it('should return true for lowercase hex', () => {
-      const testObj = { chipId: 'abcdef' }
-      const regex = new RegExp(/^([0-9,a-f]){6}$/)
-      expect(regex.test(testObj.chipId)).toBe(true)
-    })
-  })
-
-  describe('Device Change Detection', () => {
-    it('should have deviceChanged method', () => {
-      const wrapper = mount(DeviceView, {
-        global: {
-          stubs: {
-            BsInputText: true,
-            BsInputNumber: true,
-            BsInputDate: true,
-            BsCard: true,
-            BsInputSwitch: true,
-            BsFileUpload: true,
-            'router-link': true
-          },
-          plugins: [router]
-        }
-      })
-
-      expect(typeof wrapper.vm.deviceChanged).toBe('function')
-    })
-  })
-
-  describe('Option Arrays and Computed Properties', () => {
-    it('should initialize option arrays in component', () => {
-      const wrapper = mount(DeviceView, {
-        global: {
-          stubs: {
-            BsInputText: true,
-            BsInputNumber: true,
-            BsInputDate: true,
-            BsCard: true,
-            BsInputSwitch: true,
-            BsFileUpload: true,
-            'router-link': true
-          },
-          plugins: [router]
-        }
-      })
-
-      // Option arrays should be initialized
-      expect(wrapper.vm.chipFamilyOptions).toBeDefined()
-      expect(wrapper.vm.softwareOptions).toBeDefined()
-      expect(wrapper.vm.bleColorOptions).toBeDefined()
+  describe('Option Arrays', () => {
+    it('should have chip family options', async () => {
+      const wrapper = await createWrapper()
+      await flushPromises()
       
-      // Should have items
       expect(wrapper.vm.chipFamilyOptions.length).toBeGreaterThan(0)
+      expect(wrapper.vm.chipFamilyOptions.some(o => o.value === 'esp32')).toBe(true)
+    })
+
+    it('should have software options', async () => {
+      const wrapper = await createWrapper()
+      await flushPromises()
+      
       expect(wrapper.vm.softwareOptions.length).toBeGreaterThan(0)
+      expect(wrapper.vm.softwareOptions.some(o => o.value === 'Gravitymon')).toBe(true)
+    })
+
+    it('should have BLE color options', async () => {
+      const wrapper = await createWrapper()
+      await flushPromises()
+      
       expect(wrapper.vm.bleColorOptions.length).toBeGreaterThan(0)
+      expect(wrapper.vm.bleColorOptions.some(o => o.value === 'red')).toBe(true)
     })
   })
 
-  describe('URL Validation Logic', () => {
-    it('should verify URL validation function exists', () => {
-      // validateUrl() should ensure URL ends with / or is short
-      const testUrl1 = 'http://example.com'
-      const testUrl2 = 'http:'  // Very short URL (< 7 chars)
-      
-      // Logic: add / if not present and long enough
-      const processed1 = testUrl1.endsWith('/') || testUrl1.length < 7 ? testUrl1 : testUrl1 + '/'
-      expect(processed1).toBe('http://example.com/')
-      
-      // Very short URLs shouldn't get /
-      const processed2 = testUrl2.endsWith('/') || testUrl2.length < 7 ? testUrl2 : testUrl2 + '/'
-      expect(processed2).toBe('http:')
-    })
-  })
-
-  describe('Component Methods Available', () => {
-    it('should have copyToClipboard method', () => {
-      const wrapper = mount(DeviceView, {
-        global: {
-          stubs: {
-            BsInputText: true,
-            BsInputNumber: true,
-            BsInputDate: true,
-            BsCard: true,
-            BsInputSwitch: true,
-            BsFileUpload: true,
-            'router-link': true
-          },
-          plugins: [router]
-        }
-      })
-
+  describe('Method Existence', () => {
+    it('should have copyToClipboard method', async () => {
+      const wrapper = await createWrapper()
       expect(typeof wrapper.vm.copyToClipboard).toBe('function')
     })
 
-    it('should have fetchConfigFromDevice method', () => {
-      const wrapper = mount(DeviceView, {
-        global: {
-          stubs: {
-            BsInputText: true,
-            BsInputNumber: true,
-            BsInputDate: true,
-            BsCard: true,
-            BsInputSwitch: true,
-            BsFileUpload: true,
-            'router-link': true
-          },
-          plugins: [router]
-        }
-      })
-
+    it('should have fetchConfigFromDevice method', async () => {
+      const wrapper = await createWrapper()
       expect(typeof wrapper.vm.fetchConfigFromDevice).toBe('function')
     })
 
-    it('should have validateUrl method', () => {
-      const wrapper = mount(DeviceView, {
-        global: {
-          stubs: {
-            BsInputText: true,
-            BsInputNumber: true,
-            BsInputDate: true,
-            BsCard: true,
-            BsInputSwitch: true,
-            BsFileUpload: true,
-            'router-link': true
-          },
-          plugins: [router]
-        }
-      })
+    it('should have validateChipId method', async () => {
+      const wrapper = await createWrapper()
+      expect(typeof wrapper.vm.validateChipId).toBe('function')
+    })
 
+    it('should have validateUrl method', async () => {
+      const wrapper = await createWrapper()
       expect(typeof wrapper.vm.validateUrl).toBe('function')
     })
 
-    it('should have deleteFermentationSteps method', () => {
-      const wrapper = mount(DeviceView, {
-        global: {
-          stubs: {
-            BsInputText: true,
-            BsInputNumber: true,
-            BsInputDate: true,
-            BsCard: true,
-            BsInputSwitch: true,
-            BsFileUpload: true,
-            'router-link': true
-          },
-          plugins: [router]
-        }
-      })
+    it('should have deviceChanged method', async () => {
+      const wrapper = await createWrapper()
+      expect(typeof wrapper.vm.deviceChanged).toBe('function')
+    })
 
+    it('should have isNew method', async () => {
+      const wrapper = await createWrapper()
+      expect(typeof wrapper.vm.isNew).toBe('function')
+    })
+
+    it('should have save method', async () => {
+      const wrapper = await createWrapper()
+      expect(typeof wrapper.vm.save).toBe('function')
+    })
+
+    it('should have deleteFermentationSteps method', async () => {
+      const wrapper = await createWrapper()
       expect(typeof wrapper.vm.deleteFermentationSteps).toBe('function')
     })
   })
+
+  describe('Layout Structure', () => {
+    it('should render grid rows', async () => {
+      const wrapper = await createWrapper()
+      expect(wrapper.findAll('.row').length).toBeGreaterThan(0)
+    })
+
+    it('should render horizontal separator', async () => {
+      const wrapper = await createWrapper()
+      expect(wrapper.findAll('hr').length).toBeGreaterThan(0)
+    })
+
+    it('should render bootstrap column classes', async () => {
+      const wrapper = await createWrapper()
+      const cols = wrapper.findAll('[class*="col-"]')
+      expect(cols.length).toBeGreaterThan(0)
+    })
+  })
+
+
 })
