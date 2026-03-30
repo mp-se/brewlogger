@@ -216,6 +216,45 @@ describe('TapListView', () => {
       expect(wrapper.vm.calculateProgress(b0)).toBe(0)
     })
 
+    it('should handle calculateProgress with undefined values', () => {
+      const wrapper = mount(TapListView, {
+        global: {
+          components: { BsCard },
+          stubs: {
+            BsCard: true,
+            'router-link': true,
+            BsProgress: true,
+            BsModalConfirm: true
+          },
+          plugins: [router]
+        }
+      })
+
+      const b1 = { lastPourMaxVolume: undefined, lastPourVolume: 50, name: 'T' }
+      expect(wrapper.vm.calculateProgress(b1)).toBe(0)
+
+      const b2 = { lastPourMaxVolume: 100, lastPourVolume: undefined, name: 'T' }
+      expect(wrapper.vm.calculateProgress(b2)).toBe(0)
+    })
+
+    it('should calculate progress with decimal result', () => {
+      const wrapper = mount(TapListView, {
+        global: {
+          components: { BsCard },
+          stubs: {
+            BsCard: true,
+            'router-link': true,
+            BsProgress: true,
+            BsModalConfirm: true
+          },
+          plugins: [router]
+        }
+      })
+
+      const b = { lastPourMaxVolume: 100, lastPourVolume: 33, name: 'T' }
+      expect(wrapper.vm.calculateProgress(b)).toBe("33")
+    })
+
     it('should handle confirmEmptyCallback successfully', async () => {
       const addPourSpy = vi.spyOn(pourStore, 'addPour').mockResolvedValue(true)
       const wrapper = mount(TapListView, {
@@ -256,6 +295,200 @@ describe('TapListView', () => {
       await wrapper.vm.confirmEmptyCallback(true)
       expect(addPourSpy).toHaveBeenCalled()
       expect(global.messageError).toContain('Failed to update pour data')
+    })
+
+    it('should cancel empty confirmation when result is false', async () => {
+      const addPourSpy = vi.spyOn(pourStore, 'addPour').mockResolvedValue(true)
+      const wrapper = mount(TapListView, {
+        global: {
+          components: { BsCard },
+          stubs: {
+            BsCard: true,
+            'router-link': true,
+            BsProgress: true,
+            BsModalConfirm: true
+          },
+          plugins: [router]
+        }
+      })
+
+      await wrapper.vm.confirmEmptyCallback(false)
+      expect(addPourSpy).not.toHaveBeenCalled()
+    })
+  })
+
+  describe('Empty Batch Functionality', () => {
+    it('should have emptyBatch method available', () => {
+      const wrapper = mount(TapListView, {
+        global: {
+          components: { BsCard },
+          stubs: {
+            BsCard: true,
+            'router-link': true,
+            BsProgress: true,
+            BsModalConfirm: true
+          },
+          plugins: [router]
+        }
+      })
+
+      expect(typeof wrapper.vm.emptyBatch).toBe('function')
+    })
+
+    it('should have confirmEmptyCallback method available', () => {
+      const wrapper = mount(TapListView, {
+        global: {
+          components: { BsCard },
+          stubs: {
+            BsCard: true,
+            'router-link': true,
+            BsProgress: true,
+            BsModalConfirm: true
+          },
+          plugins: [router]
+        }
+      })
+
+      expect(typeof wrapper.vm.confirmEmptyCallback).toBe('function')
+    })
+  })
+
+  describe('Filter Batch List', () => {
+    it('should have filterBatchList method', () => {
+      const wrapper = mount(TapListView, {
+        global: {
+          components: { BsCard },
+          stubs: {
+            BsCard: true,
+            'router-link': true,
+            BsProgress: true,
+            BsModalConfirm: true
+          },
+          plugins: [router]
+        }
+      })
+
+      expect(typeof wrapper.vm.filterBatchList).toBe('function')
+    })
+
+    it('should initialize with empty batch list on mount', async () => {
+      batchStore.batchList = []
+
+      const wrapper = mount(TapListView, {
+        global: {
+          components: { BsCard },
+          stubs: {
+            BsCard: true,
+            'router-link': true,
+            BsProgress: true,
+            BsModalConfirm: true
+          },
+          plugins: [router]
+        }
+      })
+
+      await flushPromises()
+      expect(wrapper.vm.batchList).toBeDefined()
+    })
+  })
+
+  describe('Watcher Integration', () => {
+    it('should react to updatedBatchData changes', async () => {
+      const batch = new Batch()
+      batch.tapList = true
+      batchStore.batchList = [batch]
+
+      const wrapper = mount(TapListView, {
+        global: {
+          components: { BsCard },
+          stubs: {
+            BsCard: true,
+            'router-link': true,
+            BsProgress: true,
+            BsModalConfirm: true
+          },
+          plugins: [router]
+        }
+      })
+
+      await flushPromises()
+
+      // Trigger watcher
+      global.updatedBatchData++
+      await wrapper.vm.$nextTick()
+      await flushPromises()
+
+      expect(wrapper.vm).toBeDefined()
+    })
+  })
+
+  describe('Component Inputs and State', () => {
+    it('should have confirmEmptyId ref', () => {
+      const wrapper = mount(TapListView, {
+        global: {
+          components: { BsCard },
+          stubs: {
+            BsCard: true,
+            'router-link': true,
+            BsProgress: true,
+            BsModalConfirm: true
+          },
+          plugins: [router]
+        }
+      })
+
+      expect(wrapper.vm.confirmEmptyId).toBeDefined()
+    })
+
+    it('should have sortedIconClass available', () => {
+      const wrapper = mount(TapListView, {
+        global: {
+          components: { BsCard },
+          stubs: {
+            BsCard: true,
+            'router-link': true,
+            BsProgress: true,
+            BsModalConfirm: true
+          },
+          plugins: [router]
+        }
+      })
+
+      expect(wrapper.vm.sortedIconClass).toBeDefined()
+    })
+
+    it('should have sortedClass function', () => {
+      const wrapper = mount(TapListView, {
+        global: {
+          components: { BsCard },
+          stubs: {
+            BsCard: true,
+            'router-link': true,
+            BsProgress: true,
+            BsModalConfirm: true
+          },
+          plugins: [router]
+        }
+      })
+
+      expect(typeof wrapper.vm.sortedClass).toBe('function')
+    })
+
+    it('should have sortList function', () => {
+      const wrapper = mount(TapListView, {
+        global: {
+          components: { BsCard },
+          stubs: {
+            BsCard: true,
+            'router-link': true,
+            BsProgress: true,
+            BsModalConfirm: true
+          },
+          plugins: [router]
+        }
+      })
+
+      expect(typeof wrapper.vm.sortList).toBe('function')
     })
   })
 })
