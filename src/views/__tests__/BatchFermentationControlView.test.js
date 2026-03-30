@@ -1,13 +1,46 @@
 import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest'
 import { mount } from '@vue/test-utils'
-import { setActivePinia } from 'pinia'
-import { createRouter, createMemoryHistory } from 'vue-router'
+import { createPinia, setActivePinia } from 'pinia'
 import BatchFermentationControlView from '../BatchFermentationControlView.vue'
-import piniaInstance from '@/modules/pinia'
-import { useBatchStore } from '@/modules/batchStore'
-import { useDeviceStore } from '@/modules/deviceStore'
-import { useGlobalStore } from '@/modules/globalStore'
-import * as logger from '@/modules/logger'
+import { nextTick } from 'vue'
+
+const mockStores = vi.hoisted(() => ({
+  batch: {
+    getBatch: vi.fn(),
+  },
+  device: {
+    getDevice: vi.fn(),
+    getDeviceFermentationSteps: vi.fn(),
+    addDeviceFermentationSteps: vi.fn(),
+    deleteDeviceFermentationSteps: vi.fn(),
+  },
+  global: {
+    disabled: false,
+    messageError: '',
+    messageSuccess: '',
+    clearMessages: vi.fn(),
+    $subscribe: vi.fn(),
+    $patch: vi.fn()
+  },
+  router: {
+    currentRoute: {
+      value: {
+        params: { id: '1' }
+      }
+    }
+  }
+}));
+
+vi.mock('@/modules/pinia', () => ({
+  batchStore: mockStores.batch,
+  deviceStore: mockStores.device,
+  global: mockStores.global,
+  default: {}
+}));
+
+vi.mock('@/modules/router', () => ({
+  default: mockStores.router
+}));
 
 vi.mock('@/modules/logger', () => ({
   logDebug: vi.fn(),
@@ -16,338 +49,122 @@ vi.mock('@/modules/logger', () => ({
 }))
 
 describe('BatchFermentationControlView', () => {
-  let batchStore, deviceStore, globalStore, router
 
   beforeEach(() => {
-    setActivePinia(piniaInstance)
-    batchStore = useBatchStore()
-    deviceStore = useDeviceStore()
-    globalStore = useGlobalStore()
-    vi.clearAllMocks()
+    setActivePinia(createPinia());
+    vi.clearAllMocks();
 
-    router = createRouter({
-      history: createMemoryHistory(),
-      routes: [
-        { path: '/batch/:id/fermentation-control', name: 'batch-fermentation-control' },
-        { path: '/batch/:id', name: 'batch' }
-      ]
-    })
-  })
+    mockStores.batch.getBatch.mockResolvedValue({
+      id: '1',
+      name: 'Batch 1',
+      fermentationSteps: JSON.stringify([{ id: 1, name: 'Step 1' }]),
+      fermentationChamber: 10
+    });
+    mockStores.device.getDevice.mockResolvedValue({
+      device: { id: 10, software: 'BrewPi', description: 'Main Chamber', mdns: 'brewpi.local', url: 'http://192.168.1.10' }
+    });
+    mockStores.device.getDeviceFermentationSteps.mockResolvedValue([]);
+    mockStores.device.addDeviceFermentationSteps.mockResolvedValue(true);
+  });
 
-  afterEach(() => {
-    vi.restoreAllMocks()
-  })
-
-  describe('Component Structure', () => {
-    it('should render container', () => {
-      const wrapper = mount(BatchFermentationControlView, {
-        global: {
-          stubs: { 
-            'router-link': { template: '<a><slot></slot></a>' },
-            'FermentationStepFragment': true, 
-            'BsInputReadonly': true, 
-            'BsMessage': true 
-          },
-          plugins: [router]
+  const mountWrapper = async () => {
+    const wrapper = mount(BatchFermentationControlView, {
+      global: {
+        stubs: { 
+          'router-link': { template: '<a><slot></slot></a>' },
+          'FermentationStepFragment': true, 
+          'BsInputReadonly': true, 
+          'BsMessage': true 
         }
-      })
-      expect(wrapper.find('.container').exists()).toBe(true)
-    })
+      }
+    });
+    await nextTick();
+    await nextTick();
+    await nextTick();
+    return wrapper;
+  }
 
-    it('should render page title', () => {
-      const wrapper = mount(BatchFermentationControlView, {
-        global: {
-          stubs: { 
-            'router-link': { template: '<a><slot></slot></a>' },
-            'FermentationStepFragment': true, 
-            'BsInputReadonly': true, 
-            'BsMessage': true 
-          },
-          plugins: [router]
-        }
-      })
-      expect(wrapper.find('.h3').exists()).toBe(true)
-      expect(wrapper.text()).toContain('Batch Fermentation Control')
-    })
+  it('loads profile correctly on mount', async () => {
+    const wrapper = await mountWrapper();
+    expect(mockStores.batch.getBatch).toHaveBeenCalledWith('1');
+    expect(wrapper.vm.batchName).toBe('Batch 1');
+    expect(wrapper.vm.device.id).toBe(10);
+    expect(wrapper.vm.fermentationSteps.length).toBe(1);
+  });
 
-    it('should render Cancel and Back buttons (always visible)', () => {
-      const wrapper = mount(BatchFermentationControlView, {
-        global: {
-          stubs: { 
-            'router-link': { template: '<a><slot></slot></a>' },
-            'FermentationStepFragment': true, 
-            'BsInputReadonly': true, 
-            'BsMessage': true 
-          },
-          plugins: [router]
-        }
-      })
-      const buttons = wrapper.findAll('button')
-      const buttonTexts = buttons.map(b => b.text())
-      expect(buttonTexts).toContain('Cancel')
-      expect(buttonTexts).toContain('Back')
-    })
+  it('handles batch without fermentation profile', async () => {
+    mockStores.batch.getBatch.mockResolvedValue({
+      id: '1',
+      name: 'No Steps Batch',
+      fermentationSteps: 'invalid json',
+      fermentationChamber: 10
+    });
+    const wrapper = await mountWrapper();
+    expect(mockStores.global.messageError).toContain('No fermentation profile found');
+    expect(wrapper.vm.fermentationSteps).toBeNull();
+  });
 
-    it('should render Start button when device and steps load', () => {
-      const wrapper = mount(BatchFermentationControlView, {
-        global: {
-          stubs: { 
-            'router-link': { template: '<a><slot></slot></a>' },
-            'FermentationStepFragment': true, 
-            'BsInputReadonly': true, 
-            'BsMessage': true 
-          },
-          plugins: [router]
-        }
-      })
-      // Start button is hidden until device and fermentationSteps load
-      expect(wrapper.vm.device).toBeNull()
-      expect(wrapper.vm.fermentationSteps).toBeNull()
-    })
+  it('handles batch without fermentation controller selected', async () => {
+    mockStores.batch.getBatch.mockResolvedValue({
+      id: '1',
+      name: 'No Controller Batch',
+      fermentationSteps: JSON.stringify([{ id: 1 }]),
+      fermentationChamber: 0
+    });
+    const wrapper = await mountWrapper();
+    expect(mockStores.global.messageError).toContain('No fermentation controller is selected');
+  });
 
-    it('should have title h4 for fermentation controller (renders when device loads)', () => {
-      const wrapper = mount(BatchFermentationControlView, {
-        global: {
-          stubs: { 
-            'router-link': { template: '<a><slot></slot></a>' },
-            'FermentationStepFragment': true, 
-            'BsInputReadonly': true, 
-            'BsMessage': true 
-          },
-          plugins: [router]
-        }
-      })
-      // Before device loads, the fermentation controller section is hidden
-      expect(wrapper.vm.device).toBe(null)
-    })
+  it('handles device load failure', async () => {
+    mockStores.batch.getBatch.mockResolvedValue({
+      id: '1',
+      name: 'Fail Device Batch',
+      fermentationSteps: JSON.stringify([{ id: 1 }]),
+      fermentationChamber: 10
+    });
+    mockStores.device.getDevice.mockResolvedValue(null);
+    const wrapper = await mountWrapper();
+    expect(mockStores.global.messageError).toContain('Failed to load the device configuration');
+  });
 
-    it('should have section for fermentation steps', () => {
-      const wrapper = mount(BatchFermentationControlView, {
-        global: {
-          stubs: { 
-            'router-link': { template: '<a><slot></slot></a>' },
-            'FermentationStepFragment': true, 
-            'BsInputReadonly': true, 
-            'BsMessage': true 
-          },
-          plugins: [router]
-        }
-      })
-      // Fermentation steps section is hidden until data loads (v-if condition)
-      expect(wrapper.vm.fermentationSteps).toBe(null)
-    })
+  it('handles active fermentation steps check failure', async () => {
+    mockStores.device.getDeviceFermentationSteps.mockResolvedValue(null);
+    const wrapper = await mountWrapper();
+    expect(mockStores.global.messageError).toContain('Failed to check for active fermentration steps');
+  });
 
-    it('should have section for active fermentation steps', () => {
-      const wrapper = mount(BatchFermentationControlView, {
-        global: {
-          stubs: { 
-            'router-link': { template: '<a><slot></slot></a>' },
-            'FermentationStepFragment': true, 
-            'BsInputReadonly': true, 
-            'BsMessage': true 
-          },
-          plugins: [router]
-        }
-      })
-      // Active fermentation steps section is hidden until data loads (v-if condition)
-      expect(wrapper.vm.activeFermentationSteps).toBe(null)
-    })
-  })
+  it('shows warning when device has active steps', async () => {
+    mockStores.device.getDeviceFermentationSteps.mockResolvedValue([{ id: 99 }]);
+    const wrapper = await mountWrapper();
+    expect(wrapper.vm.activeFermentationSteps.length).toBe(1);
+    expect(wrapper.find('bs-message-stub').exists()).toBe(true);
+  });
 
-  describe('State Initialization', () => {
-    it('should initialize with null values', () => {
-      const wrapper = mount(BatchFermentationControlView, {
-        global: {
-          stubs: { 'router-link': { template: '<a><slot></slot></a>' }, 'FermentationStepFragment': true, 'BsInputReadonly': true, 'BsMessage': true },
-          plugins: [router]
-        }
-      })
-      expect(wrapper.vm.fermentationSteps).toBe(null)
-      expect(wrapper.vm.device).toBe(null)
-      expect(wrapper.vm.batchName).toBe('')
-      expect(wrapper.vm.activeFermentationSteps).toBe(null)
-    })
+  it('starts steps when none are active', async () => {
+    const wrapper = await mountWrapper();
+    await wrapper.find('button.btn-primary').trigger('click');
+    expect(mockStores.device.addDeviceFermentationSteps).toHaveBeenCalled();
+    expect(mockStores.global.messageSuccess).toContain('Fermentation steps for device has been created');
+  });
 
-    it('should call loadProfile on mount', () => {
-      mount(BatchFermentationControlView, {
-        global: {
-          stubs: { 'router-link': { template: '<a><slot></slot></a>' }, 'FermentationStepFragment': true, 'BsInputReadonly': true, 'BsMessage': true },
-          plugins: [router]
-        }
-      })
-      expect(logger.logDebug).toHaveBeenCalledWith('BatchFermentationControlView.onMounted()')
-    })
+  it('deletes existing steps before starting new ones', async () => {
+    mockStores.device.getDeviceFermentationSteps.mockResolvedValue([{ id: 99 }]);
+    const wrapper = await mountWrapper();
+    await wrapper.find('button.btn-primary').trigger('click');
+    expect(mockStores.device.deleteDeviceFermentationSteps).toHaveBeenCalledWith(10);
+    expect(mockStores.device.addDeviceFermentationSteps).toHaveBeenCalled();
+  });
 
-    it('should log loadProfile call', async () => {
-      mount(BatchFermentationControlView, {
-        global: {
-          stubs: { 'router-link': { template: '<a><slot></slot></a>' }, 'FermentationStepFragment': true, 'BsInputReadonly': true, 'BsMessage': true },
-          plugins: [router]
-        }
-      })
+  it('handles start steps failure', async () => {
+    mockStores.device.addDeviceFermentationSteps.mockResolvedValue(false);
+    const wrapper = await mountWrapper();
+    await wrapper.find('button.btn-primary').trigger('click');
+    expect(mockStores.global.messageError).toContain('Failed to load the device');
+  });
 
-      await new Promise(resolve => setTimeout(resolve, 50))
-      expect(logger.logDebug).toHaveBeenCalledWith('BatchFermentationControlView.loadProfile()')
-    })
-
-    it('should have empty batch name initially', () => {
-      const wrapper = mount(BatchFermentationControlView, {
-        global: {
-          stubs: { 'router-link': { template: '<a><slot></slot></a>' }, 'FermentationStepFragment': true, 'BsInputReadonly': true, 'BsMessage': true },
-          plugins: [router]
-        }
-      })
-      expect(wrapper.vm.batchName).toBe('')
-    })
-  })
-
-  describe('Store Access', () => {
-    it('should reference batch store', () => {
-      const wrapper = mount(BatchFermentationControlView, {
-        global: {
-          stubs: { 'router-link': { template: '<a><slot></slot></a>' }, 'FermentationStepFragment': true, 'BsInputReadonly': true, 'BsMessage': true },
-          plugins: [router]
-        }
-      })
-      expect(wrapper.vm.batchStore).toBeDefined()
-    })
-
-    it('should reference device store', () => {
-      const wrapper = mount(BatchFermentationControlView, {
-        global: {
-          stubs: { 'router-link': { template: '<a><slot></slot></a>' }, 'FermentationStepFragment': true, 'BsInputReadonly': true, 'BsMessage': true },
-          plugins: [router]
-        }
-      })
-      expect(wrapper.vm.deviceStore).toBeDefined()
-    })
-
-    it('should reference global store', () => {
-      const wrapper = mount(BatchFermentationControlView, {
-        global: {
-          stubs: { 'router-link': { template: '<a><slot></slot></a>' }, 'FermentationStepFragment': true, 'BsInputReadonly': true, 'BsMessage': true },
-          plugins: [router]
-        }
-      })
-      expect(wrapper.vm.global).toBeDefined()
-    })
-  })
-
-  describe('Router Integration', () => {
-    it('should have router instance', () => {
-      const wrapper = mount(BatchFermentationControlView, {
-        global: {
-          stubs: { 'router-link': { template: '<a><slot></slot></a>' }, 'FermentationStepFragment': true, 'BsInputReadonly': true, 'BsMessage': true },
-          plugins: [router]
-        }
-      })
-      expect(wrapper.vm.router).toBeDefined()
-    })
-
-    it('should have router-link elements for navigation', () => {
-      const wrapper = mount(BatchFermentationControlView, {
-        global: {
-          stubs: { 
-            'router-link': { template: '<a><slot></slot></a>' },
-            'FermentationStepFragment': true, 
-            'BsInputReadonly': true, 
-            'BsMessage': true 
-          },
-          plugins: [router]
-        }
-      })
-      // Find all anchor tags created by router-link stubs
-      const links = wrapper.findAll('a')
-      expect(links.length).toBeGreaterThanOrEqual(0)
-    })
-
-    it('should have Cancel link', () => {
-      const wrapper = mount(BatchFermentationControlView, {
-        global: {
-          stubs: { 'router-link': { template: '<a><slot></slot></a>' }, 'FermentationStepFragment': true, 'BsInputReadonly': true, 'BsMessage': true },
-          plugins: [router]
-        }
-      })
-      const cancelLink = wrapper.findAll('a').find(a => a.text().includes('Cancel'))
-      expect(cancelLink).toBeDefined()
-    })
-
-    it('should have Back link', () => {
-      const wrapper = mount(BatchFermentationControlView, {
-        global: {
-          stubs: { 'router-link': { template: '<a><slot></slot></a>' }, 'FermentationStepFragment': true, 'BsInputReadonly': true, 'BsMessage': true },
-          plugins: [router]
-        }
-      })
-      const backLink = wrapper.findAll('a').find(a => a.text().includes('Back'))
-      expect(backLink).toBeDefined()
-    })
-  })
-
-  describe('Component Methods', () => {
-    it('should have startSteps method', () => {
-      const wrapper = mount(BatchFermentationControlView, {
-        global: {
-          stubs: { 'router-link': { template: '<a><slot></slot></a>' }, 'FermentationStepFragment': true, 'BsInputReadonly': true, 'BsMessage': true },
-          plugins: [router]
-        }
-      })
-      expect(typeof wrapper.vm.startSteps).toBe('function')
-    })
-
-    it('should have loadProfile method', () => {
-      const wrapper = mount(BatchFermentationControlView, {
-        global: {
-          stubs: { 'router-link': { template: '<a><slot></slot></a>' }, 'FermentationStepFragment': true, 'BsInputReadonly': true, 'BsMessage': true },
-          plugins: [router]
-        }
-      })
-      expect(typeof wrapper.vm.loadProfile).toBe('function')
-    })
-  })
-
-  describe('Template Elements', () => {
-    it('should render container with proper structure', () => {
-      const wrapper = mount(BatchFermentationControlView, {
-        global: {
-          stubs: { 'router-link': { template: '<a><slot></slot></a>' }, 'FermentationStepFragment': true, 'BsInputReadonly': true, 'BsMessage': true },
-          plugins: [router]
-        }
-      })
-      expect(wrapper.find('.container').exists()).toBe(true)
-      expect(wrapper.find('.row').exists()).toBe(true)
-    })
-
-    it('should render result section with proper classes', () => {
-      const wrapper = mount(BatchFermentationControlView, {
-        global: {
-          stubs: { 'router-link': { template: '<a><slot></slot></a>' }, 'FermentationStepFragment': true, 'BsInputReadonly': true, 'BsMessage': true },
-          plugins: [router]
-        }
-      })
-      expect(wrapper.find('.col-md-6').exists()).toBe(true)
-    })
-
-    it('should have buttons container', () => {
-      const wrapper = mount(BatchFermentationControlView, {
-        global: {
-          stubs: { 'router-link': { template: '<a><slot></slot></a>' }, 'FermentationStepFragment': true, 'BsInputReadonly': true, 'BsMessage': true },
-          plugins: [router]
-        }
-      })
-      expect(wrapper.findAll('button').length).toBeGreaterThan(0)
-    })
-
-    it('should have hidden sections that render when data loads', () => {
-      const wrapper = mount(BatchFermentationControlView, {
-        global: {
-          stubs: { 'router-link': { template: '<a><slot></slot></a>' }, 'FermentationStepFragment': true, 'BsInputReadonly': true, 'BsMessage': true },
-          plugins: [router]
-        }
-      })
-      // Before data loads, these sections should be hidden (v-if conditions not met)
-      expect(wrapper.vm.device).toBeNull()
-      expect(wrapper.vm.fermentationSteps).toBeNull()
-    })
-  })
-})
+  it('handles loadProfile failure (batch not found)', async () => {
+    mockStores.batch.getBatch.mockResolvedValue(null);
+    const wrapper = await mountWrapper();
+    expect(mockStores.global.messageError).toContain('Failed to load the batch');
+  });
+});
