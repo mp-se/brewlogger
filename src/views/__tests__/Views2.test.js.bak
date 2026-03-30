@@ -1,0 +1,3 @@
+// Tests moved to individual component test files:
+// - SettingsView.test.js
+// - LifeEstimates.test.js
