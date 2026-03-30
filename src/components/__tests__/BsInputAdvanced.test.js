@@ -399,6 +399,112 @@ describe('BsInputTextAreaFormat - Formatted Text Input', () => {
       const cancelItem = items.find(item => item.text().includes('Cancel'))
       expect(cancelItem).toBeDefined()
     })
+
+    it('should have multiple context menu items with template variables', () => {
+      const wrapper = mount(BsInputTextAreaFormat, {
+        props: { modelValue: 'test' }
+      })
+      
+      const items = wrapper.findAll('.dropdown-item')
+      const itemsWithVariables = items.filter(item => item.text().includes('${'))
+      // Should have items with template variables (network name, chip ID, etc)
+      expect(itemsWithVariables.length).toBeGreaterThan(5)
+    })
+
+    it('should have context menu with Cancel and variable options', () => {
+      const wrapper = mount(BsInputTextAreaFormat, {
+        props: { modelValue: 'test' }
+      })
+      
+      const items = wrapper.findAll('.dropdown-item')
+      const itemTexts = items.map(item => item.text())
+      
+      // Verify key items exist
+      expect(itemTexts).toContain('Cancel')
+      expect(itemTexts.some(text => text.includes('Network name'))).toBe(true)
+      expect(itemTexts.some(text => text.includes('Gravity'))).toBe(true)
+    })
+
+    it('should render context menu with all categories of variables', () => {
+      const wrapper = mount(BsInputTextAreaFormat, {
+        props: { modelValue: 'test' }
+      })
+      
+      const contextMenu = wrapper.find('#contextMenu')
+      expect(contextMenu.exists()).toBe(true)
+      
+      const items = wrapper.findAll('.dropdown-item')
+      const itemTexts = items.map(item => item.text())
+      
+      // Check for different variable categories
+      expect(itemTexts.some(text => text.includes('Chip ID'))).toBe(true)
+      expect(itemTexts.some(text => text.includes('Temperature'))).toBe(true)
+      expect(itemTexts.some(text => text.includes('Battery'))).toBe(true)
+      expect(itemTexts.some(text => text.includes('Wifi'))).toBe(true)
+    })
+
+    it('should have context menu with correct dropdown structure', () => {
+      const wrapper = mount(BsInputTextAreaFormat, {
+        props: { modelValue: 'test' }
+      })
+      
+      const contextMenu = wrapper.find('#contextMenu.dropdown-menu')
+      expect(contextMenu.exists()).toBe(true)
+      
+      const items = wrapper.findAll('#contextMenu .dropdown-item')
+      expect(items.length).toBeGreaterThan(0)
+      
+      items.forEach(item => {
+        expect(item.element.tagName).toBe('A')
+        expect(item.attributes('class')).toContain('dropdown-item')
+      })
+    })
+
+    it('should have textarea with correct attributes', () => {
+      const wrapper = mount(BsInputTextAreaFormat, {
+        props: { 
+          modelValue: 'test',
+          help: 'Enter format string',
+          label: 'Format'
+        }
+      })
+      
+      const textarea = wrapper.find('textarea')
+      expect(textarea.exists()).toBe(true)
+      expect(textarea.element.id).toBe('textArea')
+      expect(textarea.classes()).toContain('form-control')
+      expect(textarea.attributes('type')).toBe('text')
+    })
+
+    it('should render all gravity-related variables', () => {
+      const wrapper = mount(BsInputTextAreaFormat, {
+        props: { modelValue: 'test' }
+      })
+      
+      const items = wrapper.findAll('.dropdown-item')
+      const gravityItems = items.filter(item => item.text().includes('Gravity'))
+      
+      // Should have gravity-related items
+      expect(gravityItems.length).toBeGreaterThan(0)
+      
+      const gravityTexts = gravityItems.map(item => item.text())
+      expect(gravityTexts.some(text => text.includes('Gravity'))).toBe(true)
+    })
+
+    it('should render all measurement-related variables', () => {
+      const wrapper = mount(BsInputTextAreaFormat, {
+        props: { modelValue: 'test' }
+      })
+      
+      const items = wrapper.findAll('.dropdown-item')
+      const measureItems = items.filter(item => {
+        const text = item.text()
+        return text.includes('Temperature') || text.includes('Battery') || text.includes('Wifi')
+      })
+      
+      // Should have measurement variables
+      expect(measureItems.length).toBeGreaterThan(2)
+    })
   })
 })
 
