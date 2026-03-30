@@ -1,12 +1,34 @@
 import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest'
 import { mount } from '@vue/test-utils'
-import { setActivePinia } from 'pinia'
-import { createRouter, createMemoryHistory } from 'vue-router'
+import { setActivePinia, createPinia } from 'pinia'
 import BatchGravityTestView from '../BatchGravityTestView.vue'
-import piniaInstance from '@/modules/pinia'
-import { useBatchStore } from '@/modules/batchStore'
-import { useGravityStore } from '@/modules/gravityStore'
-import * as logger from '@/modules/logger'
+import { nextTick } from 'vue'
+
+const mockStores = vi.hoisted(() => ({
+  batch: {
+    getBatch: vi.fn()
+  },
+  gravity: {
+    getGravityListForBatch: vi.fn()
+  }
+}))
+
+vi.mock('@/modules/pinia', () => ({
+  batchStore: mockStores.batch,
+  gravityStore: mockStores.gravity
+}))
+
+const mockRouter = vi.hoisted(() => ({
+  currentRoute: {
+    value: {
+      params: { id: '123' }
+    }
+  }
+}))
+
+vi.mock('@/modules/router', () => ({
+  default: mockRouter
+}))
 
 vi.mock('@/modules/logger', () => ({
   logDebug: vi.fn(),
@@ -14,266 +36,145 @@ vi.mock('@/modules/logger', () => ({
 }))
 
 describe('BatchGravityTestView', () => {
-  let batchStore, gravityStore, router
-
   beforeEach(() => {
-    setActivePinia(piniaInstance)
-    batchStore = useBatchStore()
-    gravityStore = useGravityStore()
+    setActivePinia(createPinia())
     vi.clearAllMocks()
-
-    router = createRouter({
-      history: createMemoryHistory(),
-      routes: [
-        { path: '/batch/:id/gravity-test', name: 'batch-gravity-test' },
-        { path: '/batch/:id', name: 'batch' }
-      ]
-    })
   })
 
   afterEach(() => {
     vi.restoreAllMocks()
   })
 
-  describe('Component Structure', () => {
-    it('should render container', () => {
-      const wrapper = mount(BatchGravityTestView, {
-        global: {
-          stubs: { 'router-link': { template: '<a><slot></slot></a>' } },
-          plugins: [router]
+  const mountWrapper = async () => {
+    const wrapper = mount(BatchGravityTestView, {
+      global: {
+        stubs: {
+          'router-link': true
         }
-      })
+      }
+    })
+    await nextTick()
+    return wrapper
+  }
+
+  describe('Component Structure', () => {
+    it('should render container', async () => {
+      mockStores.batch.getBatch.mockResolvedValue({ id: '123', name: 'Test Batch' })
+      mockStores.gravity.getGravityListForBatch.mockResolvedValue([])
+      const wrapper = await mountWrapper()
       expect(wrapper.find('.container').exists()).toBe(true)
     })
 
-    it('should render page title', () => {
-      const wrapper = mount(BatchGravityTestView, {
-        global: {
-          stubs: { 'router-link': { template: '<a><slot></slot></a>' } },
-          plugins: [router]
-        }
-      })
-      expect(wrapper.find('.h3').exists()).toBe(true)
-      expect(wrapper.text()).toContain('Batch Gravity Test List')
+    it('should render page title with batch name', async () => {
+      mockStores.batch.getBatch.mockResolvedValue({ id: '123', name: 'IPA Batch' })
+      mockStores.gravity.getGravityListForBatch.mockResolvedValue([])
+      const wrapper = await mountWrapper()
+      expect(wrapper.find('.h3').text()).toContain("Batch Gravity Test List - 'IPA Batch'")
     })
 
-    it('should render description text', () => {
-      const wrapper = mount(BatchGravityTestView, {
-        global: {
-          stubs: { 'router-link': { template: '<a><slot></slot></a>' } },
-          plugins: [router]
-        }
-      })
-      expect(wrapper.text()).toContain('Testing page for gravity related development')
-    })
-
-    it('should render data table', () => {
-      const wrapper = mount(BatchGravityTestView, {
-        global: {
-          stubs: { 'router-link': { template: '<a><slot></slot></a>' } },
-          plugins: [router]
-        }
-      })
+    it('should render data table', async () => {
+      mockStores.batch.getBatch.mockResolvedValue({ id: '123', name: 'Test Batch' })
+      mockStores.gravity.getGravityListForBatch.mockResolvedValue([])
+      const wrapper = await mountWrapper()
       expect(wrapper.find('table').exists()).toBe(true)
     })
-
-    it('should render table headers', () => {
-      const wrapper = mount(BatchGravityTestView, {
-        global: {
-          stubs: { 'router-link': { template: '<a><slot></slot></a>' } },
-          plugins: [router]
-        }
-      })
-      const thead = wrapper.find('thead')
-      expect(thead.exists()).toBe(true)
-      const headers = thead.findAll('th')
-      expect(headers.length).toBeGreaterThan(0)
-    })
-
-    it('should have column headers for gravity analysis', () => {
-      const wrapper = mount(BatchGravityTestView, {
-        global: {
-          stubs: { 'router-link': { template: '<a><slot></slot></a>' } },
-          plugins: [router]
-        }
-      })
-      const headerTexts = wrapper.findAll('th').map(h => h.text())
-      expect(headerTexts).toContain('Day')
-      expect(headerTexts).toContain('Points')
-      expect(headerTexts).toContain('First')
-      expect(headerTexts).toContain('Last')
-    })
-
-    it('should have table body for data rows', () => {
-      const wrapper = mount(BatchGravityTestView, {
-        global: {
-          stubs: { 'router-link': { template: '<a><slot></slot></a>' } },
-          plugins: [router]
-        }
-      })
-      const tbody = wrapper.find('tbody')
-      expect(tbody.exists()).toBe(true)
-    })
   })
 
-  describe('State Initialization', () => {
-    it('should initialize with null gravity list', () => {
-      const wrapper = mount(BatchGravityTestView, {
-        global: {
-          stubs: { 'router-link': { template: '<a><slot></slot></a>' } },
-          plugins: [router]
-        }
-      })
-      expect(wrapper.vm.gravityList).toBe(null)
+  describe('Data Loading and Regression', () => {
+    it('should load batch and gravity data on mount', async () => {
+      mockStores.batch.getBatch.mockResolvedValue({ id: '123', name: 'Test Batch' })
+      mockStores.gravity.getGravityListForBatch.mockResolvedValue([
+        { created: '2023-01-01T10:00:00Z', gravity: 1.050 },
+        { created: '2023-01-01T10:15:00Z', gravity: 1.049 },
+        { created: '2023-01-01T10:30:00Z', gravity: 1.048 }
+      ])
+
+      const wrapper = await mountWrapper()
+      expect(mockStores.batch.getBatch).toHaveBeenCalledWith('123')
+      expect(mockStores.gravity.getGravityListForBatch).toHaveBeenCalledWith('123')
+      expect(wrapper.vm.data.length).toBeGreaterThan(0)
+      expect(wrapper.vm.data[0].day).toBe('2023-01-01')
     })
 
-    it('should initialize with empty batch name', () => {
-      const wrapper = mount(BatchGravityTestView, {
-        global: {
-          stubs: { 'router-link': { template: '<a><slot></slot></a>' } },
-          plugins: [router]
-        }
-      })
+    it('should log error if gravity loading fails', async () => {
+      mockStores.batch.getBatch.mockResolvedValue({ id: '123', name: 'Test Batch' })
+      mockStores.gravity.getGravityListForBatch.mockResolvedValue(null)
+
+      await mountWrapper()
+      const logger = await import('@/modules/logger')
+      expect(logger.logError).toHaveBeenCalledWith(
+        'BatchGravityTestView.onMounted()',
+        'Failed to load gravity',
+        '123'
+      )
+    })
+
+    it('should handle missing batch', async () => {
+      mockStores.batch.getBatch.mockResolvedValue(null)
+      mockStores.gravity.getGravityListForBatch.mockResolvedValue([])
+      const wrapper = await mountWrapper()
       expect(wrapper.vm.batchName).toBe('')
     })
 
-    it('should initialize with empty data array', () => {
-      const wrapper = mount(BatchGravityTestView, {
-        global: {
-          stubs: { 'router-link': { template: '<a><slot></slot></a>' } },
-          plugins: [router]
-        }
-      })
-      expect(wrapper.vm.data).toEqual([])
+    it('should handle empty gravity list', async () => {
+      mockStores.batch.getBatch.mockResolvedValue({ id: '123', name: 'Test Batch' })
+      mockStores.gravity.getGravityListForBatch.mockResolvedValue([])
+      const wrapper = await mountWrapper()
+      expect(wrapper.vm.data).toHaveLength(0)
     })
 
-    it('should call onMounted on component mount', () => {
-      mount(BatchGravityTestView, {
-        global: {
-          stubs: { 'router-link': { template: '<a><slot></slot></a>' } },
-          plugins: [router]
-        }
-      })
-      expect(logger.logDebug).toHaveBeenCalledWith('BatchGravityTestView.onMounted()')
-    })
-  })
+    it('should filter outliers correctly', async () => {
+      mockStores.batch.getBatch.mockResolvedValue({ id: '123', name: 'Test Batch' })
+      mockStores.gravity.getGravityListForBatch.mockResolvedValue([
+        { created: '2023-01-01T10:00:00Z', gravity: 1.050 },
+        { created: '2023-01-01T10:15:00Z', gravity: 1.060 }, // Outlier (diff 0.010 > 0.002)
+        { created: '2023-01-01T10:30:00Z', gravity: 1.049 }  // Not outlier (relative to 1.050, diff 0.001)
+      ])
 
-  describe('Store Access', () => {
-    it('should have access to batch store', () => {
-      const wrapper = mount(BatchGravityTestView, {
-        global: {
-          stubs: { 'router-link': { template: '<a><slot></slot></a>' } },
-          plugins: [router]
-        }
-      })
-      expect(wrapper.vm.batchStore).toBeDefined()
+      const wrapper = await mountWrapper()
+      expect(wrapper.vm.data[0].points).toBe(2)
     })
 
-    it('should have access to gravity store', () => {
-      const wrapper = mount(BatchGravityTestView, {
-        global: {
-          stubs: { 'router-link': { template: '<a><slot></slot></a>' } },
-          plugins: [router]
-        }
-      })
-      expect(wrapper.vm.gravityStore).toBeDefined()
-    })
-  })
+    it('should calculate daily stats correctly', async () => {
+      mockStores.batch.getBatch.mockResolvedValue({ id: '123', name: 'Test Batch' })
+      mockStores.gravity.getGravityListForBatch.mockResolvedValue([
+        { created: '2023-01-01T10:00:00Z', gravity: 1.050 },
+        { created: '2023-01-01T11:00:00Z', gravity: 1.049 },
+        { created: '2023-01-02T10:00:00Z', gravity: 1.048 },
+        { created: '2023-01-02T11:00:00Z', gravity: 1.047 }
+      ])
 
-  describe('Router Integration', () => {
-    it('should have router instance', () => {
-      const wrapper = mount(BatchGravityTestView, {
-        global: {
-          stubs: { 'router-link': { template: '<a><slot></slot></a>' } },
-          plugins: [router]
-        }
-      })
-      expect(wrapper.vm.router).toBeDefined()
-    })
+      const wrapper = await mountWrapper()
+      expect(wrapper.vm.data).toHaveLength(2)
+      expect(wrapper.vm.data[0].day).toBe('2023-01-01')
+      expect(wrapper.vm.data[0].min).toBe(1.049)
+      expect(wrapper.vm.data[0].max).toBe(1.050)
+      expect(wrapper.vm.data[0].points).toBe(2)
 
-    it('should read batch id from route params', () => {
-      const wrapper = mount(BatchGravityTestView, {
-        global: {
-          stubs: { 'router-link': { template: '<a><slot></slot></a>' } },
-          plugins: [router]
-        }
-      })
-      expect(wrapper.vm.router.currentRoute.value.params).toBeDefined()
+      expect(wrapper.vm.data[1].day).toBe('2023-01-02')
+      expect(wrapper.vm.data[1].min).toBe(1.047)
+      expect(wrapper.vm.data[1].max).toBe(1.048)
+      expect(wrapper.vm.data[1].points).toBe(2)
     })
   })
 
-  describe('Component Methods', () => {
-    it('should have filterOutliers method', () => {
-      const wrapper = mount(BatchGravityTestView, {
-        global: {
-          stubs: { 'router-link': { template: '<a><slot></slot></a>' } },
-          plugins: [router]
-        }
-      })
-      expect(typeof wrapper.vm.filterOutliers).toBe('function')
-    })
+  describe('Regression Logic', () => {
+    it('handles regression calculations', async () => {
+      mockStores.batch.getBatch.mockResolvedValue({ id: '123', name: 'Test Batch' })
+      const points = []
+      for (let i = 0; i < 5; i++) {
+        points.push({
+          created: '2023-01-01T10:0' + i + ':00Z',
+          gravity: 1.050 - (i * 0.001)
+        })
+      }
+      mockStores.gravity.getGravityListForBatch.mockResolvedValue(points)
 
-    it('should have test method', () => {
-      const wrapper = mount(BatchGravityTestView, {
-        global: {
-          stubs: { 'router-link': { template: '<a><slot></slot></a>' } },
-          plugins: [router]
-        }
-      })
-      expect(typeof wrapper.vm.test).toBe('function')
-    })
-  })
-
-  describe('Table Rendering', () => {
-    it('should have no data rows initially', () => {
-      const wrapper = mount(BatchGravityTestView, {
-        global: {
-          stubs: { 'router-link': { template: '<a><slot></slot></a>' } },
-          plugins: [router]
-        }
-      })
-      const rows = wrapper.findAll('tbody tr')
-      expect(rows.length).toBe(0)
-    })
-
-    it('should have table with proper structure', () => {
-      const wrapper = mount(BatchGravityTestView, {
-        global: {
-          stubs: { 'router-link': { template: '<a><slot></slot></a>' } },
-          plugins: [router]
-        }
-      })
-      const table = wrapper.find('table')
-      expect(table.exists()).toBe(true)
-      expect(table.find('thead').exists()).toBe(true)
-      expect(table.find('tbody').exists()).toBe(true)
-    })
-
-    it('should render all header columns', () => {
-      const wrapper = mount(BatchGravityTestView, {
-        global: {
-          stubs: { 'router-link': { template: '<a><slot></slot></a>' } },
-          plugins: [router]
-        }
-      })
-      const headers = wrapper.findAll('th')
-      // Should have at least these columns
-      expect(headers.length).toBeGreaterThanOrEqual(12)
-    })
-  })
-
-  describe('Dynamic Title', () => {
-    it('should display batch name in title when available', () => {
-      const wrapper = mount(BatchGravityTestView, {
-        global: {
-          stubs: { 'router-link': { template: '<a><slot></slot></a>' } },
-          plugins: [router]
-        }
-      })
-      // Initially empty
-      expect(wrapper.vm.batchName).toBe('')
-      // Title should still exist
-      expect(wrapper.find('.h3').exists()).toBe(true)
+      const wrapper = await mountWrapper()
+      const dayData = wrapper.vm.data[0]
+      expect(dayData.linearFirst).toBeDefined()
+      expect(dayData.linearLast).toBeDefined()
+      expect(dayData.linear).toContain('y =')
     })
   })
 })

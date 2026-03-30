@@ -78,20 +78,22 @@ onMounted(async () => {
 })
 
 function filterOutliers(data, limit) {
+  if (!data || data.length === 0) return []
   var count = 0
   var newList = []
 
-  newList.push(data[0])
+  let lastAccepted = data[0]
+  newList.push(lastAccepted)
 
   for (let i = 1; i < data.length; i++) {
-    const p = data[i - 1]
     const g = data[i]
 
-    if (Math.abs(g.gravity - p.gravity) > limit) {
-      logDebug('Current: ' + g.gravity + ' Previous: ' + p.gravity)
+    if (Math.abs(g.gravity - lastAccepted.gravity) > limit) {
+      logDebug('Current: ' + g.gravity + ' Previous Accepted: ' + lastAccepted.gravity)
       count++
     } else {
       newList.push(g)
+      lastAccepted = g
     }
   }
 
@@ -100,6 +102,7 @@ function filterOutliers(data, limit) {
 }
 
 function test(gList, window) {
+  if (!gList || gList.length === 0) return []
   var result = []
 
   const map = new Map()
@@ -125,10 +128,9 @@ function test(gList, window) {
       i++
     })
 
-    // const linearResult = regression.linear(linear.slice(-30), { precision: 12 })
     const linearResult = regression.linear(linear.slice(-window), { precision: 12 })
 
-    result.push({
+    const res = {
       day: day,
       first: linear[0][1],
       last: linear[linear.length - 1][1],
@@ -138,7 +140,8 @@ function test(gList, window) {
       linear: linearResult.string,
       linearFirst: linearResult.predict(0)[1],
       linearLast: linearResult.predict(96)[1]
-    })
+    }
+    result.push(res)
   })
 
   return result
