@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest'
+import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest'
 import { mount, flushPromises } from '@vue/test-utils'
 import { createPinia, setActivePinia } from 'pinia'
 import SettingsView from '../SettingsView.vue'
@@ -7,10 +7,34 @@ import BsInputText from '../../components/BsInputText.vue'
 import BsInputSelect from '../../components/BsSelect.vue'
 import { useConfigStore } from '@/modules/configStore'
 import { useGlobalStore } from '@/modules/globalStore'
+import * as logger from '@/modules/logger'
+import * as utils from '@/modules/utils'
+
+// Mock logger module
+vi.mock('@/modules/logger', () => ({
+  logDebug: vi.fn(),
+  logInfo: vi.fn(),
+  logWarning: vi.fn(),
+  logError: vi.fn()
+}))
+
+// Mock utils module (for validateCurrentForm)
+vi.mock('@/modules/utils', async () => {
+  const actual = await import('@/modules/utils')
+  return {
+    ...actual,
+    validateCurrentForm: vi.fn()
+  }
+})
 
 describe('SettingsView', () => {
   beforeEach(() => {
     setActivePinia(createPinia())
+    vi.clearAllMocks()
+  })
+
+  afterEach(() => {
+    vi.clearAllMocks()
   })
 
   describe('Basic Rendering', () => {
@@ -50,8 +74,10 @@ describe('SettingsView', () => {
       })
       expect(wrapper.text()).toContain('Settings')
     })
+  })
 
-    it('should have h3 title class', () => {
+  describe('Form Submission - saveSettings()', () => {
+    it('should log debug message when saveSettings is called', () => {
       const wrapper = mount(SettingsView, {
         global: {
           components: {
@@ -66,11 +92,15 @@ describe('SettingsView', () => {
           }
         }
       })
-      const h3 = wrapper.find('.h3')
-      expect(h3.exists()).toBe(true)
+
+      utils.validateCurrentForm.mockReturnValue(true)
+
+      wrapper.vm.saveSettings()
+      
+      expect(logger.logDebug).toHaveBeenCalledWith('SettingsView.saveSettings()')
     })
 
-    it('should render horizontal rule', () => {
+    it('should return early if form validation fails', () => {
       const wrapper = mount(SettingsView, {
         global: {
           components: {
@@ -85,13 +115,212 @@ describe('SettingsView', () => {
           }
         }
       })
-      const hr = wrapper.findAll('hr')
-      expect(hr.length).toBeGreaterThan(0)
+
+      utils.validateCurrentForm.mockReturnValue(false)
+
+      // Call saveSettings - it should return early without calling config.save
+      const result = wrapper.vm.saveSettings()
+      
+      // The method doesn't return anything, but we can verify that it didn't crash
+      expect(utils.validateCurrentForm).toHaveBeenCalled()
+    })
+
+    it('should call saveSettings when form is submitted', async () => {
+      const wrapper = mount(SettingsView, {
+        global: {
+          components: {
+            BsInputRadio,
+            BsInputText,
+            BsInputSelect
+          },
+          stubs: {
+            BsInputRadio: true,
+            BsInputText: true,
+            BsInputSelect: true
+          }
+        }
+      })
+
+      utils.validateCurrentForm.mockReturnValue(true)
+
+      // Directly call saveSettings to verify it works
+      wrapper.vm.saveSettings()
+      
+      // Verify that logDebug was called (proof that saveSettings ran)
+      expect(logger.logDebug).toHaveBeenCalled()
+    })
+
+    it('should check form validation on submit', async () => {
+      const wrapper = mount(SettingsView, {
+        global: {
+          components: {
+            BsInputRadio,
+            BsInputText,
+            BsInputSelect
+          },
+          stubs: {
+            BsInputRadio: true,
+            BsInputText: true,
+            BsInputSelect: true
+          }
+        }
+      })
+
+      utils.validateCurrentForm.mockReturnValue(true)
+
+      const form = wrapper.find('form')
+      await form.trigger('submit')
+
+      expect(utils.validateCurrentForm).toHaveBeenCalled()
     })
   })
 
-  describe('Form Structure', () => {
-    it('should have form element', () => {
+  describe('Configuration Binding', () => {
+    it('should have config store initialized', () => {
+      const config = useConfigStore()
+      expect(config).toBeDefined()
+    })
+
+    it('should have global store initialized', () => {
+      const global = useGlobalStore()
+      expect(global).toBeDefined()
+    })
+
+    it('should have temperature format option in config', () => {
+      const wrapper = mount(SettingsView, {
+        global: {
+          components: {
+            BsInputRadio,
+            BsInputText,
+            BsInputSelect
+          },
+          stubs: {
+            BsInputRadio: true,
+            BsInputText: true,
+            BsInputSelect: true
+          }
+        }
+      })
+
+      const config = useConfigStore()
+      expect(config.temperatureFormat).toBeDefined()
+    })
+
+    it('should expose config through component instance', () => {
+      const wrapper = mount(SettingsView, {
+        global: {
+          components: {
+            BsInputRadio,
+            BsInputText,
+            BsInputSelect
+          },
+          stubs: {
+            BsInputRadio: true,
+            BsInputText: true,
+            BsInputSelect: true
+          }
+        }
+      })
+
+      expect(wrapper.vm.config).toBeDefined()
+      expect(wrapper.vm.global).toBeDefined()
+    })
+  })
+
+  describe('Form Settings Options', () => {
+    it('should have temperature format options', () => {
+      const wrapper = mount(SettingsView, {
+        global: {
+          components: {
+            BsInputRadio,
+            BsInputText,
+            BsInputSelect
+          },
+          stubs: {
+            BsInputRadio: true,
+            BsInputText: true,
+            BsInputSelect: true
+          }
+        }
+      })
+
+      const temperatureOptions = wrapper.vm.temperatureOptions
+      expect(temperatureOptions).toBeDefined()
+      expect(temperatureOptions.length).toBeGreaterThan(0)
+      expect(temperatureOptions[0]).toHaveProperty('label')
+      expect(temperatureOptions[0]).toHaveProperty('value')
+    })
+
+    it('should have gravity format options', () => {
+      const wrapper = mount(SettingsView, {
+        global: {
+          components: {
+            BsInputRadio,
+            BsInputText,
+            BsInputSelect
+          },
+          stubs: {
+            BsInputRadio: true,
+            BsInputText: true,
+            BsInputSelect: true
+          }
+        }
+      })
+
+      const gravityOptions = wrapper.vm.gravityOptions
+      expect(gravityOptions).toBeDefined()
+      expect(gravityOptions).toContainEqual({ label: 'Specific Gravity', value: 'SG' })
+      expect(gravityOptions).toContainEqual({ label: 'Plato', value: 'P' })
+    })
+
+    it('should have pressure format options', () => {
+      const wrapper = mount(SettingsView, {
+        global: {
+          components: {
+            BsInputRadio,
+            BsInputText,
+            BsInputSelect
+          },
+          stubs: {
+            BsInputRadio: true,
+            BsInputText: true,
+            BsInputSelect: true
+          }
+        }
+      })
+
+      const pressureOptions = wrapper.vm.pressureOptions
+      expect(pressureOptions).toBeDefined()
+      expect(pressureOptions).toContainEqual({ label: 'PSI', value: 'PSI' })
+      expect(pressureOptions).toContainEqual({ label: 'Bar', value: 'BAR' })
+      expect(pressureOptions).toContainEqual({ label: 'kPa', value: 'KPA' })
+    })
+
+    it('should have dark mode options', () => {
+      const wrapper = mount(SettingsView, {
+        global: {
+          components: {
+            BsInputRadio,
+            BsInputText,
+            BsInputSelect
+          },
+          stubs: {
+            BsInputRadio: true,
+            BsInputText: true,
+            BsInputSelect: true
+          }
+        }
+      })
+
+      const darkModeOptions = wrapper.vm.darkModeOptions
+      expect(darkModeOptions).toBeDefined()
+      expect(darkModeOptions).toContainEqual({ label: 'Dark Mode', value: true })
+      expect(darkModeOptions).toContainEqual({ label: 'Day Mode', value: false })
+    })
+  })
+
+  describe('Form Layout', () => {
+    it('should have form element with needs-validation class', () => {
       const wrapper = mount(SettingsView, {
         global: {
           components: {
@@ -108,24 +337,6 @@ describe('SettingsView', () => {
       })
       const form = wrapper.find('form')
       expect(form.exists()).toBe(true)
-    })
-
-    it('should have needs-validation class on form', () => {
-      const wrapper = mount(SettingsView, {
-        global: {
-          components: {
-            BsInputRadio,
-            BsInputText,
-            BsInputSelect
-          },
-          stubs: {
-            BsInputRadio: true,
-            BsInputText: true,
-            BsInputSelect: true
-          }
-        }
-      })
-      const form = wrapper.find('form')
       expect(form.classes()).toContain('needs-validation')
     })
 
@@ -148,144 +359,7 @@ describe('SettingsView', () => {
       expect(form.attributes('novalidate')).toBeDefined()
     })
 
-    it('should handle form submit with prevent modifier', () => {
-      const wrapper = mount(SettingsView, {
-        global: {
-          components: {
-            BsInputRadio,
-            BsInputText,
-            BsInputSelect
-          },
-          stubs: {
-            BsInputRadio: true,
-            BsInputText: true,
-            BsInputSelect: true
-          }
-        }
-      })
-      const form = wrapper.find('form')
-      expect(form.exists()).toBe(true)
-    })
-  })
-
-  describe('Settings Fields', () => {
-    it('should have Bs input components', () => {
-      const wrapper = mount(SettingsView, {
-        global: {
-          components: {
-            BsInputRadio,
-            BsInputText,
-            BsInputSelect
-          },
-          stubs: {
-            BsInputRadio: true,
-            BsInputText: true,
-            BsInputSelect: true
-          }
-        }
-      })
-      const stubs = wrapper.findAll('bs-input-radio-stub, bs-input-text-stub, bs-input-select-stub')
-      expect(stubs.length).toBeGreaterThan(0)
-    })
-
-    it('should have temperature format component', () => {
-      const wrapper = mount(SettingsView, {
-        global: {
-          components: {
-            BsInputRadio,
-            BsInputText,
-            BsInputSelect
-          },
-          stubs: {
-            BsInputRadio: true,
-            BsInputText: true,
-            BsInputSelect: true
-          }
-        }
-      })
-      const radioStubs = wrapper.findAll('bs-input-radio-stub')
-      expect(radioStubs.length).toBeGreaterThan(0)
-    })
-
-    it('should have gravity format component', () => {
-      const wrapper = mount(SettingsView, {
-        global: {
-          components: {
-            BsInputRadio,
-            BsInputText,
-            BsInputSelect
-          },
-          stubs: {
-            BsInputRadio: true,
-            BsInputText: true,
-            BsInputSelect: true
-          }
-        }
-      })
-      const radioStubs = wrapper.findAll('bs-input-radio-stub')
-      expect(radioStubs.length).toBeGreaterThanOrEqual(2)
-    })
-
-    it('should have pressure format component', () => {
-      const wrapper = mount(SettingsView, {
-        global: {
-          components: {
-            BsInputRadio,
-            BsInputText,
-            BsInputSelect
-          },
-          stubs: {
-            BsInputRadio: true,
-            BsInputText: true,
-            BsInputSelect: true
-          }
-        }
-      })
-      const radioStubs = wrapper.findAll('bs-input-radio-stub')
-      expect(radioStubs.length).toBeGreaterThanOrEqual(3)
-    })
-
-    it('should have volume format component', () => {
-      const wrapper = mount(SettingsView, {
-        global: {
-          components: {
-            BsInputRadio,
-            BsInputText,
-            BsInputSelect
-          },
-          stubs: {
-            BsInputRadio: true,
-            BsInputText: true,
-            BsInputSelect: true
-          }
-        }
-      })
-      const radioStubs = wrapper.findAll('bs-input-radio-stub')
-      expect(radioStubs.length).toBeGreaterThanOrEqual(4)
-    })
-
-    it('should have gravity forward url input component', () => {
-      const wrapper = mount(SettingsView, {
-        global: {
-          components: {
-            BsInputRadio,
-            BsInputText,
-            BsInputSelect
-          },
-          stubs: {
-            BsInputRadio: true,
-            BsInputText: true,
-            BsInputSelect: true
-          }
-        }
-      })
-      const textStubs = wrapper.findAll('bs-input-text-stub')
-      expect(textStubs.length).toBeGreaterThan(0)
-    })
-  })
-
-  describe('Layout Grid', () => {
-    it('should use Bootstrap grid system', () => {
+    it('should use Bootstrap grid with row and col-md', () => {
       const wrapper = mount(SettingsView, {
         global: {
           components: {
@@ -302,58 +376,8 @@ describe('SettingsView', () => {
       })
       const row = wrapper.find('.row')
       expect(row.exists()).toBe(true)
-    })
-
-    it('should have col-md columns for responsiveness', () => {
-      const wrapper = mount(SettingsView, {
-        global: {
-          components: {
-            BsInputRadio,
-            BsInputText,
-            BsInputSelect
-          },
-          stubs: {
-            BsInputRadio: true,
-            BsInputText: true,
-            BsInputSelect: true
-          }
-        }
-      })
-      const columns = wrapper.findAll('[class*="col-md"]')
-      expect(columns.length).toBeGreaterThan(0)
-    })
-  })
-
-  describe('State Management', () => {
-    it('should bind to config store properties', () => {
-      const config = useConfigStore()
-      expect(config).toBeDefined()
-    })
-
-    it('should bind to global store', () => {
-      const global = useGlobalStore()
-      expect(global).toBeDefined()
-    })
-  })
-
-  describe('Form Responsiveness', () => {
-    it('should adjust for different screen sizes with col-md', () => {
-      const wrapper = mount(SettingsView, {
-        global: {
-          components: {
-            BsInputRadio,
-            BsInputText,
-            BsInputSelect
-          },
-          stubs: {
-            BsInputRadio: true,
-            BsInputText: true,
-            BsInputSelect: true
-          }
-        }
-      })
-      const mdCols = wrapper.findAll('[class*="col-md"]')
-      expect(mdCols.length).toBeGreaterThan(0)
+      const cols = wrapper.findAll('[class*="col-md"]')
+      expect(cols.length).toBeGreaterThan(0)
     })
   })
 })

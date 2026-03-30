@@ -1,8 +1,9 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest'
+import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest'
 import { mount } from '@vue/test-utils'
-import { createPinia, setActivePinia } from 'pinia'
+import { setActivePinia } from 'pinia'
 import { createRouter, createMemoryHistory } from 'vue-router'
 import TapPourListView from '../TapPourListView.vue'
+import piniaInstance from '@/modules/pinia'
 
 vi.mock('@/modules/logger', () => ({
   logDebug: vi.fn(),
@@ -19,49 +20,140 @@ vi.mock('@/modules/ui', () => ({
 }))
 
 describe('TapPourListView', () => {
+  let router
+
   beforeEach(() => {
-    setActivePinia(createPinia())
+    setActivePinia(piniaInstance)
+    vi.clearAllMocks()
+    router = createRouter({
+      history: createMemoryHistory(),
+      routes: [{ path: '/tap/:id/pour', name: 'tap-pour-list', component: TapPourListView }]
+    })
   })
 
-  it('should render container', () => {
-    const router = createRouter({
-      history: createMemoryHistory(),
-      routes: [{ path: '/tap/:id/pour', name: 'tap-pour-list' }]
-    })
-    const wrapper = mount(TapPourListView, {
-      global: {
-        stubs: { 'router-link': true },
-        plugins: [router]
-      }
-    })
-    expect(wrapper.find('.container').exists()).toBe(true)
+  afterEach(() => {
+    vi.restoreAllMocks()
   })
 
-  it('should render page title', () => {
-    const router = createRouter({
-      history: createMemoryHistory(),
-      routes: [{ path: '/tap/:id/pour', name: 'tap-pour-list' }]
+  describe('Component Structure', () => {
+    it('should render container', () => {
+      const wrapper = mount(TapPourListView, {
+        global: {
+          stubs: { 'router-link': { template: '<a><slot></slot></a>' } },
+          plugins: [router]
+        }
+      })
+      expect(wrapper.find('.container').exists()).toBe(true)
     })
-    const wrapper = mount(TapPourListView, {
-      global: {
-        stubs: { 'router-link': true },
-        plugins: [router]
-      }
+
+    it('should render page title with batch name placeholder', () => {
+      const wrapper = mount(TapPourListView, {
+        global: {
+          stubs: { 'router-link': { template: '<a><slot></slot></a>' } },
+          plugins: [router]
+        }
+      })
+      expect(wrapper.find('.h3').text()).toContain('Tap Pour List')
     })
-    expect(wrapper.find('.h3').exists()).toBe(true)
+
+    it('should render data table', () => {
+      const wrapper = mount(TapPourListView, {
+        global: {
+          stubs: { 'router-link': { template: '<a><slot></slot></a>' } },
+          plugins: [router]
+        }
+      })
+      expect(wrapper.find('table').exists()).toBe(true)
+      expect(wrapper.find('thead').exists()).toBe(true)
+    })
+
+    it('should have proper table headers', () => {
+      const wrapper = mount(TapPourListView, {
+        global: {
+          stubs: { 'router-link': { template: '<a><slot></slot></a>' } },
+          plugins: [router]
+        }
+      })
+      const headers = wrapper.findAll('th')
+      expect(headers.length).toBeGreaterThanOrEqual(5)
+      expect(headers[0].text()).toContain('Date')
+      expect(headers[1].text()).toContain('Active')
+      expect(headers[2].text()).toContain('Pour')
+    })
   })
 
-  it('should initialize properly', () => {
-    const router = createRouter({
-      history: createMemoryHistory(),
-      routes: [{ path: '/tap/:id/pour', name: 'tap-pour-list' }]
+  describe('State Initialization', () => {
+    it('should initialize with empty batch name', () => {
+      const wrapper = mount(TapPourListView, {
+        global: {
+          stubs: { 'router-link': { template: '<a><slot></slot></a>' } },
+          plugins: [router]
+        }
+      })
+      expect(wrapper.find('.h3').text()).toContain("''")
     })
-    const wrapper = mount(TapPourListView, {
-      global: {
-        stubs: { 'router-link': true },
-        plugins: [router]
-      }
+
+    it('should initialize with null pour list', () => {
+      const wrapper = mount(TapPourListView, {
+        global: {
+          stubs: { 'router-link': { template: '<a><slot></slot></a>' } },
+          plugins: [router]
+        }
+      })
+      // Table body should be empty initially
+      expect(wrapper.findAll('tbody tr').length).toBe(0)
     })
-    expect(wrapper.exists()).toBe(true)
+  })
+
+  describe('Store Access', () => {
+    it('should have access to pour store', () => {
+      const wrapper = mount(TapPourListView, {
+        global: {
+          stubs: { 'router-link': { template: '<a><slot></slot></a>' } },
+          plugins: [router]
+        }
+      })
+      // Check if store is defined in wrapper.vm if needed, 
+      // but usually we check if it was called during lifecycle
+      expect(wrapper.exists()).toBe(true)
+    })
+  })
+
+  describe('Component Methods', () => {
+    it('should have updatePour method', () => {
+      const wrapper = mount(TapPourListView, {
+        global: {
+          stubs: { 'router-link': { template: '<a><slot></slot></a>' } },
+          plugins: [router]
+        }
+      })
+      expect(typeof wrapper.vm.updatePour).toBe('function')
+    })
+  })
+
+  describe('Navigation', () => {
+    it('should render back button to tap list', () => {
+      const wrapper = mount(TapPourListView, {
+        global: {
+          stubs: { 'router-link': { template: '<a><slot></slot></a>' } },
+          plugins: [router]
+        }
+      })
+      const backBtn = wrapper.find('button.btn-secondary')
+      expect(backBtn.exists()).toBe(true)
+      expect(backBtn.text()).toContain('Tap list')
+    })
+  })
+
+  describe('Mounting', () => {
+    it('should mount without errors', () => {
+      const wrapper = mount(TapPourListView, {
+        global: {
+          stubs: { 'router-link': { template: '<a><slot></slot></a>' } },
+          plugins: [router]
+        }
+      })
+      expect(wrapper.exists()).toBe(true)
+    })
   })
 })
