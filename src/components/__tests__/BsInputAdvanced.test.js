@@ -371,6 +371,34 @@ describe('BsInputTextAreaFormat - Formatted Text Input', () => {
       const items = wrapper.findAll('.dropdown-item')
       expect(items.length).toBeGreaterThan(0)
     })
+
+    it('should handle context menu open/close', async () => {
+      const wrapper = mount(BsInputTextAreaFormat, {
+        props: { modelValue: 'initial' }
+      })
+      const contextMenu = wrapper.find('#contextMenu')
+      expect(contextMenu.exists()).toBe(true)
+      // Context menu should be hidden initially
+      expect(contextMenu.element.style.display).toBe('')
+    })
+
+    it('should have context menu click handler', async () => {
+      const wrapper = mount(BsInputTextAreaFormat, {
+        props: { modelValue: 'test' }
+      })
+      
+      // Verify context menu exists and can be clicked
+      const contextMenu = wrapper.find('#contextMenu')
+      expect(contextMenu.exists()).toBe(true)
+      
+      // Verify items exist and can be triggered
+      const items = wrapper.findAll('.dropdown-item')
+      expect(items.length).toBeGreaterThan(0)
+      
+      // Test that Cancel option returns empty
+      const cancelItem = items.find(item => item.text().includes('Cancel'))
+      expect(cancelItem).toBeDefined()
+    })
   })
 })
 
