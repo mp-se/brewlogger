@@ -7,6 +7,7 @@ import BsInputText from '../../components/BsInputText.vue'
 import BsInputSelect from '../../components/BsSelect.vue'
 import { useConfigStore } from '@/modules/configStore'
 import { useGlobalStore } from '@/modules/globalStore'
+import { config as piniaConfig, global as piniaGlobal } from '@/modules/pinia'
 import * as logger from '@/modules/logger'
 import * as utils from '@/modules/utils'
 
@@ -17,6 +18,18 @@ vi.mock('@/modules/logger', () => ({
   logWarning: vi.fn(),
   logError: vi.fn()
 }))
+
+// Mock @/modules/pinia to mock the actual config object with a save method
+vi.mock('@/modules/pinia', async (importOriginal) => {
+  const actual = await importOriginal()
+  return {
+    ...actual,
+    config: {
+      ...actual.config,
+      save: vi.fn()
+    }
+  }
+})
 
 // Mock utils module (for validateCurrentForm)
 vi.mock('@/modules/utils', async () => {
@@ -148,6 +161,58 @@ describe('SettingsView', () => {
       
       // Verify that logDebug was called (proof that saveSettings ran)
       expect(logger.logDebug).toHaveBeenCalled()
+    })
+
+    it('should show success message when save is successful', async () => {
+      const wrapper = mount(SettingsView, {
+        global: {
+          components: {
+            BsInputRadio,
+            BsInputText,
+            BsInputSelect
+          },
+          stubs: {
+            BsInputRadio: true,
+            BsInputText: true,
+            BsInputSelect: true
+          }
+        }
+      })
+
+      // Mock piniaConfig.save to invoke callback with true
+      piniaConfig.save.mockImplementation((cb) => cb(true))
+      utils.validateCurrentForm.mockReturnValue(true)
+
+      wrapper.vm.saveSettings()
+
+      expect(piniaConfig.save).toHaveBeenCalled()
+      expect(piniaGlobal.messageSuccess).toBe('Settings saved')
+    })
+
+    it('should show error message when save fails', async () => {
+      const wrapper = mount(SettingsView, {
+        global: {
+          components: {
+            BsInputRadio,
+            BsInputText,
+            BsInputSelect
+          },
+          stubs: {
+            BsInputRadio: true,
+            BsInputText: true,
+            BsInputSelect: true
+          }
+        }
+      })
+
+      // Mock piniaConfig.save to invoke callback with false
+      piniaConfig.save.mockImplementation((cb) => cb(false))
+      utils.validateCurrentForm.mockReturnValue(true)
+
+      wrapper.vm.saveSettings()
+
+      expect(piniaConfig.save).toHaveBeenCalled()
+      expect(piniaGlobal.messageError).toBe('Failed to save settings')
     })
 
     it('should check form validation on submit', async () => {
