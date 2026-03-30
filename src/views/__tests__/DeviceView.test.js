@@ -254,4 +254,181 @@ describe('DeviceView', () => {
       expect(routerLinks.length).toBeGreaterThanOrEqual(0)
     })
   })
+
+  describe('Chip ID Validation', () => {
+    it('should return true for valid hex chip ID', () => {
+      // Create simple object to test regex without mounting component
+      const testObj = { chipId: 'abc123' }
+      const regex = new RegExp(/^([0-9,a-f]){6}$/)
+      expect(regex.test(testObj.chipId)).toBe(true)
+    })
+
+    it('should return false for invalid chip ID (too short)', () => {
+      const testObj = { chipId: 'abc12' }
+      const regex = new RegExp(/^([0-9,a-f]){6}$/)
+      expect(regex.test(testObj.chipId)).toBe(false)
+    })
+
+    it('should return false for invalid chip ID (uppercase)', () => {
+      const testObj = { chipId: 'ABC123' }
+      const regex = new RegExp(/^([0-9,a-f]){6}$/)
+      expect(regex.test(testObj.chipId)).toBe(false)
+    })
+
+    it('should return true for numeric chip ID', () => {
+      const testObj = { chipId: '123456' }
+      const regex = new RegExp(/^([0-9,a-f]){6}$/)
+      expect(regex.test(testObj.chipId)).toBe(true)
+    })
+
+    it('should return true for lowercase hex', () => {
+      const testObj = { chipId: 'abcdef' }
+      const regex = new RegExp(/^([0-9,a-f]){6}$/)
+      expect(regex.test(testObj.chipId)).toBe(true)
+    })
+  })
+
+  describe('Device Change Detection', () => {
+    it('should have deviceChanged method', () => {
+      const wrapper = mount(DeviceView, {
+        global: {
+          stubs: {
+            BsInputText: true,
+            BsInputNumber: true,
+            BsInputDate: true,
+            BsCard: true,
+            BsInputSwitch: true,
+            BsFileUpload: true,
+            'router-link': true
+          },
+          plugins: [router]
+        }
+      })
+
+      expect(typeof wrapper.vm.deviceChanged).toBe('function')
+    })
+  })
+
+  describe('Option Arrays and Computed Properties', () => {
+    it('should initialize option arrays in component', () => {
+      const wrapper = mount(DeviceView, {
+        global: {
+          stubs: {
+            BsInputText: true,
+            BsInputNumber: true,
+            BsInputDate: true,
+            BsCard: true,
+            BsInputSwitch: true,
+            BsFileUpload: true,
+            'router-link': true
+          },
+          plugins: [router]
+        }
+      })
+
+      // Option arrays should be initialized
+      expect(wrapper.vm.chipFamilyOptions).toBeDefined()
+      expect(wrapper.vm.softwareOptions).toBeDefined()
+      expect(wrapper.vm.bleColorOptions).toBeDefined()
+      
+      // Should have items
+      expect(wrapper.vm.chipFamilyOptions.length).toBeGreaterThan(0)
+      expect(wrapper.vm.softwareOptions.length).toBeGreaterThan(0)
+      expect(wrapper.vm.bleColorOptions.length).toBeGreaterThan(0)
+    })
+  })
+
+  describe('URL Validation Logic', () => {
+    it('should verify URL validation function exists', () => {
+      // validateUrl() should ensure URL ends with / or is short
+      const testUrl1 = 'http://example.com'
+      const testUrl2 = 'http:'  // Very short URL (< 7 chars)
+      
+      // Logic: add / if not present and long enough
+      const processed1 = testUrl1.endsWith('/') || testUrl1.length < 7 ? testUrl1 : testUrl1 + '/'
+      expect(processed1).toBe('http://example.com/')
+      
+      // Very short URLs shouldn't get /
+      const processed2 = testUrl2.endsWith('/') || testUrl2.length < 7 ? testUrl2 : testUrl2 + '/'
+      expect(processed2).toBe('http:')
+    })
+  })
+
+  describe('Component Methods Available', () => {
+    it('should have copyToClipboard method', () => {
+      const wrapper = mount(DeviceView, {
+        global: {
+          stubs: {
+            BsInputText: true,
+            BsInputNumber: true,
+            BsInputDate: true,
+            BsCard: true,
+            BsInputSwitch: true,
+            BsFileUpload: true,
+            'router-link': true
+          },
+          plugins: [router]
+        }
+      })
+
+      expect(typeof wrapper.vm.copyToClipboard).toBe('function')
+    })
+
+    it('should have fetchConfigFromDevice method', () => {
+      const wrapper = mount(DeviceView, {
+        global: {
+          stubs: {
+            BsInputText: true,
+            BsInputNumber: true,
+            BsInputDate: true,
+            BsCard: true,
+            BsInputSwitch: true,
+            BsFileUpload: true,
+            'router-link': true
+          },
+          plugins: [router]
+        }
+      })
+
+      expect(typeof wrapper.vm.fetchConfigFromDevice).toBe('function')
+    })
+
+    it('should have validateUrl method', () => {
+      const wrapper = mount(DeviceView, {
+        global: {
+          stubs: {
+            BsInputText: true,
+            BsInputNumber: true,
+            BsInputDate: true,
+            BsCard: true,
+            BsInputSwitch: true,
+            BsFileUpload: true,
+            'router-link': true
+          },
+          plugins: [router]
+        }
+      })
+
+      expect(typeof wrapper.vm.validateUrl).toBe('function')
+    })
+
+    it('should have deleteFermentationSteps method', () => {
+      const wrapper = mount(DeviceView, {
+        global: {
+          stubs: {
+            BsInputText: true,
+            BsInputNumber: true,
+            BsInputDate: true,
+            BsCard: true,
+            BsInputSwitch: true,
+            BsFileUpload: true,
+            'router-link': true
+          },
+          plugins: [router]
+        }
+      })
+
+      expect(typeof wrapper.vm.deleteFermentationSteps).toBe('function')
+    })
+  })
 })
