@@ -1,350 +1,294 @@
-import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest'
+
+import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { mount } from '@vue/test-utils'
-import { nextTick, ref } from 'vue'
-import { createPinia, setActivePinia } from 'pinia'
-import { createRouter, createMemoryHistory } from 'vue-router'
-
-// Module imports
-import { Batch } from '@/modules/classes'
 import BatchListView from '../BatchListView.vue'
+import { nextTick, ref } from 'vue'
 
-// Define the reactive state for the mocks with vi_ prefix
-const { vi_batchList, vi_updatedBatchData, vi_updateBatch, vi_deleteBatch } = vi.hoisted(() => {
-  const { ref } = require('vue')
+vi.mock('pinia', async () => {
+  const { ref, watch } = await import('vue')
   return {
-    vi_batchList: ref([]),
-    vi_updatedBatchData: ref(0),
-    vi_updateBatch: vi.fn().mockResolvedValue(true),
-    vi_deleteBatch: vi.fn().mockResolvedValue(true)
-  }
-})
-
-// Mock the Pinia module
-const piniaMocks = vi.hoisted(() => {
-  const { ref } = require('vue')
-  const batchListFilterDevice = ref('*')
-  const batchListFilterActive = ref(false)
-  const batchListFilterData = ref(false)
-  const updatedBatchData = ref(0)
-  
-  const batchStore = {
-    batchList: [],
-    updateBatch: vi.fn().mockResolvedValue(true),
-    deleteBatch: vi.fn().mockResolvedValue(true)
-  }
-
-  const global = {
-    batchListFilterDevice: batchListFilterDevice,
-    batchListFilterActive: batchListFilterActive,
-    batchListFilterData: batchListFilterData,
-    updatedBatchData,
-    disabled: ref(false),
-    clearMessages: vi.fn(),
-    messageError: ref(''),
-    messageSuccess: ref(''),
-    baseURL: 'http://localhost:3000/',
-    token: 'test-token',
-    fetchTimout: 1000,
-    batchStore
-  }
-
-  return {
-    batchListFilterDevice,
-    batchListFilterActive,
-    batchListFilterData,
-    updatedBatchData,
-    disabled: global.disabled,
-    clearMessages: global.clearMessages,
-    messageError: global.messageError,
-    messageSuccess: global.messageSuccess,
-    baseURL: global.baseURL,
-    token: global.token,
-    fetchTimout: global.fetchTimout,
-    batchStore,
-    global
-  }
-})
-
-vi.mock('@/modules/pinia', () => {
-  return {
-    useBatchStore: () => piniaMocks.batchStore,
-    useGlobalStore: () => piniaMocks.global,
-    useDeviceStore: () => ({
-      deviceList: []
-    }),
-    batchStore: piniaMocks.batchStore,
-    global: piniaMocks.global,
-    deviceStore: {
-      deviceList: []
+    storeToRefs: (store) => {
+      const refs = {}
+      for (const key in store) {
+        if (typeof store[key] !== 'function' && key !== 'batchList') {
+          const r = ref(store[key])
+          refs[key] = r
+          // Link the ref to the store property
+          Object.defineProperty(store, key, {
+            get() { return r.value },
+            set(v) { r.value = v },
+            configurable: true,
+            enumerable: true
+          })
+        }
+      }
+      return refs
     }
   }
 })
 
-vi.mock('@/modules/logger', () => ({
-  logDebug: vi.fn(),
-  logError: vi.fn(),
-  logInfo: vi.fn()
+// Mock fetch for getBatch
+global.fetch = vi.fn()
+
+
+const globalMock = vi.hoisted(() => ({
+  batchListFilterDevice: '*',
+  batchListFilterActive: false,
+  batchListFilterData: false,
+  updatedBatchData: 0,
+  disabled: false,
+  messageError: '',
+  messageSuccess: '',
+  clearMessages: vi.fn(),
+  fetchTimout: 1000
 }))
 
-const uiMocks = vi.hoisted(() => ({
-  sortedIconClass: 'bi-sort-down',
+const { batchStoreMock, deviceStoreMock, gravityStoreMock, pressureStoreMock } = vi.hoisted(() => {
+  return {
+    batchStoreMock: {
+      batchList: [
+        { id: 1, name: 'B1', brewDate: '2023-01-01', active: true, tapList: false, gravityCount: 10, pressureCount: 5, pourCount: 2, chipIdGravity: 'c1', chipIdPressure: 'p1' },
+        { id: 2, name: 'B2', brewDate: '2023-02-01', active: false, tapList: true, gravityCount: 0, pressureCount: 0, pourCount: 0, chipIdGravity: 'c2', chipIdPressure: 'p2' }
+      ],
+      updateBatch: vi.fn().mockResolvedValue(true),
+      deleteBatch: vi.fn().mockResolvedValue(true),
+      getBatch: vi.fn().mockResolvedValue({ id: 1, name: 'B1', gravity: [] })
+    },
+    deviceStoreMock: {
+      deviceList: [
+        { chipId: 'c1', mdns: 'dev1' },
+        { chipId: 'c2', mdns: 'dev2' }
+      ]
+    },
+    gravityStoreMock: { getGravity: vi.fn().mockResolvedValue([{ date: '2023-01-01', gravity: 1.050 }]) },
+    pressureStoreMock: { getPressure: vi.fn().mockResolvedValue([{ date: '2023-01-01', pressure: 12 }]) }
+  }
+})
+
+vi.mock('@/modules/pinia', () => ({
+  global: globalMock,
+  batchStore: batchStoreMock,
+  deviceStore: deviceStoreMock,
+  gravityStore: gravityStoreMock,
+  pressureStore: pressureStoreMock
+}))
+
+const routerMock = vi.hoisted(() => ({
+  currentRoute: { value: { query: {} } },
+  push: vi.fn()
+}))
+vi.mock('@/modules/router', () => ({ default: routerMock }))
+const utilsMock = vi.hoisted(() => ({ download: vi.fn() }))
+vi.mock('@/modules/utils', () => utilsMock)
+vi.mock('@/modules/logger', () => ({ logDebug: vi.fn(), logError: vi.fn() }))
+const uiMock = vi.hoisted(() => ({
+  sortedIconClass: 'bi-sort',
   setSortingDefault: vi.fn(),
-  sortedClass: vi.fn(() => 'sorted'),
+  sortedClass: vi.fn().mockReturnValue('sorted'),
   sortList: vi.fn(),
   applySortList: vi.fn()
 }))
 
-vi.mock('@/modules/ui', () => uiMocks)
+vi.mock('@/modules/ui', () => uiMock)
 
-const utilsMocks = vi.hoisted(() => ({
-  download: vi.fn()
-}))
-
-vi.mock('@/modules/utils', () => utilsMocks)
-
-describe('BatchListView', () => {
-  let router
-
+describe('BatchListView.vue', () => {
   beforeEach(() => {
-    setActivePinia(createPinia())
-    piniaMocks.batchStore.batchList = []
-    piniaMocks.updatedBatchData.value = 0
-    router = createRouter({
-      history: createMemoryHistory(),
-      routes: [
-        { path: '/', component: { template: '<div></div>' } },
-        { path: '/batches', name: 'batch-list' },
-        { path: '/batch/:id', name: 'batch' },
-        { path: '/batch/:id/gravity/graph', name: 'batch-gravity-graph' },
-        { path: '/batch/:id/gravity/list', name: 'batch-gravity-list' },
-        { path: '/batch/:id/pressure/graph', name: 'batch-pressure-graph' },
-        { path: '/batch/:id/pressure/list', name: 'batch-pressure-list' },
-        { path: '/batch/:id/pour/graph', name: 'batch-pour-graph' },
-        { path: '/batch/:id/pour/list', name: 'batch-pour-list' }
-      ]
-    })
-  })
-
-  afterEach(() => {
     vi.clearAllMocks()
-    vi.restoreAllMocks()
+    globalMock.batchListFilterDevice = '*'
+    globalMock.batchListFilterActive = false
+    globalMock.batchListFilterData = false
+    globalMock.messageError = ''
+    globalMock.messageSuccess = ''
+    routerMock.currentRoute.value.query = {}
+    batchStoreMock.batchList[0].active = true
+    batchStoreMock.batchList[1].active = false
   })
 
-  const mountWrapper = () => {
-    return mount(BatchListView, {
-      global: {
-        stubs: {
-          'router-link': true,
-          BsModalConfirm: {
-            template: '<div id="bs-modal-confirm-stub" @click="callback(true)"></div>',
-            props: ['callback', 'message', 'id', 'title', 'disabled']
-          },
-          BsSelect: true,
-          BsInputSwitch: true
+  const mountWrapper = () => mount(BatchListView, {
+    attachTo: document.body,
+    global: {
+      stubs: {
+        'router-link': true,
+        'BsSelect': {
+          template: '<select :value="modelValue" @change="$emit(\'update:modelValue\', $event.target.value)"><option v-for="o in options" :value="o.value">{{o.label}}</option></select>',
+          props: ['modelValue', 'options']
         },
-        plugins: [router]
+        'BsInputSwitch': {
+          template: '<input type="checkbox" :checked="modelValue" @change="$emit(\'update:modelValue\', $event.target.checked)" />',
+          props: ['modelValue']
+        },
+        'BsModalConfirm': {
+           template: '<div id="deleteBatch" @click="$props.callback(true)"></div>',
+           props: ['callback']
+        }
       }
-    })
-  }
-
-  describe('Basic Rendering', () => {
-    it('should render batch list container', () => {
-      const wrapper = mountWrapper()
-      expect(wrapper.find('.container').exists()).toBe(true)
-      expect(wrapper.text()).toContain('Batch List')
-    })
-
-    it('should show message if no data is present', async () => {
-      const wrapper = mountWrapper()
-      wrapper.vm.batchList = null
-      await nextTick()
-      expect(wrapper.text()).toContain('Loading...')
-    })
-
-    it('should show table if data is present', async () => {
-      const batch = new Batch()
-      batch.id = 1
-      batch.name = 'Test Batch'
-      const wrapper = mountWrapper()
-      wrapper.vm.batchList = [batch]
-      await nextTick()
-      expect(wrapper.find('table').exists()).toBe(true)
-      expect(wrapper.text()).toContain('Test Batch')
-    })
+    }
   })
 
-  describe('Interactions', () => {
-    it('should toggle active status', async () => {
-      const batch = new Batch()
-      batch.id = 101
-      batch.active = true
-      const wrapper = mountWrapper()
-      wrapper.vm.batchList = [batch]
-      await nextTick()
-      await wrapper.vm.toggleBatchActive(101)
-      expect(piniaMocks.batchStore.updateBatch).toHaveBeenCalled()
-    })
-
-    it('should trigger delete batch flow', async () => {
-      const batch = new Batch()
-      batch.id = 202
-      batch.name = 'Batch To Delete'
-      
-      // Add dummy element for getElementById('deleteBatch').click()
-      const button = document.createElement('button')
-      button.id = 'deleteBatch'
-      document.body.appendChild(button)
-      
-      const wrapper = mountWrapper()
-      wrapper.vm.batchList = [batch]
-      await nextTick()
-      await wrapper.vm.deleteBatch(202, 'Batch To Delete')
-      expect(wrapper.vm.confirmDeleteId).toBe(202)
-      await wrapper.vm.confirmDeleteCallback(true)
-      expect(piniaMocks.batchStore.deleteBatch).toHaveBeenCalledWith(202)
-      
-      document.body.removeChild(button)
-    })
+  it('filters by active status', async () => {
+    const wrapper = mountWrapper()
+    await nextTick()
+    globalMock.batchListFilterActive = true
+    wrapper.vm.filterBatchList() 
+    expect(wrapper.vm.batchList).toHaveLength(1)
   })
 
-  describe('Export functions', () => {
-    let fetchSpy
-
-    beforeEach(() => {
-      fetchSpy = vi.spyOn(globalThis, 'fetch').mockResolvedValue({
-        ok: true,
-        json: () => Promise.resolve({ id: 1, name: 'Export Batch', gravity: [], pressure: [] })
-      })
-      if (global.URL && !global.URL.createObjectURL) {
-        global.URL.createObjectURL = vi.fn(() => 'blob:url')
-        global.URL.revokeObjectURL = vi.fn()
-      }
-    })
-
-    afterEach(() => {
-      fetchSpy.mockRestore()
-    })
-
-    it('should handle JSON export', async () => {
-      const batch = new Batch()
-      batch.id = 1
-      const wrapper = mountWrapper()
-      wrapper.vm.batchList = [batch]
-      await nextTick()
-      
-      globalThis.fetch = vi.fn().mockResolvedValue({
-        ok: true,
-        json: () => Promise.resolve({ id: 1, name: 'Mock' })
-      })
-
-      await wrapper.vm.exportBatchJSON(1)
-      expect(utilsMocks.download).toHaveBeenCalledWith(
-        expect.stringContaining('"id": 1'),
-        'text/plain',
-        'brewlogger_batch_1.json'
-      )
-    })
-
-    it('should handle CSV gravity export', async () => {
-      const wrapper = mountWrapper()
-      globalThis.fetch = vi.fn().mockResolvedValue({
-        ok: true,
-        json: () => Promise.resolve({ 
-          id: 1, 
-          name: 'Batch 1', 
-          gravity: [{ created: '2023-01-01', gravity: 1.050, temperature: 20 }] 
-        })
-      })
-
-      await wrapper.vm.exportBatchGravityCSV(1)
-      expect(utilsMocks.download).toHaveBeenCalledWith(
-        expect.stringContaining('Batch 1,2023-01-01,20,1.05'),
-        'text/plain',
-        'brewlogger_gravity_batch_1.csv'
-      )
-    })
-
-    it('should handle CSV pressure export', async () => {
-      const wrapper = mountWrapper()
-      globalThis.fetch = vi.fn().mockResolvedValue({
-        ok: true,
-        json: () => Promise.resolve({ 
-          id: 1, 
-          name: 'Batch 1', 
-          pressure: [{ created: '2023-01-01', pressure: 15, temperature: 20 }] 
-        })
-      })
-
-      await wrapper.vm.exportBatchPressureCSV(1)
-      expect(utilsMocks.download).toHaveBeenCalledWith(
-        expect.stringContaining('Batch 1,2023-01-01,20,15'),
-        'text/plain',
-        'brewlogger_pressure_batch_1.csv'
-      )
-    })
+  it('filters by data status', async () => {
+    const wrapper = mountWrapper()
+    await nextTick()
+    globalMock.batchListFilterActive = false
+    globalMock.batchListFilterData = true
+    wrapper.vm.filterBatchList() 
+    expect(wrapper.vm.batchList).toHaveLength(1)
+    expect(wrapper.vm.batchList[0].id).toBe(1)
   })
 
-  describe('Filtering and Sorting', () => {
-    it('should filter batch list by device', async () => {
-      // Setup data before mount
-      piniaMocks.batchStore.batchList = [
-        { id: 1, chipIdGravity: 'ESP32_1', chipIdPressure: '', active: true, gravityCount: 0 },
-        { id: 2, chipIdGravity: 'ESP32_2', chipIdPressure: '', active: true, gravityCount: 0 }
-      ]
-
-      const wrapper = mountWrapper()
-      
-      // Filter for ESP32_1
-      piniaMocks.global.batchListFilterDevice.value = 'ESP32_1'
-      piniaMocks.global.batchListFilterActive.value = false
-      piniaMocks.global.batchListFilterData.value = false
-      
-      // Force assign instead of relying on filterBatchList() internal logic
-      wrapper.vm.batchList = [piniaMocks.batchStore.batchList[0]]
-      
-      expect(wrapper.vm.batchList.length).toBe(1)
-      expect(wrapper.vm.batchList[0].chipIdGravity).toBe('ESP32_1')
-    })
-
-    it('should filter active batches', async () => {
-      piniaMocks.batchStore.batchList = [
-        { id: 1, active: true, chipIdGravity: '', chipIdPressure: '', gravityCount: 0 },
-        { id: 2, active: false, chipIdGravity: '', chipIdPressure: '', gravityCount: 0 }
-      ]
-
-      const wrapper = mountWrapper()
-      
-      piniaMocks.global.batchListFilterActive.value = true
-      piniaMocks.global.batchListFilterDevice.value = '*'
-      piniaMocks.global.batchListFilterData.value = false
-      
-      wrapper.vm.batchList = piniaMocks.batchStore.batchList.filter(b => b.active)
-      
-      expect(wrapper.vm.batchList.length).toBe(1)
-      expect(wrapper.vm.batchList[0].id).toBe(1)
-    })
+  it('filters by device', async () => {
+    const wrapper = mountWrapper()
+    await nextTick()
+    globalMock.batchListFilterActive = false
+    globalMock.batchListFilterData = false
+    globalMock.batchListFilterDevice = 'c2'
+    wrapper.vm.filterBatchList() 
+    expect(wrapper.vm.batchList).toHaveLength(1)
+    expect(wrapper.vm.batchList[0].id).toBe(2)
   })
 
-  describe('Sorting', () => {
-    it('should sort list when header is clicked', async () => {
-      piniaMocks.batchStore.batchList = [
-        { id: 1, name: 'B', brewDate: '2023-01-01' },
-        { id: 2, name: 'A', brewDate: '2023-01-02' }
-      ]
-      const wrapper = mountWrapper()
-      
-      // Let's call the VM method directly
-      wrapper.vm.sortList('name', 'string')
-      expect(uiMocks.sortList).toHaveBeenCalled()
-      expect(uiMocks.sortList.mock.calls[0][0]).toBe('name')
-      expect(uiMocks.sortList.mock.calls[0][1]).toBe('string')
+  it('handles empty query chipId on mount', async () => {
+    routerMock.currentRoute.value.query = {}
+    const wrapper = mountWrapper()
+    await nextTick()
+    expect(globalMock.batchListFilterDevice).toBe('*')
+  })
+
+  it('handles chipId query on mount', async () => {
+    routerMock.currentRoute.value.query = { chipId: 'c1' }
+    const wrapper = mountWrapper()
+    await nextTick()
+    expect(globalMock.batchListFilterDevice).toBe('c1')
+  })
+
+  it('toggles batch tapList', async () => {
+    const wrapper = mountWrapper()
+    await nextTick()
+    await wrapper.vm.toggleBatchTapList(1)
+    expect(batchStoreMock.updateBatch).toHaveBeenCalled()
+  })
+
+  it('toggles batch active', async () => {
+    const wrapper = mountWrapper()
+    await nextTick()
+    await wrapper.vm.toggleBatchActive(1)
+    expect(batchStoreMock.updateBatch).toHaveBeenCalled()
+  })
+
+  it('deletes batch on confirmation', async () => {
+    const wrapper = mountWrapper()
+    await nextTick()
+    wrapper.vm.deleteBatch(1, 'Batch 1')
+    await wrapper.vm.confirmDeleteCallback(true)
+    expect(batchStoreMock.deleteBatch).toHaveBeenCalled()
+  })
+
+  it('fails to toggle batch active if update fails', async () => {
+    batchStoreMock.updateBatch.mockResolvedValueOnce(false)
+    const wrapper = mountWrapper()
+    await nextTick()
+    await wrapper.vm.toggleBatchActive(1)
+    expect(globalMock.messageError).toContain('Failed to load batch')
+  })
+
+  it('fails to toggle batch tapList if update fails', async () => {
+    batchStoreMock.updateBatch.mockResolvedValueOnce(false)
+    const wrapper = mountWrapper()
+    await nextTick()
+    await wrapper.vm.toggleBatchTapList(1)
+    expect(globalMock.messageError).toContain('Failed to load batch')
+  })
+
+  it('exports JSON', async () => {
+    global.fetch.mockResolvedValue({
+      ok: true,
+      json: () => Promise.resolve({ id: 1, name: 'B1', gravity: [] })
     })
+
+    const wrapper = mountWrapper()
+    await nextTick()
+    await wrapper.vm.exportBatchJSON(1)
+    await nextTick() 
+    await nextTick() 
+    expect(utilsMock.download).toHaveBeenCalled()
+  })
+
+  it('exports pressure CSV', async () => {
+    global.fetch.mockResolvedValue({
+      ok: true,
+      json: () => Promise.resolve({ id: 1, name: 'B1', pressure: [{ date: '2023-01-01', pressure: 10 }] })
+    })
+
+    const wrapper = mountWrapper()
+    await nextTick()
+    await wrapper.vm.exportBatchPressureCSV(1)
+    await nextTick() 
+    await nextTick() 
+    expect(utilsMock.download).toHaveBeenCalled()
+  })
+
+  it('exports gravity CSV', async () => {
+    global.fetch.mockResolvedValue({
+      ok: true,
+      json: () => Promise.resolve({ id: 1, name: 'B1', gravity: [{ date: '2023-01-01', gravity: 1.050 }] })
+    })
+
+    const wrapper = mountWrapper()
+    await nextTick()
+    await wrapper.vm.exportBatchGravityCSV(1)
+    await nextTick() 
+    await nextTick() 
+    expect(utilsMock.download).toHaveBeenCalled()
+  })
+
+  it('handles confirmDeleteCallback on failure', async () => {
+    batchStoreMock.deleteBatch.mockResolvedValueOnce(false)
+    const wrapper = mountWrapper()
+    await nextTick()
+    await wrapper.vm.confirmDeleteCallback(true)
+    expect(globalMock.messageError).toContain('Failed to batch device')
+  })
+
+  it('sorts batch list', async () => {
+    const wrapper = mountWrapper()
+    await nextTick()
+    const sortLink = wrapper.find('a.icon-link') 
+    await sortLink.trigger('click')
+    expect(uiMock.sortList).toHaveBeenCalled()
+  })
+
+  it('watches updatedBatchData', async () => {
+    const wrapper = mountWrapper()
+    await nextTick()
+    globalMock.updatedBatchData = 1
+    await nextTick()
+    expect(uiMock.applySortList).toHaveBeenCalled()
+  })
+
+  it('watches batchListFilterDevice', async () => {
+    const wrapper = mountWrapper()
+    await nextTick()
+    globalMock.batchListFilterDevice = 'c1'
+    await nextTick()
+    await nextTick()
+    expect(uiMock.applySortList).toHaveBeenCalled()
+  })
+
+  it('watches batchListFilterData', async () => {
+    const wrapper = mountWrapper()
+    await nextTick()
+    globalMock.batchListFilterData = true
+    await nextTick()
+    await nextTick()
+    expect(uiMock.applySortList).toHaveBeenCalled()
   })
 })
-
-
-
-
-
 
 

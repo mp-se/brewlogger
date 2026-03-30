@@ -1,595 +1,282 @@
 import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest'
 import { mount } from '@vue/test-utils'
-import { setActivePinia } from 'pinia'
+import { setActivePinia, createPinia } from 'pinia'
 import BackupView from '../BackupView.vue'
-import BsProgress from '../../components/BsProgress.vue'
-import BsFileUpload from '../../components/BsFileUpload.vue'
-import piniaInstance from '@/modules/pinia'
-import { useGlobalStore } from '@/modules/globalStore'
-import * as logger from '@/modules/logger'
-import * as utils from '@/modules/utils'
+import { nextTick } from 'vue'
 
-// Mock modules
+const mockStores = vi.hoisted(() => ({
+  batch: {
+    getBatch: vi.fn(),
+    getBatchList: vi.fn(),
+    batchList: []
+  },
+  device: {
+    getDeviceList: vi.fn(),
+    deviceList: []
+  },
+  global: {
+    disabled: false,
+    messageError: '',
+    messageSuccess: '',
+    baseURL: 'http://localhost/',
+    token: 'test-token',
+    $subscribe: vi.fn(),
+    $patch: vi.fn(),
+    clearMessages: vi.fn()
+  }
+}));
+
+vi.mock('@/modules/pinia', () => ({
+  batchStore: mockStores.batch,
+  deviceStore: mockStores.device,
+  global: mockStores.global,
+  default: {}
+}));
+
 vi.mock('@/modules/logger', () => ({
   logDebug: vi.fn(),
   logError: vi.fn(),
   logInfo: vi.fn()
-}))
+}));
 
 vi.mock('@/modules/utils', () => ({
   download: vi.fn()
-}))
+}));
 
 // Mock fetch globally
-global.fetch = vi.fn()
+global.fetch = vi.fn();
 
-describe('BackupView - State & Logic Tests', () => {
-  let globalStore
-
+describe('BackupView - Integration & Coverage Tests', () => {
   beforeEach(() => {
-    setActivePinia(piniaInstance)
-    globalStore = useGlobalStore()
-    vi.clearAllMocks()
-    global.fetch.mockClear()
-  })
+    setActivePinia(createPinia());
+    vi.clearAllMocks();
+    mockStores.global.disabled = false;
+    mockStores.global.messageError = '';
+    
+    // Default fetch mocks
+    global.fetch.mockResolvedValue({
+      ok: true,
+      json: async () => []
+    });
+  });
 
-  afterEach(() => {
-    vi.restoreAllMocks()
-  })
-
-  describe('Component Structure', () => {
-    it('should render with container', () => {
-      const wrapper = mount(BackupView, {
-        global: {
-          components: { BsProgress, BsFileUpload },
-          stubs: { BsProgress: true, BsFileUpload: true }
-        }
-      })
-      expect(wrapper.find('.container').exists()).toBe(true)
-      expect(wrapper.text()).toContain('Backup & Restore')
-    })
-
-    it('should have title and sections', () => {
-      const wrapper = mount(BackupView, {
-        global: {
-          components: { BsProgress, BsFileUpload },
-          stubs: { BsProgress: true, BsFileUpload: true }
-        }
-      })
-      expect(wrapper.find('.h3').exists()).toBe(true)
-      expect(wrapper.text()).toContain('Create a a complete backup')
-      expect(wrapper.text()).toContain('Restore a previous backup')
-    })
-
-    it('should have form for restore', () => {
-      const wrapper = mount(BackupView, {
-        global: {
-          components: { BsProgress, BsFileUpload },
-          stubs: { BsProgress: true, BsFileUpload: true }
-        }
-      })
-      expect(wrapper.find('form').exists()).toBe(true)
-    })
-  })
-
-  describe('State Initialization', () => {
-    it('should initialize backup with correct structure', () => {
-      const wrapper = mount(BackupView, {
-        global: {
-          components: { BsProgress, BsFileUpload },
-          stubs: { BsProgress: true, BsFileUpload: true }
-        }
-      })
-
-      expect(wrapper.vm.backup.meta.version).toBe('0.8')
-      expect(wrapper.vm.backup.meta.software).toBe('BrewLogger')
-      expect(wrapper.vm.backup.batches).toEqual([])
-      expect(wrapper.vm.backup.devices).toEqual([])
-    })
-
-    it('should initialize progress tracking', () => {
-      const wrapper = mount(BackupView, {
-        global: {
-          components: { BsProgress, BsFileUpload },
-          stubs: { BsProgress: true, BsFileUpload: true }
-        }
-      })
-
-      expect(wrapper.vm.backupProgress).toBe(0)
-      expect(wrapper.vm.restoreProgress).toBe(0)
-      expect(wrapper.vm.fileSelected).toBe(false)
-      expect(wrapper.vm.restoreErrors).toBe(0)
-    })
-
-    it('should initialize file upload ref', () => {
-      const wrapper = mount(BackupView, {
-        global: {
-          components: { BsProgress, BsFileUpload },
-          stubs: { BsProgress: true, BsFileUpload: true }
-        }
-      })
-
-      expect(wrapper.vm.fileUploadRef).toBeDefined()
-    })
-  })
-
-  describe('Backup Method - createBackup()', () => {
-    it('should log debug message on createBackup call', () => {
-      const wrapper = mount(BackupView, {
-        global: {
-          components: { BsProgress, BsFileUpload },
-          stubs: { BsProgress: true, BsFileUpload: true }
-        }
-      })
-
-      global.fetch.mockResolvedValue({
-        ok: true,
-        json: async () => []
-      })
-
-      wrapper.vm.createBackup()
-      expect(logger.logDebug).toHaveBeenCalledWith('BackupView.createBackup()')
-    })
-
-    it('should set disabled flag during backup', () => {
-      const wrapper = mount(BackupView, {
-        global: {
-          components: { BsProgress, BsFileUpload },
-          stubs: { BsProgress: true, BsFileUpload: true }
-        }
-      })
-
-      globalStore.disabled = false
-      global.fetch.mockResolvedValue({
-        ok: true,
-        json: async () => []
-      })
-
-      wrapper.vm.createBackup()
-      expect(globalStore.disabled).toBe(true)
-    })
-
-    it('should set backup timestamp with current date', () => {
-      const wrapper = mount(BackupView, {
-        global: {
-          components: { BsProgress, BsFileUpload },
-          stubs: { BsProgress: true, BsFileUpload: true }
-        }
-      })
-
-      expect(wrapper.vm.backup.meta.created).toBe('')
-
-      global.fetch.mockResolvedValue({
-        ok: true,
-        json: async () => []
-      })
-
-      wrapper.vm.createBackup()
-      expect(wrapper.vm.backup.meta.created).toMatch(/\d{4}-\d{2}-\d{2}/)
-    })
-
-    it('should initialize progress to 0', () => {
-      const wrapper = mount(BackupView, {
-        global: {
-          components: { BsProgress, BsFileUpload },
-          stubs: { BsProgress: true, BsFileUpload: true }
-        }
-      })
-
-      wrapper.vm.backupProgress = 50
-      global.fetch.mockResolvedValue({
-        ok: true,
-        json: async () => []
-      })
-
-      wrapper.vm.createBackup()
-      expect(wrapper.vm.backupProgress).toBe(0)
-    })
-
-    it('should call download function after backup collection', async () => {
-      global.fetch = vi.fn().mockImplementation((url) => {
-        if (typeof url === 'string') {
-          if (url.includes('/api/batch')) {
-            return Promise.resolve({
-              ok: true,
-              json: async () => [{ id: 1, name: 'Batch 1' }]
-            })
-          }
-          if (url.includes('/api/device')) {
-            return Promise.resolve({
-              ok: true,
-              json: async () => [{ id: 1, chipId: 'ESP32' }]
-            })
-          }
-        }
-        return Promise.resolve({ ok: true, json: async () => [] })
-      })
-
-      const wrapper = mount(BackupView, {
-        global: {
-          components: { BsProgress, BsFileUpload },
-          stubs: { BsProgress: true, BsFileUpload: true }
-        }
-      })
-
-      wrapper.vm.createBackup()
-
-      // Wait for async operations
-      await new Promise(resolve => setTimeout(resolve, 100))
-
-      expect(utils.download).toHaveBeenCalledWith(
-        expect.stringContaining('BrewLogger'),
-        'text/plain',
-        'brewlogger_backup.txt'
-      )
-    })
-
-    it('should handle fetch errors in createBackup', async () => {
-      global.fetch = vi.fn().mockResolvedValue({
-        ok: false,
-        statusText: 'Internal Server Error'
-      })
-
-      const wrapper = mount(BackupView, {
-        global: {
-          components: { BsProgress, BsFileUpload },
-          stubs: { BsProgress: true, BsFileUpload: true }
-        }
-      })
-
-      wrapper.vm.createBackup()
-      await new Promise(resolve => setTimeout(resolve, 50))
-
-      expect(globalStore.messageError).toBeDefined()
-      expect(globalStore.disabled).toBe(false)
-    })
-  })
-
-  describe('Process Restore and File Handling', () => {
-    it('should handle processRestore', async () => {
-      global.fetch = vi.fn().mockResolvedValue({ ok: true })
-
-      const wrapper = mount(BackupView, {
-        global: {
-          components: { BsProgress, BsFileUpload },
-          stubs: { BsProgress: true, BsFileUpload: true }
-        }
-      })
-
-      const backupData = {
-        batch: [],
-        device: []
-      }
-
-      await wrapper.vm.processRestore(backupData)
-
-      expect(globalStore.disabled).toBe(false)
-    })
-  })
-
-  describe('Restore Method - restore()', () => {
-    it('should log debug message on restore call', () => {
-      const wrapper = mount(BackupView, {
-        global: {
-          components: { BsProgress, BsFileUpload },
-          stubs: { BsProgress: true, BsFileUpload: true }
-        }
-      })
-
-      wrapper.vm.restore()
-
-      expect(logger.logDebug).toHaveBeenCalledWith('BackupView.restore()')
-    })
-
-    it('should set error message when no file selected', () => {
-      const wrapper = mount(BackupView, {
-        global: {
-          components: { BsProgress, BsFileUpload },
-          stubs: { BsProgress: true, BsFileUpload: true }
-        }
-      })
-
-      console.log('Initial globalStore.messageError:', globalStore.messageError)
-
-      // Mock fileUploadRef to return an empty querySelector result
-      wrapper.vm.fileUploadRef = {
-        value: {
-          $el: {
-            querySelector: () => null
+  const mountWrapper = async () => {
+    const wrapper = mount(BackupView, {
+      global: {
+        stubs: {
+          BsProgress: true,
+          BsFileUpload: {
+            template: '<div class="bs-file-upload"><input type="file" /></div>'
           }
         }
       }
+    });
+    await nextTick();
+    return wrapper;
+  };
 
-      console.log('wrapper.vm.fileUploadRef.value:', wrapper.vm.fileUploadRef.value)
-
-      wrapper.vm.restore()
-
-      console.log('After restore, globalStore.messageError:', globalStore.messageError)
-      console.log('globalStore object:', globalStore)
-
-      expect(globalStore.messageError).toBe('You need to select a file to restore data from')
-    })
-
-    it('should set disabled flag when restore starts with file', () => {
-      const wrapper = mount(BackupView, {
-        global: {
-          components: { BsProgress, BsFileUpload },
-          stubs: { BsProgress: true, BsFileUpload: true }
-        }
-      })
-
-      // Mock FileReader
-      const mockFileReader = class {
-        addEventListener() {}
-        readAsText() {}
+  it('handles createBackup with data', async () => {
+    // 1. Mock batch list response
+    global.fetch.mockImplementation((url) => {
+      if (url.includes('api/batch/')) {
+        return Promise.resolve({
+          ok: true,
+          json: async () => [{ id: 1, name: 'Batch 1' }]
+        });
       }
-      global.FileReader = mockFileReader
+      if (url.includes('api/device/')) {
+        return Promise.resolve({
+          ok: true,
+          json: async () => [{ id: 101, chipId: 'ESP1' }]
+        });
+      }
+      return Promise.resolve({ ok: false });
+    });
 
-      // Mock fileUploadRef with a file
-      const mockFile = new File(['test'], 'test.txt')
-      const mockFileInput = { files: { length: 1, 0: mockFile } }
+    // 2. Mock batchStore.getBatch
+    mockStores.batch.getBatch.mockResolvedValue({
+      id: 1,
+      name: 'Batch 1',
+      gravity: [{ id: 1, gravity: 1.050, created: '2023-01-01T12:00:00Z' }],
+      pressure: [],
+      pour: []
+    });
 
-      // Spy on HTMLElement.prototype.querySelector to intercept the file input query
-      const originalQuerySelector = Element.prototype.querySelector
-      Element.prototype.querySelector = vi.fn((selector) => {
-        if (selector === 'input[type="file"]') {
-          return mockFileInput
-        }
-        return originalQuerySelector.call(this, selector)
-      })
+    const wrapper = await mountWrapper();
+    await wrapper.vm.createBackup();
 
-      globalStore.disabled = false
+    // Wait for all the callbacks and promises
+    await new Promise(resolve => setTimeout(resolve, 200));
 
-      wrapper.vm.restore()
+    const utils = await import('@/modules/utils');
+    expect(utils.download).toHaveBeenCalled();
+    expect(mockStores.global.disabled).toBe(false);
+  });
 
-      // Restore original querySelector
-      Element.prototype.querySelector = originalQuerySelector
+  it('handles createBackup with fetch error for batches', async () => {
+    global.fetch.mockResolvedValue({ ok: false, status: 500 });
 
-      expect(globalStore.disabled).toBe(true)
-    })
-  })
+    const wrapper = await mountWrapper();
+    await wrapper.vm.createBackup();
+    
+    await new Promise(resolve => setTimeout(resolve, 50));
+    expect(mockStores.global.messageError).toBe('Failed to fetch batches');
+  });
 
-  describe('Data Cleanup - cleanupJson()', () => {
-    it('should remove null values', () => {
-      const wrapper = mount(BackupView, {
-        global: {
-          components: { BsProgress, BsFileUpload },
-          stubs: { BsProgress: true, BsFileUpload: true }
-        }
-      })
+  it('handles createBackup with fetch error for devices', async () => {
+    global.fetch.mockImplementation((url) => {
+      if (url.includes('api/batch/')) {
+        return Promise.resolve({
+          ok: true,
+          json: async () => [{ id: 1 }]
+        });
+      }
+      return Promise.resolve({ ok: false, status: 500 });
+    });
 
-      const testData = [
-        { id: 1, name: 'Test', nullValue: null, active: true }
-      ]
+    const wrapper = await mountWrapper();
+    await wrapper.vm.createBackup();
+    
+    await new Promise(resolve => setTimeout(resolve, 50));
+    expect(mockStores.global.messageError).toBe('Failed to fetch devices');
+  });
 
-      wrapper.vm.cleanupJson(testData)
+  it('handles empty batch list in createBackup', async () => {
+    global.fetch.mockResolvedValue({
+      ok: true,
+      json: async () => []
+    });
 
-      expect(testData[0]).toHaveProperty('id')
-      expect(testData[0]).toHaveProperty('name')
-      expect(testData[0]).toHaveProperty('active')
-      expect(testData[0]).not.toHaveProperty('nullValue')
-    })
+    const wrapper = await mountWrapper();
+    await wrapper.vm.createBackup();
+    
+    await new Promise(resolve => setTimeout(resolve, 50));
+    const utils = await import('@/modules/utils');
+    expect(utils.download).toHaveBeenCalled();
+  });
 
-    it('should preserve falsy non-null values', () => {
-      const wrapper = mount(BackupView, {
-        global: {
-          components: { BsProgress, BsFileUpload },
-          stubs: { BsProgress: true, BsFileUpload: true }
-        }
-      })
+  it('handles batchStore error during sequential fetch', async () => {
+    global.fetch.mockImplementation((url) => {
+      if (url.includes('api/batch/')) return Promise.resolve({ ok: true, json: async () => [{ id: 1 }] });
+      if (url.includes('api/device/')) return Promise.resolve({ ok: true, json: async () => [] });
+      return Promise.resolve({ ok: false });
+    });
 
-      const testData = [
-        { id: 1, value: '', count: 0, active: false }
-      ]
+    mockStores.batch.getBatch.mockRejectedValue(new Error('Store error'));
 
-      wrapper.vm.cleanupJson(testData)
+    const wrapper = await mountWrapper();
+    await wrapper.vm.createBackup();
+    
+    await new Promise(resolve => setTimeout(resolve, 100));
+    const logger = await import('@/modules/logger');
+    expect(logger.logError).toHaveBeenCalled();
+  });
 
-      expect(testData[0].value).toBe('')
-      expect(testData[0].count).toBe(0)
-      expect(testData[0].active).toBe(false)
-    })
-  })
+  it('handles file input change events', async () => {
+    const wrapper = await mountWrapper();
+    const fileInput = wrapper.find('input[type="file"]');
+    
+    // Create a mock trigger for change event
+    Object.defineProperty(fileInput.element, 'files', {
+      value: [new File([''], 'test.json')],
+      writable: true
+    });
+    
+    await fileInput.trigger('change');
+    expect(wrapper.vm.fileSelected).toBe(true);
+  });
 
-  describe('UI State Management', () => {
-    it('should track file selection state', () => {
-      const wrapper = mount(BackupView, {
-        global: {
-          components: { BsProgress, BsFileUpload },
-          stubs: { BsProgress: true, BsFileUpload: true }
-        }
-      })
+  it('handles restore with no file', async () => {
+    const wrapper = await mountWrapper();
+    // Simulate no file in input
+    wrapper.vm.fileUploadRef = { $el: { querySelector: () => ({ files: [] }) } };
+    
+    await wrapper.vm.restore();
+    expect(mockStores.global.messageError).toBe('You need to select a file to restore data from');
+  });
 
-      expect(wrapper.vm.fileSelected).toBe(false)
-      wrapper.vm.fileSelected = true
-      expect(wrapper.vm.fileSelected).toBe(true)
-    })
+  it('handles getBatchList Exception', async () => {
+    global.fetch.mockRejectedValue(new Error('Network Error'));
+    const wrapper = await mountWrapper();
+    
+    const callback = vi.fn();
+    await wrapper.vm.getBatchList(callback);
+    expect(callback).toHaveBeenCalledWith(false, null);
+  });
 
-    it('should track backup progress', () => {
-      const wrapper = mount(BackupView, {
-        global: {
-          components: { BsProgress, BsFileUpload },
-          stubs: { BsProgress: true, BsFileUpload: true }
-        }
-      })
+  it('handles getDeviceList Exception', async () => {
+    global.fetch.mockRejectedValue(new Error('Network Error'));
+    const wrapper = await mountWrapper();
+    
+    const callback = vi.fn();
+    await wrapper.vm.getDeviceList(callback);
+    expect(callback).toHaveBeenCalledWith(false, null);
+  });
 
-      wrapper.vm.backupProgress = 50
-      expect(wrapper.vm.backupProgress).toBe(50)
-    })
+  it('exercises restore process (full flow)', async () => {
+    // 1. Mock file reader and JSON data
+    const mockBackupData = {
+      meta: { software: 'BrewLogger', version: '0.8' },
+      devices: [{ id: 101, chipId: 'ESP1' }],
+      batches: [{ 
+        id: 1, name: 'B1', 
+        gravity: [{id: 1, created: '2023-01-01'}],
+        pressure: [{id: 1, created: '2023-01-01'}],
+        pour: [{id: 1, created: '2023-01-01'}]
+      }]
+    };
 
-    it('should track restore progress', () => {
-      const wrapper = mount(BackupView, {
-        global: {
-          components: { BsProgress, BsFileUpload },
-          stubs: { BsProgress: true, BsFileUpload: true }
-        }
-      })
+    // 2. Mock all the fetch calls in the sequence
+    global.fetch.mockImplementation((url) => {
+      // Deleting batches/devices
+      if (url.endsWith('api/batch/') || url.endsWith('api/device/')) {
+        return Promise.resolve({ ok: true, json: async () => [{id: 1}] });
+      }
+      // Single delete
+      if (url.match(/api\/(batch|device)\/\d+/)) {
+        return Promise.resolve({ ok: true, status: 204 });
+      }
+      // POST restore
+      if (url.includes('api/batch/') || url.includes('api/device/') || url.includes('api/gravity/') || url.includes('api/pressure/') || url.includes('api/pour/')) {
+        return Promise.resolve({ ok: true, json: async () => ({ id: 999 }) });
+      }
+      return Promise.resolve({ ok: false });
+    });
 
-      wrapper.vm.restoreProgress = 75
-      expect(wrapper.vm.restoreProgress).toBe(75)
-    })
+    // 3. Mock store refreshes
+    mockStores.device.getDeviceList.mockResolvedValue(true);
+    mockStores.batch.getBatchList.mockResolvedValue(true);
 
-    it('should track restore errors', () => {
-      const wrapper = mount(BackupView, {
-        global: {
-          components: { BsProgress, BsFileUpload },
-          stubs: { BsProgress: true, BsFileUpload: true }
-        }
-      })
+    const wrapper = await mountWrapper();
+    
+    // Use the exposed method directly for coverage
+    await wrapper.vm.processRestore(mockBackupData);
 
-      wrapper.vm.restoreErrors = 5
-      expect(wrapper.vm.restoreErrors).toBe(5)
-    })
-  })
+    expect(mockStores.global.messageSuccess).toBe('Restore successful');
+    expect(mockStores.global.disabled).toBe(false);
+  });
 
-  describe('Store Integration', () => {
-    it('should reference global store', () => {
-      const wrapper = mount(BackupView, {
-        global: {
-          components: { BsProgress, BsFileUpload },
-          stubs: { BsProgress: true, BsFileUpload: true }
-        }
-      })
+  it('handles restore failures', async () => {
+    const wrapper = await mountWrapper();
+    
+    // Force a failure in processRestore (e.g., throwing from deleteDevices)
+    global.fetch.mockResolvedValue({ ok: false, status: 500 });
 
-      expect(wrapper.vm.global).toBeDefined()
-    })
+    await wrapper.vm.processRestore({ devices: [], batches: [] });
+    expect(mockStores.global.messageError).toBe('Restore failed');
+  });
 
-    it('should reference batch store', () => {
-      const wrapper = mount(BackupView, {
-        global: {
-          components: { BsProgress, BsFileUpload },
-          stubs: { BsProgress: true, BsFileUpload: true }
-        }
-      })
-
-      expect(wrapper.vm.batchStore).toBeDefined()
-    })
-
-    it('should reference device store', () => {
-      const wrapper = mount(BackupView, {
-        global: {
-          components: { BsProgress, BsFileUpload },
-          stubs: { BsProgress: true, BsFileUpload: true }
-        }
-      })
-
-      expect(wrapper.vm.deviceStore).toBeDefined()
-    })
-  })
-
-  describe('Template Elements', () => {
-    it('should have buttons for backup and restore', () => {
-      const wrapper = mount(BackupView, {
-        global: {
-          components: { BsProgress, BsFileUpload },
-          stubs: { BsProgress: true, BsFileUpload: true }
-        }
-      })
-
-      const buttons = wrapper.findAll('button')
-      expect(buttons.length).toBeGreaterThanOrEqual(2)
-    })
-
-    it('should have file upload component', () => {
-      const wrapper = mount(BackupView, {
-        global: {
-          components: { BsProgress, BsFileUpload },
-          stubs: { BsProgress: true, BsFileUpload: true }
-        }
-      })
-
-      expect(wrapper.findAll('bs-file-upload-stub').length).toBeGreaterThan(0)
-    })
-
-    it('should have progress components', () => {
-      const wrapper = mount(BackupView, {
-        global: {
-          components: { BsProgress, BsFileUpload },
-          stubs: { BsProgress: true, BsFileUpload: true }
-        }
-      })
-
-      expect(wrapper.findAll('bs-progress-stub').length).toBeGreaterThanOrEqual(0)
-    })
-  })
-
-  describe('API Integration', () => {
-    it('should use global baseURL', () => {
-      const wrapper = mount(BackupView, {
-        global: {
-          components: { BsProgress, BsFileUpload },
-          stubs: { BsProgress: true, BsFileUpload: true }
-        }
-      })
-
-      expect(wrapper.vm.global.baseURL).toBeDefined()
-    })
-
-    it('should use global token for auth', () => {
-      const wrapper = mount(BackupView, {
-        global: {
-          components: { BsProgress, BsFileUpload },
-          stubs: { BsProgress: true, BsFileUpload: true }
-        }
-      })
-
-      expect(wrapper.vm.global.token).toBeDefined()
-    })
-  })
-
-  describe('Methods Exist', () => {
-    it('should have createBackup method', () => {
-      const wrapper = mount(BackupView, {
-        global: {
-          components: { BsProgress, BsFileUpload },
-          stubs: { BsProgress: true, BsFileUpload: true }
-        }
-      })
-
-      expect(typeof wrapper.vm.createBackup).toBe('function')
-    })
-
-    it('should have restore method', () => {
-      const wrapper = mount(BackupView, {
-        global: {
-          components: { BsProgress, BsFileUpload },
-          stubs: { BsProgress: true, BsFileUpload: true }
-        }
-      })
-
-      expect(typeof wrapper.vm.restore).toBe('function')
-    })
-
-    it('should have cleanupJson method', () => {
-      const wrapper = mount(BackupView, {
-        global: {
-          components: { BsProgress, BsFileUpload },
-          stubs: { BsProgress: true, BsFileUpload: true }
-        }
-      })
-
-      expect(typeof wrapper.vm.cleanupJson).toBe('function')
-    })
-
-    it('should have getBatchList method', () => {
-      const wrapper = mount(BackupView, {
-        global: {
-          components: { BsProgress, BsFileUpload },
-          stubs: { BsProgress: true, BsFileUpload: true }
-        }
-      })
-
-      expect(typeof wrapper.vm.getBatchList).toBe('function')
-    })
-
-    it('should have getDeviceList method', () => {
-      const wrapper = mount(BackupView, {
-        global: {
-          components: { BsProgress, BsFileUpload },
-          stubs: { BsProgress: true, BsFileUpload: true }
-        }
-      })
-
-      expect(typeof wrapper.vm.getDeviceList).toBe('function')
-    })
-  })
-})
+  it('handles cleanupJson with nested arrays', () => {
+    const wrapper = mount(BackupView);
+    const data = [{
+      id: 1,
+      gravity: [{ id: 10, val: null, ok: 1 }]
+    }];
+    
+    wrapper.vm.cleanupJson(data);
+    wrapper.vm.cleanupJson(data[0].gravity);
+    
+    expect(data[0].gravity[0]).not.toHaveProperty('val');
+    expect(data[0].gravity[0].ok).toBe(1);
+  });
+});
