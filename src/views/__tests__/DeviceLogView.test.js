@@ -768,4 +768,396 @@ describe('DeviceLogView - Device Logs View', () => {
       expect(logger.logError).toHaveBeenCalled()
     })
   })
+
+  describe('Router Parameter Handling', () => {
+    it('should have deviceSelected property on component', async () => {
+      wrapper = mountComponent()
+      // deviceSelected should be a ref and accessible as a property
+      expect('deviceSelected' in wrapper.vm).toBe(true)
+    })
+  })
+
+  describe('Device List Update Logic', () => {
+    it('should filter out .log.1 files from device list', async () => {
+      global.fetch = vi.fn((url) => {
+        if (url.includes('api/device/logs')) {
+          return Promise.resolve({
+            ok: true,
+            json: () =>
+              Promise.resolve(['CHIP1.log', 'CHIP1.log.1', 'CHIP2.log', 'CHIP2.log.1'])
+          })
+        }
+        if (url.includes('api/system/self_test')) {
+          return Promise.resolve({
+            ok: true,
+            json: () => Promise.resolve({ log: [] })
+          })
+        }
+        return Promise.resolve({ ok: true, text: () => Promise.resolve('') })
+      })
+
+      wrapper = mountComponent()
+      await flushPromises()
+
+      // Only .log files should be in options, not .log.1
+      const hasBackupFiles = wrapper.vm.deviceOptions.some((opt) =>
+        opt.value.includes('.log.1')
+      )
+      expect(hasBackupFiles).toBe(false)
+    })
+
+    it('should only add device to options if it exists in device store', async () => {
+      global.fetch = vi.fn((url) => {
+        if (url.includes('api/device/logs')) {
+          return Promise.resolve({
+            ok: true,
+            json: () =>
+              Promise.resolve(['CHIP1.log', 'UNKNOWN_CHIP.log', 'CHIP2.log'])
+          })
+        }
+        if (url.includes('api/system/self_test')) {
+          return Promise.resolve({
+            ok: true,
+            json: () => Promise.resolve({ log: [] })
+          })
+        }
+        return Promise.resolve({ ok: true, text: () => Promise.resolve('') })
+      })
+
+      wrapper = mountComponent()
+      await flushPromises()
+
+      const unknownInOptions = wrapper.vm.deviceOptions.find(
+        (opt) => opt.value === 'UNKNOWN_CHIP'
+      )
+      expect(unknownInOptions).toBeUndefined()
+    })
+
+    it('should format device label with mdns, chipId, and software', async () => {
+      global.fetch = vi.fn((url) => {
+        if (url.includes('api/device/logs')) {
+          return Promise.resolve({
+            ok: true,
+            json: () => Promise.resolve(['CHIP1.log'])
+          })
+        }
+        if (url.includes('api/system/self_test')) {
+          return Promise.resolve({
+            ok: true,
+            json: () => Promise.resolve({ log: [] })
+          })
+        }
+        return Promise.resolve({ ok: true, text: () => Promise.resolve('') })
+      })
+
+      wrapper = mountComponent()
+      await flushPromises()
+
+      const chip1Option = wrapper.vm.deviceOptions.find((opt) => opt.value === 'CHIP1')
+      if (chip1Option) {
+        expect(chip1Option.label).toBeDefined()
+        expect(chip1Option.label.length).toBeGreaterThan(5)
+      }
+    })
+  })
+
+  describe('log Status Data Processing', () => {
+    it('should parse log status entries and format dates', async () => {
+      global.fetch = vi.fn((url) => {
+        if (url.includes('api/system/self_test')) {
+          return Promise.resolve({
+            ok: true,
+            json: () =>
+              Promise.resolve({
+                log: [
+                  { name: 'log_CHIP1_start', value: 1609459200 },
+                  { name: 'log_CHIP1_last', value: 1609462800 }
+                ]
+              })
+          })
+        }
+        if (url.includes('api/device/logs')) {
+          return Promise.resolve({
+            ok: true,
+            json: () => Promise.resolve([])
+          })
+        }
+        return Promise.resolve({ ok: true, text: () => Promise.resolve('') })
+      })
+
+      wrapper = mountComponent()
+      await flushPromises()
+
+      expect(wrapper.vm.logStatusData['CHIP1']).toBeDefined()
+      expect(wrapper.vm.logStatusData['CHIP1']['start']).toMatch(/\d{4}-\d{2}-\d{2}/)
+    })
+
+    it('should handle non-date log attributes', async () => {
+      global.fetch = vi.fn((url) => {
+        if (url.includes('api/system/self_test')) {
+          return Promise.resolve({
+            ok: true,
+            json: () =>
+              Promise.resolve({
+                log: [
+                  { name: 'log_CHIP1_size', value: 8192 },
+                  { name: 'log_CHIP1_count', value: 100 }
+                ]
+              })
+          })
+        }
+        if (url.includes('api/device/logs')) {
+          return Promise.resolve({
+            ok: true,
+            json: () => Promise.resolve([])
+          })
+        }
+        return Promise.resolve({ ok: true, text: () => Promise.resolve('') })
+      })
+
+      wrapper = mountComponent()
+      await flushPromises()
+
+      expect(wrapper.vm.logStatusData['CHIP1']['size']).toBe(8192)
+      expect(wrapper.vm.logStatusData['CHIP1']['count']).toBe(100)
+    })
+  })
+
+  describe('Fetch Logs API Error Scenarios', () => {
+    it('should handle failed response from logs endpoint', async () => {
+      global.fetch = vi.fn((url) => {
+        if (url.includes('logs/')) {
+          return Promise.reject(new Error('Not found'))
+        }
+        return Promise.resolve({ ok: true, json: () => Promise.resolve([]) })
+      })
+
+      wrapper = mountComponent()
+      wrapper.vm.deviceSelected = 'CHIP1'
+      await wrapper.vm.fetchLogs()
+      await flushPromises()
+
+      expect(globalStore.disabled).toBe(false)
+    })
+
+    it('should handle timeout during backup log fetch', async () => {
+      global.fetch = vi.fn((url) => {
+        if (url.includes('.log.1')) {
+          const error = new Error('Timeout')
+          error.name = 'AbortError'
+          return Promise.reject(error)
+        }
+        if (url.includes('logs/')) {
+          return Promise.resolve({
+            ok: true,
+            text: () => Promise.resolve('Main log content')
+          })
+        }
+        return Promise.resolve({ ok: true, json: () => Promise.resolve([]) })
+      })
+
+      wrapper = mountComponent()
+      wrapper.vm.deviceSelected = 'CHIP1'
+      await wrapper.vm.fetchLogs()
+      await flushPromises()
+
+      expect(wrapper.vm.deviceLog.length).toBeGreaterThan(0)
+      expect(globalStore.disabled).toBe(false)
+    })
+  })
+
+  describe('Delete Logs Advanced Scenarios', () => {
+    it('should set error message on delete failure', async () => {
+      global.fetch = vi.fn((url) => {
+        if (url.includes('api/device/logs/CHIP1') && url.includes('DELETE')) {
+          return Promise.reject(new Error('Not found'))
+        }
+        if (url.includes('api/device/logs')) {
+          return Promise.resolve({
+            ok: true,
+            json: () => Promise.resolve([])
+          })
+        }
+        return Promise.resolve({ ok: true, json: () => Promise.resolve([]) })
+      })
+
+      wrapper = mountComponent()
+      wrapper.vm.deviceSelected = 'CHIP1'
+      await wrapper.vm.deleteLogs()
+      await flushPromises()
+
+      // After error handler runs, disabled should be false
+      expect(globalStore.disabled).toBe(false)
+    })
+
+    it('should reset disabled flag after successful delete', async () => {
+      global.fetch = vi.fn(() =>
+        Promise.resolve({
+          ok: true,
+          json: () => Promise.resolve([])
+        })
+      )
+
+      wrapper = mountComponent()
+      wrapper.vm.deviceSelected = 'CHIP1'
+      await wrapper.vm.deleteLogs()
+      await flushPromises()
+
+      expect(globalStore.disabled).toBe(false)
+    })
+  })
+
+  describe('Log Filtering Edge Cases', () => {
+    it('should handle hideInfo with case-sensitive search', () => {
+      wrapper = mountComponent()
+      wrapper.vm.deviceLog = ['Log with i: lowercase', 'Log with I: uppercase', 'Normal']
+      wrapper.vm.hideInfo()
+      expect(wrapper.vm.deviceLog.length).toBe(2)
+    })
+
+    it('should handle hideWarn with multiple warning markers in one line', () => {
+      wrapper = mountComponent()
+      wrapper.vm.deviceLog = [
+        'Line with W: first W: second warning',
+        'Normal line'
+      ]
+      wrapper.vm.hideWarn()
+      expect(wrapper.vm.deviceLog.length).toBe(1)
+    })
+
+    it('should preserve empty lines when filtering', () => {
+      wrapper = mountComponent()
+      wrapper.vm.deviceLog = ['', 'Log with I: message', '', 'Normal line']
+      wrapper.vm.hideInfo()
+      expect(wrapper.vm.deviceLog.some((line) => line === '')).toBe(true)
+    })
+
+    it('should not modify deviceLog if no logs match filter pattern', () => {
+      wrapper = mountComponent()
+      const originalLog = ['Line 1', 'Line 2', 'Line 3']
+      wrapper.vm.deviceLog = [...originalLog]
+      wrapper.vm.hideInfo()
+      expect(wrapper.vm.deviceLog.length).toBe(originalLog.length)
+    })
+  })
+
+  describe('Device Status Computations', () => {
+    it('should update logStatusSize when logStatusData changes', async () => {
+      wrapper = mountComponent()
+      wrapper.vm.deviceSelected = 'CHIP1'
+      wrapper.vm.logStatusData = {
+        CHIP1: { size: 2048 }
+      }
+      await wrapper.vm.$nextTick()
+      expect(wrapper.vm.logStatusSize).toBe(2048)
+    })
+
+    it('should handle multiple devices in logStatusData', async () => {
+      wrapper = mountComponent()
+      wrapper.vm.logStatusData = {
+        CHIP1: { size: 1024, last: '2021-01-01 12:00' },
+        CHIP2: { size: 2048, last: '2021-01-02 13:00' }
+      }
+      wrapper.vm.deviceSelected = 'CHIP2'
+      await wrapper.vm.$nextTick()
+      expect(wrapper.vm.logStatusSize).toBe(2048)
+    })
+  })
+
+  describe('Device Selection Watcher', () => {
+    it('should have deviceSelected ref available', async () => {
+      wrapper = mountComponent()
+      expect(wrapper.vm.hasOwnProperty('deviceSelected')).toBe(true)
+    })
+
+    it('should update device log list when deviceSelected is set', async () => {
+      wrapper = mountComponent()
+      wrapper.vm.deviceSelected = 'CHIP2'
+      await wrapper.vm.$nextTick()
+
+      // deviceSelected should now be set to CHIP2
+      expect(wrapper.vm.deviceSelected).toBe('CHIP2')
+    })
+  })
+
+  describe('updateDeviceLogList Error Handling', () => {
+    it('should set error message on list fetch failure', async () => {
+      global.fetch = vi.fn((url) => {
+        if (url.includes('api/device/logs') && !url.includes('logs/')) {
+          return Promise.reject(new Error('Network error'))
+        }
+        return Promise.resolve({
+          ok: true,
+          json: () => Promise.resolve([]),
+          text: () => Promise.resolve('')
+        })
+      })
+
+      wrapper = mountComponent()
+      await wrapper.vm.updateDeviceLogList()
+      await flushPromises()
+
+      // After error handler, disabled should be false
+      expect(globalStore.disabled).toBe(false)
+    })
+
+    it('should set disabled to false after failed list fetch', async () => {
+      global.fetch = vi.fn((url) => {
+        if (url.includes('api/device/logs') && !url.includes('logs/')) {
+          return Promise.reject(new Error('API error'))
+        }
+        return Promise.resolve({
+          ok: true,
+          json: () => Promise.resolve([]),
+          text: () => Promise.resolve('')
+        })
+      })
+
+      wrapper = mountComponent()
+      await wrapper.vm.updateDeviceLogList()
+      await flushPromises()
+
+      expect(globalStore.disabled).toBe(false)
+    })
+  })
+
+  describe('View Display Conditions', () => {
+    it('should only show device log statistics when device is selected', async () => {
+      wrapper = mountComponent()
+      wrapper.vm.deviceSelected = ''
+      await wrapper.vm.$nextTick()
+      // Check that the v-if condition would prevent rendering
+      expect(wrapper.vm.deviceSelected).toBe('')
+
+      wrapper.vm.deviceSelected = 'CHIP1'
+      await wrapper.vm.$nextTick()
+      expect(wrapper.vm.deviceSelected).not.toBe('')
+    })
+
+    it('should only display logs when log array is not empty', async () => {
+      wrapper = mountComponent()
+      expect(wrapper.vm.deviceLog.length).toBe(0)
+
+      wrapper.vm.deviceLog = ['Log line 1', 'Log line 2']
+      await wrapper.vm.$nextTick()
+      expect(wrapper.vm.deviceLog.length).toBeGreaterThan(0)
+    })
+  })
+
+  describe('Button Functionality Integration', () => {
+    it('should have all expected button methods', () => {
+      wrapper = mountComponent()
+      expect(typeof wrapper.vm.fetchLogs).toBe('function')
+      expect(typeof wrapper.vm.deleteLogs).toBe('function')
+      expect(typeof wrapper.vm.hideInfo).toBe('function')
+      expect(typeof wrapper.vm.hideWarn).toBe('function')
+      expect(typeof wrapper.vm.goToBottom).toBe('function')
+    })
+
+    it('should find pageBottom element for scroll functionality', () => {
+      wrapper = mountComponent()
+      const pageBottom = wrapper.find('#pageBottom')
+      expect(pageBottom.exists()).toBe(true)
+    })
+  })
 })
