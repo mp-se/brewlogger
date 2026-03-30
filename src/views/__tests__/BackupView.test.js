@@ -187,16 +187,29 @@ describe('BackupView - State & Logic Tests', () => {
     })
 
     it('should call download function after backup collection', async () => {
+      global.fetch = vi.fn().mockImplementation((url) => {
+        if (typeof url === 'string') {
+          if (url.includes('/api/batch')) {
+            return Promise.resolve({
+              ok: true,
+              json: async () => [{ id: 1, name: 'Batch 1' }]
+            })
+          }
+          if (url.includes('/api/device')) {
+            return Promise.resolve({
+              ok: true,
+              json: async () => [{ id: 1, chipId: 'ESP32' }]
+            })
+          }
+        }
+        return Promise.resolve({ ok: true, json: async () => [] })
+      })
+
       const wrapper = mount(BackupView, {
         global: {
           components: { BsProgress, BsFileUpload },
           stubs: { BsProgress: true, BsFileUpload: true }
         }
-      })
-
-      global.fetch.mockResolvedValue({
-        ok: true,
-        json: async () => []
       })
 
       wrapper.vm.createBackup()
@@ -209,6 +222,48 @@ describe('BackupView - State & Logic Tests', () => {
         'text/plain',
         'brewlogger_backup.txt'
       )
+    })
+
+    it('should handle fetch errors in createBackup', async () => {
+      global.fetch = vi.fn().mockResolvedValue({
+        ok: false,
+        statusText: 'Internal Server Error'
+      })
+
+      const wrapper = mount(BackupView, {
+        global: {
+          components: { BsProgress, BsFileUpload },
+          stubs: { BsProgress: true, BsFileUpload: true }
+        }
+      })
+
+      wrapper.vm.createBackup()
+      await new Promise(resolve => setTimeout(resolve, 50))
+
+      expect(globalStore.messageError).toBeDefined()
+      expect(globalStore.disabled).toBe(false)
+    })
+  })
+
+  describe('Process Restore and File Handling', () => {
+    it('should handle processRestore', async () => {
+      global.fetch = vi.fn().mockResolvedValue({ ok: true })
+
+      const wrapper = mount(BackupView, {
+        global: {
+          components: { BsProgress, BsFileUpload },
+          stubs: { BsProgress: true, BsFileUpload: true }
+        }
+      })
+
+      const backupData = {
+        batch: [],
+        device: []
+      }
+
+      await wrapper.vm.processRestore(backupData)
+
+      expect(globalStore.disabled).toBe(false)
     })
   })
 
