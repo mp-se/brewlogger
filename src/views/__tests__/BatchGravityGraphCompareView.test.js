@@ -7,6 +7,7 @@ import { nextTick } from 'vue';
 const mockStores = vi.hoisted(() => ({
   batch: {
     getBatch: vi.fn(),
+    batchList: [],
   },
   gravity: {
     getGravityListForBatch: vi.fn(),
@@ -54,15 +55,14 @@ vi.mock('@/modules/router', () => ({
 }));
 
 vi.mock('@/modules/logger', () => ({
-  logDebug: vi.fn((...args) => console.log('DEBUG:', ...args)),
-  logError: vi.fn((...args) => console.log('ERROR:', ...args))
+  logDebug: vi.fn(),
+  logError: vi.fn()
 }));
 
 vi.mock('@/modules/utils', () => ({
   gravityToPlato: vi.fn((g) => (g - 1) * 250),
   tempToF: vi.fn((c) => (c * 9) / 5 + 32),
-  getGravityDataAnalytics: vi.fn(() => mockStores.analytics),
-  abv: vi.fn(() => 5.0)
+  getGravityDataAnalytics: vi.fn(() => mockStores.analytics)
 }));
 
 // Add a flag to catch initialization
@@ -112,10 +112,15 @@ describe('BatchGravityGraphCompareView', () => {
     setActivePinia(createPinia());
     vi.clearAllMocks();
 
+    mockStores.batch.batchList = [
+      { id: '1', name: 'Batch 1' },
+      { id: '2', name: 'Batch 2' },
+      { id: '3', name: 'Batch 3' }
+    ];
     mockStores.batch.getBatch.mockResolvedValue({ id: '1', name: 'Batch 1' });
     mockStores.gravity.getGravityListForBatch.mockResolvedValue([
-      { id: 1, gravity: 1.050, created: '2023-01-01T10:00:00Z', active: true, temperature: 20 },
-      { id: 2, gravity: 1.045, created: '2023-01-02T10:00:00Z', active: true, temperature: 20 }
+      { id: 1, gravity: 1.050, created: '2023-01-01T10:00:00Z', active: true },
+      { id: 2, gravity: 1.045, created: '2023-01-02T10:00:00Z', active: true }
     ]);
 
     const mockCanvas = document.createElement('canvas');
@@ -129,95 +134,74 @@ describe('BatchGravityGraphCompareView', () => {
     if (canvas) document.body.removeChild(canvas);
   });
 
-  const mountWrapper = async (options = {}) => {
+  const mountWrapper = async () => {
     chartCreated = false;
     const wrapper = mount(BatchGravityGraphCompareView, {
       global: {
         stubs: {
           'router-link': { template: '<a><slot></slot></a>' },
-          'GravityStatsFragment': true,
-          'BsInputNumber': true,
-          'BsInputBase': true
+          'BsSelect': { 
+            template: '<select :value="modelValue" @input="$emit(\'update:modelValue\', $event.target.value)"><option v-for="o in options" :value="o.value">{{o.label}}</option></select>',
+            props: ['modelValue', 'options']
+          }
         }
       }
     });
 
-    // Wait for the onMounted async calls and the internal 100ms setTimeout
     await nextTick();
     await nextTick();
-    
-    // We need to wait enough for the internal setTimeout(..., 100)
-    // but also for the component's internal state to stabilize.
-    await new Promise(resolve => setTimeout(resolve, 300));
-    await nextTick();
-    
-    if (!chartCreated && !options.allowNoChart) {
-        console.warn('Chart was not created in time');
-    }
-    
     return wrapper;
   };
 
-  it('initializes and loads data on mount', async () => {
-    mockStores.analytics.date.firstDate = '2023-01-01';
-    mockStores.analytics.date.lastDate = '2023-01-03';
-    
+  it('initializes and loads batch list on mount', async () => {
     const wrapper = await mountWrapper();
-    expect(mockStores.batch.getBatch).toHaveBeenCalledWith('1');
-    expect(mockStores.gravity.getGravityListForBatch).toHaveBeenCalledWith('1');
-    expect(wrapper.vm.batchName).toBe('Batch 1');
-    // It should have been updated after creation and after the internal filterAll()
-    expect(mockChartInstance.update).toHaveBeenCalled();
+    expect(wrapper.vm.batchList.length).toBe(3);
+    expect(wrapper.vm.batchList[0].label).toBe('Batch 1');
   });
 
-  it('handles loading no data', async () => {
-    mockStores.gravity.getGravityListForBatch.mockResolvedValue(null);
-    const wrapper = await mountWrapper({ allowNoChart: true });
-    expect(wrapper.vm.gravityList).toBeNull();
-  });
-
-  it('exercises filters', async () => {
-    mockStores.analytics.date.firstDate = '2023-01-01';
-    mockStores.analytics.date.lastDate = '2023-01-03';
+  it('updates graph when batch selection changes', async () => {
     const wrapper = await mountWrapper();
     
-    wrapper.vm.filterTemp();
-    expect(wrapper.vm.graphOptions.gravity).toBe(false);
-    expect(wrapper.vm.graphOptions.temperature).toBe(true);
-
-    wrapper.vm.filterDevice();
-    expect(wrapper.vm.graphOptions.battery).toBe(true);
-
-    wrapper.vm.filterVelocity();
-    expect(wrapper.vm.graphOptions.velocity).toBe(true);
-
-    wrapper.vm.filterGravity();
-    expect(wrapper.vm.graphOptions.gravity).toBe(true);
-  });
-
-  it('exercises time filters', async () => {
-    mockStores.analytics.date.firstDate = '2023-01-01';
-    mockStores.analytics.date.lastDate = '2023-01-03';
-    const wrapper = await mountWrapper();
-
-    wrapper.vm.filter24h();
-    expect(wrapper.vm.infoFirstDay).toBeDefined();
-
-    wrapper.vm.filter7d();
-    expect(wrapper.vm.infoFirstDay).toBeDefined();
-
-    wrapper.vm.filterAll();
-    expect(wrapper.vm.infoFirstDay).toBe('2023-01-01');
-  });
-
-  it('exercises gravity corrections and smoothing', async () => {
-    mockStores.analytics.date.firstDate = '2023-01-01';
-    mockStores.analytics.date.lastDate = '2023-01-03';
-    const wrapper = await mountWrapper();
-
-    wrapper.vm.lowpass = 5;
+    wrapper.vm.batchId1 = '1';
     await nextTick();
-    // This triggers apply() and chart.update()
+    await nextTick();
+    
+    expect(mockStores.gravity.getGravityListForBatch).toHaveBeenCalledWith('1');
     expect(mockChartInstance.update).toHaveBeenCalled();
+  });
+
+  it('handles multiple batch comparisons', async () => {
+    const wrapper = await mountWrapper();
+    
+    wrapper.vm.batchId1 = '1';
+    wrapper.vm.batchId2 = '2';
+    await nextTick();
+    await nextTick();
+    
+    expect(mockStores.gravity.getGravityListForBatch).toHaveBeenCalled();
+  });
+
+  it('exercises time alignment adjustments', async () => {
+    const wrapper = await mountWrapper();
+    wrapper.vm.batchId1 = '1';
+    await nextTick();
+    
+    wrapper.vm.timeAdjustment = 'start';
+    await nextTick();
+    expect(mockChartInstance.update).toHaveBeenCalled();
+
+    wrapper.vm.timeAdjustment = 'end';
+    await nextTick();
+    expect(mockChartInstance.update).toHaveBeenCalled();
+  });
+
+  it('handles empty gravity lists gracefully', async () => {
+    mockStores.gravity.getGravityListForBatch.mockResolvedValue([]);
+    const wrapper = await mountWrapper();
+    
+    wrapper.vm.batchId1 = '1';
+    await nextTick();
+    
+    expect(wrapper.vm.gravityData1.length).toBe(0);
   });
 });
