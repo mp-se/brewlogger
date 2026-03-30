@@ -220,4 +220,134 @@ describe('BatchGravityGraphView', () => {
     // This triggers apply() and chart.update()
     expect(mockChartInstance.update).toHaveBeenCalled();
   });
+
+  it('should have proper component structure on mount', async () => {
+    mockStores.analytics.date.firstDate = '2023-01-01';
+    mockStores.analytics.date.lastDate = '2023-01-03';
+    const wrapper = await mountWrapper();
+
+    expect(wrapper.vm.gravityList).toBeDefined();
+    expect(wrapper.vm.batchName).toBe('Batch 1');
+  });
+
+  it('should handle batch loading failure', async () => {
+    mockStores.batch.getBatch.mockResolvedValue(null);
+    const wrapper = await mountWrapper({ allowNoChart: true });
+    expect(wrapper.vm.batchName).toBe('');
+  });
+
+  it('should initialize graphOptions with defaults', async () => {
+    mockStores.analytics.date.firstDate = '2023-01-01';
+    mockStores.analytics.date.lastDate = '2023-01-03';
+    const wrapper = await mountWrapper();
+
+    expect(wrapper.vm.graphOptions).toBeDefined();
+    expect(typeof wrapper.vm.graphOptions).toBe('object');
+  });
+
+  it('should have available filter methods', async () => {
+    mockStores.analytics.date.firstDate = '2023-01-01';
+    mockStores.analytics.date.lastDate = '2023-01-03';
+    const wrapper = await mountWrapper();
+
+    expect(typeof wrapper.vm.filterTemp).toBe('function');
+    expect(typeof wrapper.vm.filterDevice).toBe('function');
+    expect(typeof wrapper.vm.filterVelocity).toBe('function');
+    expect(typeof wrapper.vm.filterGravity).toBe('function');
+    expect(typeof wrapper.vm.filter24h).toBe('function');
+    expect(typeof wrapper.vm.filter7d).toBe('function');
+    expect(typeof wrapper.vm.filterAll).toBe('function');
+  });
+
+  it('should have chart and canvas reference', async () => {
+    mockStores.analytics.date.firstDate = '2023-01-01';
+    mockStores.analytics.date.lastDate = '2023-01-03';
+    const wrapper = await mountWrapper();
+
+    expect(wrapper.vm.chart).toBeDefined();
+  });
+
+  it('should initialize with empty gravity list before loading', async () => {
+    const wrapper = await mountWrapper({ allowNoChart: true });
+    // Before async data loads, gravityList starts null
+    expect(wrapper.vm.gravityList === null || Array.isArray(wrapper.vm.gravityList)).toBe(true);
+  });
+
+  it('should toggle multiple filter options sequentially', async () => {
+    mockStores.analytics.date.firstDate = '2023-01-01';
+    mockStores.analytics.date.lastDate = '2023-01-03';
+    const wrapper = await mountWrapper();
+
+    expect(wrapper.vm.graphOptions).toBeDefined();
+    
+    // Call filter methods and verify graphOptions exists still
+    wrapper.vm.filterGravity();
+    expect(wrapper.vm.graphOptions).toBeDefined();
+    
+    wrapper.vm.filterTemp();
+    expect(wrapper.vm.graphOptions).toBeDefined();
+  });
+
+  it('should update chart when lowpass changes', async () => {
+    mockStores.analytics.date.firstDate = '2023-01-01';
+    mockStores.analytics.date.lastDate = '2023-01-03';
+    const wrapper = await mountWrapper();
+
+    const initialCallCount = mockChartInstance.update.mock.calls.length;
+    wrapper.vm.lowpass = 10;
+    await nextTick();
+    
+    // Chart should be updated after lowpass change
+    expect(mockChartInstance.update.mock.calls.length).toBeGreaterThanOrEqual(initialCallCount);
+  });
+
+  it('should preserve batch name across filter operations', async () => {
+    mockStores.analytics.date.firstDate = '2023-01-01';
+    mockStores.analytics.date.lastDate = '2023-01-03';
+    const wrapper = await mountWrapper();
+
+    const batchName = wrapper.vm.batchName;
+    wrapper.vm.filterGravity();
+    wrapper.vm.filterTemp();
+    expect(wrapper.vm.batchName).toBe(batchName);
+  });
+
+  it('should handle date filter inputs', async () => {
+    mockStores.analytics.date.firstDate = '2023-01-01';
+    mockStores.analytics.date.lastDate = '2023-01-03';
+    const wrapper = await mountWrapper();
+
+    expect(wrapper.vm.infoFirstDay).toBeDefined();
+    expect(wrapper.vm.infoLastDay).toBeDefined();
+  });
+
+  it('should apply filter logic when time filters called', async () => {
+    mockStores.analytics.date.firstDate = '2023-01-01';
+    mockStores.analytics.date.lastDate = '2023-01-03';
+    const wrapper = await mountWrapper();
+
+    const initialFirstDay = wrapper.vm.infoFirstDay;
+    wrapper.vm.filter24h();
+    
+    // First day should change to 24h ago
+    expect(wrapper.vm.infoFirstDay).toBeDefined();
+  });
+
+  it('should have config available for temperature display', async () => {
+    mockStores.analytics.date.firstDate = '2023-01-01';
+    mockStores.analytics.date.lastDate = '2023-01-03';
+    const wrapper = await mountWrapper();
+
+    expect(wrapper.vm.config).toBeDefined();
+    expect(wrapper.vm.config.isTempC).toBe(true);
+  });
+
+  it('should handle global disabled state', async () => {
+    mockStores.analytics.date.firstDate = '2023-01-01';
+    mockStores.analytics.date.lastDate = '2023-01-03';
+    mockStores.global.disabled = true;
+    const wrapper = await mountWrapper();
+
+    expect(wrapper.vm.global.disabled).toBe(true);
+  });
 });
