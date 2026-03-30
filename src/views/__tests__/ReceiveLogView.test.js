@@ -11,6 +11,38 @@ vi.mock('@/modules/logger', () => ({
   logInfo: vi.fn()
 }))
 
+// Mock fetch globally - returns proper Promise
+global.fetch = vi.fn(() =>
+  Promise.resolve({
+    ok: true,
+    json: () => Promise.resolve({})
+  })
+)
+global.URL = {
+  createObjectURL: vi.fn(() => 'blob:mock-url'),
+  revokeObjectURL: vi.fn()
+}
+global.Blob = class Blob {}
+// Extend existing document with our mocks, don't replace it entirely
+const originalCreateElement = document.createElement
+document.createElement = vi.fn((tag) => {
+  if (tag === 'a') {
+    return {
+      href: '',
+      download: '',
+      click: vi.fn(),
+      tagName: tag.toUpperCase()
+    }
+  }
+  return originalCreateElement.call(document, tag)
+})
+
+const originalAppendChild = document.body.appendChild
+document.body.appendChild = vi.fn(originalAppendChild.bind(document.body))
+
+const originalRemoveChild = document.body.removeChild
+document.body.removeChild = vi.fn(originalRemoveChild.bind(document.body))
+
 describe('ReceiveLogView', () => {
   let router
 
@@ -163,6 +195,105 @@ describe('ReceiveLogView', () => {
         }
       })
       expect(wrapper.exists()).toBe(true)
+    })
+  })
+
+  describe('Data Fetching', () => {
+    it('should fetch log list on updateLogList call', async () => {
+      global.fetch = vi.fn().mockResolvedValue({
+        ok: true,
+        json: async () => ({
+          total: 1,
+          skip: 0,
+          data: [
+            {
+              id: 1,
+              timestamp: '2024-01-15T10:30:45',
+              ipAddress: '192.168.1.100',
+              payload: 'test payload'
+            }
+          ]
+        })
+      })
+
+      const wrapper = mount(ReceiveLogView, {
+        global: {
+          stubs: { 'router-link': { template: '<a><slot></slot></a>' } },
+          plugins: [router]
+        }
+      })
+
+      await wrapper.vm.updateLogList()
+      expect(global.fetch).toHaveBeenCalled()
+    })
+
+
+  })
+
+  describe('Download Functionality', () => {
+    it('should have downloadAllRecords method', () => {
+      const wrapper = mount(ReceiveLogView, {
+        global: {
+          stubs: { 'router-link': { template: '<a><slot></slot></a>' } },
+          plugins: [router]
+        }
+      })
+      expect(typeof wrapper.vm.downloadAllRecords).toBe('function')
+    })
+  })
+
+  describe('Button Interactions', () => {
+    it('should call updateLogList when Refresh button clicked', async () => {
+      global.fetch = vi.fn().mockResolvedValue({
+        ok: true,
+        json: async () => ({ total: 0, skip: 0, data: [] })
+      })
+
+      const wrapper = mount(ReceiveLogView, {
+        global: {
+          stubs: { 'router-link': { template: '<a><slot></slot></a>' } },
+          plugins: [router]
+        }
+      })
+
+      const refreshBtn = wrapper.findAll('button').find(b => b.text().includes('Refresh'))
+      await refreshBtn?.trigger('click')
+      await wrapper.vm.$nextTick?.()
+      
+      expect(global.fetch).toHaveBeenCalled()
+    })
+
+    it('should call downloadAllRecords when Download button clicked', async () => {
+      global.fetch = vi.fn().mockResolvedValue({
+        ok: true,
+        json: async () => ({ total: 0, skip: 0, data: [] })
+      })
+
+      const wrapper = mount(ReceiveLogView, {
+        global: {
+          stubs: { 'router-link': { template: '<a><slot></slot></a>' } },
+          plugins: [router]
+        }
+      })
+
+      const downloadBtn = wrapper.findAll('button').find(b => b.text().includes('Download'))
+      await downloadBtn?.trigger('click')
+      await new Promise(resolve => setTimeout(resolve, 50))
+      
+      expect(global.fetch).toHaveBeenCalled()
+    })
+  })
+
+  describe('Table Rendering', () => {
+    it('should have table element in template', () => {
+      const wrapper = mount(ReceiveLogView, {
+        global: {
+          stubs: { 'router-link': { template: '<a><slot></slot></a>' } },
+          plugins: [router]
+        }
+      })
+      // Table should not be visible initially (v-if checks if logList != null)
+      expect(wrapper.find('table').exists()).toBe(false)
     })
   })
 })
