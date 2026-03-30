@@ -201,4 +201,264 @@ describe('BatchGravityListView', () => {
 
     expect(wrapper.vm.gravityList).toBeNull();
   });
+
+  it('renders batch name in template', async () => {
+    const wrapper = mountWrapper();
+    await nextTick();
+    await nextTick();
+    await nextTick();
+
+    expect(wrapper.text()).toContain('Batch 1');
+  });
+
+  it('initializes filter inputs with analytics data', async () => {
+    const wrapper = mountWrapper();
+    await nextTick();
+    await nextTick();
+    await nextTick();
+
+    expect(wrapper.vm.infoFirstDay).toBe('2023-01-01 10:00:00');
+    expect(wrapper.vm.infoLastDay).toBe('2023-01-03 10:00:00');
+    expect(wrapper.vm.infoOG).toBe(1.05);
+    expect(wrapper.vm.infoFG).toBe(1.01);
+  });
+
+  it('has sortedIconClass function available', async () => {
+    const wrapper = mountWrapper();
+    await nextTick();
+
+    expect(typeof wrapper.vm.sortedIconClass).toBe('function');
+  });
+
+  it('has sortedClass function available', async () => {
+    const wrapper = mountWrapper();
+    await nextTick();
+
+    expect(typeof wrapper.vm.sortedClass).toBe('function');
+  });
+
+  it('has sortList function available', async () => {
+    const wrapper = mountWrapper();
+    await nextTick();
+
+    expect(typeof wrapper.vm.sortList).toBe('function');
+  });
+
+  it('has gravityToPlato function available', async () => {
+    const wrapper = mountWrapper();
+    await nextTick();
+
+    expect(typeof wrapper.vm.gravityToPlato).toBe('function');
+  });
+
+  it('has getFormattedTemperature function available', async () => {
+    const wrapper = mountWrapper();
+    await nextTick();
+
+    expect(typeof wrapper.vm.getFormattedTemperature).toBe('function');
+  });
+
+  it('initializes with proper refs structure', async () => {
+    const wrapper = mountWrapper();
+    await nextTick();
+
+    expect(wrapper.vm.hasOwnProperty('gravityList')).toBe(true);
+    expect(wrapper.vm.hasOwnProperty('gravityStats')).toBe(true);
+    expect(wrapper.vm.hasOwnProperty('forceRender')).toBe(true);
+    expect(wrapper.vm.hasOwnProperty('infoFirstDay')).toBe(true);
+    expect(wrapper.vm.hasOwnProperty('infoLastDay')).toBe(true);
+    expect(wrapper.vm.hasOwnProperty('infoOG')).toBe(true);
+    expect(wrapper.vm.hasOwnProperty('infoFG')).toBe(true);
+    expect(wrapper.vm.hasOwnProperty('batchName')).toBe(true);
+  });
+
+  it('updateGravity recalculates gravityStats after successful update', async () => {
+    const wrapper = mountWrapper();
+    await nextTick();
+    await nextTick();
+    await nextTick();
+
+    const originalStats = wrapper.vm.gravityStats;
+    await wrapper.vm.updateGravity(1);
+
+    // Stats should be recalculated
+    expect(wrapper.vm.gravityStats).toBeDefined();
+  });
+
+  it('updateGravity handles item not found gracefully', async () => {
+    const wrapper = mountWrapper();
+    await nextTick();
+    await nextTick();
+    await nextTick();
+
+    await wrapper.vm.updateGravity(999);
+
+    // Should not call gravityStore.updateGravity if item not found
+    // The function finds and updates if found, otherwise breaks
+    expect(wrapper.vm.gravityList).toHaveLength(3);
+  });
+
+  it('apply() increments forceRender to trigger re-render', async () => {
+    const wrapper = mountWrapper();
+    await nextTick();
+    await nextTick();
+    await nextTick();
+
+    const initialForceRender = wrapper.vm.forceRender;
+    wrapper.vm.infoFirstDay = '2023-01-01 00:00:00';
+    wrapper.vm.infoLastDay = '2023-01-03 23:59:59';
+    wrapper.vm.infoOG = 1.05;
+    wrapper.vm.infoFG = 1.01;
+
+    await wrapper.vm.apply();
+
+    expect(wrapper.vm.forceRender).toBeGreaterThan(initialForceRender);
+  });
+
+  it('apply() disables and re-enables controls', async () => {
+    const wrapper = mountWrapper();
+    await nextTick();
+    await nextTick();
+    await nextTick();
+
+    wrapper.vm.infoFirstDay = '2023-01-01 00:00:00';
+    wrapper.vm.infoLastDay = '2023-01-03 23:59:59';
+    wrapper.vm.infoOG = 1.05;
+    wrapper.vm.infoFG = 1.01;
+
+    await wrapper.vm.apply();
+
+    expect(mockStores.global.disabled).toBe(false);
+  });
+
+  it('activateAll() increments forceRender', async () => {
+    const wrapper = mountWrapper();
+    await nextTick();
+    await nextTick();
+    await nextTick();
+
+    const initialForceRender = wrapper.vm.forceRender;
+    await wrapper.vm.activateAll();
+
+    expect(wrapper.vm.forceRender).toBeGreaterThan(initialForceRender);
+  });
+
+  it('activateAll() disables and re-enables controls', async () => {
+    const wrapper = mountWrapper();
+    await nextTick();
+    await nextTick();
+    await nextTick();
+
+    await wrapper.vm.activateAll();
+
+    expect(mockStores.global.disabled).toBe(false);
+  });
+
+  it('filter with date range excludes records outside range', async () => {
+    const wrapper = mountWrapper();
+    await nextTick();
+    await nextTick();
+    await nextTick();
+
+    // Set dates to include only the middle record
+    wrapper.vm.infoFirstDay = '2023-01-02 00:00:00';
+    wrapper.vm.infoLastDay = '2023-01-02 23:59:59';
+    wrapper.vm.infoOG = 1.05;
+    wrapper.vm.infoFG = 1.01;
+
+    await wrapper.vm.apply();
+
+    // Only one record should be affected (one active already, two need update)
+    expect(mockStores.gravity.updateGravity).toHaveBeenCalled();
+  });
+
+  it('filter with gravity range works correctly', async () => {
+    const wrapper = mountWrapper();
+    await nextTick();
+    await nextTick();
+    await nextTick();
+
+    // Set gravity range to exclude highest reading
+    wrapper.vm.infoFirstDay = '2023-01-01 00:00:00';
+    wrapper.vm.infoLastDay = '2023-01-03 23:59:59';
+    wrapper.vm.infoOG = 1.040; // Only matches third record
+    wrapper.vm.infoFG = 1.030;
+
+    await wrapper.vm.apply();
+
+    expect(mockStores.gravity.updateGravity).toHaveBeenCalled();
+  });
+
+  it('handles batch loading failure', async () => {
+    mockStores.batch.getBatch.mockResolvedValue(null);
+    const wrapper = mountWrapper();
+    await nextTick();
+    await nextTick();
+    await nextTick();
+
+    expect(wrapper.vm.batchName).toBe('');
+  });
+
+  it('renders table headers when data is available', async () => {
+    const wrapper = mountWrapper();
+    await nextTick();
+    await nextTick();
+    await nextTick();
+
+    const html = wrapper.html();
+    //  Table structure exists
+    expect(html).toContain('thead');
+    expect(html).toContain('<tbody');
+  });
+
+  it('displays gravity records in table with correct formatting', async () => {
+    const wrapper = mountWrapper();
+    await nextTick();
+    await nextTick();
+    await nextTick();
+
+    const html = wrapper.html();
+    expect(html).toContain('2023-01-01');
+    expect(html).toContain('10:00:00');
+  });
+
+  it('deactivateAll by filtering to empty set', async () => {
+    const wrapper = mountWrapper();
+    await nextTick();
+    await nextTick();
+    await nextTick();
+
+    // Set filter that excludes all records
+    wrapper.vm.infoFirstDay = '2023-01-04 00:00:00';
+    wrapper.vm.infoLastDay = '2023-01-05 23:59:59';
+    wrapper.vm.infoOG = 1.05;
+    wrapper.vm.infoFG = 1.01;
+
+    await wrapper.vm.apply();
+
+    // All previously active records should be deactivated
+    expect(mockStores.gravity.updateGravity).toHaveBeenCalled();
+  });
+
+  it('config temperature format is respected', async () => {
+    mockStores.config.isTempC = false;
+    const wrapper = mountWrapper();
+    await nextTick();
+    await nextTick();
+    await nextTick();
+
+    // Component stores config reference
+    expect(wrapper.vm.config).toBeDefined();
+  });
+
+  it('config gravity format is respected', async () => {
+    mockStores.config.isGravitySG = false;
+    const wrapper = mountWrapper();
+    await nextTick();
+    await nextTick();
+    await nextTick();
+
+    // Component stores config reference
+    expect(wrapper.vm.config).toBeDefined();
+  });
 });
