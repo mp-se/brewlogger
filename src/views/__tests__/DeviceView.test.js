@@ -3,9 +3,42 @@ import { mount, flushPromises } from '@vue/test-utils'
 import { createPinia, setActivePinia } from 'pinia'
 import { createRouter, createMemoryHistory } from 'vue-router'
 import DeviceView from '../DeviceView.vue'
-import { useDeviceStore } from '@/modules/deviceStore'
-import { useGlobalStore } from '@/modules/globalStore'
 import { Device } from '@/modules/classes'
+
+// Create pinia mocks using vi.hoisted so they're defined before vi.mock calls
+const piniaMocks = vi.hoisted(() => ({
+  global: {
+    disabled: false,
+    clearMessages: vi.fn(),
+    messageSuccess: '',
+    messageError: '',
+    initialized: true
+  },
+  deviceStore: {
+    device: null,
+    getDevice: vi.fn(),
+    updateDevice: vi.fn(),
+    deleteDeviceFermentationSteps: vi.fn(),
+    proxyRequest: vi.fn()
+  }
+}))
+
+vi.mock('@/modules/pinia', () => ({
+  global: piniaMocks.global,
+  deviceStore: piniaMocks.deviceStore
+}))
+
+vi.mock('@/modules/router', () => ({
+  default: {
+    currentRoute: {
+      value: {
+        params: { id: 'new' },
+        name: 'device-view'
+      }
+    },
+    push: vi.fn()
+  }
+}))
 
 vi.mock('@/modules/logger', () => ({
   logDebug: vi.fn(),
@@ -24,17 +57,36 @@ vi.mock('@/modules/detect', () => ({
   detectSoftware: vi.fn(() => 'Gravitymon')
 }))
 
+// Mock router plugin to provide $route in templates
+const routerPlugin = {
+  install(app) {
+    app.config.globalProperties.$route = {
+      params: { id: 'new' },
+      name: 'device-view'
+    }
+  }
+}
+
 describe('DeviceView - Enhanced', () => {
-  let router, pinia
+  let router
 
   beforeEach(() => {
-    pinia = createPinia()
-    setActivePinia(pinia)
+    // Reset mocks before each test
+    vi.clearAllMocks()
+    piniaMocks.global.disabled = false
+    piniaMocks.global.messageSuccess = ''
+    piniaMocks.global.messageError = ''
+    piniaMocks.deviceStore.device = null
+    piniaMocks.deviceStore.getDevice.mockClear()
+    piniaMocks.deviceStore.updateDevice.mockClear()
+    piniaMocks.deviceStore.deleteDeviceFermentationSteps.mockClear()
+    piniaMocks.deviceStore.proxyRequest.mockClear()
+
     router = createRouter({
       history: createMemoryHistory(),
       routes: [
-        { path: '/device/:id', name: 'device' },
-        { path: '/devices', name: 'device-list' }
+        { path: '/device/:id', name: 'device', component: { template: '<div></div>' } },
+        { path: '/devices', name: 'device-list', component: { template: '<div></div>' } }
       ]
     })
   })
@@ -44,7 +96,16 @@ describe('DeviceView - Enhanced', () => {
   })
 
   const createWrapper = async (routeParams = { id: 'new' }) => {
-    await router.push({ name: 'device', params: routeParams })
+    // Update router mock's current route params
+    routerPlugin.install({
+      config: {
+        globalProperties: {
+          $route: { params: routeParams, name: 'device-view' }
+        }
+      }
+    })
+    ;(await import('@/modules/router')).default.currentRoute.value.params = routeParams
+    
     return mount(DeviceView, {
       global: {
         stubs: {
@@ -62,7 +123,13 @@ describe('DeviceView - Enhanced', () => {
           FermentationStepFragment: true,
           'router-link': true
         },
-        plugins: [router]
+        plugins: [
+          {
+            install(app) {
+              app.config.globalProperties.$route = { params: routeParams, name: 'device-view' }
+            }
+          }
+        ]
       }
     })
   }
