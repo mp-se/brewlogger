@@ -417,10 +417,11 @@ Before committing:
 ### Current Test Suite Status (Latest)
 
 **Test Execution Summary** ✅
-- **Total Tests**: 866 passing
-- **Test Files**: 32 files
-- **Overall Duration**: ~2.7s
+- **Total Tests**: 1999 passing
+- **Test Files**: 86 files
+- **Overall Duration**: ~7.5s
 - **All tests pass**: Yes ✅ (0 failures)
+- **Overall Coverage**: 83.64% statements (working towards 85% target)
 
 **Component Coverage** (35 components in /src/components/)
 - **All components tested**: 100% (35/35)
@@ -470,6 +471,128 @@ npm run lint              # No errors or warnings
 
 ---
 
+## Testing Conventions — Pinia Singleton Pattern
+
+### Why Pinia.js Uses Module-Level Singletons
+
+**File:** `src/modules/pinia.js`
+
+This file directly imports and exports all Pinia stores at the module level:
+
+```javascript
+// src/modules/pinia.js
+import { useGlobalStore } from './globalStore.js'
+import { useBatchStore } from './batchStore.js'
+// ... all other stores
+
+export const global = useGlobalStore()
+export const batchStore = useBatchStore()
+export const configStore = useConfigStore()
+// ... etc
+```
+
+**Why this pattern?**
+- **Simplicity**: Components import named exports instead of `useStore()` hooks
+- **Single instance per app**: Ensures all components share identical state
+- **Testability**: Allows complete store replacement via `vi.mock()` in test files
+- **Performance**: No hook creation overhead in components
+
+### Testing Views with Pinia Mocks (Required Pattern)
+
+Any test that imports view components **must mock the pinia module** because:
+
+1. **Side effects**: Importing view components → imports router → imports all views → Pinia singletons instantiate
+2. **Store isolation**: Without mocks, tests share real stores and contaminate each other
+3. **Deterministic state**: Mock stores let you control exactly what state each test receives
+
+**Correct Pattern:**
+
+```javascript
+// src/views/__tests__/MyView.test.js
+import { describe, it, expect, beforeEach, vi } from 'vitest'
+import { createPinia, setActivePinia } from 'pinia'
+import MyView from '../MyView.vue'
+
+// 1. Create mock objects for all stores in pinia.js
+const piniaMocks = vi.hoisted(() => ({
+  global: {
+    initialized: false,
+    messageError: '',
+    disabled: false,
+    // ... all properties your view reads
+  },
+  batchStore: {
+    batches: [],
+    getBatchList: vi.fn().mockResolvedValue(true),
+    // ... all methods/properties your view uses
+  },
+  configStore: {
+    config: null,
+    load: vi.fn().mockResolvedValue(true),
+  },
+  // ... mock all stores imported in pinia.js
+}))
+
+// 2. Mock the pinia module with your objects
+vi.mock('@/modules/pinia', () => ({
+  global: piniaMocks.global,
+  batchStore: piniaMocks.batchStore,
+  configStore: piniaMocks.configStore,
+  // ... map all stores
+}))
+
+// 3. Also mock any dependent modules (logger, router, etc)
+vi.mock('@/modules/router', () => ({
+  default: { install: vi.fn() }
+}))
+
+describe('MyView', () => {
+  beforeEach(() => {
+    setActivePinia(createPinia()) // Fresh Pinia context
+    vi.clearAllMocks()            // Reset all mock fn() calls
+  })
+
+  it('should render when data loads', () => {
+    piniaMocks.global.initialized = true
+    piniaMocks.batchStore.batches = [{ id: 1, name: 'Batch 1' }]
+    
+    const wrapper = mount(MyView, {
+      global: { stubs: { /* ... */ } }
+    })
+    
+    expect(wrapper.find('.batch-list').exists()).toBe(true)
+  })
+})
+```
+
+**Key Requirements:**
+1. **Mock before mounting**: Use `vi.hoisted()` to create mocks before component import
+2. **Match pinia.js exports**: Every store in `pinia.js` must have a corresponding mock
+3. **Reset state each test**: `vi.clearAllMocks()` resets all function call counts
+4. **Control every read dependency**: Any computed getter or watcher your component uses must exist on the mock
+
+### When NOT to Use This Pattern
+
+- **Components without store dependencies**: Use standard mount if component doesn't import from `pinia.js`
+- **Store tests**: Import stores directly from `batchStore.js`, not from `pinia.js`
+- **Pure data classes**: No mocking needed for `Batch.js`, `Device.js`, etc.
+
+### Troubleshooting Pinia Mock Issues
+
+**Problem**: "Cannot read properties of null (reading 'showModal')"
+- **Cause**: Component tries to call `document.querySelector()` but DOM element doesn't exist
+- **Solution**: Mock DOM elements with `vi.spyOn(document, 'querySelector')`
+
+**Problem**: "Invalid watch source: undefined"
+- **Cause**: `storeToRefs()` called on undefined mock store
+- **Solution**: Ensure mock store is in `vi.hoisted()` AND properly passed to `vi.mock()`
+
+**Problem**: Tests pass locally but fail in CI
+- **Cause**: Mock import mismatch (real store imported instead of mock)
+- **Solution**: Check that ALL transitive imports of stores go through `@/modules/pinia`
+
+---
+
 ## Common Patterns & Anti-Patterns
 
 ### ✅ DO
@@ -481,6 +604,8 @@ npm run lint              # No errors or warnings
 - Handle `undefined` and `null` in constructors
 - Create factory methods for deserialization
 - Test both class factories and store actions independently
+- **Create Pinia mocks in `vi.hoisted()` blocks** when testing view components
+- **Mock `@/modules/pinia` before mounting** view components
 
 ### ❌ DON'T
 
@@ -491,6 +616,10 @@ npm run lint              # No errors or warnings
 - Assume parameters are well-formed (always validate)
 - Forget to update barrel exports when adding new classes
 - Create circular dependencies between classes
+- **Mount view components without mocking `@/modules/pinia`** (causes store contamination)
+- **Import stores directly in component code** (should always import from `@/modules/pinia`)
+- **Create Pinia store instances in component tests** (use vi.mock() instead)
+- **Skip `vi.clearAllMocks()` in beforeEach** (previous test's mocks leak into next test)
 
 ---
 
