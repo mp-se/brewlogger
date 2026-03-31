@@ -115,6 +115,92 @@ describe('DeviceView - Enhanced', () => {
     })
   })
 
+  describe('validateChipId() - Chip ID Validation', () => {
+    const setupDeviceTest = async (chipId = 'a1b2c3') => {
+      const wrapper = await createWrapper()
+      await flushPromises()
+      // Set device directly on wrapper since onMounted initializes with new Device for 'new' route
+      wrapper.vm.device = new Device(1, chipId, 'http://test.local', 'Test Device')
+      return wrapper
+    }
+
+    it('should accept valid 6-char hex lowercase chip IDs', async () => {
+      const wrapper = await setupDeviceTest('a1b2c3')
+      const result = wrapper.vm.validateChipId()
+      expect(result).toBe(true)
+    })
+
+    it('should accept all zeros', async () => {
+      const wrapper = await setupDeviceTest('000000')
+      const result = wrapper.vm.validateChipId()
+      expect(result).toBe(true)
+    })
+
+    it('should accept all f characters', async () => {
+      const wrapper = await setupDeviceTest('ffffff')
+      const result = wrapper.vm.validateChipId()
+      expect(result).toBe(true)
+    })
+
+    it('should accept mixed valid hex', async () => {
+      const wrapper = await setupDeviceTest('a0b1c2')
+      const result = wrapper.vm.validateChipId()
+      expect(result).toBe(true)
+    })
+
+    it('should reject chip IDs too short', async () => {
+      const wrapper = await setupDeviceTest('a1b2c')
+      const result = wrapper.vm.validateChipId()
+      expect(result).toBe(false)
+    })
+
+    it('should reject chip IDs too long', async () => {
+      const wrapper = await setupDeviceTest('a1b2c3d4')
+      const result = wrapper.vm.validateChipId()
+      expect(result).toBe(false)
+    })
+
+    it('should reject chip IDs with uppercase letters', async () => {
+      const wrapper = await setupDeviceTest('A1B2C3')
+      const result = wrapper.vm.validateChipId()
+      expect(result).toBe(false)
+    })
+
+    it('should reject chip IDs with commas (previous regex bug)', async () => {
+      const wrapper = await setupDeviceTest('a1,b2c3')
+      const result = wrapper.vm.validateChipId()
+      expect(result).toBe(false)
+    })
+
+    it('should reject chip IDs with invalid characters', async () => {
+      const wrapper = await setupDeviceTest('a1b2c!')
+      const result = wrapper.vm.validateChipId()
+      expect(result).toBe(false)
+    })
+
+    it('should reject empty chip ID', async () => {
+      const wrapper = await setupDeviceTest('')
+      const result = wrapper.vm.validateChipId()
+      expect(result).toBe(false)
+    })
+
+    it('should reject chip IDs with spaces', async () => {
+      const wrapper = await setupDeviceTest('a1 b2c3')
+      const result = wrapper.vm.validateChipId()
+      expect(result).toBe(false)
+    })
+
+    it('should update chipIdValid reactive property', async () => {
+      const wrapper = await setupDeviceTest('a1b2c3')
+      wrapper.vm.validateChipId()
+      expect(wrapper.vm.chipIdValid).toBe(true)
+
+      wrapper.vm.device = new Device(1, 'invalid', 'http://test.local', 'Test')
+      wrapper.vm.validateChipId()
+      expect(wrapper.vm.chipIdValid).toBe(false)
+    })
+  })
+
   describe('Method Existence', () => {
     it('should have copyToClipboard method', async () => {
       const wrapper = await createWrapper()
@@ -124,11 +210,6 @@ describe('DeviceView - Enhanced', () => {
     it('should have fetchConfigFromDevice method', async () => {
       const wrapper = await createWrapper()
       expect(typeof wrapper.vm.fetchConfigFromDevice).toBe('function')
-    })
-
-    it('should have validateChipId method', async () => {
-      const wrapper = await createWrapper()
-      expect(typeof wrapper.vm.validateChipId).toBe('function')
     })
 
     it('should have validateUrl method', async () => {

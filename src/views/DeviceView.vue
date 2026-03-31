@@ -307,7 +307,7 @@ onMounted(async () => {
 function validateChipId() {
   logDebug('DeviceView.validateChipId()')
 
-  const regex = new RegExp(/^([0-9,a-f]){6}$/)
+  const regex = new RegExp(/^[0-9a-f]{6}$/)
 
   if (regex.test(device.value.chipId)) {
     chipIdValid.value = true
