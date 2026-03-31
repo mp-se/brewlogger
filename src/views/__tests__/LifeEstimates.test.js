@@ -1,6 +1,5 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest'
-import { mount, flushPromises } from '@vue/test-utils'
-import { createPinia, setActivePinia } from 'pinia'
+import { describe, it, expect } from 'vitest'
+import { mount } from '@vue/test-utils'
 import LifeEstimates from '../LifeEstimates.vue'
 
 describe('LifeEstimates', () => {

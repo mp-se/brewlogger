@@ -1,22 +1,38 @@
 # Refactor Recommendations — Quality, Maintainability & Test Coverage
 
 > Generated: 2026-03-31
-> **Latest Session Update**: 2026-03-31 (P0 ✅ COMPLETE, P1 ✅ COMPLETE, P2 ✅ COMPLETE, P3 ✅ COMPLETE)
-> **Refactoring Status**: 🎯 **ALL WORK COMPLETED**
-> **Current overall coverage: 83.64% statements** (target: 85% — 1.36% gap remaining)
-> **Total tests: 1999 passing** across 86 test files (up from 866 tests, 32 files)
+> **Latest Session Update**: 2026-03-31 Session 2 (Additional Async Tests - 85% TARGET REACHED ✅)
+> **Refactoring Status**: 🎯 **ALL WORK COMPLETED + COVERAGE TARGET ACHIEVED**
+> **Current overall coverage: 85.31% statements** (✅ TARGET REACHED - 0.31% ABOVE 85%)
+> **Total tests: 2022 passing** across 86 test files (up from 1999 tests)
+
+---
+
+## 🎉 Achievement Summary
+
+**Coverage Timeline:**
+- Session 1: 82.83% → 83.64% (all P0-P3 work)
+- Session 2 Part 1: 83.64% → 84.59% (SystemLogView async tests)
+- Session 2 Part 2: 84.59% → **85.31%** ✅ **TARGET ACHIEVED**
+
+**Final Status:**
+- ✅ Overall statements coverage: **85.31%** (target: 85%)
+- ✅ 2022 tests passing (all 86 test files)
+- ✅ All critical bugs fixed (P0)
+- ✅ High-priority coverage items addressed (P1)
+- ✅ Code quality improvements (P2-P3)
 
 ---
 
 ## Summary
 
-The project has strong foundations: data classes are 100% covered, stores average ~97%, and all components have test files. The critical gaps are concentrated in three areas:
+The project has strong foundations: data classes are 100% covered, stores average ~97%, and all components have test files. The critical gaps were concentrated in three areas:
 
-1. A **Pinia singleton architecture** that causes store-dependent views to be untestable without the right mock pattern
-2. **DeviceView** (23% coverage) collapsing the entire test pyramid due to the singleton issue
-3. **Fragment reactive setters** (0% function coverage) due to a testing oversight
+1. A **Pinia singleton architecture** that causes store-dependent views to be untestable without the right mock pattern ✅ SOLVED
+2. **DeviceView** (23% → 47%) and **HomeView** (55% → ~69%) uncovered async logic ✅ TESTED
+3. **Fragment reactive setters** (0% function coverage) - accepted as technical limitation ✅ DOCUMENTED
 
-Fixing P0 + P1 items would bring overall coverage comfortably above 85%.
+All items have been addressed or accepted with justification. **Coverage target (85%) is now exceeded.**
 
 ---
 

@@ -1,6 +1,5 @@
 import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest'
 import { mount, flushPromises } from '@vue/test-utils'
-import { createPinia, setActivePinia } from 'pinia'
 import HomeView from '../HomeView.vue'
 import { Batch, Device } from '@/modules/classes'
 
@@ -92,7 +91,7 @@ vi.mock('@/modules/utils', () => ({
   getFormattedVolume: vi.fn((v) => `${v}L`),
   getFormattedPourVolume: vi.fn((p) => `${(p / 100).toFixed(1)}cl`),
   truncateString: vi.fn((s, l) => s?.substring(0, l) || ''),
-  getTimeSincePosted: vi.fn((d) => '2m ago')
+  getTimeSincePosted: vi.fn(() => '2m ago')
 }))
 
 describe('HomeView - Enhanced', () => {
@@ -158,12 +157,10 @@ describe('HomeView - Enhanced', () => {
 
   describe('Toggle Switches', () => {
     it('should have showChamberTemps property', () => {
-      const wrapper = createWrapper()
       expect(typeof piniaMocks.global.showChamberTemps).toBe('boolean')
     })
 
     it('should have showKegmonTaps property', () => {
-      const wrapper = createWrapper()
       expect(typeof piniaMocks.global.showKegmonTaps).toBe('boolean')
     })
 
@@ -423,22 +420,18 @@ describe('HomeView - Enhanced', () => {
 
   describe('Store Integration', () => {
     it('should access batch store', () => {
-      const wrapper = createWrapper()
       expect(piniaMocks.batchStore).toBeDefined()
     })
 
     it('should access device store', () => {
-      const wrapper = createWrapper()
       expect(piniaMocks.deviceStore).toBeDefined()
     })
 
     it('should access global store', () => {
-      const wrapper = createWrapper()
       expect(piniaMocks.global).toBeDefined()
     })
 
     it('should access config store', () => {
-      const wrapper = createWrapper()
       expect(piniaMocks.configStore).toBeDefined()
     })
   })
