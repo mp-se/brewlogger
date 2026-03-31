@@ -1,37 +1,36 @@
 <template>
   <div class="container">
-    <div class="row gy-4">
-      <div class="col-md-8">
-        <p>&nbsp;</p>
-        <p class="h3">Home - Overview</p>
-      </div>
-      <div class="col-md-2">
-        <BsInputSwitch
-          v-model="global.showChamberTemps"
-          label="Chamber"
-          help=""
-          :disabled="global.disabled"
-          data-bs-toggle="tooltip"
-          data-bs-placement="top"
-          title="Show data from chamber controllers on dashboard"
-          aria-label="Show data from chamber controllers on dashboard"
-        >
-        </BsInputSwitch>
-      </div>
-      <div class="col-md-2">
-        <BsInputSwitch
-          v-model="global.showKegmonTaps"
-          label="Kegmon"
-          help=""
-          :disabled="global.disabled"
-          data-bs-toggle="tooltip"
-          data-bs-placement="top"
-          title="Show data from Kegmon taps on dashboard"
-          aria-label="Show data from Kegmon taps on dashboard"
-        >
-        </BsInputSwitch>
-      </div>
-      <hr />
+    <div class="row">
+      <BsPageHeader title="Home - Overview">
+        <div class="row">
+          <div class="col-md-6">
+            <BsInputSwitch
+              v-model="global.showChamberTemps"
+              label="Chamber"
+              help=""
+              :disabled="global.disabled"
+              data-bs-toggle="tooltip"
+              data-bs-placement="top"
+              title="Show data from chamber controllers on dashboard"
+              aria-label="Show data from chamber controllers on dashboard"
+            >
+            </BsInputSwitch>
+          </div>
+          <div class="col-md-6">
+            <BsInputSwitch
+              v-model="global.showKegmonTaps"
+              label="Kegmon"
+              help=""
+              :disabled="global.disabled"
+              data-bs-toggle="tooltip"
+              data-bs-placement="top"
+              title="Show data from Kegmon taps on dashboard"
+              aria-label="Show data from Kegmon taps on dashboard"
+            >
+            </BsInputSwitch>
+          </div>
+        </div>
+      </BsPageHeader>
     </div>
 
     <div class="row gy-4">
@@ -135,112 +134,61 @@
     </div>
 
     <div class="row gy-4 mt-1">
-      <div class="col-md-12" v-if="latestGravityReadings.length > 0">
-        <BsCard header="Latest Gravity Readings" color="info" title="">
-          <table class="table table-sm table-striped">
-            <colgroup>
-              <col style="width: 25%" />
-              <col style="width: 15%" />
-              <col style="width: 15%" />
-              <col style="width: 15%" />
-              <col style="width: 15%" />
-              <col style="width: 15%" />
-            </colgroup>
-            <thead>
-              <tr>
-                <th>Batch</th>
-                <th>Gravity</th>
-                <th>Velocity</th>
-                <th>Temp</th>
-                <th>Battery</th>
-                <th>Time</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr v-for="(reading, index) in latestGravityReadings" :key="index">
-                <td>{{ truncateString(reading.batchName, 30) }}</td>
-                <td>{{ Number(reading.gravity).toFixed(4) }}</td>
-                <td>
-                  {{ reading.velocity !== null ? Number(reading.velocity).toFixed(4) : '--' }}
-                </td>
-                <td>{{ getFormattedTemperature(reading.temperature) }}</td>
-                <td>{{ Number(reading.battery).toFixed(2) }}V</td>
-                <td>{{ getTimeSincePosted(reading.created) }}</td>
-              </tr>
-            </tbody>
-          </table>
-        </BsCard>
-      </div>
+      <LatestReadingsFragment
+        title="Latest Gravity Readings"
+        :readings="latestGravityReadings"
+      >
+        <template #headers>
+          <th>Gravity</th>
+          <th>Velocity</th>
+          <th>Temp</th>
+          <th>Battery</th>
+        </template>
+        <template #row="{ reading }">
+          <td>{{ Number(reading.gravity).toFixed(4) }}</td>
+          <td>
+            {{ reading.velocity !== null ? Number(reading.velocity).toFixed(4) : '--' }}
+          </td>
+          <td>{{ getFormattedTemperature(reading.temperature) }}</td>
+          <td>{{ Number(reading.battery).toFixed(2) }}V</td>
+        </template>
+      </LatestReadingsFragment>
 
-      <div class="col-md-12" v-if="latestPressureReadings.length > 0">
-        <BsCard header="Latest Pressure Readings" color="info" title="">
-          <table class="table table-sm table-striped">
-            <colgroup>
-              <col style="width: 25%" />
-              <col style="width: 15%" />
-              <col style="width: 15%" />
-              <col style="width: 15%" />
-              <col style="width: 15%" />
-              <col style="width: 15%" />
-            </colgroup>
-            <thead>
-              <tr>
-                <th>Batch</th>
-                <th>Pressure</th>
-                <th>Pressure1</th>
-                <th>Temp</th>
-                <th>Battery</th>
-                <th>Time</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr v-for="(reading, index) in latestPressureReadings" :key="index">
-                <td>{{ truncateString(reading.batchName, 30) }}</td>
-                <td>{{ getFormattedPressure(reading.pressure) }}</td>
-                <td>{{ getFormattedPressure(reading.pressure1) }}</td>
-                <td>{{ getFormattedTemperature(reading.temperature) }}</td>
-                <td>{{ Number(reading.battery).toFixed(2) }}V</td>
-                <td>{{ getTimeSincePosted(reading.created) }}</td>
-              </tr>
-            </tbody>
-          </table>
-        </BsCard>
-      </div>
+      <LatestReadingsFragment
+        title="Latest Pressure Readings"
+        :readings="latestPressureReadings"
+      >
+        <template #headers>
+          <th>Pressure</th>
+          <th>Pressure1</th>
+          <th>Temp</th>
+          <th>Battery</th>
+        </template>
+        <template #row="{ reading }">
+          <td>{{ getFormattedPressure(reading.pressure) }}</td>
+          <td>{{ getFormattedPressure(reading.pressure1) }}</td>
+          <td>{{ getFormattedTemperature(reading.temperature) }}</td>
+          <td>{{ Number(reading.battery).toFixed(2) }}V</td>
+        </template>
+      </LatestReadingsFragment>
 
-      <div class="col-md-12" v-if="latestPourReadings.length > 0">
-        <BsCard header="Latest Pour Readings" color="info" title="">
-          <table class="table table-sm table-striped">
-            <colgroup>
-              <col style="width: 25%" />
-              <col style="width: 15%" />
-              <col style="width: 15%" />
-              <col style="width: 15%" />
-              <col style="width: 15%" />
-              <col style="width: 15%" />
-            </colgroup>
-            <thead>
-              <tr>
-                <th>Batch</th>
-                <th>Volume (L)</th>
-                <th>Pour (cl)</th>
-                <th></th>
-                <th></th>
-                <th>Time</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr v-for="(reading, index) in latestPourReadings" :key="index">
-                <td>{{ truncateString(reading.batchName, 30) }}</td>
-                <td>{{ getFormattedVolume(reading.volume) }}</td>
-                <td>{{ getFormattedPourVolume(reading.pour * 100) }}</td>
-                <td></td>
-                <td></td>
-                <td>{{ getTimeSincePosted(reading.created) }}</td>
-              </tr>
-            </tbody>
-          </table>
-        </BsCard>
-      </div>
+      <LatestReadingsFragment
+        title="Latest Pour Readings"
+        :readings="latestPourReadings"
+      >
+        <template #headers>
+          <th>Volume (L)</th>
+          <th>Pour (cl)</th>
+          <th></th>
+          <th></th>
+        </template>
+        <template #row="{ reading }">
+          <td>{{ getFormattedVolume(reading.volume) }}</td>
+          <td>{{ getFormattedPourVolume(reading.pour * 100) }}</td>
+          <td></td>
+          <td></td>
+        </template>
+      </LatestReadingsFragment>
     </div>
   </div>
 </template>
@@ -267,6 +215,8 @@ import {
   getTimeSincePosted
 } from '@/modules/utils'
 import { logDebug, logError } from '@/modules/logger'
+import BsPageHeader from '@/components/BsPageHeader.vue'
+import LatestReadingsFragment from '@/fragments/LatestReadingsFragment.vue'
 
 // Helpers
 const ticker = ref(null)
