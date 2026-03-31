@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest';
-import { mount } from '@vue/test-utils';
+import { mount, flushPromises } from '@vue/test-utils';
 import { createPinia, setActivePinia } from 'pinia';
 import BatchPressureGraphView from '../BatchPressureGraphView.vue';
 import { nextTick } from 'vue';
@@ -148,12 +148,12 @@ describe('BatchPressureGraphView', () => {
       }
     });
 
-    // Wait for the onMounted async calls and the internal 100ms setTimeout
+    // Wait for the onMounted async calls and internal promise completions
     await nextTick();
     await nextTick();
     
-    // We need to wait enough for the internal setTimeout(..., 100)
-    await new Promise(resolve => setTimeout(resolve, 300));
+    // Flush all pending promises
+    await flushPromises();
     await nextTick();
     
     return wrapper;

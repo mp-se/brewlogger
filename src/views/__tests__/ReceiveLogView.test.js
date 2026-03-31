@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest'
-import { mount } from '@vue/test-utils'
+import { mount, flushPromises } from '@vue/test-utils'
 import { setActivePinia } from 'pinia'
 import { createRouter, createMemoryHistory } from 'vue-router'
 import ReceiveLogView from '../ReceiveLogView.vue'
@@ -278,7 +278,7 @@ describe('ReceiveLogView', () => {
 
       const downloadBtn = wrapper.findAll('button').find(b => b.text().includes('Download'))
       await downloadBtn?.trigger('click')
-      await new Promise(resolve => setTimeout(resolve, 50))
+      await flushPromises()
       
       expect(global.fetch).toHaveBeenCalled()
     })

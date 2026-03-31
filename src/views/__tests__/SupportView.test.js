@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { mount } from '@vue/test-utils'
+import { mount, flushPromises } from '@vue/test-utils'
 import { nextTick } from 'vue'
 import SupportView from '../SupportView.vue'
 
@@ -38,7 +38,7 @@ describe('SupportView', () => {
     const wrapper = mount(SupportView)
     
     // Wait for the fetch promise inside onMounted to resolve and trigger updates
-    await new Promise(resolve => setTimeout(resolve, 50))
+    await flushPromises()
     await nextTick()
     
     expect(wrapper.text()).toContain('Support')

@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest'
-import { mount } from '@vue/test-utils'
+import { mount, flushPromises } from '@vue/test-utils'
 import { setActivePinia, createPinia } from 'pinia'
 import BackupView from '../BackupView.vue'
 import { nextTick } from 'vue'
@@ -106,7 +106,7 @@ describe('BackupView - Integration & Coverage Tests', () => {
     await wrapper.vm.createBackup();
 
     // Wait for all the callbacks and promises
-    await new Promise(resolve => setTimeout(resolve, 200));
+    await flushPromises();
 
     const utils = await import('@/modules/utils');
     expect(utils.download).toHaveBeenCalled();
@@ -119,7 +119,7 @@ describe('BackupView - Integration & Coverage Tests', () => {
     const wrapper = await mountWrapper();
     await wrapper.vm.createBackup();
     
-    await new Promise(resolve => setTimeout(resolve, 50));
+    await flushPromises();
     expect(mockStores.global.messageError).toBe('Failed to fetch batches');
   });
 
@@ -137,7 +137,7 @@ describe('BackupView - Integration & Coverage Tests', () => {
     const wrapper = await mountWrapper();
     await wrapper.vm.createBackup();
     
-    await new Promise(resolve => setTimeout(resolve, 50));
+    await flushPromises();
     expect(mockStores.global.messageError).toBe('Failed to fetch devices');
   });
 
@@ -150,7 +150,7 @@ describe('BackupView - Integration & Coverage Tests', () => {
     const wrapper = await mountWrapper();
     await wrapper.vm.createBackup();
     
-    await new Promise(resolve => setTimeout(resolve, 50));
+    await flushPromises();
     const utils = await import('@/modules/utils');
     expect(utils.download).toHaveBeenCalled();
   });
@@ -167,7 +167,7 @@ describe('BackupView - Integration & Coverage Tests', () => {
     const wrapper = await mountWrapper();
     await wrapper.vm.createBackup();
     
-    await new Promise(resolve => setTimeout(resolve, 100));
+    await flushPromises();
     const logger = await import('@/modules/logger');
     expect(logger.logError).toHaveBeenCalled();
   });
