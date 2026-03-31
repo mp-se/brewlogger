@@ -395,4 +395,283 @@ describe('HomeView - Enhanced', () => {
       expect(wrapper.vm.schedulerStatus).toBeDefined()
     })
   })
+
+  describe('Gravity Reading Methods', () => {
+    it('getGravityReadingAge should return empty string for batch with < 2 gravity readings', () => {
+      const wrapper = createWrapper()
+      const batch = new Batch(1, 'Test')
+      batch.gravityCount = 1
+      const age = wrapper.vm.getGravityReadingAge(batch)
+      expect(age).toBe('')
+    })
+
+    it('getGravityOG should return 0.0 for batch with < 2 gravity readings', () => {
+      const wrapper = createWrapper()
+      const batch = new Batch(1, 'Test')
+      batch.gravityCount = 1
+      const og = wrapper.vm.getGravityOG(batch)
+      expect(og).toBe(0.0)
+    })
+
+    it('getLastGravity should return N/A for batch with < 2 gravity readings', () => {
+      const wrapper = createWrapper()
+      const batch = new Batch(1, 'Test')
+      batch.gravityCount = 1
+      const gravity = wrapper.vm.getLastGravity(batch)
+      expect(gravity).toBe('N/A')
+    })
+
+    it('getLastGravity should format gravity value correctly', () => {
+      const wrapper = createWrapper()
+      const batch = new Batch(1, 'Test')
+      batch.gravityCount = 2
+      batch.gravity = [
+        { gravity: 1.050 },
+        { gravity: 1.010 }
+      ]
+      const gravity = wrapper.vm.getLastGravity(batch)
+      expect(gravity).toBeDefined()
+      expect(typeof gravity).toBe('string')
+    })
+  })
+
+  describe('Temperature Methods', () => {
+    it('getLastTemperature should return N/A for batch with no readings', () => {
+      const wrapper = createWrapper()
+      const batch = new Batch(1, 'Test')
+      batch.gravityCount = 0
+      batch.pressureCount = 0
+      const temp = wrapper.vm.getLastTemperature(batch)
+      expect(temp).toBe('N/A')
+    })
+
+    it('getLastTemperature should use gravity reading if available', () => {
+      const wrapper = createWrapper()
+      const batch = new Batch(1, 'Test')
+      batch.gravityCount = 2
+      batch.gravity = [
+        { temperature: 18 },
+        { temperature: 20 }
+      ]
+      const temp = wrapper.vm.getLastTemperature(batch)
+      expect(temp).toBeDefined()
+    })
+
+    it('getLastTemperature should fallback to pressure reading', () => {
+      const wrapper = createWrapper()
+      const batch = new Batch(1, 'Test')
+      batch.gravityCount = 0
+      batch.pressureCount = 2
+      batch.pressure = [
+        { temperature: 18 },
+        { temperature: 22 }
+      ]
+      const temp = wrapper.vm.getLastTemperature(batch)
+      expect(temp).toBeDefined()
+    })
+  })
+
+  describe('Pressure Methods', () => {
+    it('getLastPressure should return N/A for batch with no pressure readings', () => {
+      const wrapper = createWrapper()
+      const batch = new Batch(1, 'Test')
+      batch.pressureCount = 0
+      const pressure = wrapper.vm.getLastPressure(batch)
+      expect(pressure).toBe('N/A')
+    })
+
+    it('getLastPressure should format pressure value correctly', () => {
+      const wrapper = createWrapper()
+      const batch = new Batch(1, 'Test')
+      batch.pressureCount = 2
+      batch.pressure = [
+        { pressure: 2.0 },
+        { pressure: 2.5 }
+      ]
+      const pressure = wrapper.vm.getLastPressure(batch)
+      expect(pressure).toBeDefined()
+    })
+  })
+
+  describe('Activity Reading Age', () => {
+    it('getPressureReadingAge should return empty string for batch with < 2 pressure readings', () => {
+      const wrapper = createWrapper()
+      const batch = new Batch(1, 'Test')
+      batch.pressureCount = 1
+      const age = wrapper.vm.getPressureReadingAge(batch)
+      expect(age).toBe('')
+    })
+
+    it('getPressureReadingAge should calculate time for batch with 2+ pressure readings', () => {
+      const wrapper = createWrapper()
+      const batch = new Batch(1, 'Test')
+      batch.pressureCount = 2
+      const now = new Date()
+      const fiveMinutesAgo = new Date(now.getTime() - 5 * 60 * 1000)
+      batch.pressure = [
+        { created: fiveMinutesAgo.toISOString() },
+        { created: now.toISOString() }
+      ]
+      const age = wrapper.vm.getPressureReadingAge(batch)
+      expect(typeof age).toBe('string')
+    })
+  })
+
+  describe('Timer Management', () => {
+    it('should clear ticker on unmount', async () => {
+      const wrapper = createWrapper()
+      const clearIntervalSpy = vi.spyOn(global, 'clearInterval')
+      wrapper.vm.ticker = setInterval(() => {}, 5000)
+      
+      wrapper.unmount()
+      
+      expect(clearIntervalSpy).toHaveBeenCalled()
+      clearIntervalSpy.mockRestore()
+    })
+
+    it('should clear readingsTicker on unmount', async () => {
+      const wrapper = createWrapper()
+      const clearIntervalSpy = vi.spyOn(global, 'clearInterval')
+      wrapper.vm.readingsTicker = setInterval(() => {}, 5000)
+      
+      wrapper.unmount()
+      
+      expect(clearIntervalSpy).toHaveBeenCalled()
+      clearIntervalSpy.mockRestore()
+    })
+  })
+
+  describe('Gravity Count Computation', () => {
+    it('should calculate total gravity count from all batches', () => {
+      const wrapper = createWrapper()
+      const batchStore = useBatchStore()
+      
+      expect(typeof wrapper.vm.gravityCount).toBe('number')
+    })
+
+    it('should return 0 when no batches have gravity readings', () => {
+      const wrapper = createWrapper()
+      expect(wrapper.vm.gravityCount).toBe(0)
+    })
+  })
+
+  describe('Pour Count Computation', () => {
+    it('should calculate total pour count from all batches', () => {
+      const wrapper = createWrapper()
+      expect(typeof wrapper.vm.pourCount).toBe('number')
+    })
+
+    it('should return 0 when no batches have pour readings', () => {
+      const wrapper = createWrapper()
+      expect(wrapper.vm.pourCount).toBe(0)
+    })
+  })
+
+  describe('Pressure Count Computation', () => {
+    it('should calculate total pressure count from all batches', () => {
+      const wrapper = createWrapper()
+      expect(typeof wrapper.vm.pressureCount).toBe('number')
+    })
+
+    it('should return 0 when no batches have pressure readings', () => {
+      const wrapper = createWrapper()
+      expect(wrapper.vm.pressureCount).toBe(0)
+    })
+  })
+
+  describe('Device Count Computation', () => {
+    it('should return device count from device store', () => {
+      const wrapper = createWrapper()
+      const deviceStore = useDeviceStore()
+      expect(wrapper.vm.deviceCount).toBe(deviceStore.deviceList.length)
+    })
+  })
+
+  describe('Batch Count Computation', () => {
+    it('should return batch count from batch store', () => {
+      const wrapper = createWrapper()
+      const batchStore = useBatchStore()
+      expect(wrapper.vm.batchCount).toBe(batchStore.batchList.length)
+    })
+  })
+
+  describe('Async Chamber and Kegmon Fetch', () => {
+    it('should initialize chamber temps as empty array', () => {
+      const wrapper = createWrapper()
+      expect(Array.isArray(wrapper.vm.chamberTemps)).toBe(true)
+      expect(wrapper.vm.chamberTemps.length).toBe(0)
+    })
+
+    it('should initialize kegmon taps as empty array', () => {
+      const wrapper = createWrapper()
+      expect(Array.isArray(wrapper.vm.kegmonTaps)).toBe(true)
+      expect(wrapper.vm.kegmonTaps.length).toBe(0)
+    })
+  })
+
+  describe('Reading Display', () => {
+    it('should support adding and displaying gravity readings', async () => {
+      const wrapper = createWrapper()
+      const reading = {
+        id: 1,
+        batchName: 'Test Batch',
+        gravity: 1.050,
+        temperature: 20,
+        battery: 4.5,
+        created: new Date().toISOString()
+      }
+      wrapper.vm.latestGravityReadings.push(reading)
+      await wrapper.vm.$nextTick()
+
+      expect(wrapper.vm.latestGravityReadings.length).toBe(1)
+      expect(wrapper.vm.latestGravityReadings[0].batchName).toBe('Test Batch')
+    })
+
+    it('should support adding and displaying pressure readings', async () => {
+      const wrapper = createWrapper()
+      const reading = {
+        id: 1,
+        batchName: 'Test Batch',
+        pressure: 2.5,
+        temperature: 20,
+        battery: 4.5,
+        created: new Date().toISOString()
+      }
+      wrapper.vm.latestPressureReadings.push(reading)
+      await wrapper.vm.$nextTick()
+
+      expect(wrapper.vm.latestPressureReadings.length).toBe(1)
+    })
+
+    it('should support adding and displaying pour readings', async () => {
+      const wrapper = createWrapper()
+      const reading = {
+        id: 1,
+        batchName: 'Test Batch',
+        volume: 50,
+        pour: 20,
+        created: new Date().toISOString()
+      }
+      wrapper.vm.latestPourReadings.push(reading)
+      await wrapper.vm.$nextTick()
+
+      expect(wrapper.vm.latestPourReadings.length).toBe(1)
+    })
+  })
+
+  describe('Fermentation Control List', () => {
+    it('should initialize fermentation control list', () => {
+      const wrapper = createWrapper()
+      expect(Array.isArray(wrapper.vm.fermentationControlList)).toBe(true)
+    })
+
+    it('should support adding fermentation controller device', async () => {
+      const wrapper = createWrapper()
+      const device = new Device(1, 'abc123', 'http://localhost:8080/', 'Chamber Controller', 'Chamber-Controller')
+      wrapper.vm.fermentationControlList.push(device)
+      await wrapper.vm.$nextTick()
+
+      expect(wrapper.vm.fermentationControlList.length).toBe(1)
+    })
+  })
 })

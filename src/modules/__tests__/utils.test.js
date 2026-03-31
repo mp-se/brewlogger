@@ -24,7 +24,9 @@ import {
   validateCurrentForm,
   download,
   getPressureDataAnalytics,
-  getGravityDataAnalytics
+  getGravityDataAnalytics,
+  formatTime,
+  formatTimeShort
 } from '../utils'
 
 // Mock the logger
@@ -42,7 +44,8 @@ vi.mock('../pinia', () => ({
       isPressureKPA: false,
       isPressureBAR: true,
       isVolumeUs: false,
-      isVolumeUk: false
+      isVolumeUk: false,
+      isGravitySG: true
     }
   }
 }))
@@ -843,6 +846,376 @@ describe('utils.js - Unit Conversions', () => {
       const result = getTimeSincePosted(longAgo.toISOString())
       expect(result).toBeDefined()
       expect(typeof result).toBe('string')
+    })
+  })
+
+  describe('formatTime - Full Time Duration Formatting', () => {
+    it('should format seconds only', () => {
+      const result = formatTime(45)
+      expect(result).toContain('45s')
+      expect(result).not.toContain('m')
+      expect(result).not.toContain('h')
+      expect(result).not.toContain('d')
+      expect(result).not.toContain('w')
+    })
+
+    it('should format minutes and seconds', () => {
+      const result = formatTime(125) // 2 minutes 5 seconds
+      expect(result).toContain('2m')
+      expect(result).toContain('5s')
+    })
+
+    it('should format hours, minutes, and seconds', () => {
+      const result = formatTime(3725) // 1 hour, 2 minutes, 5 seconds
+      expect(result).toContain('1h')
+      expect(result).toContain('2m')
+      expect(result).toContain('5s')
+    })
+
+    it('should format days, hours, minutes, and seconds', () => {
+      const result = formatTime(90125) // 1 day, 1 hour, 2 minutes, 5 seconds
+      expect(result).toContain('1d')
+      expect(result).toContain('1h')
+      expect(result).toContain('2m')
+      expect(result).toContain('5s')
+    })
+
+    it('should format weeks and days', () => {
+      const result = formatTime(604800 + 86400) // 8 days = 1 week + 1 day
+      expect(result).toContain('w') // weeks
+      expect(result).toContain('d') // days
+    })
+
+    it('should handle zero seconds', () => {
+      const result = formatTime(0)
+      expect(result.trim()).toBe('')
+    })
+
+    it('should handle exactly one minute', () => {
+      const result = formatTime(60)
+      expect(result).toContain('1m')
+    })
+
+    it('should handle exactly one hour', () => {
+      const result = formatTime(3600)
+      expect(result).toContain('1h')
+    })
+
+    it('should handle exactly one day', () => {
+      const result = formatTime(86400)
+      expect(result).toContain('1d')
+    })
+
+    it('should handle large durations (multiple weeks)', () => {
+      const result = formatTime(7 * 86400 + 3600) // 1 week, 1 hour
+      expect(result).toBeDefined()
+      expect(typeof result).toBe('string')
+      expect(result.length).toBeGreaterThan(0)
+    })
+
+    it('should handle mixed time units', () => {
+      const result = formatTime(604800) // 1 week exactly
+      expect(result).toContain('w')
+      expect(typeof result).toBe('string')
+    })
+  })
+
+  describe('formatTimeShort - Short Time Duration Formatting', () => {
+    it('should format seconds only in short format', () => {
+      const result = formatTimeShort(45)
+      expect(result.trim()).toBe('') // formatTimeShort doesn't format seconds
+    })
+
+    it('should format minutes only in short format', () => {
+      const result = formatTimeShort(300) // 5 minutes
+      expect(result.trim()).toBe('') // formatTimeShort doesn't format minutes or seconds
+    })
+
+    it('should format hours in short format', () => {
+      const result = formatTimeShort(3600) // 1 hour
+      expect(result).toContain('1h') // formatTimeShort does format hours
+    })
+
+    it('should format days in short format', () => {
+      const result = formatTimeShort(86400) // 1 day
+      expect(result).toContain('1d')
+    })
+
+    it('should format weeks and days in short format', () => {
+      const result = formatTimeShort(604800) // 1 week
+      expect(result).toContain('w')
+    })
+
+    it('should handle zero in short format', () => {
+      const result = formatTimeShort(0)
+      expect(typeof result).toBe('string')
+    })
+
+    it('should handle large durations in short format', () => {
+      const result = formatTimeShort(1814400) // 21 days
+      expect(typeof result).toBe('string')
+      expect(result).toContain('w')
+    })
+
+    it('should handle exactly 7 days in short format', () => {
+      const result = formatTimeShort(604800) // 7 days = 1 week
+      expect(result).toContain('w')
+    })
+
+    it('should include days in short format when present', () => {
+      const result = formatTimeShort(777600) // 9 days
+      expect(result).toContain('d')
+    })
+
+    it('should omit minutes and seconds in short format', () => {
+      const result = formatTimeShort(90125) // 1d 1h 2m 5s
+      expect(result).not.toContain('m') // formatTimeShort omits minutes
+      expect(result).not.toContain('s') // formatTimeShort omits seconds
+      expect(result).toContain('h') // but does include hours
+    })
+  })
+
+  describe('Edge Cases - Boundary Conditions', () => {
+    it('should handle very large gravity values in analytics', () => {
+      const now = new Date()
+      const gravityList = [{ gravity: 2.0, temperature: 20, created: now.toISOString(), active: true }]
+      const result = getGravityDataAnalytics(gravityList)
+      expect(result.gravity.max).toBeDefined()
+    })
+
+    it('should handle null temperature in gravity analytics', () => {
+      const now = new Date()
+      const gravityList = [
+        { gravity: 1.050, temperature: null, created: now.toISOString(), active: true },
+        { gravity: 1.030, temperature: 20, created: now.toISOString(), active: true }
+      ]
+      const result = getGravityDataAnalytics(gravityList)
+      expect(result.temperature.max).toBeDefined()
+    })
+
+    it('should handle all inactive readings', () => {
+      const pressureList = [
+        { pressure: 10, temperature: 20, created: new Date().toISOString(), active: false },
+        { pressure: 12, temperature: 22, created: new Date().toISOString(), active: false }
+      ]
+      const result = getPressureDataAnalytics(pressureList)
+      expect(result.readings).toBe(0)
+    })
+
+    it('should handle single inactive reading', () => {
+      const gravityList = [
+        { gravity: 1.050, temperature: 20, created: new Date().toISOString(), active: false }
+      ]
+      const result = getGravityDataAnalytics(gravityList)
+      expect(result.readings).toBe(0) // No active readings
+      expect(result.gravity).toBeDefined() // Structure exists
+    })
+
+    it('should format temperature at exactly -273 boundary', () => {
+      const result = getFormattedTemperature(-273)
+      expect(result).toBe('--')
+    })
+
+    it('should handle fractional seconds in getTimeSincePosted', () => {
+      const now = new Date()
+      const almostNow = new Date(now.getTime() - 30 * 1000)
+      const result = getTimeSincePosted(almostNow.toISOString())
+      expect(result).toBe('just now')
+    })
+
+    it('should handle exactly 1 hour boundary', () => {
+      const now = new Date()
+      const exactlyHourAgo = new Date(now.getTime() - 60 * 60 * 1000)
+      const result = getTimeSincePosted(exactlyHourAgo.toISOString())
+      expect(result).toMatch(/^\d+ h ago$/)
+    })
+
+    it('should handle exactly 1 day boundary', () => {
+      const now = new Date()
+      const exactlyDayAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000)
+      const result = getTimeSincePosted(exactlyDayAgo.toISOString())
+      expect(result).toMatch(/^\d+ d ago$/)
+    })
+
+    it('should handle exactly 7 days boundary', () => {
+      const now = new Date()
+      const exactlyWeekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000)
+      const result = getTimeSincePosted(exactlyWeekAgo.toISOString())
+      expect(result).toMatch(/^\d+ w ago$/)
+    })
+
+    it('should truncate string at exact boundary', () => {
+      const result = truncateString('12345', 5)
+      expect(result).toBe('12345')
+      expect(result).not.toContain('...')
+    })
+
+    it('should truncate string one character over', () => {
+      const result = truncateString('123456', 5)
+      expect(result).toBe('12345...')
+      expect(result.length).toBe(8)
+    })
+  })
+
+  describe('Config-Dependent Formatting Edge Cases', () => {
+    it('should round pressure conversions correctly', () => {
+      const pressure = 14.5038
+      const result = getFormattedPressure(pressure)
+      expect(result).toBeDefined()
+      expect(typeof result).toBe('string')
+    })
+
+    it('should handle zero temperature in formatted output', () => {
+      const result = getFormattedTemperature(0)
+      expect(result).toContain('0.0')
+      expect(result).toContain('°')
+    })
+
+    it('should handle negative gravity (invalid but should not crash)', () => {
+      const now = new Date()
+      const gravityList = [
+        { gravity: -0.5, temperature: 20, created: now.toISOString(), active: true },
+        { gravity: 1.050, temperature: 20, created: now.toISOString(), active: true }
+      ]
+      const result = getGravityDataAnalytics(gravityList)
+      expect(result).toBeDefined()
+      expect(typeof result).toBe('object')
+    })
+
+    it('should handle very precise decimal values', () => {
+      const result = roundValue(1.23456789, 5)
+      expect(result).toBe(1.23457)
+    })
+
+    it('should handle negative pressure values', () => {
+      const now = new Date()
+      const pressureList = [
+        { pressure: -10, temperature: 20, created: now.toISOString(), active: true }
+      ]
+      const result = getPressureDataAnalytics(pressureList)
+      expect(result).toBeDefined()
+    })
+  })
+
+  describe('Binary Download and Text Encoding Branches', () => {
+    let createElementSpy, setAttributeSpy, clickSpy
+
+    beforeEach(() => {
+      clickSpy = vi.fn()
+      setAttributeSpy = vi.fn()
+      createElementSpy = vi.spyOn(document, 'createElement').mockReturnValue({
+        setAttribute: setAttributeSpy,
+        click: clickSpy
+      })
+      vi.spyOn(URL, 'createObjectURL').mockReturnValue('blob:mock-url')
+    })
+
+    it('should handle binary content with blob URL', () => {
+      download('binary content', 'application/octet-stream', 'file.bin')
+
+      expect(createElementSpy).toHaveBeenCalledWith('a')
+      expect(setAttributeSpy).toHaveBeenCalledWith('href', 'blob:mock-url')
+      expect(setAttributeSpy).toHaveBeenCalledWith('download', 'file.bin')
+      expect(clickSpy).toHaveBeenCalled()
+    })
+
+    it('should use blob URL for application/json', () => {
+      download('{"key": "value"}', 'application/json', 'data.json')
+
+      expect(setAttributeSpy).toHaveBeenCalledWith('href', 'blob:mock-url')
+      expect(clickSpy).toHaveBeenCalled()
+    })
+
+    it('should use data URL for text/csv', () => {
+      download('col1,col2\nval1,val2', 'text/csv', 'data.csv')
+
+      const hrefCalls = setAttributeSpy.mock.calls.filter(call => call[0] === 'href')
+      expect(hrefCalls.length).toBeGreaterThan(0)
+      expect(hrefCalls[0][1]).toContain('data:text/csv')
+    })
+
+    it('should use data URL for text/plain', () => {
+      download('plain text', 'text/plain', 'note.txt')
+
+      const hrefCalls = setAttributeSpy.mock.calls.filter(call => call[0] === 'href')
+      expect(hrefCalls.length).toBeGreaterThan(0)
+      expect(hrefCalls[0][1]).toContain('data:text/plain')
+    })
+
+    it('should encode special characters in data URL', () => {
+      const content = 'Special chars: <>&"\'%'
+      download(content, 'text/plain', 'special.txt')
+
+      const hrefCalls = setAttributeSpy.mock.calls.filter(call => call[0] === 'href')
+      expect(hrefCalls[0][1]).toContain('data:text/plain')
+      // Special characters should be percent-encoded in the data URL
+      expect(hrefCalls[0][1]).toContain('%3C') // <
+      expect(hrefCalls[0][1]).toContain('%3E') // >
+    })
+
+    it('should use data URL for text/html', () => {
+      download('<h1>HTML Content</h1>', 'text/html', 'page.html')
+
+      const hrefCalls = setAttributeSpy.mock.calls.filter(call => call[0] === 'href')
+      expect(hrefCalls.length).toBeGreaterThan(0)
+      expect(hrefCalls[0][1]).toContain('data:text/html')
+    })
+  })
+
+  describe('Gravity Analytics with Plato Configuration', () => {
+    it('should process gravity data correctly with default SG config', () => {
+      const now = new Date()
+      const gravityList = [
+        { gravity: 1.050, temperature: 20, created: now.toISOString(), active: true },
+        { gravity: 1.010, temperature: 20, created: new Date(now.getTime() + 3600000).toISOString(), active: true }
+      ]
+
+      const result = getGravityDataAnalytics(gravityList)
+
+      expect(result.gravity).toBeDefined()
+      expect(result.gravity.minString).toContain('SG')
+      expect(result.gravity.maxString).toContain('SG')
+    })
+
+    it('should include temperature strings in analytics', () => {
+      const now = new Date()
+      const gravityList = [
+        { gravity: 1.050, temperature: 15, created: now.toISOString(), active: true },
+        { gravity: 1.010, temperature: 25, created: new Date(now.getTime() + 3600000).toISOString(), active: true }
+      ]
+
+      const result = getGravityDataAnalytics(gravityList)
+
+      expect(result.temperature.minString).toContain('C')
+      expect(result.temperature.maxString).toContain('C')
+    })
+  })
+
+  describe('Pressure Analytics with Temperature Parsing', () => {
+    it('should parse date components in pressure analytics', () => {
+      const timestamp = '2025-03-15T14:30:45Z'
+      const pressureList = [
+        { pressure: 10, temperature: 20, created: timestamp, active: true }
+      ]
+
+      const result = getPressureDataAnalytics(pressureList)
+
+      expect(result.date.firstDate).toBe('2025-03-15')
+      expect(result.date.firstTime).toBe('14:30:45')
+    })
+
+    it('should handle pressure analytics with multiple readings spanning hours', () => {
+      const now = new Date()
+      const pressureList = [
+        { pressure: 10, temperature: 20, created: now.toISOString(), active: true },
+        { pressure: 11, temperature: 21, created: new Date(now.getTime() + 300000).toISOString(), active: true } // 5 minutes later
+      ]
+
+      const result = getPressureDataAnalytics(pressureList)
+
+      expect(result.averageIntervalString).toContain('m') // should be in minutes
+      expect(result.averageIntervalString).not.toContain('w')
+      expect(result.averageIntervalString).not.toContain('d')
     })
   })
 })

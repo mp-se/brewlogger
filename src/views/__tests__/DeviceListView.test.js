@@ -1,35 +1,33 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { mount, flushPromises } from '@vue/test-utils'
 import DeviceListView from '../DeviceListView.vue'
-import { createPinia, setActivePinia } from 'pinia'
 
-// V2 REWRITE
-const mockDeviceStore = vi.hoisted(() => ({
-  deviceList: [],
-  load: vi.fn(),
-  deleteDevice: vi.fn().mockResolvedValue(true),
-  updateDevice: vi.fn().mockResolvedValue(true),
-  addDevice: vi.fn().mockResolvedValue(true),
-  searchNetwork: vi.fn().mockResolvedValue([]),
-  proxyRequest: vi.fn().mockResolvedValue({}),
-  anyBatchesForDevice: vi.fn(() => false)
-}))
-
-const mockGlobalStore = vi.hoisted(() => ({
-  disabled: false,
-  messageError: '',
-  messageSuccess: '',
-  deviceListFilterSoftware: '*',
-  updatedDeviceData: {},
-  clearMessages: vi.fn(),
-  baseURL: 'http://localhost:8080/',
-  token: 'mock-token',
-  fetchTimout: 5000
-}))
-
-const mockBatchStore = vi.hoisted(() => ({
-  batchList: [],
-  anyBatchesForDevice: vi.fn(() => false)
+// Mock stores
+const { mockDeviceStore, mockGlobalStore, mockBatchStore } = vi.hoisted(() => ({
+  mockDeviceStore: {
+    deviceList: [],
+    load: vi.fn(),
+    deleteDevice: vi.fn().mockResolvedValue(true),
+    updateDevice: vi.fn().mockResolvedValue(true),
+    addDevice: vi.fn().mockResolvedValue(true),
+    searchNetwork: vi.fn().mockResolvedValue([]),
+    proxyRequest: vi.fn().mockResolvedValue({})
+  },
+  mockGlobalStore: {
+    disabled: false,
+    messageError: '',
+    messageSuccess: '',
+    deviceListFilterSoftware: '*',
+    updatedDeviceData: {},
+    clearMessages: vi.fn(),
+    baseURL: 'http://localhost:8080/',
+    token: 'mock-token',
+    fetchTimout: 5000
+  },
+  mockBatchStore: {
+    batchList: [],
+    anyBatchesForDevice: vi.fn(() => false)
+  }
 }))
 
 const mockRouter = vi.hoisted(() => ({
@@ -59,9 +57,14 @@ const mockDetect = vi.hoisted(() => ({
   detectSoftware: vi.fn().mockReturnValue('Gravitymon')
 }))
 
-vi.mock('@/modules/deviceStore', () => ({ useDeviceStore: () => mockDeviceStore }))
-vi.mock('@/modules/globalStore', () => ({ useGlobalStore: () => mockGlobalStore }))
-vi.mock('@/modules/batchStore', () => ({ useBatchStore: () => mockBatchStore }))
+// Mock pinia exports
+vi.mock('@/modules/pinia', () => ({
+  default: {},
+  global: mockGlobalStore,
+  deviceStore: mockDeviceStore,
+  batchStore: mockBatchStore
+}))
+
 vi.mock('@/modules/router', () => ({ default: mockRouter }))
 vi.mock('@/modules/ui', () => mockUi)
 vi.mock('@/modules/logger', () => mockLogger)
@@ -115,7 +118,6 @@ describe('DeviceListView.vue', () => {
   }
 
   beforeEach(() => {
-    setActivePinia(createPinia())
     vi.clearAllMocks()
     mockDeviceStore.deviceList = [
       mockDevice(1, 'device1', 'Gravitymon'),

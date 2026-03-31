@@ -554,4 +554,142 @@ describe('useDeviceStore', () => {
       expect(store.devices.length).toBe(1)
     })
   })
+
+  describe('proxyRequest Action', () => {
+    it('should make a proxy request successfully', async () => {
+      const store = useDeviceStore()
+      const mockResponse = { status: 'success', data: 'test' }
+
+      global.fetch = vi.fn().mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        json: vi.fn().mockResolvedValueOnce(mockResponse)
+      })
+
+      const result = await store.proxyRequest('GET', 'http://device.local/api/status', {}, null)
+
+      expect(result).toEqual(mockResponse)
+      expect(global.fetch).toHaveBeenCalledWith(
+        'http://localhost:8080/api/device/proxy_fetch/',
+        expect.objectContaining({ method: 'POST' })
+      )
+    })
+
+    it('should return null if proxy request fails with non-200 status', async () => {
+      const store = useDeviceStore()
+
+      global.fetch = vi.fn().mockResolvedValueOnce({
+        status: 500
+      })
+
+      const result = await store.proxyRequest('GET', 'http://device.local/api/status', {}, null)
+
+      expect(result).toBeNull()
+    })
+
+    it('should return null on proxy request error', async () => {
+      const store = useDeviceStore()
+
+      global.fetch = vi.fn().mockRejectedValueOnce(new Error('Network error'))
+
+      const result = await store.proxyRequest('POST', 'http://device.local/api/config', { 'Content-Type': 'application/json' }, '{"key":"value"}')
+
+      expect(result).toBeNull()
+    })
+
+    it('should handle proxy request with various HTTP methods', async () => {
+      const store = useDeviceStore()
+      const mockResponse = { success: true }
+
+      global.fetch = vi.fn().mockResolvedValueOnce({
+        status: 200,
+        json: vi.fn().mockResolvedValueOnce(mockResponse)
+      })
+
+      const result = await store.proxyRequest('DELETE', 'http://device.local/api/resource', {}, null)
+
+      expect(result).toEqual(mockResponse)
+    })
+  })
+
+  describe('searchNetwork Action', () => {
+    it('should search network for devices successfully', async () => {
+      const store = useDeviceStore()
+      const mockMdnsList = [
+        { name: 'device1.local', ip: '192.168.1.100', port: 80 },
+        { name: 'device2.local', ip: '192.168.1.101', port: 80 }
+      ]
+
+      global.fetch = vi.fn().mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        json: vi.fn().mockResolvedValueOnce(mockMdnsList)
+      })
+
+      const result = await store.searchNetwork()
+
+      expect(result).toBeTruthy()
+      expect(Array.isArray(result)).toBe(true)
+      expect(global.fetch).toHaveBeenCalledWith(
+        'http://localhost:8080/api/device/mdns/',
+        expect.objectContaining({ method: 'GET' })
+      )
+    })
+
+    it('should return null if search returns non-ok response', async () => {
+      const store = useDeviceStore()
+
+      global.fetch = vi.fn().mockResolvedValueOnce({
+        ok: false,
+        status: 503
+      })
+
+      const result = await store.searchNetwork()
+
+      expect(result).toBeNull()
+    })
+
+    it('should return null on search network error', async () => {
+      const store = useDeviceStore()
+
+      global.fetch = vi.fn().mockRejectedValueOnce(new Error('Search error'))
+
+      const result = await store.searchNetwork()
+
+      expect(result).toBeNull()
+    })
+
+    it('should handle empty MDNS list', async () => {
+      const store = useDeviceStore()
+
+      global.fetch = vi.fn().mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        json: vi.fn().mockResolvedValueOnce([])
+      })
+
+      const result = await store.searchNetwork()
+
+      expect(result).toBeTruthy()
+      expect(result.length).toBe(0)
+    })
+
+    it('should properly create MDNS objects from response', async () => {
+      const store = useDeviceStore()
+      const mockMdnsData = [
+        { name: 'gravitymon1.local', ip: '192.168.1.50', port: 80, mdnsName: 'gravitymon1' }
+      ]
+
+      global.fetch = vi.fn().mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        json: vi.fn().mockResolvedValueOnce(mockMdnsData)
+      })
+
+      const result = await store.searchNetwork()
+
+      expect(result).toBeTruthy()
+      expect(result.length).toBe(1)
+    })
+  })
 })
