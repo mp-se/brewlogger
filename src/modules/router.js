@@ -1,31 +1,33 @@
-import { ref } from 'vue'
+import { ref, defineAsyncComponent } from 'vue'
 import { createRouter, createWebHistory } from 'vue-router'
 import { global } from '@/modules/pinia'
-import HomeView from '@/views/HomeView.vue'
-import DeviceView from '@/views/DeviceView.vue'
-import DeviceFlashView from '@/views/DeviceFlashView.vue'
-import DeviceLogView from '@/views/DeviceLogView.vue'
-import DeviceListView from '@/views/DeviceListView.vue'
-import BatchView from '@/views/BatchView.vue'
-import BatchListView from '@/views/BatchListView.vue'
-import TapListView from '@/views/TapListView.vue'
-import TapPourListView from '@/views/TapPourListView.vue'
-import BatchGravityListView from '@/views/BatchGravityListView.vue'
-import BatchGravityTestView from '@/views/BatchGravityTestView.vue'
-import BatchGravityGraphView from '@/views/BatchGravityGraphView.vue'
-import BatchGravityGraphCompareView from '@/views/BatchGravityGraphCompareView.vue'
-import BatchPressureGraphView from '@/views/BatchPressureGraphView.vue'
-import BatchPressureListView from '@/views/BatchPressureListView.vue'
-import BatchFermentationControlView from '@/views/BatchFermentationControlView.vue'
-import BatchPressureView from '@/views/BatchPressureView.vue'
-import AboutView from '@/views/AboutView.vue'
-import SettingsView from '@/views/SettingsView.vue'
-import BackupView from '@/views/BackupView.vue'
-import SupportView from '@/views/SupportView.vue'
-import SystemLogView from '@/views/SystemLogView.vue'
-import ReceiveLogView from '@/views/ReceiveLogView.vue'
-import NotFoundView from '@/views/NotFoundView.vue'
 import { logDebug } from '@/modules/logger'
+
+// Lazy-loaded view components for better initial load time
+const HomeView = defineAsyncComponent(() => import('@/views/HomeView.vue'))
+const DeviceView = defineAsyncComponent(() => import('@/views/DeviceView.vue'))
+const DeviceFlashView = defineAsyncComponent(() => import('@/views/DeviceFlashView.vue'))
+const DeviceLogView = defineAsyncComponent(() => import('@/views/DeviceLogView.vue'))
+const DeviceListView = defineAsyncComponent(() => import('@/views/DeviceListView.vue'))
+const BatchView = defineAsyncComponent(() => import('@/views/BatchView.vue'))
+const BatchListView = defineAsyncComponent(() => import('@/views/BatchListView.vue'))
+const TapListView = defineAsyncComponent(() => import('@/views/TapListView.vue'))
+const TapPourListView = defineAsyncComponent(() => import('@/views/TapPourListView.vue'))
+const BatchGravityListView = defineAsyncComponent(() => import('@/views/BatchGravityListView.vue'))
+const BatchGravityTestView = defineAsyncComponent(() => import('@/views/BatchGravityTestView.vue'))
+const BatchGravityGraphView = defineAsyncComponent(() => import('@/views/BatchGravityGraphView.vue'))
+const BatchGravityGraphCompareView = defineAsyncComponent(() => import('@/views/BatchGravityGraphCompareView.vue'))
+const BatchPressureGraphView = defineAsyncComponent(() => import('@/views/BatchPressureGraphView.vue'))
+const BatchPressureListView = defineAsyncComponent(() => import('@/views/BatchPressureListView.vue'))
+const BatchFermentationControlView = defineAsyncComponent(() => import('@/views/BatchFermentationControlView.vue'))
+const BatchPressureView = defineAsyncComponent(() => import('@/views/BatchPressureView.vue'))
+const AboutView = defineAsyncComponent(() => import('@/views/AboutView.vue'))
+const SettingsView = defineAsyncComponent(() => import('@/views/SettingsView.vue'))
+const BackupView = defineAsyncComponent(() => import('@/views/BackupView.vue'))
+const SupportView = defineAsyncComponent(() => import('@/views/SupportView.vue'))
+const SystemLogView = defineAsyncComponent(() => import('@/views/SystemLogView.vue'))
+const ReceiveLogView = defineAsyncComponent(() => import('@/views/ReceiveLogView.vue'))
+const NotFoundView = defineAsyncComponent(() => import('@/views/NotFoundView.vue'))
 
 const routes = [
   {

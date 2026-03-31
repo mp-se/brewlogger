@@ -249,5 +249,91 @@ describe('FermentationStepFragment - Fermentation Steps Table', () => {
       const rows = wrapper.findAll('tbody tr')
       expect(rows.length).toBe(50)
     })
+
+    it('should display "Step 1" for order 0', () => {
+      const stepsWithZeroOrder = [
+        {
+          order: 0,
+          date: '2024-01-15 to 2024-01-20',
+          temp: '20°C',
+          days: '5',
+          name: 'Primary',
+          type: 'Mash'
+        }
+      ]
+      const wrapper = mount(FermentationStepFragment, {
+        props: { fermentationSteps: stepsWithZeroOrder },
+        global: {
+          components: { BsInputReadonly, BsInputBase }
+        }
+      })
+      // Get the first data cell in the step order column
+      const firstCell = wrapper.find('tbody tr th[scope="row"]')
+      expect(firstCell.text()).toBe('1')
+      expect(firstCell.text()).not.toContain('0')
+    })
+
+    it('should handle steps with null temperature gracefully', () => {
+      const stepsWithNullTemp = [
+        {
+          order: 0,
+          date: '2024-01-15 to 2024-01-20',
+          temp: null,
+          days: '5',
+          name: 'Primary',
+          type: 'Mash'
+        }
+      ]
+      const wrapper = mount(FermentationStepFragment, {
+        props: { fermentationSteps: stepsWithNullTemp },
+        global: {
+          components: { BsInputReadonly, BsInputBase }
+        }
+      })
+      const rows = wrapper.findAll('tbody tr')
+      expect(rows.length).toBe(1)
+    })
+
+    it('should handle steps with undefined temperature gracefully', () => {
+      const stepsWithUndefinedTemp = [
+        {
+          order: 0,
+          date: '2024-01-15 to 2024-01-20',
+          temp: undefined,
+          days: '5',
+          name: 'Primary',
+          type: 'Mash'
+        }
+      ]
+      const wrapper = mount(FermentationStepFragment, {
+        props: { fermentationSteps: stepsWithUndefinedTemp },
+        global: {
+          components: { BsInputReadonly, BsInputBase }
+        }
+      })
+      const rows = wrapper.findAll('tbody tr')
+      expect(rows.length).toBe(1)
+    })
+
+    it('should handle empty string values gracefully', () => {
+      const stepsWithEmpty = [
+        {
+          order: 0,
+          date: '',
+          temp: '',
+          days: '',
+          name: '',
+          type: ''
+        }
+      ]
+      const wrapper = mount(FermentationStepFragment, {
+        props: { fermentationSteps: stepsWithEmpty },
+        global: {
+          components: { BsInputReadonly, BsInputBase }
+        }
+      })
+      const rows = wrapper.findAll('tbody tr')
+      expect(rows.length).toBe(1)
+    })
   })
 })
