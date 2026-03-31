@@ -1,8 +1,6 @@
 <template>
   <div class="container">
-    <p></p>
-    <p class="h3">Batch</p>
-    <hr />
+    <BsPageHeader title="Batch" />
 
     <template v-if="batch != null">
       <form @submit.prevent="save" class="needs-validation" novalidate>
@@ -269,6 +267,7 @@ import { logDebug } from '@/modules/logger'
 import FermentationStepFragment from '@/fragments/FermentationStepFragment.vue'
 import { useGravityConversion } from '@/modules/useUnitConversion'
 import { BEER_STYLES } from '@/modules/constants/beerStyles'
+import BsPageHeader from '@/components/BsPageHeader.vue'
 
 const batch = ref(null)
 const batchSaved = ref(null)
