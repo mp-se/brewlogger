@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest'
-import { mount, flushPromises } from '@vue/test-utils'
+import { mount } from '@vue/test-utils'
 import { createPinia, setActivePinia } from 'pinia'
 import SettingsView from '../SettingsView.vue'
 import BsInputRadio from '../../components/BsInputRadio.vue'
@@ -132,7 +132,7 @@ describe('SettingsView', () => {
       utils.validateCurrentForm.mockReturnValue(false)
 
       // Call saveSettings - it should return early without calling config.save
-      const result = wrapper.vm.saveSettings()
+      wrapper.vm.saveSettings()
       
       // The method doesn't return anything, but we can verify that it didn't crash
       expect(utils.validateCurrentForm).toHaveBeenCalled()
@@ -252,7 +252,7 @@ describe('SettingsView', () => {
     })
 
     it('should have temperature format option in config', () => {
-      const wrapper = mount(SettingsView, {
+      mount(SettingsView, {
         global: {
           components: {
             BsInputRadio,

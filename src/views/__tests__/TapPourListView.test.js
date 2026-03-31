@@ -1,11 +1,9 @@
 import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest'
-import { mount, flushPromises } from '@vue/test-utils'
-import { createPinia, setActivePinia } from 'pinia'
+import { mount } from '@vue/test-utils'
 import { createRouter, createMemoryHistory } from 'vue-router'
+import { setActivePinia } from 'pinia'
 import TapPourListView from '../TapPourListView.vue'
 import piniaInstance from '@/modules/pinia'
-import { usePourStore } from '@/modules/pourStore'
-import { useBatchStore } from '@/modules/batchStore'
 import { Pour } from '@/modules/classes'
 
 vi.mock('@/modules/logger', () => ({
