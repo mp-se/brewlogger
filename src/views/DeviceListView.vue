@@ -23,23 +23,29 @@
         <thead>
           <tr>
             <th scope="col" class="col-sm-3">
-              <div :class="sortedClass('mdns')">
+              <div :class="getSortedClass('mdns')">
                 mDNS&nbsp;
-                <a class="icon-link icon-link-hover" @click="sortList(deviceList, 'mdns', 'str')">
+                <a
+                  class="icon-link icon-link-hover"
+                  @click="sortList(deviceList, 'mdns', 'str')"
+                >
                   <i :class="sortedIconClass"></i>
                 </a>
               </div>
             </th>
             <th scope="col" class="col-sm-1">
-              <div :class="sortedClass('chipId')">
+              <div :class="getSortedClass('chipId')">
                 Chip ID&nbsp;
-                <a class="icon-link icon-link-hover" @click="sortList(deviceList, 'chipId', 'str')">
+                <a
+                  class="icon-link icon-link-hover"
+                  @click="sortList(deviceList, 'chipId', 'str')"
+                >
                   <i :class="sortedIconClass"></i>
                 </a>
               </div>
             </th>
             <th scope="col" class="col-sm-2">
-              <div :class="sortedClass('chipFamily')">
+              <div :class="getSortedClass('chipFamily')">
                 Chip Family&nbsp;
                 <a
                   class="icon-link icon-link-hover"
@@ -50,7 +56,7 @@
               </div>
             </th>
             <th scope="col" class="col-sm-2">
-              <div :class="sortedClass('software')">
+              <div :class="getSortedClass('software')">
                 Software&nbsp;
                 <a
                   class="icon-link icon-link-hover"
@@ -230,13 +236,7 @@ import { storeToRefs } from 'pinia'
 import { Device } from '@/modules/classes'
 import { global, deviceStore, batchStore } from '@/modules/pinia'
 import { logDebug, logInfo, logError } from '@/modules/logger'
-import {
-  sortedIconClass,
-  setSortingDefault,
-  sortedClass,
-  sortList,
-  applySortList
-} from '@/modules/ui'
+import { useSortableList } from '@/modules/useSortableList'
 import { detectId, detectMdns, detectPlatform, detectSoftware } from '@/modules/detect'
 
 const confirmDeleteMessage = ref(null)
@@ -244,6 +244,9 @@ const confirmDeleteId = ref(null)
 
 const deviceList = ref(null)
 const { updatedDeviceData, deviceListFilterSoftware } = storeToRefs(global)
+
+const { sortedIconClass, getSortedClass, setSortingDefault, sortList, applySortList } =
+  useSortableList('mdns', 'str', false)
 
 watch(updatedDeviceData, () => {
   filterDeviceList()
@@ -267,7 +270,6 @@ const devicesWithLog = ref([])
 
 onMounted(() => {
   logDebug('DeviceListView.onMounted()')
-  setSortingDefault('mdns', 'str', false)
   filterDeviceList()
   fetchDeviceLogList()
   applySortList(deviceList.value)

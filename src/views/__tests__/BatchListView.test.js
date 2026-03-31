@@ -119,6 +119,18 @@ const uiMock = vi.hoisted(() => ({
 
 vi.mock('@/modules/ui', () => uiMock)
 
+const sortableListMock = vi.hoisted(() => ({
+  sortedIconClass: 'bi-sort',
+  getSortedClass: vi.fn().mockReturnValue('sorted'),
+  setSortingDefault: vi.fn(),
+  sortList: vi.fn(),
+  applySortList: vi.fn()
+}))
+
+vi.mock('@/modules/useSortableList', () => ({
+  useSortableList: vi.fn().mockReturnValue(sortableListMock)
+}))
+
 describe('BatchListView.vue', () => {
   beforeEach(() => {
     vi.clearAllMocks()
@@ -294,7 +306,7 @@ describe('BatchListView.vue', () => {
     await nextTick()
     const sortLink = wrapper.find('a.icon-link')
     await sortLink.trigger('click')
-    expect(uiMock.sortList).toHaveBeenCalled()
+    expect(sortableListMock.sortList).toHaveBeenCalled()
   })
 
   it('watches updatedBatchData', async () => {
@@ -302,7 +314,7 @@ describe('BatchListView.vue', () => {
     await nextTick()
     globalMock.updatedBatchData = 1
     await nextTick()
-    expect(uiMock.applySortList).toHaveBeenCalled()
+    expect(sortableListMock.applySortList).toHaveBeenCalled()
   })
 
   it('watches batchListFilterDevice', async () => {
@@ -311,7 +323,7 @@ describe('BatchListView.vue', () => {
     globalMock.batchListFilterDevice = 'c1'
     await nextTick()
     await nextTick()
-    expect(uiMock.applySortList).toHaveBeenCalled()
+    expect(sortableListMock.applySortList).toHaveBeenCalled()
   })
 
   it('watches batchListFilterData', async () => {
@@ -320,20 +332,14 @@ describe('BatchListView.vue', () => {
     globalMock.batchListFilterData = true
     await nextTick()
     await nextTick()
-    expect(uiMock.applySortList).toHaveBeenCalled()
+    expect(sortableListMock.applySortList).toHaveBeenCalled()
   })
 
   describe('Sorting', () => {
-    it('calls setSortingDefault on mount', async () => {
-      mountWrapper()
-      await nextTick()
-      expect(uiMock.setSortingDefault).toHaveBeenCalled()
-    })
-
     it('applies sort class to sortable columns', async () => {
       mountWrapper()
       await nextTick()
-      expect(uiMock.sortedClass).toHaveBeenCalled()
+      expect(sortableListMock.getSortedClass).toHaveBeenCalled()
     })
 
     it('triggers sort on column header click', async () => {
@@ -342,7 +348,7 @@ describe('BatchListView.vue', () => {
       const sortButton = wrapper.find('a.icon-link')
       if (sortButton.exists()) {
         await sortButton.trigger('click')
-        expect(uiMock.sortList).toHaveBeenCalled()
+        expect(sortableListMock.sortList).toHaveBeenCalled()
       }
     })
 

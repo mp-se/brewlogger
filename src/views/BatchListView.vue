@@ -49,7 +49,7 @@
         <thead>
           <tr>
             <th scope="col" class="col-sm-2">
-              <div :class="sortedClass('name')">
+              <div :class="getSortedClass('name')">
                 Name&nbsp;
                 <a class="icon-link icon-link-hover" @click="sortList(batchList, 'name', 'str')">
                   <i :class="sortedIconClass"></i>
@@ -57,7 +57,7 @@
               </div>
             </th>
             <th scope="col" class="col-sm-2">
-              <div :class="sortedClass('brewDate')">
+              <div :class="getSortedClass('brewDate')">
                 Brewdate&nbsp;
                 <a
                   class="icon-link icon-link-hover"
@@ -272,13 +272,15 @@ import { storeToRefs } from 'pinia'
 import router from '@/modules/router'
 import { download } from '@/modules/utils'
 import { logDebug, logError } from '@/modules/logger'
-import {
+import { useSortableList } from '@/modules/useSortableList'
+
+const {
   sortedIconClass,
+  getSortedClass,
   setSortingDefault,
-  sortedClass,
   sortList,
   applySortList
-} from '@/modules/ui'
+} = useSortableList('brewDate', 'date', false)
 
 const confirmDeleteMessage = ref(null)
 const confirmDeleteId = ref(null)
@@ -296,7 +298,6 @@ watch(updatedBatchData, () => {
 
 onMounted(() => {
   logDebug('BatchListView.onMounted()')
-  setSortingDefault('brewDate', 'date', false)
 
   var query = router.currentRoute.value.query
 

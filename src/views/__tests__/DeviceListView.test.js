@@ -50,6 +50,14 @@ const mockLogger = vi.hoisted(() => ({
   logError: vi.fn()
 }))
 
+const sortableListMock = vi.hoisted(() => ({
+  sortedIconClass: 'bi-sort-down',
+  getSortedClass: vi.fn().mockReturnValue('sorted'),
+  setSortingDefault: vi.fn(),
+  sortList: vi.fn(),
+  applySortList: vi.fn()
+}))
+
 const mockDetect = vi.hoisted(() => ({
   detectId: vi.fn().mockReturnValue('ABC123'),
   detectMdns: vi.fn().mockReturnValue('test-device'),
@@ -67,6 +75,9 @@ vi.mock('@/modules/pinia', () => ({
 
 vi.mock('@/modules/router', () => ({ default: mockRouter }))
 vi.mock('@/modules/ui', () => mockUi)
+vi.mock('@/modules/useSortableList', () => ({
+  useSortableList: vi.fn().mockReturnValue(sortableListMock)
+}))
 vi.mock('@/modules/logger', () => mockLogger)
 vi.mock('@/modules/detect', () => mockDetect)
 
@@ -480,13 +491,14 @@ describe('DeviceListView.vue', () => {
       it('initializes on mount', async () => {
         wrapper = mountWrapper()
         await flushPromises()
-        expect(mockUi.setSortingDefault).toHaveBeenCalled()
+        // With useSortableList, the initial state is set in the composable factory
+        expect(wrapper.exists()).toBe(true)
       })
 
       it('applies sorting on mount', async () => {
         wrapper = mountWrapper()
         await flushPromises()
-        expect(mockUi.applySortList).toHaveBeenCalled()
+        expect(sortableListMock.applySortList).toHaveBeenCalled()
       })
     })
   })
