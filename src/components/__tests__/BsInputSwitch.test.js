@@ -89,11 +89,11 @@ describe('BsInputSwitch - Toggle Component', () => {
         props: { modelValue: false }
       })
       const input = wrapper.find('input')
-      
+
       await input.setValue(true)
       await input.setValue(false)
       await input.setValue(true)
-      
+
       expect(input.element.checked).toBe(true)
     })
 

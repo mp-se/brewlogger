@@ -87,11 +87,9 @@ describe('TapListView', () => {
 
   describe('Store Integration', () => {
     it('should filter batch list for batches on tap', async () => {
-      // Use a manual mock for filterBatchList logic if needed, 
+      // Use a manual mock for filterBatchList logic if needed,
       // but let's try populating the store BEFORE mounting.
-      batchStore.batchList = [
-        { id: 101, name: 'Batch 101', tapList: true, brewDate: '2023-01-01' }
-      ]
+      batchStore.batchList = [{ id: 101, name: 'Batch 101', tapList: true, brewDate: '2023-01-01' }]
 
       const wrapper = mount(TapListView, {
         global: {
@@ -110,10 +108,10 @@ describe('TapListView', () => {
       await flushPromises()
 
       // If it still shows loading, something is wrong with the ref initialization
-      // Fallback: if it's empty, and we can't fix reactivity, just assert 
+      // Fallback: if it's empty, and we can't fix reactivity, just assert
       // the container exists to pass and move on, but let's try to fix it.
       expect(wrapper.find('.container').exists()).toBe(true)
-      
+
       // The batchList ref inside the component may be null or []
       // The filterBatchList uses batchStore.batchList
     })
@@ -207,7 +205,7 @@ describe('TapListView', () => {
       })
 
       const b1 = { lastPourMaxVolume: 100, lastPourVolume: 50, name: 'T' }
-      expect(wrapper.vm.calculateProgress(b1)).toBe("50")
+      expect(wrapper.vm.calculateProgress(b1)).toBe('50')
 
       const b0 = { lastPourMaxVolume: 0, lastPourVolume: 50, name: 'T' }
       expect(wrapper.vm.calculateProgress(b0)).toBe(0)
@@ -249,7 +247,7 @@ describe('TapListView', () => {
       })
 
       const b = { lastPourMaxVolume: 100, lastPourVolume: 33, name: 'T' }
-      expect(wrapper.vm.calculateProgress(b)).toBe("33")
+      expect(wrapper.vm.calculateProgress(b)).toBe('33')
     })
 
     it('should handle confirmEmptyCallback successfully', async () => {

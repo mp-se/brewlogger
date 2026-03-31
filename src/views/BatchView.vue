@@ -294,7 +294,11 @@ const brewfatherOptions = ref([{ label: '- Not connected -', value: '' }])
 const styleOptions = ref(BEER_STYLES)
 
 // Use reusable gravity conversion composable for OG and FG fields
-const { displayValue: ogDisplayValue, unit: gravityUnit, step: ogStep } = useGravityConversion(batch, 'og')
+const {
+  displayValue: ogDisplayValue,
+  unit: gravityUnit,
+  step: ogStep
+} = useGravityConversion(batch, 'og')
 const { displayValue: fgDisplayValue, step: fgStep } = useGravityConversion(batch, 'fg')
 
 function batchChanged() {

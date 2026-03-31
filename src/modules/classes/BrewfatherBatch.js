@@ -16,7 +16,19 @@ export class BrewfatherBatch {
    * @param {number} [fg=0] - Final gravity (SG)
    * @param {string} [fermentationSteps=''] - Fermentation profile
    */
-  constructor(brewfatherId, name, brewDate, style, brewer, abv, ebc, ibu, og, fg, fermentationSteps) {
+  constructor(
+    brewfatherId,
+    name,
+    brewDate,
+    style,
+    brewer,
+    abv,
+    ebc,
+    ibu,
+    og,
+    fg,
+    fermentationSteps
+  ) {
     this.name = name === undefined ? '' : name
     this.brewDate = brewDate === undefined ? '' : brewDate
     this.style = style === undefined ? '' : style

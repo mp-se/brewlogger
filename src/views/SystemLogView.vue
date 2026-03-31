@@ -66,7 +66,9 @@
         <tbody>
           <tr v-for="l in logList" :key="l.id">
             <td scope="row">
-              {{ l.timestamp.substring(0, 10) }} {{ l.timestamp.substring(11, 19) }}
+              <span v-if="l.timestamp"
+                >{{ l.timestamp.substring(0, 10) }} {{ l.timestamp.substring(11, 19) }}</span
+              >
             </td>
             <td>{{ l.module }}</td>
             <td>{{ l.message }}</td>

@@ -1,6 +1,14 @@
 import { computed } from 'vue'
 import { config } from '@/modules/pinia'
-import { gravityToPlato, platoToGravity, tempToF, tempToC, pressureToKPA, pressureToBAR, roundValue } from '@/modules/utils'
+import {
+  gravityToPlato,
+  platoToGravity,
+  tempToF,
+  tempToC,
+  pressureToKPA,
+  pressureToBAR,
+  roundValue
+} from '@/modules/utils'
 
 // Gravity conversion precision constants
 const GRAVITY_SG_DECIMALS = 3
@@ -21,7 +29,7 @@ const PSI_TO_KPA_FACTOR = 6.8947572932
 /**
  * Composable for handling dual-unit display/edit for Gravity
  * Data is always stored as SG internally, displays based on config
- * 
+ *
  * @param {Ref} batch - Reference to batch object
  * @param {string} field - Field name ('og' or 'fg')
  * @returns {Object} - { displayValue (computed), unit (computed), step (computed) }
@@ -32,7 +40,10 @@ export function useGravityConversion(batch, field) {
       if (!batch.value || !batch.value[field]) return 0
       const sgValue = batch.value[field]
       const displayValue = config.isGravitySG ? sgValue : gravityToPlato(sgValue)
-      return roundValue(displayValue, config.isGravitySG ? GRAVITY_SG_DECIMALS : GRAVITY_PLATO_DECIMALS)
+      return roundValue(
+        displayValue,
+        config.isGravitySG ? GRAVITY_SG_DECIMALS : GRAVITY_PLATO_DECIMALS
+      )
     },
     set(displayedValue) {
       if (batch.value) {
@@ -41,8 +52,8 @@ export function useGravityConversion(batch, field) {
     }
   })
 
-  const unit = computed(() => config.isGravitySG ? 'SG' : 'P')
-  const step = computed(() => config.isGravitySG ? GRAVITY_SG_STEP : GRAVITY_PLATO_STEP)
+  const unit = computed(() => (config.isGravitySG ? 'SG' : 'P'))
+  const step = computed(() => (config.isGravitySG ? GRAVITY_SG_STEP : GRAVITY_PLATO_STEP))
 
   return { displayValue, unit, step }
 }
@@ -50,7 +61,7 @@ export function useGravityConversion(batch, field) {
 /**
  * Composable for handling dual-unit display for Temperature
  * Data is stored as Celsius, can display as Celsius or Fahrenheit
- * 
+ *
  * @param {Ref} batch - Reference to batch object
  * @param {string} field - Field name
  * @returns {Object} - { displayValue (computed), unit (computed) }
@@ -70,7 +81,7 @@ export function useTemperatureConversion(batch, field) {
     }
   })
 
-  const unit = computed(() => config.isTempC ? '°C' : '°F')
+  const unit = computed(() => (config.isTempC ? '°C' : '°F'))
   const step = computed(() => TEMPERATURE_STEP)
 
   return { displayValue, unit, step }
@@ -79,7 +90,7 @@ export function useTemperatureConversion(batch, field) {
 /**
  * Composable for handling dual-unit display for Pressure
  * Data is stored as PSI, can display as PSI, BAR, or kPa
- * 
+ *
  * @param {Ref} batch - Reference to batch object
  * @param {string} field - Field name
  * @returns {Object} - { displayValue (computed), unit (computed), decimals (computed) }
@@ -90,7 +101,7 @@ export function usePressureConversion(batch, field) {
       if (!batch.value || !batch.value[field]) return 0
       const psiValue = batch.value[field]
       let displayValue, decimals
-      
+
       if (config.isPressurePSI) {
         displayValue = psiValue
         decimals = PRESSURE_PSI_DECIMALS
@@ -130,4 +141,3 @@ export function usePressureConversion(batch, field) {
  * (See utils.js for the actual implementation)
  */
 export { roundValue } from '@/modules/utils'
-

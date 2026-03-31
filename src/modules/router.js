@@ -15,11 +15,21 @@ const TapListView = defineAsyncComponent(() => import('@/views/TapListView.vue')
 const TapPourListView = defineAsyncComponent(() => import('@/views/TapPourListView.vue'))
 const BatchGravityListView = defineAsyncComponent(() => import('@/views/BatchGravityListView.vue'))
 const BatchGravityTestView = defineAsyncComponent(() => import('@/views/BatchGravityTestView.vue'))
-const BatchGravityGraphView = defineAsyncComponent(() => import('@/views/BatchGravityGraphView.vue'))
-const BatchGravityGraphCompareView = defineAsyncComponent(() => import('@/views/BatchGravityGraphCompareView.vue'))
-const BatchPressureGraphView = defineAsyncComponent(() => import('@/views/BatchPressureGraphView.vue'))
-const BatchPressureListView = defineAsyncComponent(() => import('@/views/BatchPressureListView.vue'))
-const BatchFermentationControlView = defineAsyncComponent(() => import('@/views/BatchFermentationControlView.vue'))
+const BatchGravityGraphView = defineAsyncComponent(
+  () => import('@/views/BatchGravityGraphView.vue')
+)
+const BatchGravityGraphCompareView = defineAsyncComponent(
+  () => import('@/views/BatchGravityGraphCompareView.vue')
+)
+const BatchPressureGraphView = defineAsyncComponent(
+  () => import('@/views/BatchPressureGraphView.vue')
+)
+const BatchPressureListView = defineAsyncComponent(
+  () => import('@/views/BatchPressureListView.vue')
+)
+const BatchFermentationControlView = defineAsyncComponent(
+  () => import('@/views/BatchFermentationControlView.vue')
+)
 const BatchPressureView = defineAsyncComponent(() => import('@/views/BatchPressureView.vue'))
 const AboutView = defineAsyncComponent(() => import('@/views/AboutView.vue'))
 const SettingsView = defineAsyncComponent(() => import('@/views/SettingsView.vue'))

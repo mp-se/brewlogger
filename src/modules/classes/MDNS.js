@@ -1,11 +1,11 @@
 /**
  * MDNS data model - represents a discovered mDNS service on the network
- * 
+ *
  * mDNS (multicast DNS) discovery results for finding devices on local network:
  * - Service name (short name)
  * - Full hostname with .local domain
  * - Service type (e.g., _http._tcp.local)
- * 
+ *
  * @class
  */
 export class MDNS {

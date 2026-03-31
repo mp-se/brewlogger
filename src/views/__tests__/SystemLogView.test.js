@@ -130,13 +130,13 @@ describe('SystemLogView - Enhanced', () => {
     it('should have Refresh button', () => {
       const wrapper = createWrapper()
       const buttons = wrapper.findAll('button')
-      expect(buttons.some(b => b.text().includes('Refresh'))).toBe(true)
+      expect(buttons.some((b) => b.text().includes('Refresh'))).toBe(true)
     })
 
     it('should have Download button', () => {
       const wrapper = createWrapper()
       const buttons = wrapper.findAll('button')
-      expect(buttons.some(b => b.text().includes('Download'))).toBe(true)
+      expect(buttons.some((b) => b.text().includes('Download'))).toBe(true)
     })
 
     it('should render buttons', async () => {
@@ -156,7 +156,14 @@ describe('SystemLogView - Enhanced', () => {
     it('should render table with headers when log list is populated', async () => {
       const wrapper = createWrapper()
       wrapper.vm.logList = [
-        { id: 1, timestamp: '2025-05-09 10:00:00', module: 'test', message: 'msg', logLevel: 0, errorCode: 0 }
+        {
+          id: 1,
+          timestamp: '2025-05-09 10:00:00',
+          module: 'test',
+          message: 'msg',
+          logLevel: 0,
+          errorCode: 0
+        }
       ]
       await wrapper.vm.$nextTick()
 
@@ -245,8 +252,22 @@ describe('SystemLogView - Enhanced', () => {
     it('should display log rows', async () => {
       const wrapper = createWrapper()
       wrapper.vm.logList = [
-        { id: 1, timestamp: '2025-05-09 10:00:00', module: 'system', message: 'Test message', logLevel: 1, errorCode: 0 },
-        { id: 2, timestamp: '2025-05-09 11:00:00', module: 'device', message: 'Another message', logLevel: 2, errorCode: 1 }
+        {
+          id: 1,
+          timestamp: '2025-05-09 10:00:00',
+          module: 'system',
+          message: 'Test message',
+          logLevel: 1,
+          errorCode: 0
+        },
+        {
+          id: 2,
+          timestamp: '2025-05-09 11:00:00',
+          module: 'device',
+          message: 'Another message',
+          logLevel: 2,
+          errorCode: 1
+        }
       ]
       await wrapper.vm.$nextTick()
 
@@ -268,7 +289,14 @@ describe('SystemLogView - Enhanced', () => {
     it('should display timestamp correctly', async () => {
       const wrapper = createWrapper()
       wrapper.vm.logList = [
-        { id: 1, timestamp: '2025-05-09 10:30:45', module: 'test', message: 'msg', logLevel: 0, errorCode: 0 }
+        {
+          id: 1,
+          timestamp: '2025-05-09 10:30:45',
+          module: 'test',
+          message: 'msg',
+          logLevel: 0,
+          errorCode: 0
+        }
       ]
       await wrapper.vm.$nextTick()
 
@@ -279,7 +307,14 @@ describe('SystemLogView - Enhanced', () => {
     it('should display module name', async () => {
       const wrapper = createWrapper()
       wrapper.vm.logList = [
-        { id: 1, timestamp: '2025-05-09 10:00:00', module: 'device_service', message: 'msg', logLevel: 0, errorCode: 0 }
+        {
+          id: 1,
+          timestamp: '2025-05-09 10:00:00',
+          module: 'device_service',
+          message: 'msg',
+          logLevel: 0,
+          errorCode: 0
+        }
       ]
       await wrapper.vm.$nextTick()
 
@@ -289,7 +324,14 @@ describe('SystemLogView - Enhanced', () => {
     it('should display message', async () => {
       const wrapper = createWrapper()
       wrapper.vm.logList = [
-        { id: 1, timestamp: '2025-05-09 10:00:00', module: 'test', message: 'Device connected', logLevel: 0, errorCode: 0 }
+        {
+          id: 1,
+          timestamp: '2025-05-09 10:00:00',
+          module: 'test',
+          message: 'Device connected',
+          logLevel: 0,
+          errorCode: 0
+        }
       ]
       await wrapper.vm.$nextTick()
 
@@ -299,7 +341,14 @@ describe('SystemLogView - Enhanced', () => {
     it('should display mapped log level', async () => {
       const wrapper = createWrapper()
       wrapper.vm.logList = [
-        { id: 1, timestamp: '2025-05-09 10:00:00', module: 'test', message: 'msg', logLevel: 1, errorCode: 0 }
+        {
+          id: 1,
+          timestamp: '2025-05-09 10:00:00',
+          module: 'test',
+          message: 'msg',
+          logLevel: 1,
+          errorCode: 0
+        }
       ]
       await wrapper.vm.$nextTick()
 
@@ -309,7 +358,14 @@ describe('SystemLogView - Enhanced', () => {
     it('should display error code', async () => {
       const wrapper = createWrapper()
       wrapper.vm.logList = [
-        { id: 1, timestamp: '2025-05-09 10:00:00', module: 'test', message: 'msg', logLevel: 0, errorCode: 42 }
+        {
+          id: 1,
+          timestamp: '2025-05-09 10:00:00',
+          module: 'test',
+          message: 'msg',
+          logLevel: 0,
+          errorCode: 42
+        }
       ]
       await wrapper.vm.$nextTick()
 
@@ -343,7 +399,14 @@ describe('SystemLogView - Enhanced', () => {
     it('should render table with data when populated', async () => {
       const wrapper = createWrapper()
       wrapper.vm.logList = [
-        { id: 1, timestamp: '2025-05-09 10:00:00', module: 'test', message: 'msg', logLevel: 0, errorCode: 0 }
+        {
+          id: 1,
+          timestamp: '2025-05-09 10:00:00',
+          module: 'test',
+          message: 'msg',
+          logLevel: 0,
+          errorCode: 0
+        }
       ]
       await wrapper.vm.$nextTick()
 
@@ -377,7 +440,7 @@ describe('SystemLogView - Enhanced', () => {
       await wrapper.vm.$nextTick()
 
       const headers = wrapper.findAll('th')
-      headers.forEach(h => {
+      headers.forEach((h) => {
         expect(h.attributes('scope')).toBe('col')
       })
     })
@@ -387,8 +450,22 @@ describe('SystemLogView - Enhanced', () => {
     it('should render rows with unique id as key', async () => {
       const wrapper = createWrapper()
       wrapper.vm.logList = [
-        { id: 1, timestamp: '2025-05-09 10:00:00', module: 'test', message: 'msg1', logLevel: 0, errorCode: 0 },
-        { id: 2, timestamp: '2025-05-09 11:00:00', module: 'test', message: 'msg2', logLevel: 0, errorCode: 0 }
+        {
+          id: 1,
+          timestamp: '2025-05-09 10:00:00',
+          module: 'test',
+          message: 'msg1',
+          logLevel: 0,
+          errorCode: 0
+        },
+        {
+          id: 2,
+          timestamp: '2025-05-09 11:00:00',
+          module: 'test',
+          message: 'msg2',
+          logLevel: 0,
+          errorCode: 0
+        }
       ]
       await wrapper.vm.$nextTick()
 
@@ -448,7 +525,16 @@ describe('SystemLogView - Enhanced', () => {
         json: vi.fn().mockResolvedValue({
           total: 5,
           skip: 0,
-          data: [{ id: 1, timestamp: '2025-05-09 10:00:00', module: 'test', message: 'msg', logLevel: 0, errorCode: 0 }]
+          data: [
+            {
+              id: 1,
+              timestamp: '2025-05-09 10:00:00',
+              module: 'test',
+              message: 'msg',
+              logLevel: 0,
+              errorCode: 0
+            }
+          ]
         })
       }
 
@@ -496,8 +582,22 @@ describe('SystemLogView - Enhanced', () => {
 
     it('should populate logList from response data', async () => {
       const responseData = [
-        { id: 1, timestamp: '2025-05-09 10:00:00', module: 'test1', message: 'msg1', logLevel: 0, errorCode: 0 },
-        { id: 2, timestamp: '2025-05-09 11:00:00', module: 'test2', message: 'msg2', logLevel: 1, errorCode: 1 }
+        {
+          id: 1,
+          timestamp: '2025-05-09 10:00:00',
+          module: 'test1',
+          message: 'msg1',
+          logLevel: 0,
+          errorCode: 0
+        },
+        {
+          id: 2,
+          timestamp: '2025-05-09 11:00:00',
+          module: 'test2',
+          message: 'msg2',
+          logLevel: 1,
+          errorCode: 1
+        }
       ]
 
       const mockResponse = {
@@ -615,7 +715,9 @@ describe('SystemLogView - Enhanced', () => {
     })
 
     it('should aggregate data from multiple fetch calls', async () => {
-      const firstBatch = Array(50).fill(0).map((_, i) => ({ id: i }))
+      const firstBatch = Array(50)
+        .fill(0)
+        .map((_, i) => ({ id: i }))
       const secondBatch = [{ id: 50 }]
 
       global.fetch = vi

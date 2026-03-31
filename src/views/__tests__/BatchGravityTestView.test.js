@@ -84,7 +84,7 @@ describe('BatchGravityTestView', () => {
     it('should load batch and gravity data on mount', async () => {
       mockStores.batch.getBatch.mockResolvedValue({ id: '123', name: 'Test Batch' })
       mockStores.gravity.getGravityListForBatch.mockResolvedValue([
-        { created: '2023-01-01T10:00:00Z', gravity: 1.050 },
+        { created: '2023-01-01T10:00:00Z', gravity: 1.05 },
         { created: '2023-01-01T10:15:00Z', gravity: 1.049 },
         { created: '2023-01-01T10:30:00Z', gravity: 1.048 }
       ])
@@ -126,9 +126,9 @@ describe('BatchGravityTestView', () => {
     it('should filter outliers correctly', async () => {
       mockStores.batch.getBatch.mockResolvedValue({ id: '123', name: 'Test Batch' })
       mockStores.gravity.getGravityListForBatch.mockResolvedValue([
-        { created: '2023-01-01T10:00:00Z', gravity: 1.050 },
-        { created: '2023-01-01T10:15:00Z', gravity: 1.060 }, // Outlier (diff 0.010 > 0.002)
-        { created: '2023-01-01T10:30:00Z', gravity: 1.049 }  // Not outlier (relative to 1.050, diff 0.001)
+        { created: '2023-01-01T10:00:00Z', gravity: 1.05 },
+        { created: '2023-01-01T10:15:00Z', gravity: 1.06 }, // Outlier (diff 0.010 > 0.002)
+        { created: '2023-01-01T10:30:00Z', gravity: 1.049 } // Not outlier (relative to 1.050, diff 0.001)
       ])
 
       const wrapper = await mountWrapper()
@@ -138,7 +138,7 @@ describe('BatchGravityTestView', () => {
     it('should calculate daily stats correctly', async () => {
       mockStores.batch.getBatch.mockResolvedValue({ id: '123', name: 'Test Batch' })
       mockStores.gravity.getGravityListForBatch.mockResolvedValue([
-        { created: '2023-01-01T10:00:00Z', gravity: 1.050 },
+        { created: '2023-01-01T10:00:00Z', gravity: 1.05 },
         { created: '2023-01-01T11:00:00Z', gravity: 1.049 },
         { created: '2023-01-02T10:00:00Z', gravity: 1.048 },
         { created: '2023-01-02T11:00:00Z', gravity: 1.047 }
@@ -148,7 +148,7 @@ describe('BatchGravityTestView', () => {
       expect(wrapper.vm.data).toHaveLength(2)
       expect(wrapper.vm.data[0].day).toBe('2023-01-01')
       expect(wrapper.vm.data[0].min).toBe(1.049)
-      expect(wrapper.vm.data[0].max).toBe(1.050)
+      expect(wrapper.vm.data[0].max).toBe(1.05)
       expect(wrapper.vm.data[0].points).toBe(2)
 
       expect(wrapper.vm.data[1].day).toBe('2023-01-02')
@@ -165,7 +165,7 @@ describe('BatchGravityTestView', () => {
       for (let i = 0; i < 5; i++) {
         points.push({
           created: '2023-01-01T10:0' + i + ':00Z',
-          gravity: 1.050 - (i * 0.001)
+          gravity: 1.05 - i * 0.001
         })
       }
       mockStores.gravity.getGravityListForBatch.mockResolvedValue(points)

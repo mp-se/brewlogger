@@ -87,31 +87,31 @@ describe('TapPourListView - Enhanced', () => {
     it('should have Date header', () => {
       const wrapper = createWrapper()
       const headers = wrapper.findAll('th')
-      expect(headers.some(h => h.text().includes('Date'))).toBe(true)
+      expect(headers.some((h) => h.text().includes('Date'))).toBe(true)
     })
 
     it('should have Active header', () => {
       const wrapper = createWrapper()
       const headers = wrapper.findAll('th')
-      expect(headers.some(h => h.text().includes('Active'))).toBe(true)
+      expect(headers.some((h) => h.text().includes('Active'))).toBe(true)
     })
 
     it('should have Pour header', () => {
       const wrapper = createWrapper()
       const headers = wrapper.findAll('th')
-      expect(headers.some(h => h.text().includes('Pour'))).toBe(true)
+      expect(headers.some((h) => h.text().includes('Pour'))).toBe(true)
     })
 
     it('should have Volume header', () => {
       const wrapper = createWrapper()
       const headers = wrapper.findAll('th')
-      expect(headers.some(h => h.text().includes('Volume'))).toBe(true)
+      expect(headers.some((h) => h.text().includes('Volume'))).toBe(true)
     })
 
     it('should have Max Volume header', () => {
       const wrapper = createWrapper()
       const headers = wrapper.findAll('th')
-      expect(headers.some(h => h.text().includes('Max Volume'))).toBe(true)
+      expect(headers.some((h) => h.text().includes('Max Volume'))).toBe(true)
     })
 
     it('should have correct number of headers', () => {
@@ -153,9 +153,7 @@ describe('TapPourListView - Enhanced', () => {
 
     it('should render pour data rows', async () => {
       const wrapper = createWrapper()
-      wrapper.vm.pourList = [
-        new Pour(1, 50, 100, 200, '2025-05-09 10:00:00', 1, true)
-      ]
+      wrapper.vm.pourList = [new Pour(1, 50, 100, 200, '2025-05-09 10:00:00', 1, true)]
       await wrapper.vm.$nextTick()
 
       const rows = wrapper.findAll('tbody tr')
@@ -177,9 +175,7 @@ describe('TapPourListView - Enhanced', () => {
 
     it('should display created date in correct format', async () => {
       const wrapper = createWrapper()
-      wrapper.vm.pourList = [
-        new Pour(1, 50, 100, 200, '2025-05-09 10:30:45', 1, true)
-      ]
+      wrapper.vm.pourList = [new Pour(1, 50, 100, 200, '2025-05-09 10:30:45', 1, true)]
       await wrapper.vm.$nextTick()
 
       expect(wrapper.text()).toContain('2025-05-09')
@@ -190,9 +186,7 @@ describe('TapPourListView - Enhanced', () => {
   describe('Active Status Toggle', () => {
     it('should initialize active status', async () => {
       const wrapper = createWrapper()
-      wrapper.vm.pourList = [
-        new Pour(1, 50, 100, 200, '2025-05-09 10:00:00', 1, true)
-      ]
+      wrapper.vm.pourList = [new Pour(1, 50, 100, 200, '2025-05-09 10:00:00', 1, true)]
       await wrapper.vm.$nextTick()
 
       expect(wrapper.vm.pourList[0].active).toBe(true)
@@ -222,9 +216,7 @@ describe('TapPourListView - Enhanced', () => {
   describe('Data Binding', () => {
     it('should bind pour volume correctly', async () => {
       const wrapper = createWrapper()
-      wrapper.vm.pourList = [
-        new Pour(1, 50, 100, 200, '2025-05-09 10:00:00', 1, true)
-      ]
+      wrapper.vm.pourList = [new Pour(1, 50, 100, 200, '2025-05-09 10:00:00', 1, true)]
       await wrapper.vm.$nextTick()
 
       const cells = wrapper.findAll('td')
@@ -234,9 +226,7 @@ describe('TapPourListView - Enhanced', () => {
 
     it('should bind volume correctly', async () => {
       const wrapper = createWrapper()
-      wrapper.vm.pourList = [
-        new Pour(1, 50, 100, 200, '2025-05-09 10:00:00', 1, true)
-      ]
+      wrapper.vm.pourList = [new Pour(1, 50, 100, 200, '2025-05-09 10:00:00', 1, true)]
       await wrapper.vm.$nextTick()
 
       expect(wrapper.vm.pourList[0].volume).toBe(100)
@@ -244,9 +234,7 @@ describe('TapPourListView - Enhanced', () => {
 
     it('should bind maxVolume correctly', async () => {
       const wrapper = createWrapper()
-      wrapper.vm.pourList = [
-        new Pour(1, 50, 100, 200, '2025-05-09 10:00:00', 1, true)
-      ]
+      wrapper.vm.pourList = [new Pour(1, 50, 100, 200, '2025-05-09 10:00:00', 1, true)]
       await wrapper.vm.$nextTick()
 
       expect(wrapper.vm.pourList[0].maxVolume).toBe(200)
@@ -340,9 +328,7 @@ describe('TapPourListView - Enhanced', () => {
   describe('Form Elements', () => {
     it('should have form checkboxes with form-check class', () => {
       const wrapper = createWrapper()
-      wrapper.vm.pourList = [
-        new Pour(1, 50, 100, 200, '2025-05-09 10:00:00', 1, true)
-      ]
+      wrapper.vm.pourList = [new Pour(1, 50, 100, 200, '2025-05-09 10:00:00', 1, true)]
       expect(wrapper.vm.pourList.length).toBe(1)
     })
   })

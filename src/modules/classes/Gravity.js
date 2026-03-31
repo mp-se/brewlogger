@@ -1,13 +1,13 @@
 /**
  * Gravity data model - represents a gravity/density/tilt sensor reading
- * 
+ *
  * Gravity readings from hydrometers or tilt sensors including:
  * - Primary measurement (gravity value)
  * - Environmental data (temperature, battery, signal strength)
  * - Calculated/corrected values (velocity, corrected gravity)
  * - Chamber and beer temperature (optional)
  * - Timestamp and batch association
- * 
+ *
  * @class
  */
 export class Gravity {

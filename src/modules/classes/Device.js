@@ -1,12 +1,12 @@
 /**
  * Device data model - represents a hardware sensor device (ESP32, ESP8266, etc.)
- * 
+ *
  * A Device holds configuration and metadata for physical brewing sensors:
  * - Device identification (chip ID, chip family, mDNS name)
  * - Network configuration (URL/IP address, BLE color)
  * - Software version and debug configuration
  * - Firmware configuration string
- * 
+ *
  * @class
  */
 export class Device {

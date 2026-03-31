@@ -1,13 +1,13 @@
 /**
  * Pressure data model - represents a pressure sensor reading
- * 
+ *
  * Pressure readings from a keg or tank pressure sensor including:
  * - Primary measurement (pressure value)
  * - Alternative pressure channel (optional, pressure1)
  * - Environmental data (temperature, battery, signal strength)
  * - Runtime tracking and batch association
  * - Single vs dual pressure support
- * 
+ *
  * @class
  */
 export class Pressure {

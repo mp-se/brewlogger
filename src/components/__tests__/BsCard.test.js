@@ -11,7 +11,7 @@ describe('BsCard - Layout Container Component', () => {
         }
       })
       const card = wrapper.find('.card')
-      expect(card. exists()).toBe(true)
+      expect(card.exists()).toBe(true)
     })
 
     it('should render card body', () => {
@@ -114,7 +114,7 @@ describe('BsCard - Layout Container Component', () => {
   describe('Header Styling - Branch Coverage', () => {
     it('should apply error style when iserr is true', () => {
       const wrapper = mount(BsCard, {
-        props: { 
+        props: {
           header: 'Error Header',
           title: 'Title',
           iserr: true
@@ -127,7 +127,7 @@ describe('BsCard - Layout Container Component', () => {
 
     it('should apply primary style when iserr is false', () => {
       const wrapper = mount(BsCard, {
-        props: { 
+        props: {
           header: 'Normal Header',
           title: 'Title',
           iserr: false
@@ -140,7 +140,7 @@ describe('BsCard - Layout Container Component', () => {
 
     it('should apply primary style when iserr is undefined', () => {
       const wrapper = mount(BsCard, {
-        props: { 
+        props: {
           header: 'Default Header',
           title: 'Title'
         },
@@ -152,7 +152,7 @@ describe('BsCard - Layout Container Component', () => {
 
     it('should apply default primary color when headerColor is undefined', () => {
       const wrapper = mount(BsCard, {
-        props: { 
+        props: {
           header: 'Header',
           title: 'Title',
           iserr: false
@@ -165,7 +165,7 @@ describe('BsCard - Layout Container Component', () => {
 
     it('should apply custom color when headerColor is provided', () => {
       const wrapper = mount(BsCard, {
-        props: { 
+        props: {
           header: 'Header',
           title: 'Title',
           color: 'success'
@@ -178,7 +178,7 @@ describe('BsCard - Layout Container Component', () => {
 
     it('should prefer error color over custom color when iserr is true', () => {
       const wrapper = mount(BsCard, {
-        props: { 
+        props: {
           header: 'Header',
           title: 'Title',
           iserr: true,
@@ -193,7 +193,7 @@ describe('BsCard - Layout Container Component', () => {
 
     it('should display header text correctly', () => {
       const wrapper = mount(BsCard, {
-        props: { 
+        props: {
           header: 'Test Header Text',
           title: 'Title'
         },
@@ -205,7 +205,7 @@ describe('BsCard - Layout Container Component', () => {
 
     it('should apply info color when headerColor is info', () => {
       const wrapper = mount(BsCard, {
-        props: { 
+        props: {
           header: 'Header',
           title: 'Title',
           color: 'info'
@@ -218,7 +218,7 @@ describe('BsCard - Layout Container Component', () => {
 
     it('should apply warning color when headerColor is warning', () => {
       const wrapper = mount(BsCard, {
-        props: { 
+        props: {
           header: 'Header',
           title: 'Title',
           color: 'warning'

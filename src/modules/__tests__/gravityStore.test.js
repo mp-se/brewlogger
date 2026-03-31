@@ -35,7 +35,7 @@ describe('useGravityStore', () => {
       {
         id: 1,
         temperature: 20.5,
-        gravity: 1.050,
+        gravity: 1.05,
         velocity: 0.5,
         angle: 45,
         battery: 4.2,
@@ -92,7 +92,7 @@ describe('useGravityStore', () => {
           {
             id: 1,
             temperature: 20.5,
-            gravity: 1.050,
+            gravity: 1.05,
             created: '2024-01-15T10:00:00',
             batchId: 1,
             active: true
@@ -139,7 +139,7 @@ describe('useGravityStore', () => {
       const store = useGravityStore()
       const gravityToUpdate = {
         id: 1,
-        toJson: () => ({ id: 1, gravity: 1.050 })
+        toJson: () => ({ id: 1, gravity: 1.05 })
       }
 
       global.fetch = vi.fn().mockResolvedValueOnce({

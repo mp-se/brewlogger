@@ -1,11 +1,10 @@
-
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { mount } from '@vue/test-utils'
 import BatchListView from '../BatchListView.vue'
-import { nextTick, ref } from 'vue'
+import { nextTick } from 'vue'
 
 vi.mock('pinia', async () => {
-  const { ref, watch } = await import('vue')
+  const { ref } = await import('vue')
   return {
     storeToRefs: (store) => {
       const refs = {}
@@ -15,8 +14,12 @@ vi.mock('pinia', async () => {
           refs[key] = r
           // Link the ref to the store property
           Object.defineProperty(store, key, {
-            get() { return r.value },
-            set(v) { r.value = v },
+            get() {
+              return r.value
+            },
+            set(v) {
+              r.value = v
+            },
             configurable: true,
             enumerable: true
           })
@@ -29,7 +32,6 @@ vi.mock('pinia', async () => {
 
 // Mock fetch for getBatch
 global.fetch = vi.fn()
-
 
 const globalMock = vi.hoisted(() => ({
   batchListFilterDevice: '*',
@@ -47,8 +49,30 @@ const { batchStoreMock, deviceStoreMock, gravityStoreMock, pressureStoreMock } =
   return {
     batchStoreMock: {
       batchList: [
-        { id: 1, name: 'B1', brewDate: '2023-01-01', active: true, tapList: false, gravityCount: 10, pressureCount: 5, pourCount: 2, chipIdGravity: 'c1', chipIdPressure: 'p1' },
-        { id: 2, name: 'B2', brewDate: '2023-02-01', active: false, tapList: true, gravityCount: 0, pressureCount: 0, pourCount: 0, chipIdGravity: 'c2', chipIdPressure: 'p2' }
+        {
+          id: 1,
+          name: 'B1',
+          brewDate: '2023-01-01',
+          active: true,
+          tapList: false,
+          gravityCount: 10,
+          pressureCount: 5,
+          pourCount: 2,
+          chipIdGravity: 'c1',
+          chipIdPressure: 'p1'
+        },
+        {
+          id: 2,
+          name: 'B2',
+          brewDate: '2023-02-01',
+          active: false,
+          tapList: true,
+          gravityCount: 0,
+          pressureCount: 0,
+          pourCount: 0,
+          chipIdGravity: 'c2',
+          chipIdPressure: 'p2'
+        }
       ],
       updateBatch: vi.fn().mockResolvedValue(true),
       deleteBatch: vi.fn().mockResolvedValue(true),
@@ -60,8 +84,12 @@ const { batchStoreMock, deviceStoreMock, gravityStoreMock, pressureStoreMock } =
         { chipId: 'c2', mdns: 'dev2' }
       ]
     },
-    gravityStoreMock: { getGravity: vi.fn().mockResolvedValue([{ date: '2023-01-01', gravity: 1.050 }]) },
-    pressureStoreMock: { getPressure: vi.fn().mockResolvedValue([{ date: '2023-01-01', pressure: 12 }]) }
+    gravityStoreMock: {
+      getGravity: vi.fn().mockResolvedValue([{ date: '2023-01-01', gravity: 1.05 }])
+    },
+    pressureStoreMock: {
+      getPressure: vi.fn().mockResolvedValue([{ date: '2023-01-01', pressure: 12 }])
+    }
   }
 })
 
@@ -104,32 +132,35 @@ describe('BatchListView.vue', () => {
     batchStoreMock.batchList[1].active = false
   })
 
-  const mountWrapper = () => mount(BatchListView, {
-    attachTo: document.body,
-    global: {
-      stubs: {
-        'router-link': true,
-        'BsSelect': {
-          template: '<select :value="modelValue" @change="$emit(\'update:modelValue\', $event.target.value)"><option v-for="o in options" :value="o.value">{{o.label}}</option></select>',
-          props: ['modelValue', 'options']
-        },
-        'BsInputSwitch': {
-          template: '<input type="checkbox" :checked="modelValue" @change="$emit(\'update:modelValue\', $event.target.checked)" />',
-          props: ['modelValue']
-        },
-        'BsModalConfirm': {
-           template: '<div id="deleteBatch" @click="$props.callback(true)"></div>',
-           props: ['callback']
+  const mountWrapper = () =>
+    mount(BatchListView, {
+      attachTo: document.body,
+      global: {
+        stubs: {
+          'router-link': true,
+          BsSelect: {
+            template:
+              '<select :value="modelValue" @change="$emit(\'update:modelValue\', $event.target.value)"><option v-for="o in options" :value="o.value">{{o.label}}</option></select>',
+            props: ['modelValue', 'options']
+          },
+          BsInputSwitch: {
+            template:
+              '<input type="checkbox" :checked="modelValue" @change="$emit(\'update:modelValue\', $event.target.checked)" />',
+            props: ['modelValue']
+          },
+          BsModalConfirm: {
+            template: '<div id="deleteBatch" @click="$props.callback(true)"></div>',
+            props: ['callback']
+          }
         }
       }
-    }
-  })
+    })
 
   it('filters by active status', async () => {
     const wrapper = mountWrapper()
     await nextTick()
     globalMock.batchListFilterActive = true
-    wrapper.vm.filterBatchList() 
+    wrapper.vm.filterBatchList()
     expect(wrapper.vm.batchList).toHaveLength(1)
   })
 
@@ -138,7 +169,7 @@ describe('BatchListView.vue', () => {
     await nextTick()
     globalMock.batchListFilterActive = false
     globalMock.batchListFilterData = true
-    wrapper.vm.filterBatchList() 
+    wrapper.vm.filterBatchList()
     expect(wrapper.vm.batchList).toHaveLength(1)
     expect(wrapper.vm.batchList[0].id).toBe(1)
   })
@@ -149,21 +180,21 @@ describe('BatchListView.vue', () => {
     globalMock.batchListFilterActive = false
     globalMock.batchListFilterData = false
     globalMock.batchListFilterDevice = 'c2'
-    wrapper.vm.filterBatchList() 
+    wrapper.vm.filterBatchList()
     expect(wrapper.vm.batchList).toHaveLength(1)
     expect(wrapper.vm.batchList[0].id).toBe(2)
   })
 
   it('handles empty query chipId on mount', async () => {
     routerMock.currentRoute.value.query = {}
-    const wrapper = mountWrapper()
+    mountWrapper()
     await nextTick()
     expect(globalMock.batchListFilterDevice).toBe('*')
   })
 
   it('handles chipId query on mount', async () => {
     routerMock.currentRoute.value.query = { chipId: 'c1' }
-    const wrapper = mountWrapper()
+    mountWrapper()
     await nextTick()
     expect(globalMock.batchListFilterDevice).toBe('c1')
   })
@@ -215,36 +246,38 @@ describe('BatchListView.vue', () => {
     const wrapper = mountWrapper()
     await nextTick()
     await wrapper.vm.exportBatchJSON(1)
-    await nextTick() 
-    await nextTick() 
+    await nextTick()
+    await nextTick()
     expect(utilsMock.download).toHaveBeenCalled()
   })
 
   it('exports pressure CSV', async () => {
     global.fetch.mockResolvedValue({
       ok: true,
-      json: () => Promise.resolve({ id: 1, name: 'B1', pressure: [{ date: '2023-01-01', pressure: 10 }] })
+      json: () =>
+        Promise.resolve({ id: 1, name: 'B1', pressure: [{ date: '2023-01-01', pressure: 10 }] })
     })
 
     const wrapper = mountWrapper()
     await nextTick()
     await wrapper.vm.exportBatchPressureCSV(1)
-    await nextTick() 
-    await nextTick() 
+    await nextTick()
+    await nextTick()
     expect(utilsMock.download).toHaveBeenCalled()
   })
 
   it('exports gravity CSV', async () => {
     global.fetch.mockResolvedValue({
       ok: true,
-      json: () => Promise.resolve({ id: 1, name: 'B1', gravity: [{ date: '2023-01-01', gravity: 1.050 }] })
+      json: () =>
+        Promise.resolve({ id: 1, name: 'B1', gravity: [{ date: '2023-01-01', gravity: 1.05 }] })
     })
 
     const wrapper = mountWrapper()
     await nextTick()
     await wrapper.vm.exportBatchGravityCSV(1)
-    await nextTick() 
-    await nextTick() 
+    await nextTick()
+    await nextTick()
     expect(utilsMock.download).toHaveBeenCalled()
   })
 
@@ -259,13 +292,13 @@ describe('BatchListView.vue', () => {
   it('sorts batch list', async () => {
     const wrapper = mountWrapper()
     await nextTick()
-    const sortLink = wrapper.find('a.icon-link') 
+    const sortLink = wrapper.find('a.icon-link')
     await sortLink.trigger('click')
     expect(uiMock.sortList).toHaveBeenCalled()
   })
 
   it('watches updatedBatchData', async () => {
-    const wrapper = mountWrapper()
+    mountWrapper()
     await nextTick()
     globalMock.updatedBatchData = 1
     await nextTick()
@@ -273,7 +306,7 @@ describe('BatchListView.vue', () => {
   })
 
   it('watches batchListFilterDevice', async () => {
-    const wrapper = mountWrapper()
+    mountWrapper()
     await nextTick()
     globalMock.batchListFilterDevice = 'c1'
     await nextTick()
@@ -282,7 +315,7 @@ describe('BatchListView.vue', () => {
   })
 
   it('watches batchListFilterData', async () => {
-    const wrapper = mountWrapper()
+    mountWrapper()
     await nextTick()
     globalMock.batchListFilterData = true
     await nextTick()
@@ -292,13 +325,13 @@ describe('BatchListView.vue', () => {
 
   describe('Sorting', () => {
     it('calls setSortingDefault on mount', async () => {
-      const wrapper = mountWrapper()
+      mountWrapper()
       await nextTick()
       expect(uiMock.setSortingDefault).toHaveBeenCalled()
     })
 
     it('applies sort class to sortable columns', async () => {
-      const wrapper = mountWrapper()
+      mountWrapper()
       await nextTick()
       expect(uiMock.sortedClass).toHaveBeenCalled()
     })
@@ -314,7 +347,7 @@ describe('BatchListView.vue', () => {
     })
 
     it('reapplies sort after filter changes', async () => {
-      const wrapper = mountWrapper()
+      mountWrapper()
       await nextTick()
       globalMock.batchListFilterDevice = 'c2'
       await nextTick()
@@ -348,14 +381,15 @@ describe('BatchListView.vue', () => {
     it('exports gravity CSV with proper formatting', async () => {
       global.fetch.mockResolvedValue({
         ok: true,
-        json: () => Promise.resolve({
-          id: 1,
-          name: 'B1',
-          gravity: [
-            { date: '2023-01-01T12:00:00', gravity: 1.050, temperature: 20 },
-            { date: '2023-01-02T12:00:00', gravity: 1.045, temperature: 21 }
-          ]
-        })
+        json: () =>
+          Promise.resolve({
+            id: 1,
+            name: 'B1',
+            gravity: [
+              { date: '2023-01-01T12:00:00', gravity: 1.05, temperature: 20 },
+              { date: '2023-01-02T12:00:00', gravity: 1.045, temperature: 21 }
+            ]
+          })
       })
       const wrapper = mountWrapper()
       await nextTick()
@@ -381,14 +415,15 @@ describe('BatchListView.vue', () => {
     it('exports pressure CSV with proper formatting', async () => {
       global.fetch.mockResolvedValue({
         ok: true,
-        json: () => Promise.resolve({
-          id: 1,
-          name: 'B1',
-          pressure: [
-            { date: '2023-01-01T12:00:00', pressure: 10, temperature: 20 },
-            { date: '2023-01-02T12:00:00', pressure: 12, temperature: 21 }
-          ]
-        })
+        json: () =>
+          Promise.resolve({
+            id: 1,
+            name: 'B1',
+            pressure: [
+              { date: '2023-01-01T12:00:00', pressure: 10, temperature: 20 },
+              { date: '2023-01-02T12:00:00', pressure: 12, temperature: 21 }
+            ]
+          })
       })
       const wrapper = mountWrapper()
       await nextTick()
@@ -428,5 +463,3 @@ describe('BatchListView.vue', () => {
     })
   })
 })
-
-

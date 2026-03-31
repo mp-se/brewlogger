@@ -192,7 +192,7 @@ describe('BsInputBase - Form Input Wrapper Component', () => {
       const wrapper = mount(BsInputBase, {
         props: { width: undefined }
       })
-      const slotDiv = wrapper.findAll('div').find(el => el.classes().length === 0)
+      const slotDiv = wrapper.findAll('div').find((el) => el.classes().length === 0)
       expect(slotDiv).toBeTruthy()
     })
   })

@@ -1,7 +1,5 @@
 import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest'
 import { mount, flushPromises } from '@vue/test-utils'
-import { createPinia, setActivePinia } from 'pinia'
-import { createRouter, createMemoryHistory } from 'vue-router'
 import DeviceView from '../DeviceView.vue'
 import { Device } from '@/modules/classes'
 
@@ -68,8 +66,6 @@ const routerPlugin = {
 }
 
 describe('DeviceView - Enhanced', () => {
-  let router
-
   beforeEach(() => {
     // Reset mocks before each test
     vi.clearAllMocks()
@@ -81,14 +77,6 @@ describe('DeviceView - Enhanced', () => {
     piniaMocks.deviceStore.updateDevice.mockClear()
     piniaMocks.deviceStore.deleteDeviceFermentationSteps.mockClear()
     piniaMocks.deviceStore.proxyRequest.mockClear()
-
-    router = createRouter({
-      history: createMemoryHistory(),
-      routes: [
-        { path: '/device/:id', name: 'device', component: { template: '<div></div>' } },
-        { path: '/devices', name: 'device-list', component: { template: '<div></div>' } }
-      ]
-    })
   })
 
   afterEach(() => {
@@ -105,7 +93,7 @@ describe('DeviceView - Enhanced', () => {
       }
     })
     ;(await import('@/modules/router')).default.currentRoute.value.params = routeParams
-    
+
     return mount(DeviceView, {
       global: {
         stubs: {
@@ -159,34 +147,29 @@ describe('DeviceView - Enhanced', () => {
     })
   })
 
-
-
-
-
-
   describe('Option Arrays', () => {
     it('should have chip family options', async () => {
       const wrapper = await createWrapper()
       await flushPromises()
-      
+
       expect(wrapper.vm.chipFamilyOptions.length).toBeGreaterThan(0)
-      expect(wrapper.vm.chipFamilyOptions.some(o => o.value === 'esp32')).toBe(true)
+      expect(wrapper.vm.chipFamilyOptions.some((o) => o.value === 'esp32')).toBe(true)
     })
 
     it('should have software options', async () => {
       const wrapper = await createWrapper()
       await flushPromises()
-      
+
       expect(wrapper.vm.softwareOptions.length).toBeGreaterThan(0)
-      expect(wrapper.vm.softwareOptions.some(o => o.value === 'Gravitymon')).toBe(true)
+      expect(wrapper.vm.softwareOptions.some((o) => o.value === 'Gravitymon')).toBe(true)
     })
 
     it('should have BLE color options', async () => {
       const wrapper = await createWrapper()
       await flushPromises()
-      
+
       expect(wrapper.vm.bleColorOptions.length).toBeGreaterThan(0)
-      expect(wrapper.vm.bleColorOptions.some(o => o.value === 'red')).toBe(true)
+      expect(wrapper.vm.bleColorOptions.some((o) => o.value === 'red')).toBe(true)
     })
   })
 
@@ -328,7 +311,7 @@ describe('DeviceView - Enhanced', () => {
       const wrapper = await createWrapper()
       piniaMocks.deviceStore.device = new Device(1, 'a1b2c3', 'http://test.local', 'Test Device')
       await flushPromises()
-      
+
       const form = wrapper.find('form')
       expect(form.exists()).toBe(true)
     })
@@ -343,7 +326,7 @@ describe('DeviceView - Enhanced', () => {
     it('should initialize device on new route', async () => {
       const wrapper = await createWrapper()
       await flushPromises()
-      
+
       const device = wrapper.vm.device
       expect(device).toBeDefined()
     })
@@ -352,7 +335,7 @@ describe('DeviceView - Enhanced', () => {
       const wrapper = await createWrapper()
       piniaMocks.deviceStore.device = new Device(1, 'a1b2c3', 'http://', 'Test')
       await flushPromises()
-      
+
       expect(wrapper.vm.device.url).toBe('')
     })
   })
@@ -372,7 +355,7 @@ describe('DeviceView - Enhanced', () => {
     it('should clear messages on save attempt', async () => {
       const wrapper = await setupDeviceTest('a1b2c3')
       piniaMocks.global.messageError = 'Some error'
-      
+
       await wrapper.vm.validateUrl()
       // After validation, global methods should be callable
       expect(typeof piniaMocks.global.clearMessages).toBe('function')
@@ -393,10 +376,10 @@ describe('DeviceView - Enhanced', () => {
     it('should set disabled state during fetch', async () => {
       const wrapper = await setupDeviceTest('a1b2c3')
       piniaMocks.global.disabled = false
-      
+
       const promise = wrapper.vm.fetchConfigFromDevice()
       expect(piniaMocks.global.disabled).toBe(true)
-      
+
       await promise
     })
   })
@@ -425,6 +408,4 @@ describe('DeviceView - Enhanced', () => {
       expect(typeof wrapper.vm.deleteFermentationSteps).toBe('function')
     })
   })
-
-
 })

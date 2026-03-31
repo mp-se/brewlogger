@@ -47,7 +47,7 @@ describe('BsDropdown - Dropdown Menu Component', () => {
       const wrapper = mount(BsDropdown, {
         props: { options: testOptions, button: 'Menu' }
       })
-      testOptions.forEach(option => {
+      testOptions.forEach((option) => {
         expect(wrapper.html()).toContain(option.label)
       })
     })

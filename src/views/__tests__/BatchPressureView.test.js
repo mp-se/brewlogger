@@ -4,7 +4,6 @@ import { setActivePinia } from 'pinia'
 import { createRouter, createMemoryHistory } from 'vue-router'
 import BatchPressureView from '../BatchPressureView.vue'
 import piniaInstance from '@/modules/pinia'
-import * as logger from '@/modules/logger'
 
 vi.mock('@/modules/logger', () => ({
   logDebug: vi.fn(),
@@ -35,9 +34,9 @@ describe('BatchPressureView', () => {
     it('should render container', () => {
       const wrapper = mount(BatchPressureView, {
         global: {
-          stubs: { 
+          stubs: {
             'router-link': { template: '<a><slot></slot></a>' },
-            'PressureStatsFragment': true
+            PressureStatsFragment: true
           },
           plugins: [router]
         }
@@ -48,9 +47,9 @@ describe('BatchPressureView', () => {
     it('should render page title', () => {
       const wrapper = mount(BatchPressureView, {
         global: {
-          stubs: { 
+          stubs: {
             'router-link': { template: '<a><slot></slot></a>' },
-            'PressureStatsFragment': true
+            PressureStatsFragment: true
           },
           plugins: [router]
         }
@@ -62,9 +61,9 @@ describe('BatchPressureView', () => {
     it('should render hr element', () => {
       const wrapper = mount(BatchPressureView, {
         global: {
-          stubs: { 
+          stubs: {
             'router-link': { template: '<a><slot></slot></a>' },
-            'PressureStatsFragment': true
+            PressureStatsFragment: true
           },
           plugins: [router]
         }
@@ -75,9 +74,9 @@ describe('BatchPressureView', () => {
     it('should have proper page structure', () => {
       const wrapper = mount(BatchPressureView, {
         global: {
-          stubs: { 
+          stubs: {
             'router-link': { template: '<a><slot></slot></a>' },
-            'PressureStatsFragment': true
+            PressureStatsFragment: true
           },
           plugins: [router]
         }
@@ -91,9 +90,9 @@ describe('BatchPressureView', () => {
     it('should render with proper heading hierarchy', () => {
       const wrapper = mount(BatchPressureView, {
         global: {
-          stubs: { 
+          stubs: {
             'router-link': { template: '<a><slot></slot></a>' },
-            'PressureStatsFragment': true
+            PressureStatsFragment: true
           },
           plugins: [router]
         }
@@ -109,9 +108,9 @@ describe('BatchPressureView', () => {
     it('should display correct page title text', () => {
       const wrapper = mount(BatchPressureView, {
         global: {
-          stubs: { 
+          stubs: {
             'router-link': { template: '<a><slot></slot></a>' },
-            'PressureStatsFragment': true
+            PressureStatsFragment: true
           },
           plugins: [router]
         }
@@ -123,9 +122,9 @@ describe('BatchPressureView', () => {
     it('should render empty paragraph element', () => {
       const wrapper = mount(BatchPressureView, {
         global: {
-          stubs: { 
+          stubs: {
             'router-link': { template: '<a><slot></slot></a>' },
-            'PressureStatsFragment': true
+            PressureStatsFragment: true
           },
           plugins: [router]
         }
@@ -139,9 +138,9 @@ describe('BatchPressureView', () => {
     it('should use semantic h3 tag with class', () => {
       const wrapper = mount(BatchPressureView, {
         global: {
-          stubs: { 
+          stubs: {
             'router-link': { template: '<a><slot></slot></a>' },
-            'PressureStatsFragment': true
+            PressureStatsFragment: true
           },
           plugins: [router]
         }
@@ -154,9 +153,9 @@ describe('BatchPressureView', () => {
     it('should have properly nested structure', () => {
       const wrapper = mount(BatchPressureView, {
         global: {
-          stubs: { 
+          stubs: {
             'router-link': { template: '<a><slot></slot></a>' },
-            'PressureStatsFragment': true
+            PressureStatsFragment: true
           },
           plugins: [router]
         }
@@ -174,9 +173,9 @@ describe('BatchPressureView', () => {
       expect(() => {
         mount(BatchPressureView, {
           global: {
-            stubs: { 
+            stubs: {
               'router-link': { template: '<a><slot></slot></a>' },
-              'PressureStatsFragment': true
+              PressureStatsFragment: true
             },
             plugins: [router]
           }
@@ -187,9 +186,9 @@ describe('BatchPressureView', () => {
     it('should render complete template without undefined elements', () => {
       const wrapper = mount(BatchPressureView, {
         global: {
-          stubs: { 
+          stubs: {
             'router-link': { template: '<a><slot></slot></a>' },
-            'PressureStatsFragment': true
+            PressureStatsFragment: true
           },
           plugins: [router]
         }

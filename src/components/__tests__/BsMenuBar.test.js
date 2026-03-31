@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest'
+import { describe, it, expect, beforeEach } from 'vitest'
 import { mount } from '@vue/test-utils'
 import BsMenuBar from '../BsMenuBar.vue'
 
@@ -225,7 +225,7 @@ describe('BsMenuBar - Navigation Menu Component', () => {
         }
       })
       const badges = wrapper.findAll('.badge')
-      badges.forEach(badge => {
+      badges.forEach((badge) => {
         if (badge.classes().includes('badge')) {
           expect(badge.classes().join(' ')).toMatch(/badge|rounded/)
         }
@@ -267,7 +267,6 @@ describe('BsMenuBar - Navigation Menu Component', () => {
         }
       })
       const navLinks = wrapper.findAll('.nav-link')
-      const hasActive = navLinks.some(link => link.classes().includes('active'))
       expect(navLinks.length > 0).toBe(true)
     })
 

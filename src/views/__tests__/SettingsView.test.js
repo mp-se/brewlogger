@@ -109,7 +109,7 @@ describe('SettingsView', () => {
       utils.validateCurrentForm.mockReturnValue(true)
 
       wrapper.vm.saveSettings()
-      
+
       expect(logger.logDebug).toHaveBeenCalledWith('SettingsView.saveSettings()')
     })
 
@@ -133,7 +133,7 @@ describe('SettingsView', () => {
 
       // Call saveSettings - it should return early without calling config.save
       wrapper.vm.saveSettings()
-      
+
       // The method doesn't return anything, but we can verify that it didn't crash
       expect(utils.validateCurrentForm).toHaveBeenCalled()
     })
@@ -158,7 +158,7 @@ describe('SettingsView', () => {
 
       // Directly call saveSettings to verify it works
       wrapper.vm.saveSettings()
-      
+
       // Verify that logDebug was called (proof that saveSettings ran)
       expect(logger.logDebug).toHaveBeenCalled()
     })

@@ -22,7 +22,7 @@ describe('BsInputRadio - Radio Button Component', () => {
       const wrapper = mount(BsInputRadio, {
         props: { options: testOptions }
       })
-      testOptions.forEach(option => {
+      testOptions.forEach((option) => {
         expect(wrapper.html()).toContain(option.label)
       })
     })
@@ -59,7 +59,7 @@ describe('BsInputRadio - Radio Button Component', () => {
         }
       })
       const radios = wrapper.findAll('input[type="radio"]')
-      const selectedRadio = radios.find(r => r.element.value === 'opt2')
+      const selectedRadio = radios.find((r) => r.element.value === 'opt2')
       expect(selectedRadio?.element.checked).toBe(true)
     })
 
@@ -71,7 +71,7 @@ describe('BsInputRadio - Radio Button Component', () => {
         }
       })
       const radios = wrapper.findAll('input[type="radio"]')
-      radios.forEach(radio => {
+      radios.forEach((radio) => {
         expect(radio.element.checked).toBe(false)
       })
     })
@@ -119,7 +119,7 @@ describe('BsInputRadio - Radio Button Component', () => {
         }
       })
       const radios = wrapper.findAll('input[type="radio"]')
-      radios.forEach(radio => {
+      radios.forEach((radio) => {
         expect(radio.attributes('disabled')).toBeDefined()
       })
     })
@@ -132,13 +132,13 @@ describe('BsInputRadio - Radio Button Component', () => {
         }
       })
       let radios = wrapper.findAll('input[type="radio"]')
-      radios.forEach(radio => {
+      radios.forEach((radio) => {
         expect(radio.attributes('disabled')).toBeUndefined()
       })
 
       await wrapper.setProps({ disabled: true })
       radios = wrapper.findAll('input[type="radio"]')
-      radios.forEach(radio => {
+      radios.forEach((radio) => {
         expect(radio.attributes('disabled')).toBeDefined()
       })
     })
@@ -148,9 +148,7 @@ describe('BsInputRadio - Radio Button Component', () => {
     it('should handle options with special characters', () => {
       const wrapper = mount(BsInputRadio, {
         props: {
-          options: [
-            { label: 'Option & Special', value: 'special' }
-          ]
+          options: [{ label: 'Option & Special', value: 'special' }]
         }
       })
       expect(wrapper.html()).toContain('&')

@@ -30,7 +30,7 @@ describe('BsSelect - Selection Component', () => {
       const wrapper = mount(BsSelect, {
         props: { options: defaultOptions }
       })
-      const optionTexts = wrapper.findAll('option').map(el => el.text())
+      const optionTexts = wrapper.findAll('option').map((el) => el.text())
       expect(optionTexts).toContain('Option 1')
       expect(optionTexts).toContain('Option 2')
       expect(optionTexts).toContain('Option 3')
@@ -163,7 +163,7 @@ describe('BsSelect - Selection Component', () => {
       })
       let select = wrapper.find('select')
       expect(select.attributes('disabled')).toBeUndefined()
-      
+
       await wrapper.setProps({ disabled: true })
       select = wrapper.find('select')
       expect(select.attributes('disabled')).toBeDefined()
@@ -203,9 +203,7 @@ describe('BsSelect - Selection Component', () => {
     it('should handle options with special characters in label', () => {
       const wrapper = mount(BsSelect, {
         props: {
-          options: [
-            { label: 'Option with & special < chars >', value: 'special' }
-          ]
+          options: [{ label: 'Option with & special < chars >', value: 'special' }]
         }
       })
       const optionText = wrapper.find('option').text()

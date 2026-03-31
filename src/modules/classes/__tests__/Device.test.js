@@ -43,23 +43,72 @@ describe('Device - Data Class', () => {
     })
 
     it('should clean up invalid URLs', () => {
-      const device1 = new Device(1, 'chip', 'ESP32', 'Gravitymon', 'mdns', 'config', 'color', 'http://')
+      const device1 = new Device(
+        1,
+        'chip',
+        'ESP32',
+        'Gravitymon',
+        'mdns',
+        'config',
+        'color',
+        'http://'
+      )
       expect(device1.url).toBe('')
 
-      const device2 = new Device(1, 'chip', 'ESP32', 'Gravitymon', 'mdns', 'config', 'color', 'https://')
+      const device2 = new Device(
+        1,
+        'chip',
+        'ESP32',
+        'Gravitymon',
+        'mdns',
+        'config',
+        'color',
+        'https://'
+      )
       expect(device2.url).toBe('')
     })
 
     it('should keep valid URLs', () => {
-      const device = new Device(1, 'chip', 'ESP32', 'Gravitymon', 'mdns', 'config', 'color', 'http://192.168.1.100:8080')
+      const device = new Device(
+        1,
+        'chip',
+        'ESP32',
+        'Gravitymon',
+        'mdns',
+        'config',
+        'color',
+        'http://192.168.1.100:8080'
+      )
       expect(device.url).toBe('http://192.168.1.100:8080')
     })
   })
 
   describe('compare - Static Method', () => {
     it('should return true for identical devices', () => {
-      const device1 = new Device(1, 'chip1', 'ESP32', 'Gravitymon', 'mdns', 'config', 'color', 'http://192.168.1.100', 'Device 1', false)
-      const device2 = new Device(999, 'chip1', 'ESP32', 'Gravitymon', 'mdns', 'config', 'color', 'http://192.168.1.100', 'Device 1', false)
+      const device1 = new Device(
+        1,
+        'chip1',
+        'ESP32',
+        'Gravitymon',
+        'mdns',
+        'config',
+        'color',
+        'http://192.168.1.100',
+        'Device 1',
+        false
+      )
+      const device2 = new Device(
+        999,
+        'chip1',
+        'ESP32',
+        'Gravitymon',
+        'mdns',
+        'config',
+        'color',
+        'http://192.168.1.100',
+        'Device 1',
+        false
+      )
       expect(Device.compare(device1, device2)).toBe(true)
     })
 
@@ -76,8 +125,26 @@ describe('Device - Data Class', () => {
     })
 
     it('should return false when URL differs', () => {
-      const device1 = new Device(1, 'chip1', 'ESP32', 'Gravitymon', 'mdns', 'config', 'color', 'http://192.168.1.100')
-      const device2 = new Device(1, 'chip1', 'ESP32', 'Gravitymon', 'mdns', 'config', 'color', 'http://192.168.1.101')
+      const device1 = new Device(
+        1,
+        'chip1',
+        'ESP32',
+        'Gravitymon',
+        'mdns',
+        'config',
+        'color',
+        'http://192.168.1.100'
+      )
+      const device2 = new Device(
+        1,
+        'chip1',
+        'ESP32',
+        'Gravitymon',
+        'mdns',
+        'config',
+        'color',
+        'http://192.168.1.101'
+      )
       expect(Device.compare(device1, device2)).toBe(false)
     })
   })
@@ -118,9 +185,20 @@ describe('Device - Data Class', () => {
 
   describe('toJson - Instance Method', () => {
     it('should convert Device to JSON', () => {
-      const device = new Device(5, 'chip1', 'ESP32', 'Gravitymon', 'mdns', 'config', '#FF0000', 'http://example.com', 'Device', true)
+      const device = new Device(
+        5,
+        'chip1',
+        'ESP32',
+        'Gravitymon',
+        'mdns',
+        'config',
+        '#FF0000',
+        'http://example.com',
+        'Device',
+        true
+      )
       const json = device.toJson()
-      
+
       expect(json.chipId).toBe('chip1')
       expect(json.chipFamily).toBe('ESP32')
       expect(json.software).toBe('Gravitymon')
@@ -169,7 +247,18 @@ describe('Device - Data Class', () => {
     })
 
     it('should handle special characters in description', () => {
-      const device = new Device(1, 'chip', 'ESP32', 'Gravitymon', 'mdns', 'config', 'color', 'url', 'Device with @#$%^&*()', false)
+      const device = new Device(
+        1,
+        'chip',
+        'ESP32',
+        'Gravitymon',
+        'mdns',
+        'config',
+        'color',
+        'url',
+        'Device with @#$%^&*()',
+        false
+      )
       expect(device.description).toBe('Device with @#$%^&*()')
     })
   })

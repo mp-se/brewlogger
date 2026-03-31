@@ -128,7 +128,7 @@ describe('useGlobalStore', () => {
       import.meta.env.VITE_APP_HOST = 'http://first.com/'
       store.url = undefined
       const url1 = store.baseURL
-      
+
       // Change env variable
       import.meta.env.VITE_APP_HOST = 'http://second.com/'
       // Should return cached value, not new env value
@@ -255,9 +255,9 @@ describe('useGlobalStore', () => {
       store.messageError = 'Error 1'
       store.clearMessages()
       store.messageError = 'Error 2'
-      
+
       expect(store.messageError).toBe('Error 2')
-      
+
       store.clearMessages()
       expect(store.messageError).toBe('')
     })
@@ -308,7 +308,7 @@ describe('useGlobalStore', () => {
   describe('Complex State Scenarios', () => {
     it('should manage multiple state changes independently', () => {
       const store = useGlobalStore()
-      
+
       // Set up initial conditions
       store.initialized = true
       store.configChanged = true
@@ -336,7 +336,7 @@ describe('useGlobalStore', () => {
 
     it('should handle all change flags together', () => {
       const store = useGlobalStore()
-      
+
       // All false initially
       expect(store.configChanged).toBe(false)
       expect(store.batchChanged).toBe(false)
@@ -360,7 +360,7 @@ describe('useGlobalStore', () => {
 
     it('should reset all state to defaults', () => {
       const store = useGlobalStore()
-      
+
       // Modify all state
       store.initialized = true
       store.disabled = true
@@ -391,26 +391,26 @@ describe('useGlobalStore', () => {
 
     it('should maintain state consistency with both getters and setters', () => {
       const store = useGlobalStore()
-      
+
       // Set message and verify getter
       store.messageError = 'Error'
       expect(store.isError).toBe(true)
-      
+
       store.messageWarning = 'Warning'
       expect(store.isWarning).toBe(true)
-      
+
       store.messageSuccess = 'Success'
       expect(store.isSuccess).toBe(true)
-      
+
       store.messageInfo = 'Info'
       expect(store.isInfo).toBe(true)
-      
+
       // All should be true
       expect(store.isError && store.isWarning && store.isSuccess && store.isInfo).toBe(true)
-      
+
       // Clear all
       store.clearMessages()
-      
+
       // All should be false
       expect(store.isError || store.isWarning || store.isSuccess || store.isInfo).toBe(false)
     })
@@ -498,12 +498,12 @@ describe('useGlobalStore', () => {
       store.updatedBatchData = 20
       store.updatedGravityData = 30
       store.updatedPourData = 40
-      
+
       store.updatedDeviceData = 0
       store.updatedBatchData = 0
       store.updatedGravityData = 0
       store.updatedPourData = 0
-      
+
       expect(store.updatedDeviceData).toBe(0)
       expect(store.updatedBatchData).toBe(0)
       expect(store.updatedGravityData).toBe(0)
@@ -516,7 +516,7 @@ describe('useGlobalStore', () => {
       store.updatedDeviceData = 5
       store.batchListFilterActive = true
       store.updatedBatchData = 10
-      
+
       expect(store.batchListFilterDevice).toBe('device-1')
       expect(store.batchListFilterActive).toBe(true)
       expect(store.updatedDeviceData).toBe(5)

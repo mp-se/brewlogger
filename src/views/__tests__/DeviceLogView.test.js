@@ -37,7 +37,7 @@ describe('DeviceLogView - Device Logs View', () => {
     globalStore.disabled = false
     globalStore.messageError = ''
     globalStore.messageSuccess = ''
-    
+
     router = createRouter({
       history: createMemoryHistory(),
       routes: [
@@ -85,9 +85,9 @@ describe('DeviceLogView - Device Logs View', () => {
   const mountComponent = (routeParams = {}) => {
     return mount(DeviceLogView, {
       global: {
-        stubs: { 
-          'router-link': { template: '<a><slot></slot></a>' }, 
-          'BsSelect': {
+        stubs: {
+          'router-link': { template: '<a><slot></slot></a>' },
+          BsSelect: {
             props: ['modelValue', 'options', 'label', 'help', 'disabled'],
             template: '<div><slot /></div>',
             emits: ['update:modelValue']
@@ -95,7 +95,7 @@ describe('DeviceLogView - Device Logs View', () => {
         },
         plugins: [router],
         mocks: {
-          '$route': {
+          $route: {
             params: { id: 'CHIP1', ...routeParams }
           }
         }
@@ -246,7 +246,7 @@ describe('DeviceLogView - Device Logs View', () => {
       wrapper.vm.deviceSelected = 'CHIP1'
       wrapper.vm.fetchLogs()
       await flushPromises()
-      
+
       // After error, disabled should be reset to false
       expect(globalStore.disabled).toBe(false)
     })
@@ -309,15 +309,13 @@ describe('DeviceLogView - Device Logs View', () => {
       wrapper.vm.deviceSelected = 'CHIP1'
       wrapper.vm.deleteLogs()
       await flushPromises()
-      
+
       // After error, disabled should be false (error handler resets it)
       expect(globalStore.disabled).toBe(false)
     })
 
     it('should set disabled state during delete', async () => {
-      let capturedState = false
       global.fetch = vi.fn().mockImplementation(() => {
-        capturedState = globalStore.disabled
         return Promise.resolve({ ok: true, json: () => Promise.resolve([]) })
       })
 
@@ -339,18 +337,14 @@ describe('DeviceLogView - Device Logs View', () => {
       ]
       wrapper.vm.hideInfo()
       expect(wrapper.vm.deviceLog.length).toBe(2)
-      expect(wrapper.vm.deviceLog.every(line => !line.includes(' I: '))).toBe(true)
+      expect(wrapper.vm.deviceLog.every((line) => !line.includes(' I: '))).toBe(true)
     })
 
     it('should preserve non-info logs', () => {
       wrapper = mountComponent()
-      wrapper.vm.deviceLog = [
-        'Error line',
-        'Debug line',
-        'Info I: line'
-      ]
+      wrapper.vm.deviceLog = ['Error line', 'Debug line', 'Info I: line']
       wrapper.vm.hideInfo()
-      expect(wrapper.vm.deviceLog.some(line => line.includes('Error'))).toBe(true)
+      expect(wrapper.vm.deviceLog.some((line) => line.includes('Error'))).toBe(true)
     })
 
     it('should handle empty log array', () => {
@@ -371,18 +365,14 @@ describe('DeviceLogView - Device Logs View', () => {
       ]
       wrapper.vm.hideWarn()
       expect(wrapper.vm.deviceLog.length).toBe(2)
-      expect(wrapper.vm.deviceLog.every(line => !line.includes(' W: '))).toBe(true)
+      expect(wrapper.vm.deviceLog.every((line) => !line.includes(' W: '))).toBe(true)
     })
 
     it('should preserve non-warning logs', () => {
       wrapper = mountComponent()
-      wrapper.vm.deviceLog = [
-        'Error line',
-        'Debug line',
-        'Warn W: line'
-      ]
+      wrapper.vm.deviceLog = ['Error line', 'Debug line', 'Warn W: line']
       wrapper.vm.hideWarn()
-      expect(wrapper.vm.deviceLog.some(line => line.includes('Error'))).toBe(true)
+      expect(wrapper.vm.deviceLog.some((line) => line.includes('Error'))).toBe(true)
     })
   })
 
@@ -432,7 +422,7 @@ describe('DeviceLogView - Device Logs View', () => {
         }
         return Promise.resolve({ ok: true, text: () => Promise.resolve('') })
       })
-      
+
       wrapper = mountComponent()
       await flushPromises()
 
@@ -444,7 +434,7 @@ describe('DeviceLogView - Device Logs View', () => {
       wrapper = mountComponent()
       await flushPromises()
 
-      const noneOption = wrapper.vm.deviceOptions.find(opt => opt.value === '')
+      const noneOption = wrapper.vm.deviceOptions.find((opt) => opt.value === '')
       expect(noneOption).toBeDefined()
       expect(noneOption.label).toContain('none')
     })
@@ -491,7 +481,11 @@ describe('DeviceLogView - Device Logs View', () => {
     it('should render Refresh button', () => {
       wrapper = mountComponent()
       const buttons = wrapper.findAll('button')
-      expect(buttons.some(b => b.text().includes('Refresh') || b.attributes('title')?.includes('Refresh'))).toBe(true)
+      expect(
+        buttons.some(
+          (b) => b.text().includes('Refresh') || b.attributes('title')?.includes('Refresh')
+        )
+      ).toBe(true)
     })
 
     it('should render Delete button', () => {
@@ -504,7 +498,7 @@ describe('DeviceLogView - Device Logs View', () => {
       wrapper = mountComponent()
       wrapper.vm.deviceSelected = ''
       const buttons = wrapper.findAll('button')
-      buttons.forEach(btn => {
+      buttons.forEach((btn) => {
         if (btn.text() === 'Refresh' || btn.attributes('data-bs-placement')) {
           expect(btn.attributes('disabled')).toBeDefined()
         }
@@ -582,7 +576,7 @@ describe('DeviceLogView - Device Logs View', () => {
         }
         return Promise.resolve({ ok: true, text: () => Promise.resolve('') })
       })
-      
+
       wrapper = mountComponent()
       await flushPromises()
 
@@ -685,7 +679,7 @@ describe('DeviceLogView - Device Logs View', () => {
       ]
       wrapper.vm.hideInfo()
       expect(wrapper.vm.deviceLog.length).toBe(2)
-      expect(wrapper.vm.deviceLog.every(line => !line.includes(' I: '))).toBe(true)
+      expect(wrapper.vm.deviceLog.every((line) => !line.includes(' I: '))).toBe(true)
     })
 
     it('should filter out all warning level logs', () => {
@@ -698,7 +692,7 @@ describe('DeviceLogView - Device Logs View', () => {
       ]
       wrapper.vm.hideWarn()
       expect(wrapper.vm.deviceLog.length).toBe(2)
-      expect(wrapper.vm.deviceLog.every(line => !line.includes(' W: '))).toBe(true)
+      expect(wrapper.vm.deviceLog.every((line) => !line.includes(' W: '))).toBe(true)
     })
 
     it('should handle empty log array for hideInfo', () => {
@@ -722,13 +716,14 @@ describe('DeviceLogView - Device Logs View', () => {
         if (url.includes('api/system/self_test')) {
           return Promise.resolve({
             ok: true,
-            json: () => Promise.resolve({
-              log: [
-                { name: 'log_CHIP1_start', value: 1609459200 },
-                { name: 'log_CHIP1_last', value: 1609545600 },
-                { name: 'log_CHIP1_size', value: 4096 }
-              ]
-            })
+            json: () =>
+              Promise.resolve({
+                log: [
+                  { name: 'log_CHIP1_start', value: 1609459200 },
+                  { name: 'log_CHIP1_last', value: 1609545600 },
+                  { name: 'log_CHIP1_size', value: 4096 }
+                ]
+              })
           })
         }
         if (url.includes('api/device/logs')) {
@@ -783,8 +778,7 @@ describe('DeviceLogView - Device Logs View', () => {
         if (url.includes('api/device/logs')) {
           return Promise.resolve({
             ok: true,
-            json: () =>
-              Promise.resolve(['CHIP1.log', 'CHIP1.log.1', 'CHIP2.log', 'CHIP2.log.1'])
+            json: () => Promise.resolve(['CHIP1.log', 'CHIP1.log.1', 'CHIP2.log', 'CHIP2.log.1'])
           })
         }
         if (url.includes('api/system/self_test')) {
@@ -800,9 +794,7 @@ describe('DeviceLogView - Device Logs View', () => {
       await flushPromises()
 
       // Only .log files should be in options, not .log.1
-      const hasBackupFiles = wrapper.vm.deviceOptions.some((opt) =>
-        opt.value.includes('.log.1')
-      )
+      const hasBackupFiles = wrapper.vm.deviceOptions.some((opt) => opt.value.includes('.log.1'))
       expect(hasBackupFiles).toBe(false)
     })
 
@@ -811,8 +803,7 @@ describe('DeviceLogView - Device Logs View', () => {
         if (url.includes('api/device/logs')) {
           return Promise.resolve({
             ok: true,
-            json: () =>
-              Promise.resolve(['CHIP1.log', 'UNKNOWN_CHIP.log', 'CHIP2.log'])
+            json: () => Promise.resolve(['CHIP1.log', 'UNKNOWN_CHIP.log', 'CHIP2.log'])
           })
         }
         if (url.includes('api/system/self_test')) {
@@ -827,9 +818,7 @@ describe('DeviceLogView - Device Logs View', () => {
       wrapper = mountComponent()
       await flushPromises()
 
-      const unknownInOptions = wrapper.vm.deviceOptions.find(
-        (opt) => opt.value === 'UNKNOWN_CHIP'
-      )
+      const unknownInOptions = wrapper.vm.deviceOptions.find((opt) => opt.value === 'UNKNOWN_CHIP')
       expect(unknownInOptions).toBeUndefined()
     })
 
@@ -1017,10 +1006,7 @@ describe('DeviceLogView - Device Logs View', () => {
 
     it('should handle hideWarn with multiple warning markers in one line', () => {
       wrapper = mountComponent()
-      wrapper.vm.deviceLog = [
-        'Line with W: first W: second warning',
-        'Normal line'
-      ]
+      wrapper.vm.deviceLog = ['Line with W: first W: second warning', 'Normal line']
       wrapper.vm.hideWarn()
       expect(wrapper.vm.deviceLog.length).toBe(1)
     })
@@ -1067,7 +1053,7 @@ describe('DeviceLogView - Device Logs View', () => {
   describe('Device Selection Watcher', () => {
     it('should have deviceSelected ref available', async () => {
       wrapper = mountComponent()
-      expect(wrapper.vm.hasOwnProperty('deviceSelected')).toBe(true)
+      expect(Object.prototype.hasOwnProperty.call(wrapper.vm, 'deviceSelected')).toBe(true)
     })
 
     it('should update device log list when deviceSelected is set', async () => {

@@ -1,12 +1,12 @@
 /**
  * Batch data model - represents a brewing batch with associated sensors and recipe data
- * 
+ *
  * A Batch contains information about a brewing session including:
  * - Recipe data (name, style, brewer, ABV, EBC, IBU, OG, FG)
  * - Sensor assignments (gravity and pressure device IDs)
  * - Fermentation steps and chamber configuration
  * - Associated gravity, pressure, and pour sensor readings
- * 
+ *
  * @class
  */
 export class Batch {

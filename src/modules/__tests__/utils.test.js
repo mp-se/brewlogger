@@ -353,7 +353,7 @@ describe('utils.js - Unit Conversions', () => {
     })
 
     it('should be inverse of gravityToPlato', () => {
-      const gravity = 1.050
+      const gravity = 1.05
       const plato = gravityToPlato(gravity)
       const backToGravity = platoToGravity(plato)
       expect(backToGravity).toBeCloseTo(gravity, 5)
@@ -443,10 +443,7 @@ describe('utils.js - Unit Conversions', () => {
     it('should use data URL for text mime types', () => {
       download('test content', 'text/csv', 'data.csv')
 
-      expect(setAttributeSpy).toHaveBeenCalledWith(
-        'href',
-        expect.stringContaining('data:text/csv')
-      )
+      expect(setAttributeSpy).toHaveBeenCalledWith('href', expect.stringContaining('data:text/csv'))
     })
 
     it('should handle special characters in content', () => {
@@ -454,7 +451,7 @@ describe('utils.js - Unit Conversions', () => {
       download(content, 'text/plain', 'test.txt')
 
       // The content should be encoded in the data URL
-      const callArgs = setAttributeSpy.mock.calls.find(call => call[0] === 'href')
+      const callArgs = setAttributeSpy.mock.calls.find((call) => call[0] === 'href')
       expect(callArgs).toBeDefined()
       expect(callArgs[1]).toContain('data:text/plain')
       expect(clickSpy).toHaveBeenCalled()
@@ -573,7 +570,12 @@ describe('utils.js - Unit Conversions', () => {
       const now = new Date()
       const pressureList = [
         { active: true, pressure: 10, temperature: 20, created: now.toISOString() },
-        { active: true, pressure: 12, temperature: 22, created: new Date(now.getTime() + 60000).toISOString() }
+        {
+          active: true,
+          pressure: 12,
+          temperature: 22,
+          created: new Date(now.getTime() + 60000).toISOString()
+        }
       ]
 
       const result = getPressureDataAnalytics(pressureList)
@@ -591,13 +593,13 @@ describe('utils.js - Unit Conversions', () => {
       const gravityList = [
         {
           active: true,
-          gravity: 1.050,
+          gravity: 1.05,
           temperature: 20,
           created: now.toISOString()
         },
         {
           active: true,
-          gravity: 1.020,
+          gravity: 1.02,
           temperature: 22,
           created: new Date(now.getTime() + 3600000).toISOString()
         }
@@ -614,13 +616,13 @@ describe('utils.js - Unit Conversions', () => {
       const gravityList = [
         {
           active: true,
-          gravity: 1.050,
+          gravity: 1.05,
           temperature: 20,
           created: now.toISOString()
         },
         {
           active: true,
-          gravity: 1.010,
+          gravity: 1.01,
           temperature: 20,
           created: new Date(now.getTime() + 3600000).toISOString()
         }
@@ -634,8 +636,8 @@ describe('utils.js - Unit Conversions', () => {
     it('should filter inactive readings', () => {
       const now = new Date()
       const gravityList = [
-        { active: true, gravity: 1.050, temperature: 20, created: now.toISOString() },
-        { active: false, gravity: 1.040, temperature: 20, created: now.toISOString() }
+        { active: true, gravity: 1.05, temperature: 20, created: now.toISOString() },
+        { active: false, gravity: 1.04, temperature: 20, created: now.toISOString() }
       ]
 
       const result = getGravityDataAnalytics(gravityList)
@@ -652,8 +654,8 @@ describe('utils.js - Unit Conversions', () => {
     it('should handle invalid temperatures', () => {
       const now = new Date()
       const gravityList = [
-        { active: true, gravity: 1.050, temperature: -280, created: now.toISOString() },
-        { active: true, gravity: 1.020, temperature: 20, created: now.toISOString() }
+        { active: true, gravity: 1.05, temperature: -280, created: now.toISOString() },
+        { active: true, gravity: 1.02, temperature: 20, created: now.toISOString() }
       ]
 
       const result = getGravityDataAnalytics(gravityList)
@@ -786,9 +788,9 @@ describe('utils.js - Unit Conversions', () => {
     it('should handle gravity with temperature and date tracking', () => {
       const now = new Date()
       const gravityList = [
-        { gravity: 1.050, temperature: 20, created: now.toISOString(), active: true },
+        { gravity: 1.05, temperature: 20, created: now.toISOString(), active: true },
         { gravity: 1.045, temperature: 22, created: now.toISOString(), active: true },
-        { gravity: 1.030, temperature: 21, created: now.toISOString(), active: true }
+        { gravity: 1.03, temperature: 21, created: now.toISOString(), active: true }
       ]
 
       const result = getGravityDataAnalytics(gravityList)
@@ -802,8 +804,8 @@ describe('utils.js - Unit Conversions', () => {
     it('should calculate ABV from gravity readings', () => {
       const now = new Date()
       const gravityList = [
-        { gravity: 1.060, temperature: 20, created: now.toISOString(), active: true },
-        { gravity: 1.010, temperature: 20, created: now.toISOString(), active: true }
+        { gravity: 1.06, temperature: 20, created: now.toISOString(), active: true },
+        { gravity: 1.01, temperature: 20, created: now.toISOString(), active: true }
       ]
 
       const result = getGravityDataAnalytics(gravityList)
@@ -816,8 +818,8 @@ describe('utils.js - Unit Conversions', () => {
     it('should handle readings with attenuation tracking', () => {
       const now = new Date()
       const gravityList = [
-        { gravity: 1.050, temperature: 20, created: now.toISOString(), active: true },
-        { gravity: 1.020, temperature: 20, created: now.toISOString(), active: true }
+        { gravity: 1.05, temperature: 20, created: now.toISOString(), active: true },
+        { gravity: 1.02, temperature: 20, created: now.toISOString(), active: true }
       ]
 
       const result = getGravityDataAnalytics(gravityList)
@@ -978,7 +980,9 @@ describe('utils.js - Unit Conversions', () => {
   describe('Edge Cases - Boundary Conditions', () => {
     it('should handle very large gravity values in analytics', () => {
       const now = new Date()
-      const gravityList = [{ gravity: 2.0, temperature: 20, created: now.toISOString(), active: true }]
+      const gravityList = [
+        { gravity: 2.0, temperature: 20, created: now.toISOString(), active: true }
+      ]
       const result = getGravityDataAnalytics(gravityList)
       expect(result.gravity.max).toBeDefined()
     })
@@ -986,8 +990,8 @@ describe('utils.js - Unit Conversions', () => {
     it('should handle null temperature in gravity analytics', () => {
       const now = new Date()
       const gravityList = [
-        { gravity: 1.050, temperature: null, created: now.toISOString(), active: true },
-        { gravity: 1.030, temperature: 20, created: now.toISOString(), active: true }
+        { gravity: 1.05, temperature: null, created: now.toISOString(), active: true },
+        { gravity: 1.03, temperature: 20, created: now.toISOString(), active: true }
       ]
       const result = getGravityDataAnalytics(gravityList)
       expect(result.temperature.max).toBeDefined()
@@ -1004,7 +1008,7 @@ describe('utils.js - Unit Conversions', () => {
 
     it('should handle single inactive reading', () => {
       const gravityList = [
-        { gravity: 1.050, temperature: 20, created: new Date().toISOString(), active: false }
+        { gravity: 1.05, temperature: 20, created: new Date().toISOString(), active: false }
       ]
       const result = getGravityDataAnalytics(gravityList)
       expect(result.readings).toBe(0) // No active readings
@@ -1075,7 +1079,7 @@ describe('utils.js - Unit Conversions', () => {
       const now = new Date()
       const gravityList = [
         { gravity: -0.5, temperature: 20, created: now.toISOString(), active: true },
-        { gravity: 1.050, temperature: 20, created: now.toISOString(), active: true }
+        { gravity: 1.05, temperature: 20, created: now.toISOString(), active: true }
       ]
       const result = getGravityDataAnalytics(gravityList)
       expect(result).toBeDefined()
@@ -1129,7 +1133,7 @@ describe('utils.js - Unit Conversions', () => {
     it('should use data URL for text/csv', () => {
       download('col1,col2\nval1,val2', 'text/csv', 'data.csv')
 
-      const hrefCalls = setAttributeSpy.mock.calls.filter(call => call[0] === 'href')
+      const hrefCalls = setAttributeSpy.mock.calls.filter((call) => call[0] === 'href')
       expect(hrefCalls.length).toBeGreaterThan(0)
       expect(hrefCalls[0][1]).toContain('data:text/csv')
     })
@@ -1137,7 +1141,7 @@ describe('utils.js - Unit Conversions', () => {
     it('should use data URL for text/plain', () => {
       download('plain text', 'text/plain', 'note.txt')
 
-      const hrefCalls = setAttributeSpy.mock.calls.filter(call => call[0] === 'href')
+      const hrefCalls = setAttributeSpy.mock.calls.filter((call) => call[0] === 'href')
       expect(hrefCalls.length).toBeGreaterThan(0)
       expect(hrefCalls[0][1]).toContain('data:text/plain')
     })
@@ -1146,7 +1150,7 @@ describe('utils.js - Unit Conversions', () => {
       const content = 'Special chars: <>&"\'%'
       download(content, 'text/plain', 'special.txt')
 
-      const hrefCalls = setAttributeSpy.mock.calls.filter(call => call[0] === 'href')
+      const hrefCalls = setAttributeSpy.mock.calls.filter((call) => call[0] === 'href')
       expect(hrefCalls[0][1]).toContain('data:text/plain')
       // Special characters should be percent-encoded in the data URL
       expect(hrefCalls[0][1]).toContain('%3C') // <
@@ -1156,7 +1160,7 @@ describe('utils.js - Unit Conversions', () => {
     it('should use data URL for text/html', () => {
       download('<h1>HTML Content</h1>', 'text/html', 'page.html')
 
-      const hrefCalls = setAttributeSpy.mock.calls.filter(call => call[0] === 'href')
+      const hrefCalls = setAttributeSpy.mock.calls.filter((call) => call[0] === 'href')
       expect(hrefCalls.length).toBeGreaterThan(0)
       expect(hrefCalls[0][1]).toContain('data:text/html')
     })
@@ -1166,8 +1170,13 @@ describe('utils.js - Unit Conversions', () => {
     it('should process gravity data correctly with default SG config', () => {
       const now = new Date()
       const gravityList = [
-        { gravity: 1.050, temperature: 20, created: now.toISOString(), active: true },
-        { gravity: 1.010, temperature: 20, created: new Date(now.getTime() + 3600000).toISOString(), active: true }
+        { gravity: 1.05, temperature: 20, created: now.toISOString(), active: true },
+        {
+          gravity: 1.01,
+          temperature: 20,
+          created: new Date(now.getTime() + 3600000).toISOString(),
+          active: true
+        }
       ]
 
       const result = getGravityDataAnalytics(gravityList)
@@ -1180,8 +1189,13 @@ describe('utils.js - Unit Conversions', () => {
     it('should include temperature strings in analytics', () => {
       const now = new Date()
       const gravityList = [
-        { gravity: 1.050, temperature: 15, created: now.toISOString(), active: true },
-        { gravity: 1.010, temperature: 25, created: new Date(now.getTime() + 3600000).toISOString(), active: true }
+        { gravity: 1.05, temperature: 15, created: now.toISOString(), active: true },
+        {
+          gravity: 1.01,
+          temperature: 25,
+          created: new Date(now.getTime() + 3600000).toISOString(),
+          active: true
+        }
       ]
 
       const result = getGravityDataAnalytics(gravityList)
@@ -1194,9 +1208,7 @@ describe('utils.js - Unit Conversions', () => {
   describe('Pressure Analytics with Temperature Parsing', () => {
     it('should parse date components in pressure analytics', () => {
       const timestamp = '2025-03-15T14:30:45Z'
-      const pressureList = [
-        { pressure: 10, temperature: 20, created: timestamp, active: true }
-      ]
+      const pressureList = [{ pressure: 10, temperature: 20, created: timestamp, active: true }]
 
       const result = getPressureDataAnalytics(pressureList)
 
@@ -1208,7 +1220,12 @@ describe('utils.js - Unit Conversions', () => {
       const now = new Date()
       const pressureList = [
         { pressure: 10, temperature: 20, created: now.toISOString(), active: true },
-        { pressure: 11, temperature: 21, created: new Date(now.getTime() + 300000).toISOString(), active: true } // 5 minutes later
+        {
+          pressure: 11,
+          temperature: 21,
+          created: new Date(now.getTime() + 300000).toISOString(),
+          active: true
+        } // 5 minutes later
       ]
 
       const result = getPressureDataAnalytics(pressureList)

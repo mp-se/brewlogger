@@ -73,10 +73,10 @@ describe('ui.js - UI Utilities', () => {
     it('should toggle sort order', () => {
       const list = [{ name: 'b' }, { name: 'a' }, { name: 'c' }]
       setSortingDefault('name', 'str', false)
-      
+
       sortList(list, 'name', 'str')
       expect(list[0].name).toBe('a')
-      
+
       sortList(list, 'name', 'str')
       expect(list[0].name).toBe('c')
     })
@@ -105,11 +105,7 @@ describe('ui.js - UI Utilities', () => {
 
   describe('sortList - Date sorting', () => {
     it('should sort dates in ascending order', () => {
-      const list = [
-        { date: '2024-03-15' },
-        { date: '2024-01-10' },
-        { date: '2024-02-20' }
-      ]
+      const list = [{ date: '2024-03-15' }, { date: '2024-01-10' }, { date: '2024-02-20' }]
       setSortingDefault('date', 'date', false)
       sortList(list, 'date', 'date')
       expect(list[0].date).toBe('2024-01-10')
@@ -241,11 +237,7 @@ describe('ui.js - UI Utilities', () => {
     })
 
     it('should sort dates ascending', () => {
-      const list = [
-        { date: '2025-01-15' },
-        { date: '2025-01-10' },
-        { date: '2025-01-20' }
-      ]
+      const list = [{ date: '2025-01-15' }, { date: '2025-01-10' }, { date: '2025-01-20' }]
       setSortingDefault('date', 'date', true)
       applySortList(list)
       expect(list[0].date).toBe('2025-01-10')
@@ -254,11 +246,7 @@ describe('ui.js - UI Utilities', () => {
     })
 
     it('should sort dates descending', () => {
-      const list = [
-        { date: '2025-01-10' },
-        { date: '2025-01-20' },
-        { date: '2025-01-15' }
-      ]
+      const list = [{ date: '2025-01-10' }, { date: '2025-01-20' }, { date: '2025-01-15' }]
       setSortingDefault('date', 'date', false)
       applySortList(list)
       expect(list[0].date).toBe('2025-01-20')
@@ -267,7 +255,7 @@ describe('ui.js - UI Utilities', () => {
     })
   })
 
-  describe('sortList - Numeric sorting', () => {
+  describe('sortList - Numeric sorting (advanced)', () => {
     it('should sort numbers in ascending order', () => {
       const list = [{ quantity: 50 }, { quantity: 10 }, { quantity: 30 }]
       setSortingDefault('quantity', 'num', false)
@@ -306,13 +294,9 @@ describe('ui.js - UI Utilities', () => {
     })
   })
 
-  describe('sortList - Date sorting', () => {
+  describe('sortList - Date sorting (advanced)', () => {
     it('should sort dates in ascending order', () => {
-      const list = [
-        { created: '2025-03-15' },
-        { created: '2025-01-10' },
-        { created: '2025-02-20' }
-      ]
+      const list = [{ created: '2025-03-15' }, { created: '2025-01-10' }, { created: '2025-02-20' }]
       setSortingDefault('created', 'date', false)
       sortList(list, 'created', 'date')
       expect(list[0].created).toBe('2025-01-10')
@@ -321,11 +305,7 @@ describe('ui.js - UI Utilities', () => {
     })
 
     it('should sort dates in descending order', () => {
-      const list = [
-        { updated: '2025-01-01' },
-        { updated: '2025-12-31' },
-        { updated: '2025-06-15' }
-      ]
+      const list = [{ updated: '2025-01-01' }, { updated: '2025-12-31' }, { updated: '2025-06-15' }]
       setSortingDefault('updated', 'date', false)
       sortList(list, 'updated', 'date')
       sortList(list, 'updated', 'date')

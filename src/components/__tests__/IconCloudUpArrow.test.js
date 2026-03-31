@@ -35,7 +35,7 @@ describe('IconCloudUpArrow.vue', () => {
   it('has at least one path with d attribute', () => {
     const wrapper = mount(IconCloudUpArrow)
     const paths = wrapper.findAll('path')
-    const hasPathWithD = paths.some(path => path.attributes('d'))
+    const hasPathWithD = paths.some((path) => path.attributes('d'))
     expect(hasPathWithD).toBe(true)
   })
 

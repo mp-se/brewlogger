@@ -177,7 +177,6 @@ describe('Router - Navigation and Routing', () => {
 
     it('should have unique route paths (except for different names)', () => {
       const paths = routes.map((r) => r.path)
-      const duplicatePaths = paths.filter((path, index) => paths.indexOf(path) !== index)
 
       // Some paths might be duplicates (same path, different name) - that's okay for route aliases
       // Just verify they exist
@@ -267,7 +266,6 @@ describe('Router - Navigation and Routing', () => {
 
     it('should prefix other routes with /other path', () => {
       const otherRoutes = routes.filter((r) => r.path.includes('/other'))
-      const otherNames = ['backup', 'support', 'system_log', 'receive_log', 'about']
 
       otherRoutes.forEach((route) => {
         if (route.name !== 'support') {

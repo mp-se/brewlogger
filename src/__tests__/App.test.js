@@ -3,8 +3,6 @@ import { mount, flushPromises } from '@vue/test-utils'
 import { createPinia, setActivePinia } from 'pinia'
 import App from '../App.vue'
 import { nextTick } from 'vue'
-import BsMessage from '@/components/BsMessage.vue'
-import BsInputReadonly from '@/components/BsInputReadonly.vue'
 
 // Mock router
 vi.mock('@/modules/router', () => ({
@@ -104,7 +102,7 @@ const mockWebSocket = {
   removeEventListener: vi.fn()
 }
 
-global.WebSocket = vi.fn(function(url) {
+global.WebSocket = vi.fn(function () {
   return mockWebSocket
 })
 
@@ -368,7 +366,7 @@ describe('App.vue - Root Integration', () => {
       piniaMocks.global.token = 'Bearer test-token-value'
       piniaMocks.global.initialized = true
       piniaMocks.global.baseURL = 'http://localhost:8080/'
-      
+
       const wrapper = mountApp()
       await nextTick()
       // Verify the component mounted without errors
@@ -513,19 +511,19 @@ describe('App.vue - Root Integration', () => {
 
   describe('Cursor management on disabled state', () => {
     it('should set cursor to wait when disabled is true', async () => {
-      const wrapper = mountApp()
+      mountApp()
       piniaMocks.global.disabled = true
       await nextTick()
-      
+
       // Watch handler should update cursor style
       expect(document.body.style.cursor).toBeDefined()
     })
 
     it('should set cursor to default when disabled is false', async () => {
-      const wrapper = mountApp()
+      mountApp()
       piniaMocks.global.disabled = false
       await nextTick()
-      
+
       expect(document.body.style.cursor).toBeDefined()
     })
   })
@@ -558,7 +556,7 @@ describe('App.vue - Root Integration', () => {
       piniaMocks.global.token = 'test-token'
       const wrapper = mountApp()
       await nextTick()
-      
+
       wrapper.unmount()
       expect(wrapper.vm.$el).toBeDefined()
     })
@@ -566,7 +564,7 @@ describe('App.vue - Root Integration', () => {
     it('should handle unmounting when no WebSocket exists', async () => {
       const wrapper = mountApp()
       await nextTick()
-      
+
       wrapper.unmount()
       expect(wrapper.vm.$el).toBeDefined()
     })

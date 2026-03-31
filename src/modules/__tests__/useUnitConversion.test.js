@@ -1,8 +1,11 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest'
+import { describe, it, expect, beforeEach } from 'vitest'
 import { ref } from 'vue'
 import { createPinia, setActivePinia } from 'pinia'
-import { useGravityConversion, useTemperatureConversion, usePressureConversion } from '@/modules/useUnitConversion'
-import { useConfigStore } from '@/modules/configStore'
+import {
+  useGravityConversion,
+  useTemperatureConversion,
+  usePressureConversion
+} from '@/modules/useUnitConversion'
 
 describe('useUnitConversion composables', () => {
   beforeEach(() => {
@@ -11,14 +14,14 @@ describe('useUnitConversion composables', () => {
 
   describe('useGravityConversion', () => {
     it('should return displayValue as a computed property', () => {
-      const batch = ref({ og: 1.050 })
+      const batch = ref({ og: 1.05 })
       const { displayValue } = useGravityConversion(batch, 'og')
       expect(displayValue).toBeDefined()
       expect(displayValue.value).toBeDefined()
     })
 
     it('should handle batch with og value', () => {
-      const batch = ref({ og: 1.050 })
+      const batch = ref({ og: 1.05 })
       const { displayValue } = useGravityConversion(batch, 'og')
       expect(displayValue.value).toBeTruthy()
     })
@@ -26,7 +29,7 @@ describe('useUnitConversion composables', () => {
     it('should support bidirectional binding with set', () => {
       const batch = ref({ og: 0 })
       const { displayValue } = useGravityConversion(batch, 'og')
-      displayValue.value = 1.060
+      displayValue.value = 1.06
       expect(batch.value.og).toBeGreaterThan(1)
     })
 
@@ -61,7 +64,7 @@ describe('useUnitConversion composables', () => {
     })
 
     it('should work with fg field', () => {
-      const batch = ref({ fg: 1.010 })
+      const batch = ref({ fg: 1.01 })
       const { displayValue } = useGravityConversion(batch, 'fg')
       expect(displayValue.value).toBeDefined()
       expect(displayValue.value).toBeGreaterThan(0)
@@ -158,7 +161,7 @@ describe('useUnitConversion composables', () => {
     it('should convert pressure to BAR when config is set to BAR', () => {
       const batch = ref({ pressure: 14.5038 }) // ~1 BAR
       const { displayValue, unit } = usePressureConversion(batch, 'pressure')
-      
+
       // Test demonstrates BAR path logic exists in code
       expect(unit).toBeDefined()
       expect(displayValue).toBeDefined()
@@ -167,7 +170,7 @@ describe('useUnitConversion composables', () => {
     it('should convert pressure to kPa when config is kPa', () => {
       const batch = ref({ pressure: 14.5038 }) // ~100 kPa
       const { displayValue, unit } = usePressureConversion(batch, 'pressure')
-      
+
       // Test demonstrates kPa path logic exists in code
       expect(unit).toBeDefined()
       expect(displayValue).toBeDefined()
@@ -176,7 +179,7 @@ describe('useUnitConversion composables', () => {
     it('should set pressure value from different units', () => {
       const batch = ref({ pressure: 0 })
       const { displayValue } = usePressureConversion(batch, 'pressure')
-      
+
       // Test setter functionality
       expect(() => {
         displayValue.value = 1
@@ -187,7 +190,7 @@ describe('useUnitConversion composables', () => {
     it('should set pressure value in any unit format', () => {
       const batch = ref({ pressure: 10 })
       const { displayValue } = usePressureConversion(batch, 'pressure')
-      
+
       const originalPressure = batch.value.pressure
       displayValue.value = 20
       expect(batch.value.pressure).not.toBe(originalPressure)
@@ -196,7 +199,7 @@ describe('useUnitConversion composables', () => {
     it('should handle setter when batch is null for pressure conversions', () => {
       const batch = ref(null)
       const { displayValue } = usePressureConversion(batch, 'pressure')
-      
+
       expect(() => {
         displayValue.value = 1
       }).not.toThrow()
@@ -205,7 +208,7 @@ describe('useUnitConversion composables', () => {
     it('should return appropriate unit for pressure display', () => {
       const batch = ref({})
       const { unit } = usePressureConversion(batch, 'pressure')
-      
+
       expect(unit.value).toBeDefined()
       expect(['PSI', 'Bar', 'kPa']).toContain(unit.value)
     })
@@ -214,8 +217,8 @@ describe('useUnitConversion composables', () => {
   describe('Composable Integration Tests', () => {
     it('should handle multiple composables on same batch', () => {
       const batch = ref({
-        og: 1.050,
-        fg: 1.010
+        og: 1.05,
+        fg: 1.01
       })
 
       const { displayValue: ogDisplay } = useGravityConversion(batch, 'og')
@@ -231,7 +234,7 @@ describe('useUnitConversion composables', () => {
       const { displayValue } = useGravityConversion(batch, 'og')
 
       const originalValue = batch.value.og
-      displayValue.value = 1.060
+      displayValue.value = 1.06
 
       expect(batch.value.og).not.toBe(originalValue)
       expect(batch.value.og).toBeGreaterThan(0)
@@ -290,12 +293,12 @@ describe('useUnitConversion composables', () => {
     })
 
     it('should handle rapid consecutive updates', () => {
-      const batch = ref({ og: 1.050 })
+      const batch = ref({ og: 1.05 })
       const { displayValue } = useGravityConversion(batch, 'og')
 
       const values = []
       for (let i = 0; i < 5; i++) {
-        displayValue.value = 1.050 + i * 0.01
+        displayValue.value = 1.05 + i * 0.01
         values.push(batch.value.og)
       }
 
@@ -304,7 +307,7 @@ describe('useUnitConversion composables', () => {
     })
 
     it('should handle setter with null value in gravity', () => {
-      const batch = ref({ og: 1.050 })
+      const batch = ref({ og: 1.05 })
       const { displayValue } = useGravityConversion(batch, 'og')
 
       expect(() => {
@@ -331,13 +334,13 @@ describe('useUnitConversion composables', () => {
     })
 
     it('should maintain reactive updates across multiple references', () => {
-      const batch = ref({ og: 1.050, temperature: 20, pressure: 15 })
+      const batch = ref({ og: 1.05, temperature: 20, pressure: 15 })
 
       const gravity = useGravityConversion(batch, 'og')
       const temp = useTemperatureConversion(batch, 'temperature')
       const pressure = usePressureConversion(batch, 'pressure')
 
-      batch.value.og = 1.060
+      batch.value.og = 1.06
       batch.value.temperature = 25
       batch.value.pressure = 20
 
@@ -347,4 +350,3 @@ describe('useUnitConversion composables', () => {
     })
   })
 })
-

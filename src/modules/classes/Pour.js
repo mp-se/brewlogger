@@ -1,12 +1,12 @@
 /**
  * Pour data model - represents a pouring/dispensing event from a keg or tap
- * 
+ *
  * Pour records track:
  * - Volume poured in this event
  * - Maximum volume available (tank/keg size)
  * - Timestamp of the pour event
  * - Associated batch and active state
- * 
+ *
  * @class
  */
 export class Pour {

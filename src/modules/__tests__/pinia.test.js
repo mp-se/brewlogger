@@ -1,5 +1,11 @@
 import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest'
-import { createConfigSnapshot, detectConfigChanges, hasSignificantChanges, saveConfigState, getConfigChanges } from '@/modules/pinia'
+import {
+  createConfigSnapshot,
+  detectConfigChanges,
+  hasSignificantChanges,
+  saveConfigState,
+  getConfigChanges
+} from '@/modules/pinia'
 import { createPinia, setActivePinia } from 'pinia'
 import { useConfigStore } from '@/modules/configStore'
 import { useGlobalStore } from '@/modules/globalStore'
@@ -139,7 +145,7 @@ describe('pinia utilities', () => {
     })
 
     it('should handle null snapshot with error log', () => {
-      const logErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
+      vi.spyOn(console, 'error').mockImplementation(() => {})
 
       const changes = detectConfigChanges(null, { a: 1 })
 
@@ -500,7 +506,9 @@ describe('pinia utilities', () => {
       const configWithMethods = {
         setting: 'value',
         save: () => console.log('saving'),
-        load: function() { return 'loaded' },
+        load: function () {
+          return 'loaded'
+        },
         computed: () => 'computed'
       }
 
@@ -549,13 +557,13 @@ describe('pinia utilities', () => {
 
     it('should save config state correctly', () => {
       const config = useConfigStore()
-      
+
       // Save initial state
       saveConfigState()
-      
+
       // Make a change
       config.isTempF = !config.isTempF
-      
+
       // Should detect change
       const changes = getConfigChanges()
       expect(changes).toBeDefined()
@@ -563,11 +571,11 @@ describe('pinia utilities', () => {
     })
 
     it('should detect no changes when config unchanged', () => {
-      const config = useConfigStore()
-      
+      useConfigStore()
+
       // Save state
       saveConfigState()
-      
+
       // Don't make changes
       const changes = getConfigChanges()
       expect(changes).toEqual({})
@@ -575,27 +583,27 @@ describe('pinia utilities', () => {
 
     it('should handle error when getConfigChanges called without prior save', () => {
       const logErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
-      
+
       // Try to get changes without saving first
       const changes = getConfigChanges()
-      
+
       expect(changes).toEqual({})
       logErrorSpy.mockRestore()
     })
 
     it('should detect multiple configuration changes', () => {
       const config = useConfigStore()
-      
+
       const initialGravity = config.gravityFormat
       const initialVolume = config.volumeFormat
-      
+
       // Save state
       saveConfigState()
-      
+
       // Change multiple properties
       config.gravityFormat = initialGravity === 'SG' ? 'P' : 'SG'
       config.volumeFormat = initialVolume === 'L' ? 'US' : 'L'
-      
+
       const changes = getConfigChanges()
       // Even if no changes detected, the test validates the function works
       expect(Object.keys(changes).length).toBeGreaterThanOrEqual(0)
@@ -604,13 +612,13 @@ describe('pinia utilities', () => {
     it('should accurately report specific property changes', () => {
       const config = useConfigStore()
       const initialValue = config.dark_mode
-      
+
       // Save state
       saveConfigState()
-      
+
       // Change one specific property
       config.dark_mode = !initialValue
-      
+
       const changes = getConfigChanges()
       // Validate that the function executes without error
       expect(changes).toBeDefined()
@@ -633,35 +641,34 @@ describe('pinia utilities', () => {
 
     it('should setup config subscription without errors', () => {
       const config = useConfigStore()
-      
+
       expect(config).toBeDefined()
     })
 
     it('should track config store state changes', () => {
-      const globalStore = useGlobalStore()
       const config = useConfigStore()
-      
+
       // Save initial state
       saveConfigState()
-      
+
       // Change a state value directly (change from default '' to 'C')
       const originalFormat = config.temperatureFormat || ''
       const newFormat = originalFormat === 'C' ? 'F' : 'C'
       config.temperatureFormat = newFormat
-      
+
       // Config should reflect the change
       expect(config.temperatureFormat).toBe(newFormat)
     })
 
     it('should handle saving and retrieving config changes', () => {
       const config = useConfigStore()
-      
+
       // Save state
       saveConfigState()
-      
+
       // Make a definite change
       config.temperatureFormat = 'F'
-      
+
       // Get changes
       const changes = getConfigChanges()
       expect(changes).toBeDefined()
@@ -670,13 +677,13 @@ describe('pinia utilities', () => {
 
     it('should handle multiple sequential saves and changes', () => {
       const config = useConfigStore()
-      
+
       // First cycle
       saveConfigState()
       config.temperatureFormat = 'F'
       let changes = getConfigChanges()
       expect(changes).toBeDefined()
-      
+
       // Second cycle
       saveConfigState()
       config.pressureFormat = 'BAR'
@@ -686,14 +693,14 @@ describe('pinia utilities', () => {
 
     it('should detect significant changes through hasSignificantChanges', () => {
       const config = useConfigStore()
-      
+
       saveConfigState()
       // Make a definite change from default
       config.temperatureFormat = 'F'
-      
+
       const changes = getConfigChanges()
       const hasChanges = hasSignificantChanges(changes)
-      
+
       // Should detect changes if temperatureFormat was changed
       if (changes.temperatureFormat !== undefined) {
         expect(hasChanges).toBe(true)
@@ -704,8 +711,6 @@ describe('pinia utilities', () => {
     })
 
     it('should handle uninitialized subscription state gracefully', () => {
-      const config = useConfigStore()
-      
       // Try to get changes without saving - should handle gracefully
       const changes = getConfigChanges()
       expect(changes).toEqual({})

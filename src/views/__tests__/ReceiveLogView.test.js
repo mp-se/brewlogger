@@ -133,7 +133,7 @@ describe('ReceiveLogView', () => {
         }
       })
       const buttons = wrapper.findAll('button')
-      const refreshBtn = buttons.find(b => b.text().includes('Refresh'))
+      const refreshBtn = buttons.find((b) => b.text().includes('Refresh'))
       expect(refreshBtn.exists()).toBe(true)
       expect(refreshBtn.classes()).toContain('btn-secondary')
     })
@@ -146,7 +146,7 @@ describe('ReceiveLogView', () => {
         }
       })
       const buttons = wrapper.findAll('button')
-      const downloadBtn = buttons.find(b => b.text().includes('Download'))
+      const downloadBtn = buttons.find((b) => b.text().includes('Download'))
       expect(downloadBtn.exists()).toBe(true)
       expect(downloadBtn.classes()).toContain('btn-primary')
     })
@@ -226,8 +226,6 @@ describe('ReceiveLogView', () => {
       await wrapper.vm.updateLogList()
       expect(global.fetch).toHaveBeenCalled()
     })
-
-
   })
 
   describe('Download Functionality', () => {
@@ -256,10 +254,10 @@ describe('ReceiveLogView', () => {
         }
       })
 
-      const refreshBtn = wrapper.findAll('button').find(b => b.text().includes('Refresh'))
+      const refreshBtn = wrapper.findAll('button').find((b) => b.text().includes('Refresh'))
       await refreshBtn?.trigger('click')
       await wrapper.vm.$nextTick?.()
-      
+
       expect(global.fetch).toHaveBeenCalled()
     })
 
@@ -276,10 +274,10 @@ describe('ReceiveLogView', () => {
         }
       })
 
-      const downloadBtn = wrapper.findAll('button').find(b => b.text().includes('Download'))
+      const downloadBtn = wrapper.findAll('button').find((b) => b.text().includes('Download'))
       await downloadBtn?.trigger('click')
       await flushPromises()
-      
+
       expect(global.fetch).toHaveBeenCalled()
     })
   })

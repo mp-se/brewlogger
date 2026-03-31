@@ -29,8 +29,8 @@ describe('Batch - Data Class', () => {
         6.8,
         50,
         60,
-        1.010,
-        1.050,
+        1.01,
+        1.05,
         'brewfather-id-1',
         1,
         'fermentation-steps-json',
@@ -56,8 +56,8 @@ describe('Batch - Data Class', () => {
       expect(batch.abv).toBe(6.8)
       expect(batch.ebc).toBe(50)
       expect(batch.ibu).toBe(60)
-      expect(batch.fg).toBe(1.010)
-      expect(batch.og).toBe(1.050)
+      expect(batch.fg).toBe(1.01)
+      expect(batch.og).toBe(1.05)
       expect(batch.brewfatherId).toBe('brewfather-id-1')
       expect(batch.fermentationChamber).toBe(1)
       expect(batch.gravityCount).toBe(10)
@@ -107,12 +107,12 @@ describe('Batch - Data Class', () => {
       const gravityData = [{ gravity: 1.05 }]
       const pressureData = [{ pressure: 20 }]
       const pourData = [{ volume: 500 }]
-      
+
       const batch = new Batch()
       batch.gravity = gravityData
       batch.pressure = pressureData
       batch.pour = pourData
-      
+
       expect(batch.gravity).toEqual(gravityData)
       expect(batch.pressure).toEqual(pressureData)
       expect(batch.pour).toEqual(pourData)
@@ -121,8 +121,34 @@ describe('Batch - Data Class', () => {
 
   describe('compare - Static Method', () => {
     it('should return true for identical batches', () => {
-      const batch1 = new Batch(1, 'Test', 'Desc', 'chip1', 'chip2', true, '2024-01-01', 'IPA', 'Brewer', 6.8, 50, 60)
-      const batch2 = new Batch(1, 'Test', 'Desc', 'chip1', 'chip2', true, '2024-01-01', 'IPA', 'Brewer', 6.8, 50, 60)
+      const batch1 = new Batch(
+        1,
+        'Test',
+        'Desc',
+        'chip1',
+        'chip2',
+        true,
+        '2024-01-01',
+        'IPA',
+        'Brewer',
+        6.8,
+        50,
+        60
+      )
+      const batch2 = new Batch(
+        1,
+        'Test',
+        'Desc',
+        'chip1',
+        'chip2',
+        true,
+        '2024-01-01',
+        'IPA',
+        'Brewer',
+        6.8,
+        50,
+        60
+      )
       expect(Batch.compare(batch1, batch2)).toBe(true)
     })
 
@@ -139,8 +165,34 @@ describe('Batch - Data Class', () => {
     })
 
     it('should return false when numerical properties differ', () => {
-      const batch1 = new Batch(1, 'Test', 'Desc', 'chip1', 'chip2', true, '2024-01-01', 'IPA', 'Brewer', 6.8, 50, 60)
-      const batch2 = new Batch(1, 'Test', 'Desc', 'chip1', 'chip2', true, '2024-01-01', 'IPA', 'Brewer', 7.0, 50, 60)
+      const batch1 = new Batch(
+        1,
+        'Test',
+        'Desc',
+        'chip1',
+        'chip2',
+        true,
+        '2024-01-01',
+        'IPA',
+        'Brewer',
+        6.8,
+        50,
+        60
+      )
+      const batch2 = new Batch(
+        1,
+        'Test',
+        'Desc',
+        'chip1',
+        'chip2',
+        true,
+        '2024-01-01',
+        'IPA',
+        'Brewer',
+        7.0,
+        50,
+        60
+      )
       expect(Batch.compare(batch1, batch2)).toBe(false)
     })
 
@@ -148,11 +200,10 @@ describe('Batch - Data Class', () => {
       const batch1 = new Batch(1, 'Test', 'Desc', 'chip1', 'chip2', true)
       const batch2 = new Batch(999, 'Test', 'Desc', 'chip1', 'chip2', true)
       // compare should ignore id - checking the logic
-      const areSame = (
+      const areSame =
         batch1.name == batch2.name &&
         batch1.description == batch2.description &&
         batch1.active == batch2.active
-      )
       expect(areSame).toBe(true)
     })
   })
@@ -169,8 +220,8 @@ describe('Batch - Data Class', () => {
       batch.abv = 7.5
       batch.ebc = 75
       batch.ibu = 80
-      batch.fg = 1.010
-      batch.og = 1.050
+      batch.fg = 1.01
+      batch.og = 1.05
       batch.gravityCount = 100
       batch.pressureCount = 50
       batch.pourCount = 30
@@ -178,8 +229,8 @@ describe('Batch - Data Class', () => {
       expect(batch.abv).toBe(7.5)
       expect(batch.ebc).toBe(75)
       expect(batch.ibu).toBe(80)
-      expect(batch.fg).toBe(1.010)
-      expect(batch.og).toBe(1.050)
+      expect(batch.fg).toBe(1.01)
+      expect(batch.og).toBe(1.05)
       expect(batch.gravityCount).toBe(100)
       expect(batch.pressureCount).toBe(50)
       expect(batch.pourCount).toBe(30)
@@ -233,7 +284,7 @@ describe('Batch - Data Class', () => {
         ebc: 60,
         ibu: 70,
         fg: 1.008,
-        og: 1.060,
+        og: 1.06,
         brewfatherId: 'bf-123',
         fermentationChamber: 2,
         fermentationSteps: 'steps-data',
@@ -247,7 +298,7 @@ describe('Batch - Data Class', () => {
         pressure: null,
         pour: null
       }
-      
+
       const batch = Batch.fromJson(json)
       expect(batch.id).toBe(5)
       expect(batch.name).toBe('API Batch')
@@ -267,7 +318,7 @@ describe('Batch - Data Class', () => {
         pressure: [{ id: 1 }, { id: 2 }],
         pour: [{ id: 1 }]
       }
-      
+
       const batch = Batch.fromJson(json)
       expect(batch.gravityCount).toBe(3)
       expect(batch.pressureCount).toBe(2)
@@ -285,7 +336,7 @@ describe('Batch - Data Class', () => {
         pressure: null,
         pour: null
       }
-      
+
       const batch = Batch.fromJson(json)
       expect(batch.gravityCount).toBe(10)
       expect(batch.pressureCount).toBe(5)
@@ -304,7 +355,7 @@ describe('Batch - Data Class', () => {
       const gravityArray = [{ id: 1, gravity: 1.05 }]
       const pressureArray = [{ id: 1, pressure: 20 }]
       const pourArray = [{ id: 1, volume: 500 }]
-      
+
       const json = {
         id: 1,
         name: 'Test',
@@ -312,7 +363,7 @@ describe('Batch - Data Class', () => {
         pressure: pressureArray,
         pour: pourArray
       }
-      
+
       const batch = Batch.fromJson(json)
       expect(batch.gravity).toEqual(gravityArray)
       expect(batch.pressure).toEqual(pressureArray)
@@ -330,13 +381,15 @@ describe('Batch - Data Class', () => {
         active: true,
         tapList: true,
         fg: 1.008,
-        og: 1.060,
+        og: 1.06,
         fermentationChamber: 1,
         gravity: [{ id: 1 }],
         pressure: [{ id: 1 }],
-        pour: [{ id: 1, volume: 250, maxVolume: 500, active: true, created: '2024-01-15T10:00:00Z' }]
+        pour: [
+          { id: 1, volume: 250, maxVolume: 500, active: true, created: '2024-01-15T10:00:00Z' }
+        ]
       }
-      
+
       const batch = Batch.fromDashboardJson(json)
       expect(batch.id).toBe(3)
       expect(batch.name).toBe('Dashboard Batch')
@@ -358,7 +411,7 @@ describe('Batch - Data Class', () => {
           { id: 3, volume: 300, maxVolume: 500, active: true, created: '2024-01-15T12:00:00Z' }
         ]
       }
-      
+
       const batch = Batch.fromDashboardJson(json)
       expect(batch.lastPourVolume).toBe(300)
       expect(batch.lastPourMaxVolume).toBe(500)
@@ -373,7 +426,7 @@ describe('Batch - Data Class', () => {
           { id: 2, volume: 200, maxVolume: 500, active: true, created: '2024-01-15T08:00:00Z' }
         ]
       }
-      
+
       const batch = Batch.fromDashboardJson(json)
       expect(batch.lastPourVolume).toBe(200)
       expect(batch.lastPourMaxVolume).toBe(500)
@@ -385,7 +438,7 @@ describe('Batch - Data Class', () => {
         name: 'Test',
         pour: null
       }
-      
+
       const batch = Batch.fromDashboardJson(json)
       expect(batch.lastPourVolume).toBeUndefined()
       expect(batch.lastPourMaxVolume).toBeUndefined()
@@ -398,7 +451,7 @@ describe('Batch - Data Class', () => {
         name: 'Test',
         pour: []
       }
-      
+
       const batch = Batch.fromDashboardJson(json)
       expect(batch.lastPourVolume).toBeUndefined()
       expect(batch.lastPourMaxVolume).toBeUndefined()
@@ -412,7 +465,7 @@ describe('Batch - Data Class', () => {
         pressure: [{ id: 1 }],
         pour: [{ id: 1 }, { id: 2 }, { id: 3 }]
       }
-      
+
       const batch = Batch.fromDashboardJson(json)
       expect(batch.gravityCount).toBe(2)
       expect(batch.pressureCount).toBe(1)
@@ -423,7 +476,7 @@ describe('Batch - Data Class', () => {
       const gravityArray = [{ id: 1, gravity: 1.05 }]
       const pressureArray = [{ id: 1, pressure: 20 }]
       const pourArray = [{ id: 1, volume: 500, active: true, created: '2024-01-15T10:00:00Z' }]
-      
+
       const json = {
         id: 1,
         name: 'Test',
@@ -431,7 +484,7 @@ describe('Batch - Data Class', () => {
         pressure: pressureArray,
         pour: pourArray
       }
-      
+
       const batch = Batch.fromDashboardJson(json)
       expect(batch.gravity).toEqual(gravityArray)
       expect(batch.pressure).toEqual(pressureArray)
@@ -454,11 +507,11 @@ describe('Batch - Data Class', () => {
         6.5,
         45,
         55,
-        1.010,
-        1.050,
+        1.01,
+        1.05,
         'bf-456'
       )
-      
+
       const json = batch.toJson()
       expect(json.id).toBe(5)
       expect(json.name).toBe('Export Batch')
@@ -472,8 +525,8 @@ describe('Batch - Data Class', () => {
       expect(json.abv).toBe(6.5)
       expect(json.ebc).toBe(45)
       expect(json.ibu).toBe(55)
-      expect(json.fg).toBe(1.010)
-      expect(json.og).toBe(1.050)
+      expect(json.fg).toBe(1.01)
+      expect(json.og).toBe(1.05)
     })
 
     it('should include empty arrays for sensor data', () => {
@@ -489,7 +542,7 @@ describe('Batch - Data Class', () => {
       const gravityArray = [{ id: 1, gravity: 1.05 }]
       const pressureArray = []
       const pourArray = [{ id: 1, volume: 250 }]
-      
+
       const batch = new Batch(
         1,
         'Test',
@@ -518,7 +571,7 @@ describe('Batch - Data Class', () => {
         pressureArray,
         pourArray
       )
-      
+
       const json = batch.toJson()
       expect(json.gravity).toEqual(gravityArray)
       expect(json.pressure).toEqual(pressureArray)
@@ -526,25 +579,8 @@ describe('Batch - Data Class', () => {
     })
 
     it('should handle fermentationChamber serialization', () => {
-      const batch = new Batch(
-        1,
-        'Test',
-        '',
-        '',
-        '',
-        true,
-        '',
-        '',
-        '',
-        0,
-        0,
-        0,
-        0,
-        0,
-        '',
-        5
-      )
-      
+      const batch = new Batch(1, 'Test', '', '', '', true, '', '', '', 0, 0, 0, 0, 0, '', 5)
+
       const json = batch.toJson()
       expect(json.fermentationChamber).toBe(5)
     })
@@ -552,7 +588,7 @@ describe('Batch - Data Class', () => {
     it('should handle null fermentationChamber', () => {
       const batch = new Batch()
       batch.fermentationChamber = null
-      
+
       const json = batch.toJson()
       // fermentationChamber should be included even if null or 0
       expect('fermentationChamber' in json).toBe(true)
@@ -576,10 +612,10 @@ describe('Batch - Data Class', () => {
         1.065,
         'bf-789'
       )
-      
+
       const json = original.toJson()
       const restored = Batch.fromJson(json)
-      
+
       expect(restored.name).toBe(original.name)
       expect(restored.description).toBe(original.description)
       expect(restored.chipIdGravity).toBe(original.chipIdGravity)
@@ -588,4 +624,3 @@ describe('Batch - Data Class', () => {
     })
   })
 })
-

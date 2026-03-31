@@ -74,13 +74,13 @@ export const useDeviceStore = defineStore('deviceStore', {
       // returns {device, stepList} or null
 
       logDebug('deviceStore.getDevice()', id)
-      
+
       // Handle invalid device IDs
       if (id === undefined || id === null || id === 0) {
         logDebug('deviceStore.getDevice()', 'Invalid device ID, returning null')
         return null
       }
-      
+
       global.disabled = true
       try {
         const res = await fetch(global.baseURL + 'api/device/' + id, {
@@ -179,13 +179,13 @@ export const useDeviceStore = defineStore('deviceStore', {
       // returns stepList[] or null
 
       logDebug('deviceStore.getDeviceFermentationSteps()', id)
-      
+
       // Handle invalid device IDs
       if (id === undefined || id === null || id === 0) {
         logDebug('deviceStore.getDeviceFermentationSteps()', 'Invalid device ID, returning null')
         return null
       }
-      
+
       global.disabled = true
       try {
         const res = await fetch(global.baseURL + 'api/device/' + id, {

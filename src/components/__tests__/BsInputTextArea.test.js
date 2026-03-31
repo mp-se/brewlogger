@@ -144,10 +144,10 @@ describe('BsInputTextArea - Multi-line Text Input', () => {
         props: { modelValue: 'Start' }
       })
       const textarea = wrapper.find('textarea')
-      
+
       await textarea.setValue('Start\nMiddle')
       await textarea.setValue('Start\nMiddle\nEnd')
-      
+
       expect(textarea.element.value).toContain('End')
     })
 

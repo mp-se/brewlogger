@@ -204,7 +204,7 @@ describe('GravityStatsFragment - Gravity Statistics Display', () => {
           components: { BsInputReadonly, BsInputBase }
         }
       })
-      
+
       // First update
       let newStats = {
         ...sampleGravityStats,
@@ -212,7 +212,7 @@ describe('GravityStatsFragment - Gravity Statistics Display', () => {
       }
       await wrapper.setProps({ modelValue: newStats })
       expect(wrapper.props('modelValue').abvString).toBe('6.0%')
-      
+
       // Second update
       newStats = {
         ...sampleGravityStats,
@@ -229,12 +229,12 @@ describe('GravityStatsFragment - Gravity Statistics Display', () => {
           components: { BsInputReadonly, BsInputBase }
         }
       })
-      
+
       expect(wrapper.find('.col-md-12').exists()).toBe(true)
-      
+
       await wrapper.setProps({ modelValue: null })
       expect(wrapper.find('.col-md-12').exists()).toBe(false)
-      
+
       await wrapper.setProps({ modelValue: sampleGravityStats })
       expect(wrapper.find('.col-md-12').exists()).toBe(true)
     })
@@ -246,13 +246,13 @@ describe('GravityStatsFragment - Gravity Statistics Display', () => {
           components: { BsInputReadonly, BsInputBase }
         }
       })
-      
+
       const updates = [
         { ...sampleGravityStats, readings: '20' },
         { ...sampleGravityStats, readings: '25' },
         { ...sampleGravityStats, readings: '30' }
       ]
-      
+
       for (const update of updates) {
         await wrapper.setProps({ modelValue: update })
         const inputs = wrapper.findAll('input[type="text"]')
@@ -367,7 +367,7 @@ describe('GravityStatsFragment - Gravity Statistics Display', () => {
         }
       })
       const inputs = wrapper.findAllComponents(BsInputReadonly)
-      const labels = inputs.map(input => input.props('label'))
+      const labels = inputs.map((input) => input.props('label'))
       expect(labels).toContain('OG')
       expect(labels).toContain('FG')
       expect(labels).toContain('ABV')
@@ -407,8 +407,8 @@ describe('GravityStatsFragment - Gravity Statistics Display', () => {
       // Verify each input has the correct v-model binding
       expect(inputs[0].props('modelValue')).toBe('1.050') // OG
       expect(inputs[1].props('modelValue')).toBe('1.010') // FG
-      expect(inputs[2].props('modelValue')).toBe('5.2%')  // ABV
-      expect(inputs[3].props('modelValue')).toBe('15')    // Readings
+      expect(inputs[2].props('modelValue')).toBe('5.2%') // ABV
+      expect(inputs[3].props('modelValue')).toBe('15') // Readings
       expect(inputs[4].props('modelValue')).toBe('1.2 days') // Ave Int
     })
   })

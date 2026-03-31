@@ -15,15 +15,7 @@ describe('Pour - Data Class', () => {
     })
 
     it('should create a Pour with provided values', () => {
-      const pour = new Pour(
-        1,
-        5.5,
-        250.0,
-        500.0,
-        '2024-01-15T10:30:00Z',
-        5,
-        true
-      )
+      const pour = new Pour(1, 5.5, 250.0, 500.0, '2024-01-15T10:30:00Z', 5, true)
       expect(pour.id).toBe(1)
       expect(pour.pour).toBe(5.5)
       expect(pour.volume).toBe(250.0)
@@ -71,15 +63,7 @@ describe('Pour - Data Class', () => {
 
   describe('toJson - Instance Method', () => {
     it('should convert Pour to JSON with all fields', () => {
-      const pour = new Pour(
-        1,
-        5.5,
-        250.0,
-        500.0,
-        '2024-01-15T10:30:00Z',
-        5,
-        true
-      )
+      const pour = new Pour(1, 5.5, 250.0, 500.0, '2024-01-15T10:30:00Z', 5, true)
       const json = pour.toJson()
 
       expect(json.pour).toBe(5.5)

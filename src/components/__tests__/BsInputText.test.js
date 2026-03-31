@@ -105,14 +105,14 @@ describe('BsInputText - Form Component', () => {
         props: { type: 'password' }
       })
       const input = wrapper.find('input')
-      
+
       // Initially password
       expect(input.attributes('type')).toBe('password')
-      
+
       // Click eye icon to show
       const eyeIcon = wrapper.findComponent({ name: 'IconEye' })
       await eyeIcon.trigger('click')
-      
+
       expect(input.attributes('type')).toBe('text')
     })
 
@@ -121,12 +121,12 @@ describe('BsInputText - Form Component', () => {
         props: { type: 'password' }
       })
       const input = wrapper.find('input')
-      
+
       // Click to show
       const eyeIcon = wrapper.findComponent({ name: 'IconEye' })
       await eyeIcon.trigger('click')
       expect(input.attributes('type')).toBe('text')
-      
+
       // Click to hide
       const eyeSlashIcon = wrapper.findComponent({ name: 'IconEyeSlash' })
       await eyeSlashIcon.trigger('click')

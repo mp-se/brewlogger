@@ -14,7 +14,14 @@ describe('FermentationStep - Data Class', () => {
     })
 
     it('should create a FermentationStep with undefined values', () => {
-      const step = new FermentationStep(undefined, undefined, undefined, undefined, undefined, undefined)
+      const step = new FermentationStep(
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        undefined
+      )
       expect(step.order).toBeUndefined()
       expect(step.name).toBe('')
       expect(step.type).toBeUndefined()

@@ -1,9 +1,9 @@
 /**
  * FermentationStep data model - represents a fermentation schedule step/stage
- * 
+ *
  * A fermentation step defines a temperature set-point and duration for
  * a particular stage of fermentation (e.g., pitch at 10°C, ramp to 18°C, hold for 7 days)
- * 
+ *
  * @class
  */
 export class FermentationStep {
@@ -27,7 +27,7 @@ export class FermentationStep {
    * @static
    * @param {Object} f - The JSON object from API
    * @returns {FermentationStep} A new FermentationStep instance
-   */  static fromJson(fs) {
+   */ static fromJson(fs) {
     return new FermentationStep(fs.order, fs.name, fs.type, fs.date, fs.temp, fs.days)
   }
 

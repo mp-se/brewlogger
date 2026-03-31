@@ -34,8 +34,8 @@ describe('DeviceFlashView - Enhanced', () => {
       global: {
         stubs: {
           'router-link': { template: '<a><slot></slot></a>' },
-          'BsInputRadio': true,
-          'BsInputSwitch': true,
+          BsInputRadio: true,
+          BsInputSwitch: true,
           'esp-web-install-button': true
         },
         plugins: [router]
@@ -67,15 +67,15 @@ describe('DeviceFlashView - Enhanced', () => {
 
   describe('SSL Detection', () => {
     it('should define isSSL constant', () => {
-      const wrapper = createWrapper()
-      const isSSL = window.location.protocol === 'https:' || window.location.hostname === 'localhost'
+      const isSSL =
+        window.location.protocol === 'https:' || window.location.hostname === 'localhost'
       expect(typeof isSSL).toBe('boolean')
     })
 
     it('should show content for localhost', () => {
-      const wrapper = createWrapper()
       // localhost should be treated as SSL
-      const isSSL = window.location.protocol === 'https:' || window.location.hostname === 'localhost'
+      const isSSL =
+        window.location.protocol === 'https:' || window.location.hostname === 'localhost'
       expect(isSSL).toBe(true)
     })
   })
@@ -89,33 +89,33 @@ describe('DeviceFlashView - Enhanced', () => {
 
     it('should include Gravitymon option', () => {
       const wrapper = createWrapper()
-      const hasGravitymon = wrapper.vm.softwareOptions.some(o => o.value === 'gravitymon')
+      const hasGravitymon = wrapper.vm.softwareOptions.some((o) => o.value === 'gravitymon')
       expect(hasGravitymon).toBe(true)
     })
 
     it('should include Kegmon option', () => {
       const wrapper = createWrapper()
-      const hasKegmon = wrapper.vm.softwareOptions.some(o => o.value === 'kegmon')
+      const hasKegmon = wrapper.vm.softwareOptions.some((o) => o.value === 'kegmon')
       expect(hasKegmon).toBe(true)
     })
 
     it('should have enabled flag for options', () => {
       const wrapper = createWrapper()
-      wrapper.vm.softwareOptions.forEach(option => {
+      wrapper.vm.softwareOptions.forEach((option) => {
         expect(option).toHaveProperty('enabled')
       })
     })
 
     it('should have github URLs for options', () => {
       const wrapper = createWrapper()
-      wrapper.vm.softwareOptions.forEach(option => {
+      wrapper.vm.softwareOptions.forEach((option) => {
         expect(option).toHaveProperty('github')
       })
     })
 
     it('should have boards for options', () => {
       const wrapper = createWrapper()
-      wrapper.vm.softwareOptions.forEach(option => {
+      wrapper.vm.softwareOptions.forEach((option) => {
         expect(Array.isArray(option.boards)).toBe(true)
       })
     })
@@ -157,7 +157,6 @@ describe('DeviceFlashView - Enhanced', () => {
       wrapper.vm.software = 'gravitymon'
       await flushPromises()
 
-      const oldVariant = wrapper.vm.variant
       wrapper.vm.software = 'kegmon'
       await flushPromises()
 
@@ -177,7 +176,7 @@ describe('DeviceFlashView - Enhanced', () => {
       await flushPromises()
 
       expect(wrapper.vm.variantBoardOptions.length).toBeGreaterThan(0)
-      expect(wrapper.vm.variantBoardOptions.some(v => v.value === '')).toBe(true)
+      expect(wrapper.vm.variantBoardOptions.some((v) => v.value === '')).toBe(true)
     })
 
     it('should set first variant as default', async () => {
@@ -231,7 +230,7 @@ describe('DeviceFlashView - Enhanced', () => {
     it('should create correct manifest URL for release version', () => {
       const wrapper = createWrapper()
       const url = wrapper.vm.createManifestUrl('gravitymon', '')
-      
+
       expect(url).toContain('gravitymon')
       expect(url).toContain('manifest')
       expect(url).toContain('.json')
@@ -249,14 +248,14 @@ describe('DeviceFlashView - Enhanced', () => {
     it('should include variant in manifest URL', () => {
       const wrapper = createWrapper()
       const url = wrapper.vm.createManifestUrl('gravitymon', '_waveshare')
-      
+
       expect(url).toContain('_waveshare')
     })
 
     it('should create correct manifest URL for different software', () => {
       const wrapper = createWrapper()
       const url = wrapper.vm.createManifestUrl('kegmon', '')
-      
+
       expect(url).toContain('kegmon')
     })
   })
@@ -265,7 +264,7 @@ describe('DeviceFlashView - Enhanced', () => {
     it('should create correct binary URL', () => {
       const wrapper = createWrapper()
       const url = wrapper.vm.createBinUrl('gravitymon', 'app.bin')
-      
+
       expect(url).toContain('gravitymon')
       expect(url).toContain('app.bin')
       expect(url).not.toContain('beta')
@@ -361,9 +360,7 @@ describe('DeviceFlashView - Enhanced', () => {
 
   describe('Component Watchers', () => {
     it('should update on disabled change', async () => {
-      const wrapper = createWrapper()
       const globalStore = useGlobalStore()
-      
       globalStore.disabled = true
       await flushPromises()
 
@@ -387,8 +384,6 @@ describe('DeviceFlashView - Enhanced', () => {
       expect(wrapper.vm.beta).toBe(true)
     })
   })
-
-
 
   describe('Layout Structure', () => {
     it('should have row and column classes', () => {

@@ -22,28 +22,26 @@ describe('SupportView', () => {
   beforeEach(() => {
     globalThis.fetch = vi.fn().mockResolvedValue({
       ok: true,
-      json: () => Promise.resolve({
-        log: [
-          { name: 'log_1_start', value: 1600000000 },
-          { name: 'log_1_last', value: 1600001000 }
-        ],
-        ble: [
-          { name: 'ble_1_last', value: 1600002000 }
-        ]
-      })
+      json: () =>
+        Promise.resolve({
+          log: [
+            { name: 'log_1_start', value: 1600000000 },
+            { name: 'log_1_last', value: 1600001000 }
+          ],
+          ble: [{ name: 'ble_1_last', value: 1600002000 }]
+        })
     })
   })
 
   it('should render correctly', async () => {
     const wrapper = mount(SupportView)
-    
+
     // Wait for the fetch promise inside onMounted to resolve and trigger updates
     await flushPromises()
     await nextTick()
-    
+
     expect(wrapper.text()).toContain('Support')
     expect(wrapper.text()).toContain('Log status')
     expect(wrapper.text()).toContain('2020')
   })
 })
-

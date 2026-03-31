@@ -80,7 +80,7 @@ vi.mock('@/modules/logger', () => ({
 }))
 
 vi.mock('@/modules/utils', () => ({
-  gravityToPlato: vi.fn((g) => (g - 1) * 1000 / 4),
+  gravityToPlato: vi.fn((g) => ((g - 1) * 1000) / 4),
   formatTime: vi.fn((s) => {
     if (s < 60) return `${s}s`
     if (s < 3600) return `${Math.round(s / 60)}m`
@@ -166,7 +166,7 @@ describe('HomeView - Enhanced', () => {
 
     it('should bind Chamber toggle to global.showChamberTemps', async () => {
       const wrapper = createWrapper()
-      
+
       piniaMocks.global.showChamberTemps = true
       await wrapper.vm.$nextTick()
 
@@ -175,7 +175,7 @@ describe('HomeView - Enhanced', () => {
 
     it('should bind Kegmon toggle to global.showKegmonTaps', async () => {
       const wrapper = createWrapper()
-      
+
       piniaMocks.global.showKegmonTaps = true
       await wrapper.vm.$nextTick()
 
@@ -249,7 +249,9 @@ describe('HomeView - Enhanced', () => {
   describe('Pretty Formatting Methods', () => {
     it('should format scheduler task names', () => {
       const wrapper = createWrapper()
-      expect(wrapper.vm.prettySchedulerName('task_fetch_chamberctrl_temps')).toBe('Fetch ChamberControl Temps')
+      expect(wrapper.vm.prettySchedulerName('task_fetch_chamberctrl_temps')).toBe(
+        'Fetch ChamberControl Temps'
+      )
     })
 
     it('should format chamber control task name', () => {
@@ -381,7 +383,7 @@ describe('HomeView - Enhanced', () => {
       wrapper.vm.latestGravityReadings.push({
         id: 1,
         batchName: 'Test',
-        gravity: 1.050,
+        gravity: 1.05,
         created: '2025-05-09 10:00:00'
       })
       await wrapper.vm.$nextTick()
@@ -390,12 +392,10 @@ describe('HomeView - Enhanced', () => {
     })
   })
 
-  
-
   describe('Data Binding Integration', () => {
     it('should bind global.showChamberTemps', async () => {
       const wrapper = createWrapper()
-      
+
       piniaMocks.global.showChamberTemps = false
       await wrapper.vm.$nextTick()
       expect(piniaMocks.global.showChamberTemps).toBe(false)
@@ -407,7 +407,7 @@ describe('HomeView - Enhanced', () => {
 
     it('should bind global.showKegmonTaps', async () => {
       const wrapper = createWrapper()
-      
+
       piniaMocks.global.showKegmonTaps = false
       await wrapper.vm.$nextTick()
       expect(piniaMocks.global.showKegmonTaps).toBe(false)
@@ -478,10 +478,7 @@ describe('HomeView - Enhanced', () => {
       const wrapper = createWrapper()
       const batch = new Batch(1, 'Test')
       batch.gravityCount = 2
-      batch.gravity = [
-        { gravity: 1.050 },
-        { gravity: 1.010 }
-      ]
+      batch.gravity = [{ gravity: 1.05 }, { gravity: 1.01 }]
       const gravity = wrapper.vm.getLastGravity(batch)
       expect(gravity).toBeDefined()
       expect(typeof gravity).toBe('string')
@@ -502,10 +499,7 @@ describe('HomeView - Enhanced', () => {
       const wrapper = createWrapper()
       const batch = new Batch(1, 'Test')
       batch.gravityCount = 2
-      batch.gravity = [
-        { temperature: 18 },
-        { temperature: 20 }
-      ]
+      batch.gravity = [{ temperature: 18 }, { temperature: 20 }]
       const temp = wrapper.vm.getLastTemperature(batch)
       expect(temp).toBeDefined()
     })
@@ -515,10 +509,7 @@ describe('HomeView - Enhanced', () => {
       const batch = new Batch(1, 'Test')
       batch.gravityCount = 0
       batch.pressureCount = 2
-      batch.pressure = [
-        { temperature: 18 },
-        { temperature: 22 }
-      ]
+      batch.pressure = [{ temperature: 18 }, { temperature: 22 }]
       const temp = wrapper.vm.getLastTemperature(batch)
       expect(temp).toBeDefined()
     })
@@ -537,10 +528,7 @@ describe('HomeView - Enhanced', () => {
       const wrapper = createWrapper()
       const batch = new Batch(1, 'Test')
       batch.pressureCount = 2
-      batch.pressure = [
-        { pressure: 2.0 },
-        { pressure: 2.5 }
-      ]
+      batch.pressure = [{ pressure: 2.0 }, { pressure: 2.5 }]
       const pressure = wrapper.vm.getLastPressure(batch)
       expect(pressure).toBeDefined()
     })
@@ -561,10 +549,7 @@ describe('HomeView - Enhanced', () => {
       batch.pressureCount = 2
       const now = new Date()
       const fiveMinutesAgo = new Date(now.getTime() - 5 * 60 * 1000)
-      batch.pressure = [
-        { created: fiveMinutesAgo.toISOString() },
-        { created: now.toISOString() }
-      ]
+      batch.pressure = [{ created: fiveMinutesAgo.toISOString() }, { created: now.toISOString() }]
       const age = wrapper.vm.getPressureReadingAge(batch)
       expect(typeof age).toBe('string')
     })
@@ -575,9 +560,9 @@ describe('HomeView - Enhanced', () => {
       const wrapper = createWrapper()
       const clearIntervalSpy = vi.spyOn(global, 'clearInterval')
       wrapper.vm.ticker = setInterval(() => {}, 5000)
-      
+
       wrapper.unmount()
-      
+
       expect(clearIntervalSpy).toHaveBeenCalled()
       clearIntervalSpy.mockRestore()
     })
@@ -586,9 +571,9 @@ describe('HomeView - Enhanced', () => {
       const wrapper = createWrapper()
       const clearIntervalSpy = vi.spyOn(global, 'clearInterval')
       wrapper.vm.readingsTicker = setInterval(() => {}, 5000)
-      
+
       wrapper.unmount()
-      
+
       expect(clearIntervalSpy).toHaveBeenCalled()
       clearIntervalSpy.mockRestore()
     })
@@ -664,7 +649,7 @@ describe('HomeView - Enhanced', () => {
       const reading = {
         id: 1,
         batchName: 'Test Batch',
-        gravity: 1.050,
+        gravity: 1.05,
         temperature: 20,
         battery: 4.5,
         created: new Date().toISOString()
@@ -716,7 +701,13 @@ describe('HomeView - Enhanced', () => {
 
     it('should support adding fermentation controller device', async () => {
       const wrapper = createWrapper()
-      const device = new Device(1, 'abc123', 'http://localhost:8080/', 'Chamber Controller', 'Chamber-Controller')
+      const device = new Device(
+        1,
+        'abc123',
+        'http://localhost:8080/',
+        'Chamber Controller',
+        'Chamber-Controller'
+      )
       wrapper.vm.fermentationControlList.push(device)
       await wrapper.vm.$nextTick()
 
@@ -737,7 +728,13 @@ describe('HomeView - Enhanced', () => {
 
     it('should call proxyRequest for each chamber device when enabled', async () => {
       const wrapper = createWrapper()
-      const device = new Device(1, 'abc123', 'http://localhost/', 'Test Chamber', 'Chamber-Controller')
+      const device = new Device(
+        1,
+        'abc123',
+        'http://localhost/',
+        'Test Chamber',
+        'Chamber-Controller'
+      )
       piniaMocks.deviceStore.deviceList = [device]
       piniaMocks.deviceStore.proxyRequest = vi.fn().mockResolvedValue({
         mdns: 'chamber1',
@@ -752,7 +749,13 @@ describe('HomeView - Enhanced', () => {
 
     it('should filter only Chamber-Controller devices', async () => {
       const wrapper = createWrapper()
-      const chamberDevice = new Device(1, 'abc123', 'http://chamber/', 'Chamber', 'Chamber-Controller')
+      const chamberDevice = new Device(
+        1,
+        'abc123',
+        'http://chamber/',
+        'Chamber',
+        'Chamber-Controller'
+      )
       const otherDevice = new Device(2, 'def456', 'http://other/', 'Other', 'Kegmon')
       piniaMocks.deviceStore.deviceList = [chamberDevice, otherDevice]
       piniaMocks.global.showChamberTemps = true
@@ -778,7 +781,13 @@ describe('HomeView - Enhanced', () => {
     it('should filter only Kegmon devices', async () => {
       const wrapper = createWrapper()
       const kegmonDevice = new Device(1, 'def456', 'http://kegmon/', 'Kegmon', 'Kegmon')
-      const otherDevice = new Device(2, 'abc123', 'http://chamber/', 'Chamber', 'Chamber-Controller')
+      const otherDevice = new Device(
+        2,
+        'abc123',
+        'http://chamber/',
+        'Chamber',
+        'Chamber-Controller'
+      )
       piniaMocks.deviceStore.deviceList = [kegmonDevice, otherDevice]
       piniaMocks.global.showKegmonTaps = true
 
@@ -841,7 +850,7 @@ describe('HomeView - Enhanced', () => {
 
       wrapper.vm.latestGravityReadings.push({
         batchName: 'Test',
-        gravity: 1.050,
+        gravity: 1.05,
         temperature: 20,
         battery: 3.8,
         created: new Date().toISOString()

@@ -505,7 +505,7 @@ describe('useDeviceStore', () => {
       await store.processEvent('update', 1)
 
       expect(store.devices.length).toBe(2)
-      const updated = store.devices.find(d => d.id === 1)
+      const updated = store.devices.find((d) => d.id === 1)
       expect(updated.id).toBe(1)
     })
 
@@ -528,7 +528,7 @@ describe('useDeviceStore', () => {
       await store.processEvent('create', 2)
 
       expect(store.devices.length).toBe(2)
-      const created = store.devices.find(d => d.id === 2)
+      const created = store.devices.find((d) => d.id === 2)
       expect(created.id).toBe(2)
     })
 
@@ -592,7 +592,12 @@ describe('useDeviceStore', () => {
 
       global.fetch = vi.fn().mockRejectedValueOnce(new Error('Network error'))
 
-      const result = await store.proxyRequest('POST', 'http://device.local/api/config', { 'Content-Type': 'application/json' }, '{"key":"value"}')
+      const result = await store.proxyRequest(
+        'POST',
+        'http://device.local/api/config',
+        { 'Content-Type': 'application/json' },
+        '{"key":"value"}'
+      )
 
       expect(result).toBeNull()
     })
@@ -606,7 +611,12 @@ describe('useDeviceStore', () => {
         json: vi.fn().mockResolvedValueOnce(mockResponse)
       })
 
-      const result = await store.proxyRequest('DELETE', 'http://device.local/api/resource', {}, null)
+      const result = await store.proxyRequest(
+        'DELETE',
+        'http://device.local/api/resource',
+        {},
+        null
+      )
 
       expect(result).toEqual(mockResponse)
     })

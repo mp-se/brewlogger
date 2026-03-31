@@ -161,9 +161,7 @@ describe('BsModalSelect - Selection Modal', () => {
     })
 
     it('should handle items with very long names', () => {
-      const longItems = [
-        { id: '1', name: 'A'.repeat(500) }
-      ]
+      const longItems = [{ id: '1', name: 'A'.repeat(500) }]
       const wrapper = mount(BsModalSelect, {
         props: {
           modelValue: '',

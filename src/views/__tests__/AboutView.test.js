@@ -1,9 +1,6 @@
-import { describe, it, expect, beforeEach } from 'vitest'
-import { mount, flushPromises } from '@vue/test-utils'
-import { createRouter, createMemoryHistory } from 'vue-router'
+import { describe, it, expect } from 'vitest'
+import { mount } from '@vue/test-utils'
 import AboutView from '../AboutView.vue'
-import NotFoundView from '../NotFoundView.vue'
-import BsMessage from '../../components/BsMessage.vue'
 
 describe('AboutView', () => {
   describe('Basic Rendering', () => {
@@ -41,7 +38,9 @@ describe('AboutView', () => {
   describe('Main Description', () => {
     it('should display the project purpose', () => {
       const wrapper = mount(AboutView)
-      expect(wrapper.text()).toContain('This project was created to help me develop my beer brewing projects')
+      expect(wrapper.text()).toContain(
+        'This project was created to help me develop my beer brewing projects'
+      )
     })
 
     it('should mention device management', () => {
@@ -206,7 +205,7 @@ describe('AboutView', () => {
         'FITNESS',
         'PARTICULAR PURPOSE'
       ]
-      expectedPhrases.forEach(phrase => {
+      expectedPhrases.forEach((phrase) => {
         expect(text).toContain(phrase)
       })
     })

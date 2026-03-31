@@ -279,4 +279,3 @@ describe('BsMessage - Alert/Message Component', () => {
     })
   })
 })
-

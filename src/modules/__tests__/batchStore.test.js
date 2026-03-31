@@ -115,7 +115,7 @@ describe('useBatchStore', () => {
         abv: 6.5,
         ebc: 20,
         ibu: 50,
-        fg: 1.010,
+        fg: 1.01,
         og: 1.055,
         brewfatherId: '',
         fermentationChamber: 0,
@@ -201,7 +201,7 @@ describe('useBatchStore', () => {
       const mockDashboard = {
         id: 1,
         name: 'Dashboard Batch',
-        gravity: [{ id: 1, gravity: 1.050 }],
+        gravity: [{ id: 1, gravity: 1.05 }],
         pressure: [{ id: 1, pressure: 15.2 }],
         pour: []
       }
@@ -437,9 +437,7 @@ describe('useBatchStore', () => {
 
     it('should return false if no batches exist for chip', () => {
       const store = useBatchStore()
-      store.batches = [
-        { id: 1, chipIdGravity: 'chip1', chipIdPressure: 'chip2' }
-      ]
+      store.batches = [{ id: 1, chipIdGravity: 'chip1', chipIdPressure: 'chip2' }]
 
       const result = store.anyBatchesForDevice('chip999')
 
@@ -500,7 +498,7 @@ describe('useBatchStore', () => {
       await store.processEvent('update', 1)
 
       expect(store.batches.length).toBe(2)
-      const updated = store.batches.find(b => b.id === 1)
+      const updated = store.batches.find((b) => b.id === 1)
       expect(updated.name).toBe('NewName')
     })
 
@@ -533,7 +531,7 @@ describe('useBatchStore', () => {
       await store.processEvent('create', 2)
 
       expect(store.batches.length).toBe(2)
-      const created = store.batches.find(b => b.id === 2)
+      const created = store.batches.find((b) => b.id === 2)
       expect(created.name).toBe('NewBatch')
     })
 

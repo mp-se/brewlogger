@@ -25,7 +25,7 @@ describe('Gravity - Data Class', () => {
       const gravity = new Gravity(
         1,
         20.5,
-        1.050,
+        1.05,
         0.5,
         85.0,
         3.2,
@@ -40,7 +40,7 @@ describe('Gravity - Data Class', () => {
       )
       expect(gravity.id).toBe(1)
       expect(gravity.temperature).toBe(20.5)
-      expect(gravity.gravity).toBe(1.050)
+      expect(gravity.gravity).toBe(1.05)
       expect(gravity.velocity).toBe(0.5)
       expect(gravity.angle).toBe(85.0)
       expect(gravity.battery).toBe(3.2)
@@ -55,7 +55,22 @@ describe('Gravity - Data Class', () => {
     })
 
     it('should handle null values for optional fields', () => {
-      const gravity = new Gravity(1, null, 1.05, null, 0, 0, 0, null, null, '2024-01-15', 5, true, null, null)
+      const gravity = new Gravity(
+        1,
+        null,
+        1.05,
+        null,
+        0,
+        0,
+        0,
+        null,
+        null,
+        '2024-01-15',
+        5,
+        true,
+        null,
+        null
+      )
       expect(gravity.temperature).toBeNull()
       expect(gravity.velocity).toBeNull()
       expect(gravity.corrGravity).toBeNull()
@@ -105,7 +120,7 @@ describe('Gravity - Data Class', () => {
       const gravity = new Gravity(
         1,
         20.5,
-        1.050,
+        1.05,
         0.5,
         85.0,
         3.2,
@@ -121,7 +136,7 @@ describe('Gravity - Data Class', () => {
       const json = gravity.toJson()
 
       expect(json.temperature).toBe(20.5)
-      expect(json.gravity).toBe(1.050)
+      expect(json.gravity).toBe(1.05)
       expect(json.velocity).toBe(0.5)
       expect(json.angle).toBe(85.0)
       expect(json.battery).toBe(3.2)
@@ -142,14 +157,44 @@ describe('Gravity - Data Class', () => {
     })
 
     it('should exclude null optional fields from JSON', () => {
-      const gravity = new Gravity(1, 20, 1.05, 0.5, 85, 3.2, -65, null, 86400, '2024-01-15', 5, true, null, null)
+      const gravity = new Gravity(
+        1,
+        20,
+        1.05,
+        0.5,
+        85,
+        3.2,
+        -65,
+        null,
+        86400,
+        '2024-01-15',
+        5,
+        true,
+        null,
+        null
+      )
       const json = gravity.toJson()
       expect(json.chamberTemperature).toBeUndefined()
       expect(json.beerTemperature).toBeUndefined()
     })
 
     it('should include optional fields when not null', () => {
-      const gravity = new Gravity(1, 20, 1.05, 0.5, 85, 3.2, -65, 1.048, 86400, '2024-01-15', 5, true, 18.0, 20.5)
+      const gravity = new Gravity(
+        1,
+        20,
+        1.05,
+        0.5,
+        85,
+        3.2,
+        -65,
+        1.048,
+        86400,
+        '2024-01-15',
+        5,
+        true,
+        18.0,
+        20.5
+      )
       const json = gravity.toJson()
       expect(json.chamberTemperature).toBe(18.0)
       expect(json.beerTemperature).toBe(20.5)
@@ -190,8 +235,8 @@ describe('Gravity - Data Class', () => {
 
   describe('Edge Cases', () => {
     it('should handle very high gravity values', () => {
-      const gravity = new Gravity(1, 20, 1.150, 0.5, 85, 3.2, -65, 1.148)
-      expect(gravity.gravity).toBe(1.150)
+      const gravity = new Gravity(1, 20, 1.15, 0.5, 85, 3.2, -65, 1.148)
+      expect(gravity.gravity).toBe(1.15)
       expect(gravity.corrGravity).toBe(1.148)
     })
 
