@@ -1,13 +1,72 @@
 import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest'
 import { mount, flushPromises } from '@vue/test-utils'
 import { createPinia, setActivePinia } from 'pinia'
-import { createRouter, createMemoryHistory } from 'vue-router'
 import HomeView from '../HomeView.vue'
-import { useBatchStore } from '@/modules/batchStore'
-import { useDeviceStore } from '@/modules/deviceStore'
-import { useGlobalStore } from '@/modules/globalStore'
-import { useConfigStore } from '@/modules/configStore'
 import { Batch, Device } from '@/modules/classes'
+
+// Create pinia mocks
+const piniaMocks = vi.hoisted(() => ({
+  global: {
+    disabled: false,
+    clearMessages: vi.fn(),
+    messageSuccess: '',
+    messageError: '',
+    initialized: true,
+    showChamberTemps: false,
+    showKegmonTaps: false,
+    updated: 0
+  },
+  batchStore: {
+    batchList: [],
+    getBatchList: vi.fn().mockResolvedValue([])
+  },
+  deviceStore: {
+    deviceList: [],
+    getDeviceList: vi.fn().mockResolvedValue([])
+  },
+  gravityStore: {
+    gravityList: [],
+    getGravityList: vi.fn().mockResolvedValue([])
+  },
+  pressureStore: {
+    pressureList: [],
+    getPressureList: vi.fn().mockResolvedValue([])
+  },
+  pourStore: {
+    pourList: [],
+    getPourList: vi.fn().mockResolvedValue([])
+  },
+  configStore: {
+    config: {
+      isGravitySG: true,
+      isPressureBAR: false,
+      isVolumeL: true
+    }
+  }
+}))
+
+vi.mock('@/modules/pinia', () => ({
+  global: piniaMocks.global,
+  batchStore: piniaMocks.batchStore,
+  deviceStore: piniaMocks.deviceStore,
+  gravityStore: piniaMocks.gravityStore,
+  pressureStore: piniaMocks.pressureStore,
+  pourStore: piniaMocks.pourStore,
+  configStore: piniaMocks.configStore,
+  config: piniaMocks.configStore.config
+}))
+
+vi.mock('@/modules/router', () => ({
+  default: {
+    currentRoute: {
+      value: {
+        params: { id: 'new' },
+        name: 'home'
+      }
+    },
+    push: vi.fn()
+  }
+}))
 
 vi.mock('@/modules/logger', () => ({
   logDebug: vi.fn(),
@@ -31,19 +90,18 @@ vi.mock('@/modules/utils', () => ({
 }))
 
 describe('HomeView - Enhanced', () => {
-  let router, pinia
-
   beforeEach(() => {
-    pinia = createPinia()
-    setActivePinia(pinia)
-    router = createRouter({
-      history: createMemoryHistory(),
-      routes: [
-        { path: '/', name: 'home' },
-        { path: '/batch/:id/gravity/graph', name: 'batch-gravity-graph' },
-        { path: '/batch/:id/pressure/graph', name: 'batch-pressure-graph' }
-      ]
-    })
+    vi.clearAllMocks()
+    piniaMocks.global.disabled = false
+    piniaMocks.global.messageSuccess = ''
+    piniaMocks.global.messageError = ''
+    piniaMocks.global.showChamberTemps = false
+    piniaMocks.global.showKegmonTaps = false
+    piniaMocks.batchStore.batchList = []
+    piniaMocks.deviceStore.deviceList = []
+    piniaMocks.gravityStore.gravityList = []
+    piniaMocks.pressureStore.pressureList = []
+    piniaMocks.pourStore.pourList = []
   })
 
   afterEach(() => {
@@ -58,7 +116,13 @@ describe('HomeView - Enhanced', () => {
           BsInputSwitch: true,
           'router-link': true
         },
-        plugins: [router]
+        plugins: [
+          {
+            install(app) {
+              app.config.globalProperties.$route = { params: {}, name: 'home' }
+            }
+          }
+        ]
       }
     })
   }
@@ -89,34 +153,30 @@ describe('HomeView - Enhanced', () => {
   describe('Toggle Switches', () => {
     it('should have showChamberTemps property', () => {
       const wrapper = createWrapper()
-      const globalStore = useGlobalStore()
-      expect(typeof globalStore.showChamberTemps).toBe('boolean')
+      expect(typeof piniaMocks.global.showChamberTemps).toBe('boolean')
     })
 
     it('should have showKegmonTaps property', () => {
       const wrapper = createWrapper()
-      const globalStore = useGlobalStore()
-      expect(typeof globalStore.showKegmonTaps).toBe('boolean')
+      expect(typeof piniaMocks.global.showKegmonTaps).toBe('boolean')
     })
 
     it('should bind Chamber toggle to global.showChamberTemps', async () => {
       const wrapper = createWrapper()
-      const globalStore = useGlobalStore()
       
-      globalStore.showChamberTemps = true
+      piniaMocks.global.showChamberTemps = true
       await wrapper.vm.$nextTick()
 
-      expect(globalStore.showChamberTemps).toBe(true)
+      expect(piniaMocks.global.showChamberTemps).toBe(true)
     })
 
     it('should bind Kegmon toggle to global.showKegmonTaps', async () => {
       const wrapper = createWrapper()
-      const globalStore = useGlobalStore()
       
-      globalStore.showKegmonTaps = true
+      piniaMocks.global.showKegmonTaps = true
       await wrapper.vm.$nextTick()
 
-      expect(globalStore.showKegmonTaps).toBe(true)
+      expect(piniaMocks.global.showKegmonTaps).toBe(true)
     })
   })
 
@@ -332,54 +392,48 @@ describe('HomeView - Enhanced', () => {
   describe('Data Binding Integration', () => {
     it('should bind global.showChamberTemps', async () => {
       const wrapper = createWrapper()
-      const globalStore = useGlobalStore()
       
-      globalStore.showChamberTemps = false
+      piniaMocks.global.showChamberTemps = false
       await wrapper.vm.$nextTick()
-      expect(globalStore.showChamberTemps).toBe(false)
+      expect(piniaMocks.global.showChamberTemps).toBe(false)
 
-      globalStore.showChamberTemps = true
+      piniaMocks.global.showChamberTemps = true
       await wrapper.vm.$nextTick()
-      expect(globalStore.showChamberTemps).toBe(true)
+      expect(piniaMocks.global.showChamberTemps).toBe(true)
     })
 
     it('should bind global.showKegmonTaps', async () => {
       const wrapper = createWrapper()
-      const globalStore = useGlobalStore()
       
-      globalStore.showKegmonTaps = false
+      piniaMocks.global.showKegmonTaps = false
       await wrapper.vm.$nextTick()
-      expect(globalStore.showKegmonTaps).toBe(false)
+      expect(piniaMocks.global.showKegmonTaps).toBe(false)
 
-      globalStore.showKegmonTaps = true
+      piniaMocks.global.showKegmonTaps = true
       await wrapper.vm.$nextTick()
-      expect(globalStore.showKegmonTaps).toBe(true)
+      expect(piniaMocks.global.showKegmonTaps).toBe(true)
     })
   })
 
   describe('Store Integration', () => {
     it('should access batch store', () => {
       const wrapper = createWrapper()
-      const batchStore = useBatchStore()
-      expect(batchStore).toBeDefined()
+      expect(piniaMocks.batchStore).toBeDefined()
     })
 
     it('should access device store', () => {
       const wrapper = createWrapper()
-      const deviceStore = useDeviceStore()
-      expect(deviceStore).toBeDefined()
+      expect(piniaMocks.deviceStore).toBeDefined()
     })
 
     it('should access global store', () => {
       const wrapper = createWrapper()
-      const globalStore = useGlobalStore()
-      expect(globalStore).toBeDefined()
+      expect(piniaMocks.global).toBeDefined()
     })
 
     it('should access config store', () => {
       const wrapper = createWrapper()
-      const configStore = useConfigStore()
-      expect(configStore).toBeDefined()
+      expect(piniaMocks.configStore).toBeDefined()
     })
   })
 
@@ -544,8 +598,6 @@ describe('HomeView - Enhanced', () => {
   describe('Gravity Count Computation', () => {
     it('should calculate total gravity count from all batches', () => {
       const wrapper = createWrapper()
-      const batchStore = useBatchStore()
-      
       expect(typeof wrapper.vm.gravityCount).toBe('number')
     })
 
@@ -582,16 +634,14 @@ describe('HomeView - Enhanced', () => {
   describe('Device Count Computation', () => {
     it('should return device count from device store', () => {
       const wrapper = createWrapper()
-      const deviceStore = useDeviceStore()
-      expect(wrapper.vm.deviceCount).toBe(deviceStore.deviceList.length)
+      expect(wrapper.vm.deviceCount).toBe(piniaMocks.deviceStore.deviceList.length)
     })
   })
 
   describe('Batch Count Computation', () => {
     it('should return batch count from batch store', () => {
       const wrapper = createWrapper()
-      const batchStore = useBatchStore()
-      expect(wrapper.vm.batchCount).toBe(batchStore.batchList.length)
+      expect(wrapper.vm.batchCount).toBe(piniaMocks.batchStore.batchList.length)
     })
   })
 
