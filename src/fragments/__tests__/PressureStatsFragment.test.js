@@ -186,6 +186,91 @@ describe('PressureStatsFragment - Pressure Statistics Display', () => {
       const inputs = wrapper.findAll('input[type="text"]')
       expect(inputs[0].element.value).toContain('35 PSI')
     })
+
+    it('should trigger reactive setter with multiple sequential updates', async () => {
+      const wrapper = mount(PressureStatsFragment, {
+        props: { modelValue: samplePressureStats },
+        global: {
+          components: { BsInputReadonly, BsInputBase }
+        }
+      })
+      
+      // First update
+      let newStats = {
+        ...samplePressureStats,
+        readings: '15'
+      }
+      await wrapper.setProps({ modelValue: newStats })
+      expect(wrapper.props('modelValue').readings).toBe('15')
+      
+      // Second update
+      newStats = {
+        ...samplePressureStats,
+        readings: '20'
+      }
+      await wrapper.setProps({ modelValue: newStats })
+      expect(wrapper.props('modelValue').readings).toBe('20')
+    })
+
+    it('should handle null model value transitions', async () => {
+      const wrapper = mount(PressureStatsFragment, {
+        props: { modelValue: samplePressureStats },
+        global: {
+          components: { BsInputReadonly, BsInputBase }
+        }
+      })
+      
+      expect(wrapper.find('.col-md-12').exists()).toBe(true)
+      
+      await wrapper.setProps({ modelValue: null })
+      expect(wrapper.find('.col-md-12').exists()).toBe(false)
+      
+      await wrapper.setProps({ modelValue: samplePressureStats })
+      expect(wrapper.find('.col-md-12').exists()).toBe(true)
+    })
+
+    it('should preserve model state through prop updates', async () => {
+      const wrapper = mount(PressureStatsFragment, {
+        props: { modelValue: samplePressureStats },
+        global: {
+          components: { BsInputReadonly, BsInputBase }
+        }
+      })
+      
+      const updates = [
+        { ...samplePressureStats, readings: '15' },
+        { ...samplePressureStats, readings: '18' },
+        { ...samplePressureStats, readings: '22' }
+      ]
+      
+      for (const update of updates) {
+        await wrapper.setProps({ modelValue: update })
+        const inputs = wrapper.findAll('input[type="text"]')
+        expect(inputs[2].element.value).toBe(update.readings)
+      }
+    })
+
+    it('should update pressure values through model changes', async () => {
+      const wrapper = mount(PressureStatsFragment, {
+        props: { modelValue: samplePressureStats },
+        global: {
+          components: { BsInputReadonly, BsInputBase }
+        }
+      })
+      
+      const newStats = {
+        ...samplePressureStats,
+        pressure: {
+          maxString: '50 PSI',
+          minString: '25 PSI'
+        }
+      }
+      await wrapper.setProps({ modelValue: newStats })
+      
+      const inputs = wrapper.findAll('input[type="text"]')
+      expect(inputs[0].element.value).toContain('50 PSI')
+      expect(inputs[1].element.value).toContain('25 PSI')
+    })
   })
 
   describe('Edge Cases', () => {

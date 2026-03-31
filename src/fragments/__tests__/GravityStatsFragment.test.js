@@ -196,6 +196,69 @@ describe('GravityStatsFragment - Gravity Statistics Display', () => {
       const inputs = wrapper.findAll('input[type="text"]')
       expect(inputs[2].element.value).toContain('6.0%')
     })
+
+    it('should trigger reactive setter with multiple sequential updates', async () => {
+      const wrapper = mount(GravityStatsFragment, {
+        props: { modelValue: sampleGravityStats },
+        global: {
+          components: { BsInputReadonly, BsInputBase }
+        }
+      })
+      
+      // First update
+      let newStats = {
+        ...sampleGravityStats,
+        abvString: '6.0%'
+      }
+      await wrapper.setProps({ modelValue: newStats })
+      expect(wrapper.props('modelValue').abvString).toBe('6.0%')
+      
+      // Second update
+      newStats = {
+        ...sampleGravityStats,
+        abvString: '7.0%'
+      }
+      await wrapper.setProps({ modelValue: newStats })
+      expect(wrapper.props('modelValue').abvString).toBe('7.0%')
+    })
+
+    it('should handle null model value transitions', async () => {
+      const wrapper = mount(GravityStatsFragment, {
+        props: { modelValue: sampleGravityStats },
+        global: {
+          components: { BsInputReadonly, BsInputBase }
+        }
+      })
+      
+      expect(wrapper.find('.col-md-12').exists()).toBe(true)
+      
+      await wrapper.setProps({ modelValue: null })
+      expect(wrapper.find('.col-md-12').exists()).toBe(false)
+      
+      await wrapper.setProps({ modelValue: sampleGravityStats })
+      expect(wrapper.find('.col-md-12').exists()).toBe(true)
+    })
+
+    it('should preserve model state through prop updates', async () => {
+      const wrapper = mount(GravityStatsFragment, {
+        props: { modelValue: sampleGravityStats },
+        global: {
+          components: { BsInputReadonly, BsInputBase }
+        }
+      })
+      
+      const updates = [
+        { ...sampleGravityStats, readings: '20' },
+        { ...sampleGravityStats, readings: '25' },
+        { ...sampleGravityStats, readings: '30' }
+      ]
+      
+      for (const update of updates) {
+        await wrapper.setProps({ modelValue: update })
+        const inputs = wrapper.findAll('input[type="text"]')
+        expect(inputs[3].element.value).toBe(update.readings)
+      }
+    })
   })
 
   describe('Edge Cases', () => {
