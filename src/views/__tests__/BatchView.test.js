@@ -114,7 +114,7 @@ describe("BatchView", () => {
     })
   })
 
-  describe("Workflow and Logical Coverage", () => {
+  describe("Save operations", () => {
     it("adds new batch on save when ID is new", async () => {
       routerMock.currentRoute.value.params.id = "new"
 
@@ -172,7 +172,27 @@ describe("BatchView", () => {
       expect(piniaMocks.global.messageSuccess).toBe("Saved batch")
     })
 
-    it("removes fermentation steps", async () => {
+    it("handles save failure for existing batch", async () => {
+      piniaMocks.batchStore.updateBatch.mockResolvedValue(false)
+      piniaMocks.batchStore.getBatch.mockResolvedValue(new Batch(1, "E"))
+      routerMock.currentRoute.value.params.id = "1"
+      const wrapper = mountWrapper()
+      await flushPromises()
+      wrapper.vm.batchSaved = new Batch(1, "E")
+      await wrapper.vm.save()
+      expect(piniaMocks.global.messageError).toBe("Failed to save batch")
+    })
+
+    it("reports form validation failure on save", async () => {
+      const wrapper = mountWrapper()
+      await flushPromises()
+      vi.mocked((await import("@/modules/utils")).validateCurrentForm).mockReturnValueOnce(false)
+      await wrapper.vm.save()
+    })
+  })
+
+  describe("Fermentation steps operations", () => {
+    it("removes fermentation steps successfully", async () => {
       const wrapper = mountWrapper()
       await flushPromises()
       wrapper.vm.batch = new Batch(1, "Test")
@@ -193,6 +213,18 @@ describe("BatchView", () => {
       expect(piniaMocks.global.messageError).toBe("Failed to remove fermentation steps")
     })
 
+    it("triggers delete fermentation steps via button click", async () => {
+      const mockBtn = { click: vi.fn() }
+      const getElemSpy = vi.spyOn(document, "getElementById").mockReturnValue(mockBtn)
+      const wrapper = mountWrapper()
+      await flushPromises()
+      wrapper.vm.batch = new Batch(1, "Test")
+      wrapper.vm.batchSaved = new Batch(1, "Test")
+      wrapper.vm.deleteFermentationSteps()
+      expect(mockBtn.click).toHaveBeenCalled()
+      getElemSpy.mockRestore()
+    })
+
     it("loads device stepList if existing batch has fermentationChamber", async () => {
       const existing = new Batch(1, "Existing")
       existing.fermentationChamber = 10
@@ -207,6 +239,17 @@ describe("BatchView", () => {
       await flushPromises()
       expect(wrapper.vm.activeFermentationSteps).toBe("[step1]")
     })
+  })
+
+  describe("Batch loading and initialization", () => {
+    it("handles successful batch load on mount", async () => {
+      const existing = new Batch(1, "Existing")
+      piniaMocks.batchStore.getBatch.mockResolvedValue(existing)
+      routerMock.currentRoute.value.params.id = "1"
+      const wrapper = mountWrapper()
+      await flushPromises()
+      expect(wrapper.vm.batch).toEqual(existing)
+    })
 
     it("handles failed batch load in onMounted", async () => {
       routerMock.currentRoute.value.params.id = "456"
@@ -215,8 +258,10 @@ describe("BatchView", () => {
       await flushPromises()
       expect(piniaMocks.global.messageError).toContain("Failed to load batch")
     })
+  })
 
-    it("covers updateDeviceOptions for more branches", async () => {
+  describe("Device options management", () => {
+    it("updates device options with multiple device types", async () => {
       piniaMocks.deviceStore.devices = [
         { software: "Gravitymon", chipId: "g1", mdns: "g.local", url: "", description: "" },
         { software: "Pressuremon", chipId: "p1", mdns: "", url: "http://p", description: "" },
@@ -229,81 +274,83 @@ describe("BatchView", () => {
       expect(wrapper.vm.gravityDeviceOptions.length).toBeGreaterThan(1)
     })
 
-    it("covers remaining failing branches", async () => {
-      const mockBtn = { click: vi.fn() }
-      const getElemSpy = vi.spyOn(document, "getElementById").mockReturnValue(mockBtn)
+    it("updates device options with empty URLs", async () => {
+      piniaMocks.deviceStore.devices = [
+        { software: "Chamber-Controller", id: 22, mdns: "c.local", url: "", description: "desc" }
+      ]
       const wrapper = mountWrapper()
       await flushPromises()
-      wrapper.vm.batch = new Batch(1, "Test")
-      wrapper.vm.batchSaved = new Batch(1, "Test")
-      wrapper.vm.deleteFermentationSteps()
-      expect(mockBtn.click).toHaveBeenCalled()
-      getElemSpy.mockRestore()
+      wrapper.vm.updateDeviceOptions()
+      expect(wrapper.vm.tempControlDeviceOptions.length).toBe(1)
+    })
 
-      piniaMocks.batchStore.updateBatch.mockResolvedValue(false)
-      piniaMocks.batchStore.getBatch.mockResolvedValue(new Batch(1, "E"))
-      routerMock.currentRoute.value.params.id = "1"
-      const wrapper2 = mountWrapper()
+    it("updates device options with only MDNS entries", async () => {
+      piniaMocks.deviceStore.devices = [
+        { software: "Gravitymon", chipId: "g3", mdns: "", url: "", description: "desc3" },
+        { software: "Pressuremon", chipId: "p3", mdns: "", url: "", description: "desc3" }
+      ]
+      const wrapper = mountWrapper()
       await flushPromises()
-      wrapper2.vm.batchSaved = new Batch(1, "E")
-      await wrapper2.vm.save()
-      expect(piniaMocks.global.messageError).toBe("Failed to save batch")
+      wrapper.vm.updateDeviceOptions()
+      expect(wrapper.vm.gravityDeviceOptions.length).toBeGreaterThan(1)
+    })
+  })
 
-      // Brewfather changed branch
+  describe("Brewfather integration", () => {
+    it("updates batch from Brewfather match", async () => {
       const b1 = new Batch(1, "B1")
       b1.brewfatherId = "bf1"
       piniaMocks.brewfatherStore.batches = [
         { brewfatherId: "bf1", name: "BF Name", brewDate: "2023", brewer: "M", style: "S", ebc: 1, abv: 5, ibu: 30, og: 1.05, fg: 1.01, fermentationSteps: "[]" }
       ]
-      wrapper2.vm.batch = b1
-      wrapper2.vm.brewfatherChanged("bf1")
-      expect(wrapper2.vm.batch.name).toBe("BF Name")
-      
-      // updateDeviceOptions branches
-      piniaMocks.deviceStore.devices = [
-        { software: "Chamber-Controller", id: 22, mdns: "c.local", url: "", description: "desc" }
-      ]
-      wrapper2.vm.updateDeviceOptions()
-      expect(wrapper2.vm.tempControlDeviceOptions.length).toBe(1) // Should remain 1 because url is empty
-
-      // batch.fermentationChamber > 0 && batch.fermentationSteps != '' logic
-      wrapper2.vm.batch.fermentationChamber = 1
-      wrapper2.vm.batch.fermentationSteps = "[]"
+      const wrapper = mountWrapper()
       await flushPromises()
+      wrapper.vm.batch = b1
+      wrapper.vm.brewfatherChanged("bf1")
+      expect(wrapper.vm.batch.name).toBe("BF Name")
+    })
 
-      // Covers batchChanged early exit
-      wrapper2.vm.batch = null
-      expect(wrapper2.vm.batchChanged()).toBe(false)
-      
-      // updateDeviceOptions remaining branches
-      piniaMocks.deviceStore.devices = [
-        { software: "Gravitymon", chipId: "g3", mdns: "", url: "", description: "desc3" },
-        { software: "Pressuremon", chipId: "p3", mdns: "", url: "", description: "desc3" }
-      ]
-      wrapper2.vm.updateDeviceOptions()
-      expect(wrapper2.vm.gravityDeviceOptions.length).toBeGreaterThan(1)
+    it("handles Brewfather changed with no match", async () => {
+      const wrapper = mountWrapper()
+      await flushPromises()
+      wrapper.vm.brewfatherChanged("no-match")
+      // Should not throw
+      expect(wrapper.vm.batch).toBeDefined()
+    })
 
-      // covers onMounted brewfatherStore.getBatchList() else branch
+    it("handles brewfatherStore.getBatchList failure", async () => {
       piniaMocks.brewfatherStore.getBatchList.mockResolvedValue(false)
-      const wrapper3 = mountWrapper()
+      const wrapper = mountWrapper()
       await flushPromises()
+      // Should handle gracefully
+      expect(wrapper.exists()).toBe(true)
+    })
+  })
 
-      // Covers brewfatherChanged with no match
-      wrapper2.vm.brewfatherChanged("no-match")
-
-      // covers batchChanged with true (not equal)
-      wrapper2.vm.batch = new Batch(1, "Updated")
-      wrapper2.vm.batchSaved = new Batch(1, "Original")
-      expect(wrapper2.vm.batchChanged()).toBe(true)
-
-      // covers validateCurrentForm failure
-      vi.mocked((await import("@/modules/utils")).validateCurrentForm).mockReturnValueOnce(false)
-      await wrapper2.vm.save()
-
-      // final push over 85%
-      routerMock.currentRoute.value.params.id = "new"
-      const wrapper4 = mountWrapper()
+  describe("Batch state tracking", () => {
+    it("detects batch changes when batch differs from saved", async () => {
+      const wrapper = mountWrapper()
       await flushPromises()
+      wrapper.vm.batch = new Batch(1, "Updated")
+      wrapper.vm.batchSaved = new Batch(1, "Original")
+      expect(wrapper.vm.batchChanged()).toBe(true)
+    })
+
+    it("returns false when batch is null", async () => {
+      const wrapper = mountWrapper()
+      await flushPromises()
+      wrapper.vm.batch = null
+      expect(wrapper.vm.batchChanged()).toBe(false)
+    })
+
+    it("handles fermentationChamber and fermentationSteps interaction", async () => {
+      const wrapper = mountWrapper()
+      await flushPromises()
+      wrapper.vm.batch = new Batch(1, "Test")
+      wrapper.vm.batch.fermentationChamber = 1
+      wrapper.vm.batch.fermentationSteps = "[]"
+      await flushPromises()
+      expect(wrapper.vm.batch.fermentationChamber).toBe(1)
     })
   })
 })

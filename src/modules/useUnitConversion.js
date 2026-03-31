@@ -2,6 +2,22 @@ import { computed } from 'vue'
 import { config } from '@/modules/pinia'
 import { gravityToPlato, platoToGravity, tempToF, tempToC, pressureToKPA, pressureToBAR, roundValue } from '@/modules/utils'
 
+// Gravity conversion precision constants
+const GRAVITY_SG_DECIMALS = 3
+const GRAVITY_PLATO_DECIMALS = 1
+const GRAVITY_SG_STEP = 0.001
+const GRAVITY_PLATO_STEP = 0.1
+
+// Temperature conversion constants
+const TEMPERATURE_STEP = 0.1
+
+// Pressure conversion constants
+const PRESSURE_PSI_DECIMALS = 1
+const PRESSURE_BAR_DECIMALS = 2
+const PRESSURE_KPA_DECIMALS = 0
+const PSI_TO_BAR_FACTOR = 0.0689475729
+const PSI_TO_KPA_FACTOR = 6.8947572932
+
 /**
  * Composable for handling dual-unit display/edit for Gravity
  * Data is always stored as SG internally, displays based on config
@@ -16,7 +32,7 @@ export function useGravityConversion(batch, field) {
       if (!batch.value || !batch.value[field]) return 0
       const sgValue = batch.value[field]
       const displayValue = config.isGravitySG ? sgValue : gravityToPlato(sgValue)
-      return roundValue(displayValue, config.isGravitySG ? 3 : 1)
+      return roundValue(displayValue, config.isGravitySG ? GRAVITY_SG_DECIMALS : GRAVITY_PLATO_DECIMALS)
     },
     set(displayedValue) {
       if (batch.value) {
@@ -26,7 +42,7 @@ export function useGravityConversion(batch, field) {
   })
 
   const unit = computed(() => config.isGravitySG ? 'SG' : 'P')
-  const step = computed(() => config.isGravitySG ? 0.001 : 0.1)
+  const step = computed(() => config.isGravitySG ? GRAVITY_SG_STEP : GRAVITY_PLATO_STEP)
 
   return { displayValue, unit, step }
 }
@@ -55,7 +71,7 @@ export function useTemperatureConversion(batch, field) {
   })
 
   const unit = computed(() => config.isTempC ? '°C' : '°F')
-  const step = computed(() => 0.1)
+  const step = computed(() => TEMPERATURE_STEP)
 
   return { displayValue, unit, step }
 }
@@ -77,13 +93,13 @@ export function usePressureConversion(batch, field) {
       
       if (config.isPressurePSI) {
         displayValue = psiValue
-        decimals = 1
+        decimals = PRESSURE_PSI_DECIMALS
       } else if (config.isPressureBAR) {
         displayValue = pressureToBAR(psiValue)
-        decimals = 2
+        decimals = PRESSURE_BAR_DECIMALS
       } else {
         displayValue = pressureToKPA(psiValue)
-        decimals = 0
+        decimals = PRESSURE_KPA_DECIMALS
       }
       return roundValue(displayValue, decimals)
     },
@@ -92,9 +108,9 @@ export function usePressureConversion(batch, field) {
         if (config.isPressurePSI) {
           batch.value[field] = displayedValue
         } else if (config.isPressureBAR) {
-          batch.value[field] = displayedValue / 0.0689475729
+          batch.value[field] = displayedValue / PSI_TO_BAR_FACTOR
         } else {
-          batch.value[field] = displayedValue / 6.8947572932
+          batch.value[field] = displayedValue / PSI_TO_KPA_FACTOR
         }
       }
     }

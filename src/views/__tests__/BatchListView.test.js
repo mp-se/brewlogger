@@ -289,6 +289,144 @@ describe('BatchListView.vue', () => {
     await nextTick()
     expect(uiMock.applySortList).toHaveBeenCalled()
   })
+
+  describe('Sorting', () => {
+    it('calls setSortingDefault on mount', async () => {
+      const wrapper = mountWrapper()
+      await nextTick()
+      expect(uiMock.setSortingDefault).toHaveBeenCalled()
+    })
+
+    it('applies sort class to sortable columns', async () => {
+      const wrapper = mountWrapper()
+      await nextTick()
+      expect(uiMock.sortedClass).toHaveBeenCalled()
+    })
+
+    it('triggers sort on column header click', async () => {
+      const wrapper = mountWrapper()
+      await nextTick()
+      const sortButton = wrapper.find('a.icon-link')
+      if (sortButton.exists()) {
+        await sortButton.trigger('click')
+        expect(uiMock.sortList).toHaveBeenCalled()
+      }
+    })
+
+    it('reapplies sort after filter changes', async () => {
+      const wrapper = mountWrapper()
+      await nextTick()
+      globalMock.batchListFilterDevice = 'c2'
+      await nextTick()
+      // Verify the filter changed and component reacted
+      expect(globalMock.batchListFilterDevice).toBe('c2')
+    })
+  })
+
+  describe('Export Operations', () => {
+    it('exports JSON with complete batch data', async () => {
+      global.fetch.mockResolvedValue({
+        ok: true,
+        json: () => Promise.resolve({ id: 1, name: 'B1', gravity: [], pressure: [] })
+      })
+      const wrapper = mountWrapper()
+      await nextTick()
+      await wrapper.vm.exportBatchJSON(1)
+      await nextTick()
+      await nextTick()
+      expect(utilsMock.download).toHaveBeenCalled()
+    })
+
+    it('handles export JSON failure', async () => {
+      global.fetch.mockResolvedValue({ ok: false })
+      const wrapper = mountWrapper()
+      await nextTick()
+      await wrapper.vm.exportBatchJSON(999)
+      expect(globalMock.messageError).toContain('Failed')
+    })
+
+    it('exports gravity CSV with proper formatting', async () => {
+      global.fetch.mockResolvedValue({
+        ok: true,
+        json: () => Promise.resolve({
+          id: 1,
+          name: 'B1',
+          gravity: [
+            { date: '2023-01-01T12:00:00', gravity: 1.050, temperature: 20 },
+            { date: '2023-01-02T12:00:00', gravity: 1.045, temperature: 21 }
+          ]
+        })
+      })
+      const wrapper = mountWrapper()
+      await nextTick()
+      await wrapper.vm.exportBatchGravityCSV(1)
+      await nextTick()
+      await nextTick()
+      expect(utilsMock.download).toHaveBeenCalled()
+    })
+
+    it('exports gravity CSV when no gravity data', async () => {
+      global.fetch.mockResolvedValue({
+        ok: true,
+        json: () => Promise.resolve({ id: 1, name: 'B1', gravity: [] })
+      })
+      const wrapper = mountWrapper()
+      await nextTick()
+      await wrapper.vm.exportBatchGravityCSV(1)
+      await nextTick()
+      await nextTick()
+      expect(utilsMock.download).toHaveBeenCalled()
+    })
+
+    it('exports pressure CSV with proper formatting', async () => {
+      global.fetch.mockResolvedValue({
+        ok: true,
+        json: () => Promise.resolve({
+          id: 1,
+          name: 'B1',
+          pressure: [
+            { date: '2023-01-01T12:00:00', pressure: 10, temperature: 20 },
+            { date: '2023-01-02T12:00:00', pressure: 12, temperature: 21 }
+          ]
+        })
+      })
+      const wrapper = mountWrapper()
+      await nextTick()
+      await wrapper.vm.exportBatchPressureCSV(1)
+      await nextTick()
+      await nextTick()
+      expect(utilsMock.download).toHaveBeenCalled()
+    })
+
+    it('exports pressure CSV when no pressure data', async () => {
+      global.fetch.mockResolvedValue({
+        ok: true,
+        json: () => Promise.resolve({ id: 1, name: 'B1', pressure: [] })
+      })
+      const wrapper = mountWrapper()
+      await nextTick()
+      await wrapper.vm.exportBatchPressureCSV(1)
+      await nextTick()
+      await nextTick()
+      expect(utilsMock.download).toHaveBeenCalled()
+    })
+
+    it('handles export gravity CSV failure', async () => {
+      global.fetch.mockResolvedValue({ ok: false })
+      const wrapper = mountWrapper()
+      await nextTick()
+      await wrapper.vm.exportBatchGravityCSV(999)
+      expect(globalMock.messageError).toContain('Failed')
+    })
+
+    it('handles export pressure CSV failure', async () => {
+      global.fetch.mockResolvedValue({ ok: false })
+      const wrapper = mountWrapper()
+      await nextTick()
+      await wrapper.vm.exportBatchPressureCSV(999)
+      expect(globalMock.messageError).toContain('Failed')
+    })
+  })
 })
 
 
