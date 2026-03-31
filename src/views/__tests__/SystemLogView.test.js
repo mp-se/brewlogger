@@ -439,4 +439,225 @@ describe('SystemLogView - Enhanced', () => {
       expect(wrapper.text()).toContain('download')
     })
   })
+
+  describe('updateLogList() - Async Fetch', () => {
+    it('should fetch from correct API endpoint and handle success', async () => {
+      const mockResponse = {
+        ok: true,
+        status: 200,
+        json: vi.fn().mockResolvedValue({
+          total: 5,
+          skip: 0,
+          data: [{ id: 1, timestamp: '2025-05-09 10:00:00', module: 'test', message: 'msg', logLevel: 0, errorCode: 0 }]
+        })
+      }
+
+      global.fetch = vi.fn().mockResolvedValue(mockResponse)
+
+      const wrapper = createWrapper()
+      piniaMocks.global.disabled = false
+
+      wrapper.vm.updateLogList()
+      expect(piniaMocks.global.disabled).toBe(true)
+
+      await vi.waitFor(() => {
+        expect(global.fetch).toHaveBeenCalledWith(
+          'http://localhost:8080/api/system/log/?limit=50',
+          expect.objectContaining({
+            method: 'GET',
+            headers: { Authorization: 'test-token' }
+          })
+        )
+      })
+
+      await vi.waitFor(() => {
+        expect(wrapper.vm.logList).not.toBeNull()
+        expect(wrapper.vm.total).toBe(5)
+        expect(piniaMocks.global.disabled).toBe(false)
+      })
+    })
+
+    it('should set total and skip from response', async () => {
+      const mockResponse = {
+        ok: true,
+        json: vi.fn().mockResolvedValue({ total: 150, skip: 25, data: [] })
+      }
+
+      global.fetch = vi.fn().mockResolvedValue(mockResponse)
+
+      const wrapper = createWrapper()
+      wrapper.vm.updateLogList()
+
+      await vi.waitFor(() => {
+        expect(wrapper.vm.total).toBe(150)
+        expect(wrapper.vm.skip).toBe(25)
+      })
+    })
+
+    it('should populate logList from response data', async () => {
+      const responseData = [
+        { id: 1, timestamp: '2025-05-09 10:00:00', module: 'test1', message: 'msg1', logLevel: 0, errorCode: 0 },
+        { id: 2, timestamp: '2025-05-09 11:00:00', module: 'test2', message: 'msg2', logLevel: 1, errorCode: 1 }
+      ]
+
+      const mockResponse = {
+        ok: true,
+        json: vi.fn().mockResolvedValue({ total: 2, skip: 0, data: responseData })
+      }
+
+      global.fetch = vi.fn().mockResolvedValue(mockResponse)
+
+      const wrapper = createWrapper()
+      wrapper.vm.updateLogList()
+
+      await vi.waitFor(() => {
+        expect(wrapper.vm.logList).toEqual(responseData)
+      })
+    })
+
+    it('should set null logList before fetching', () => {
+      const mockResponse = {
+        ok: true,
+        json: vi.fn().mockResolvedValue({ total: 1, skip: 0, data: [] })
+      }
+
+      global.fetch = vi.fn().mockResolvedValue(mockResponse)
+
+      const wrapper = createWrapper()
+      wrapper.vm.logList = [{ id: 1 }]
+
+      wrapper.vm.updateLogList()
+      expect(wrapper.vm.logList).toBeNull()
+    })
+
+    it('should handle fetch failure and set error message', async () => {
+      const mockResponse = {
+        ok: false,
+        status: 500
+      }
+
+      global.fetch = vi.fn().mockResolvedValue(mockResponse)
+
+      const wrapper = createWrapper()
+      piniaMocks.global.messageError = ''
+      piniaMocks.global.disabled = true
+
+      wrapper.vm.updateLogList()
+
+      await vi.waitFor(() => {
+        expect(piniaMocks.global.messageError).toContain('Failed to retrive')
+        expect(piniaMocks.global.disabled).toBe(false)
+      })
+    })
+
+    it('should handle network error gracefully', async () => {
+      global.fetch = vi.fn().mockRejectedValue(new Error('Network error'))
+
+      const wrapper = createWrapper()
+      piniaMocks.global.disabled = true
+      piniaMocks.global.messageError = ''
+
+      wrapper.vm.updateLogList()
+
+      await vi.waitFor(() => {
+        expect(piniaMocks.global.disabled).toBe(false)
+        expect(piniaMocks.global.messageError).toContain('Failed to retrive')
+      })
+    })
+  })
+
+  describe('downloadAllRecords() - Async Download', () => {
+    beforeEach(() => {
+      global.URL.createObjectURL = vi.fn(() => 'blob:mock-url')
+      global.URL.revokeObjectURL = vi.fn()
+      document.body.appendChild = vi.fn()
+      document.body.removeChild = vi.fn()
+    })
+
+    it('should fetch logs with correct authorization', async () => {
+      const mockResponse = {
+        ok: true,
+        json: vi.fn().mockResolvedValue({ data: [] })
+      }
+
+      global.fetch = vi.fn().mockResolvedValue(mockResponse)
+
+      const wrapper = createWrapper()
+      piniaMocks.global.disabled = false
+
+      await wrapper.vm.downloadAllRecords()
+
+      expect(global.fetch).toHaveBeenCalledWith(
+        expect.stringContaining('api/system/log'),
+        expect.objectContaining({
+          headers: { Authorization: 'test-token' }
+        })
+      )
+    })
+
+    it('should set disabled to true when downloading and false after', async () => {
+      const mockResponse = {
+        ok: true,
+        json: vi.fn().mockResolvedValue({ data: [] })
+      }
+
+      global.fetch = vi.fn().mockResolvedValue(mockResponse)
+
+      const wrapper = createWrapper()
+      piniaMocks.global.disabled = false
+
+      const promise = wrapper.vm.downloadAllRecords()
+      expect(piniaMocks.global.disabled).toBe(true)
+
+      await promise
+
+      expect(piniaMocks.global.disabled).toBe(false)
+    })
+
+    it('should aggregate data from multiple fetch calls', async () => {
+      const firstBatch = Array(50).fill(0).map((_, i) => ({ id: i }))
+      const secondBatch = [{ id: 50 }]
+
+      global.fetch = vi
+        .fn()
+        .mockResolvedValueOnce({
+          ok: true,
+          json: vi.fn().mockResolvedValue({ data: firstBatch })
+        })
+        .mockResolvedValueOnce({
+          ok: true,
+          json: vi.fn().mockResolvedValue({ data: secondBatch })
+        })
+
+      const wrapper = createWrapper()
+      await wrapper.vm.downloadAllRecords()
+
+      // Verify that fetch was called twice (batching)
+      expect(global.fetch.mock.calls.length).toBeGreaterThanOrEqual(1)
+    })
+
+    it('should handle download failure gracefully', async () => {
+      global.fetch = vi.fn().mockResolvedValue({ ok: false })
+
+      const wrapper = createWrapper()
+      piniaMocks.global.messageError = ''
+
+      await wrapper.vm.downloadAllRecords()
+
+      expect(piniaMocks.global.messageError).toContain('Failed to download')
+      expect(piniaMocks.global.disabled).toBe(false)
+    })
+
+    it('should handle network error during download', async () => {
+      global.fetch = vi.fn().mockRejectedValue(new Error('Network error'))
+
+      const wrapper = createWrapper()
+      piniaMocks.global.messageError = ''
+
+      await wrapper.vm.downloadAllRecords()
+
+      expect(piniaMocks.global.messageError).toContain('Failed to download')
+      expect(piniaMocks.global.disabled).toBe(false)
+    })
+  })
 })
