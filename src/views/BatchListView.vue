@@ -1,49 +1,46 @@
 <template>
   <div class="container">
-    <div class="row">
-      <div class="col-md-6">
-        <p></p>
-        <p class="h3">Batch List</p>
+    <BsPageHeader title="Batch List">
+      <div class="row">
+        <div class="col-md-8">
+          <BsSelect
+            v-model="global.batchListFilterDevice"
+            :options="deviceList"
+            label="Device filter"
+            help=""
+            :disabled="global.disabled"
+          >
+          </BsSelect>
+        </div>
+        <div class="col-md-2">
+          <BsInputSwitch
+            v-model="global.batchListFilterActive"
+            label="Active"
+            help=""
+            :disabled="global.disabled"
+            data-bs-toggle="tooltip"
+            data-bs-placement="top"
+            title="Show only active batches"
+            aria-label="Show only active batches"
+          >
+          </BsInputSwitch>
+        </div>
+        <div class="col-md-2">
+          <BsInputSwitch
+            v-model="global.batchListFilterData"
+            label="Data"
+            help=""
+            :disabled="global.disabled"
+            data-bs-toggle="tooltip"
+            data-bs-placement="top"
+            title="Show only batches with data"
+            aria-label="Show only batches with data"
+          >
+          </BsInputSwitch>
+        </div>
       </div>
-      <div class="col-md-4">
-        <BsSelect
-          v-model="global.batchListFilterDevice"
-          :options="deviceList"
-          label="Device filter"
-          help=""
-          :disabled="global.disabled"
-        >
-        </BsSelect>
-      </div>
-      <div class="col-md-1">
-        <BsInputSwitch
-          v-model="global.batchListFilterActive"
-          label="Active"
-          help=""
-          :disabled="global.disabled"
-          data-bs-toggle="tooltip"
-          data-bs-placement="top"
-          title="Show only active batches"
-          aria-label="Show only active batches"
-        >
-        </BsInputSwitch>
-      </div>
-      <div class="col-md-1">
-        <BsInputSwitch
-          v-model="global.batchListFilterData"
-          label="Data"
-          help=""
-          :disabled="global.disabled"
-          data-bs-toggle="tooltip"
-          data-bs-placement="top"
-          title="Show only batches with data"
-          aria-label="Show only batches with data"
-        >
-        </BsInputSwitch>
-      </div>
-    </div>
+    </BsPageHeader>
 
-    <hr />
     <template v-if="batchList != null">
       <table class="table table-striped">
         <thead>
@@ -273,6 +270,7 @@ import router from '@/modules/router'
 import { download } from '@/modules/utils'
 import { logDebug, logError } from '@/modules/logger'
 import { useSortableList } from '@/modules/useSortableList'
+import BsPageHeader from '@/components/BsPageHeader.vue'
 
 const {
   sortedIconClass,

@@ -1,23 +1,16 @@
 <template>
   <div class="container">
-    <div class="row">
-      <div class="col-md-8">
-        <p></p>
-        <p class="h3">Device List</p>
-      </div>
-      <div class="col-md-4">
-        <BsSelect
-          v-model="global.deviceListFilterSoftware"
-          :options="softwareOptions"
-          label="Software"
-          help=""
-          :disabled="global.disabled"
-        >
-        </BsSelect>
-      </div>
-    </div>
+    <BsPageHeader title="Device List">
+      <BsSelect
+        v-model="global.deviceListFilterSoftware"
+        :options="softwareOptions"
+        label="Software"
+        help=""
+        :disabled="global.disabled"
+      >
+      </BsSelect>
+    </BsPageHeader>
 
-    <hr />
     <template v-if="deviceList != null">
       <table class="table table-striped">
         <thead>
@@ -238,6 +231,7 @@ import { global, deviceStore, batchStore } from '@/modules/pinia'
 import { logDebug, logInfo, logError } from '@/modules/logger'
 import { useSortableList } from '@/modules/useSortableList'
 import { detectId, detectMdns, detectPlatform, detectSoftware } from '@/modules/detect'
+import BsPageHeader from '@/components/BsPageHeader.vue'
 
 const confirmDeleteMessage = ref(null)
 const confirmDeleteId = ref(null)
