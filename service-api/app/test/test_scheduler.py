@@ -409,8 +409,8 @@ def test_scheduler_setup_enabled():
         
         scheduler_setup(mock_app)
         
-        # Should add 4 jobs when enabled
-        assert mock_scheduler.add_job.call_count == 4
+        # Should add 5 jobs when enabled
+        assert mock_scheduler.add_job.call_count == 5
         mock_scheduler.start.assert_called_once()
 
 

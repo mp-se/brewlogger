@@ -29,7 +29,7 @@ def test_add(app_client):
         "ibu": 0.3,
         "fg": 1.050,
         "og": 1.060,
-        "hoursToCompletion": 12.5,
+        "predictionHoursLeft": 12.5,
         "fermentationChamber": 0,
         "fermentationSteps": "",
         "tapList": True,
@@ -53,7 +53,7 @@ def test_add(app_client):
     assert data1["ibu"] == data["ibu"]
     assert data1["fg"] == data["fg"]
     assert data1["og"] == data["og"]
-    assert data1["hoursToCompletion"] == data["hoursToCompletion"]
+    assert data1["predictionHoursLeft"] == data["predictionHoursLeft"]
     assert data1["brewfatherId"] == data["brewfatherId"]
     assert data1["fermentationChamber"] == data["fermentationChamber"]
     assert data1["fermentationSteps"] == data["fermentationSteps"]

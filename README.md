@@ -23,6 +23,7 @@ This is a short list of features that has been implemented into the Brewlogger s
 - Collecting logs from devices (using websocket interface)
 - Collect tap information from KegMon
 - Taplist for showing whats serving and what is available
+- Fermentation prediction engine
 
 ## Sending data to brewlogger
 
@@ -37,6 +38,12 @@ There are a few public endpoints in brewlogger for receving data.
 - Keeping track of batches that contain pressure data (PressureMon)
 
 ### Release history
+
+- 1.1.0 Refactoring to support new devices
+  - Improved unit test coverage especiually for the UI that lacked automated tests
+  - Added Machine Learning algorithm to estimate when brew is finished, shown on dashboard when enough data has been collected
+  - Added fg/og fields to the batch including fetching from brewfather
+  - Fixed some minor bugs
 
 - 1.0.0 Refactoring to support new devices
   - Changed the batch API to only return the batches (not all the data)
