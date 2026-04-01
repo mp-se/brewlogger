@@ -1,22 +1,26 @@
 <template>
-  <BsInputBase :width="width" :label="label" :help="help" :badge="badge">
-    <div class="form-check form-switch" style="height: 38px">
-      <input
-        v-model="model"
-        class="form-check-input"
-        type="checkbox"
-        role="switch"
-        v-bind="$attrs"
-        :disabled="disabled"
-        data-bs-toggle="tooltip"
-        data-bs-custom-class="custom-tooltip"
-        :data-bs-title="help"
-      />
-    </div>
+  <BsInputBase :id="id" :width="width" :label="label" :help="help" :badge="badge">
+    <template #default="{ id: inputId }">
+      <div class="form-check form-switch" style="height: 38px">
+        <input
+          v-model="model"
+          :id="inputId"
+          class="form-check-input"
+          type="checkbox"
+          role="switch"
+          v-bind="$attrs"
+          :disabled="disabled"
+          data-bs-toggle="tooltip"
+          data-bs-custom-class="custom-tooltip"
+          :data-bs-title="help"
+        />
+      </div>
+    </template>
   </BsInputBase>
 </template>
 
 <script setup>
+import BsInputBase from './BsInputBase.vue'
 /**
  * 2024-05-28 Bootstrap VueJS wrapper, Magnus Persson
  */
@@ -27,6 +31,17 @@
 defineOptions({
   inheritAttrs: false
 })
+
+const props = defineProps({
+  /**
+   * Optional unique ID for the input.
+   */
+  id: {
+    type: String,
+    default: undefined
+  }
+})
+
 /**
  * This is the v-model field that will be used to bind the component to (required).
  */

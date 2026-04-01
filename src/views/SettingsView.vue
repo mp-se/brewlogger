@@ -1,8 +1,6 @@
 <template>
   <div class="container">
-    <p></p>
-    <p class="h3">Settings</p>
-    <hr />
+    <BsPageHeader title="Settings" />
 
     <form @submit.prevent="saveSettings" class="needs-validation" novalidate>
       <div class="row">

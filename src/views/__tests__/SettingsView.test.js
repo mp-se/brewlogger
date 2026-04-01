@@ -2,6 +2,7 @@ import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest'
 import { mount } from '@vue/test-utils'
 import { createPinia, setActivePinia } from 'pinia'
 import SettingsView from '../SettingsView.vue'
+import BsPageHeader from '../../components/BsPageHeader.vue'
 import BsInputRadio from '../../components/BsInputRadio.vue'
 import BsInputText from '../../components/BsInputText.vue'
 import BsInputSelect from '../../components/BsSelect.vue'
@@ -57,12 +58,14 @@ describe('SettingsView', () => {
           components: {
             BsInputRadio,
             BsInputText,
-            BsInputSelect
+            BsInputSelect,
+            BsPageHeader
           },
           stubs: {
             BsInputRadio: true,
             BsInputText: true,
-            BsInputSelect: true
+            BsInputSelect: true,
+            BsPageHeader: false
           }
         }
       })
@@ -76,12 +79,14 @@ describe('SettingsView', () => {
           components: {
             BsInputRadio,
             BsInputText,
-            BsInputSelect
+            BsInputSelect,
+            BsPageHeader
           },
           stubs: {
             BsInputRadio: true,
             BsInputText: true,
-            BsInputSelect: true
+            BsInputSelect: true,
+            BsPageHeader: false
           }
         }
       })

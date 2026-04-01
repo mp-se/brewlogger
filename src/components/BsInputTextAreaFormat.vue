@@ -21,6 +21,7 @@
 </template>
 
 <script setup>
+import BsInputBase from './BsInputBase.vue'
 /**
  * Note! Limitation is one of these components per page since hardcode ID's are used.
  */

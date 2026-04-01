@@ -6,20 +6,22 @@ describe('BsInputBase - Form Input Wrapper Component', () => {
   describe('Basic Rendering', () => {
     it('should render main wrapper div', () => {
       const wrapper = mount(BsInputBase)
-      const mainDiv = wrapper.find('div.has-validation')
+      const mainDiv = wrapper.find('div.pt-2')
       expect(mainDiv.exists()).toBe(true)
-    })
-
-    it('should have has-validation class', () => {
-      const wrapper = mount(BsInputBase)
-      const mainDiv = wrapper.find('div.has-validation')
-      expect(mainDiv.classes()).toContain('has-validation')
     })
 
     it('should have pt-2 padding class', () => {
       const wrapper = mount(BsInputBase)
-      const mainDiv = wrapper.find('div.has-validation')
+      const mainDiv = wrapper.find('div.pt-2')
       expect(mainDiv.classes()).toContain('pt-2')
+    })
+
+    it('should have has-validation class when errorMessage is provided', () => {
+      const wrapper = mount(BsInputBase, {
+        props: { errorMessage: 'Error' }
+      })
+      const validationDiv = wrapper.find('.has-validation')
+      expect(validationDiv.exists()).toBe(true)
     })
 
     it('should accept label prop', () => {
@@ -280,7 +282,7 @@ describe('BsInputBase - Form Input Wrapper Component', () => {
 
     it('should maintain structure without any props', () => {
       const wrapper = mount(BsInputBase)
-      expect(wrapper.find('.has-validation').exists()).toBe(true)
+      expect(wrapper.find('.pt-2').exists()).toBe(true)
       expect(wrapper.find('.form-text').exists()).toBe(true)
     })
   })

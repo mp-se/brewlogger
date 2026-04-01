@@ -1,6 +1,7 @@
 import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest'
 import { mount, flushPromises } from '@vue/test-utils'
 import DeviceView from '../DeviceView.vue'
+import BsPageHeader from '../../components/BsPageHeader.vue'
 import { Device } from '@/modules/classes'
 
 // Create pinia mocks using vi.hoisted so they're defined before vi.mock calls
@@ -108,6 +109,7 @@ describe('DeviceView - Enhanced', () => {
           BsModal: true,
           BsModalConfirm: true,
           BsMessage: true,
+          BsPageHeader: BsPageHeader,
           FermentationStepFragment: true,
           'router-link': true
         },
@@ -139,11 +141,6 @@ describe('DeviceView - Enhanced', () => {
     it('should render page title', async () => {
       const wrapper = await createWrapper()
       expect(wrapper.text()).toContain('Device')
-    })
-
-    it('should render h3 title element', async () => {
-      const wrapper = await createWrapper()
-      expect(wrapper.find('.h3').exists()).toBe(true)
     })
   })
 

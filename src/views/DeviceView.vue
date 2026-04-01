@@ -1,8 +1,6 @@
 <template>
   <div class="container">
-    <p></p>
-    <p class="h3">Device</p>
-    <hr />
+    <BsPageHeader title="Device" />
 
     <template v-if="device != null">
       <form @submit.prevent="save" class="needs-validation" novalidate>
@@ -16,7 +14,7 @@
               help=""
               :disabled="global.disabled || !isNew()"
               @keyup="validateChipId()"
-              :class="chipIdValid ? '' : 'is-invalid'"
+              :error-message="chipIdValid ? '' : 'Please enter a valid chip ID'"
             >
             </BsInputText>
           </div>

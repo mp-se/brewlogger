@@ -1,18 +1,35 @@
 <template>
-  <BsInputBase :width="width" :label="label" :help="help" :badge="badge">
-    <select v-model="model" class="form-select" :disabled="disabled" v-bind="$attrs">
-      <template v-for="o in options" :key="o.value">
-        <option v-if="o.value === model" selected :value="o.value">
-          <IconWifi />{{ o.label }}
-        </option>
-        <option v-else :value="o.value">{{ o.label }}</option>
-      </template>
-    </select>
+  <BsInputBase
+    :id="id"
+    :width="width"
+    :label="label"
+    :help="help"
+    :badge="badge"
+    :error-message="errorMessage"
+  >
+    <template #default="{ id: inputId, isInvalid }">
+      <select
+        v-model="model"
+        :id="inputId"
+        class="form-select"
+        :class="{ 'is-invalid': isInvalid }"
+        :disabled="disabled"
+        v-bind="$attrs"
+      >
+        <template v-for="o in options" :key="o.value">
+          <option v-if="o.value === model" selected :value="o.value">
+            <IconWifi />{{ o.label }}
+          </option>
+          <option v-else :value="o.value">{{ o.label }}</option>
+        </template>
+      </select>
+    </template>
   </BsInputBase>
 </template>
 
 <script setup>
 import IconWifi from '@/components/IconWifi.vue'
+import BsInputBase from './BsInputBase.vue'
 /**
  * 2024-05-28 Bootstrap VueJS wrapper, Magnus Persson
  */
@@ -23,6 +40,24 @@ import IconWifi from '@/components/IconWifi.vue'
 defineOptions({
   inheritAttrs: false
 })
+
+const props = defineProps({
+  /**
+   * Optional unique ID for the input.
+   */
+  id: {
+    type: String,
+    default: undefined
+  },
+  /**
+   * Error message to display.
+   */
+  errorMessage: {
+    type: String,
+    default: ''
+  }
+})
+
 /**
  * Ref to bind value to (required).
  */

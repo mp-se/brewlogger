@@ -1,21 +1,25 @@
 <template>
-  <BsInputBase :width="width" :label="label" :help="help">
-    <div class="input-group">
-      <input
-        v-model="model"
-        class="form-control-plaintext"
-        readonly
-        type="text"
-        v-bind="$attrs"
-        data-bs-toggle="tooltip"
-        data-bs-custom-class="custom-tooltip"
-        :data-bs-title="help"
-      />
-    </div>
+  <BsInputBase :id="id" :width="width" :label="label" :help="help">
+    <template #default="{ id: inputId }">
+      <div class="input-group">
+        <input
+          v-model="model"
+          :id="inputId"
+          class="form-control-plaintext"
+          readonly
+          type="text"
+          v-bind="$attrs"
+          data-bs-toggle="tooltip"
+          data-bs-custom-class="custom-tooltip"
+          :data-bs-title="help"
+        />
+      </div>
+    </template>
   </BsInputBase>
 </template>
 
 <script setup>
+import BsInputBase from './BsInputBase.vue'
 /**
  * 2024-05-28 Bootstrap VueJS wrapper, Magnus Persson
  */
@@ -26,6 +30,17 @@
 defineOptions({
   inheritAttrs: false
 })
+
+const props = defineProps({
+  /**
+   * Optional unique ID for the input.
+   */
+  id: {
+    type: String,
+    default: undefined
+  }
+})
+
 /**
  * This is the v-model field that will be used to bind the component to (required).
  */

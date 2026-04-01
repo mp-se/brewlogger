@@ -22,6 +22,7 @@
 </template>
 
 <script setup>
+import BsInputBase from './BsInputBase.vue'
 /**
  * 2024-05-28 Bootstrap VueJS wrapper, Magnus Persson
  */

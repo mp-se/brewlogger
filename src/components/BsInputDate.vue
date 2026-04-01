@@ -1,20 +1,32 @@
 <template>
-  <BsInputBase :width="width" :label="label" :help="help" :badge="badge">
-    <div class="input-group">
-      <input
-        v-model="model"
-        class="form-control"
-        type="date"
-        v-bind="$attrs"
-        data-bs-toggle="tooltip"
-        data-bs-custom-class="custom-tooltip"
-        :data-bs-title="help"
-      />
-    </div>
+  <BsInputBase
+    :id="id"
+    :width="width"
+    :label="label"
+    :help="help"
+    :badge="badge"
+    :error-message="errorMessage"
+  >
+    <template #default="{ id: inputId, isInvalid }">
+      <div class="input-group">
+        <input
+          v-model="model"
+          :id="inputId"
+          class="form-control"
+          :class="{ 'is-invalid': isInvalid }"
+          type="date"
+          v-bind="$attrs"
+          data-bs-toggle="tooltip"
+          data-bs-custom-class="custom-tooltip"
+          :data-bs-title="help"
+        />
+      </div>
+    </template>
   </BsInputBase>
 </template>
 
 <script setup>
+import BsInputBase from './BsInputBase.vue'
 /**
  * 2024-06-06 Bootstrap VueJS wrapper, Magnus Persson
  */
@@ -25,6 +37,24 @@
 defineOptions({
   inheritAttrs: false
 })
+
+const props = defineProps({
+  /**
+   * Optional unique ID for the input.
+   */
+  id: {
+    type: String,
+    default: undefined
+  },
+  /**
+   * Error message to display.
+   */
+  errorMessage: {
+    type: String,
+    default: ''
+  }
+})
+
 /**
  * This is the v-model field that will be used to bind the component to (required).
  */
