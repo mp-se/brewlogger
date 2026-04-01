@@ -1,13 +1,10 @@
 """Batch management API endpoints for creating, updating, and managing brewing batches."""
 import logging
 from typing import List, Optional
-from datetime import datetime, timedelta
 from fastapi import Depends, BackgroundTasks, Query
 from fastapi.routing import APIRouter
-from sqlalchemy import and_, select
 from starlette.exceptions import HTTPException
 from api.db import models, schemas
-from api.db.session import get_session
 from api.services import BatchService, get_batch_service
 from ..security import api_key_auth
 from ..ws import notify_clients
@@ -117,6 +114,8 @@ async def get_batch_dashboard_by_id(
             chip_id_gravity=b.chip_id_gravity,
             chip_id_pressure=b.chip_id_pressure,
             active=b.active,
+            prediction_hours_left=b.prediction_hours_left,
+            prediction_at_timestamp=b.prediction_at_timestamp,
         )
 
         # Add gravity
