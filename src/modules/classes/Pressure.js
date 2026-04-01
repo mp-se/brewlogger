@@ -13,39 +13,30 @@
 export class Pressure {
   /**
    * Creates a new Pressure reading instance
-   * @param {number} [id=0] - Reading ID
-   * @param {number|null} [temperature=null] - Temperature reading
-   * @param {number} [pressure=0.0] - Pressure value (PSI or bar)
-   * @param {number|null} [pressure1=null] - Secondary pressure channel (optional)
-   * @param {number|null} [battery=null] - Battery voltage
-   * @param {number} [rssi=0] - Signal strength (RSSI)
-   * @param {number|null} [runTime=null] - Runtime in seconds
-   * @param {string} [created=''] - Timestamp
-   * @param {number} [batchId=0] - Associated batch ID
-   * @param {boolean} [active=true] - Reading active
+   * @param {Object} params - The pressure properties
    */
-  constructor(
-    id,
-    temperature,
-    pressure,
-    pressure1,
-    battery,
-    rssi,
-    runTime,
-    created,
-    batchId,
-    active
-  ) {
-    this.id = id === undefined ? 0 : id
-    this.temperature = temperature === undefined || temperature === null ? null : temperature
-    this.pressure = pressure === undefined ? 0.0 : pressure
-    this.pressure1 = pressure1 === undefined || pressure1 === null ? null : pressure1
-    this.battery = battery === undefined || battery === null ? null : battery
-    this.rssi = rssi === undefined ? 0 : rssi
-    this.runTime = runTime === undefined || runTime === null ? null : runTime
-    this.created = created === undefined ? '' : created
-    this.batchId = batchId === undefined ? 0 : batchId
-    this.active = active === undefined ? true : active
+  constructor({
+    id = 0,
+    temperature = null,
+    pressure = 0.0,
+    pressure1 = null,
+    battery = null,
+    rssi = 0,
+    runTime = null,
+    created = '',
+    batchId = 0,
+    active = true
+  } = {}) {
+    this._id = id
+    this._temperature = (temperature === undefined || temperature === null) ? null : temperature
+    this._pressure = pressure === undefined ? 0.0 : pressure
+    this._pressure1 = (pressure1 === undefined || pressure1 === null) ? null : pressure1
+    this._battery = (battery === undefined || battery === null) ? null : battery
+    this._rssi = rssi === undefined ? 0 : rssi
+    this._runTime = (runTime === undefined || runTime === null) ? null : runTime
+    this._created = created === undefined ? '' : created
+    this._batchId = batchId === undefined ? 0 : batchId
+    this._active = active === undefined ? true : active
   }
 
   /**
@@ -55,18 +46,18 @@ export class Pressure {
    * @returns {Pressure} A new Pressure instance
    */
   static fromJson(p) {
-    return new Pressure(
-      p.id,
-      p.temperature,
-      p.pressure,
-      p.pressure1,
-      p.battery,
-      p.rssi,
-      p.runTime,
-      p.created,
-      p.batchId,
-      p.active
-    )
+    return new Pressure({
+      id: p.id,
+      temperature: p.temperature,
+      pressure: p.pressure,
+      pressure1: p.pressure1,
+      battery: p.battery,
+      rssi: p.rssi,
+      runTime: p.runTime,
+      created: p.created,
+      batchId: p.batchId,
+      active: p.active
+    })
   }
 
   /**

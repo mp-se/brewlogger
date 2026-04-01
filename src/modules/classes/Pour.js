@@ -12,22 +12,24 @@
 export class Pour {
   /**
    * Creates a new Pour event instance
-   * @param {number} [id=0] - Event ID
-   * @param {number} [pour=0.0] - Pour volume
-   * @param {number} [volume=0.0] - Current volume in vessel
-   * @param {number} [maxVolume=0.0] - Maximum volume (tank/keg size)
-   * @param {string} [created=''] - Timestamp
-   * @param {number} [batchId=0] - Associated batch ID
-   * @param {boolean} [active=true] - Event active
+   * @param {Object} params - The pour properties
    */
-  constructor(id, pour, volume, maxVolume, created, batchId, active) {
-    this.id = id === undefined ? 0 : id
-    this.pour = pour === undefined ? 0.0 : pour
-    this.volume = volume === undefined ? 0.0 : volume
-    this.maxVolume = maxVolume === undefined ? 0.0 : maxVolume
-    this.created = created === undefined ? '' : created
-    this.batchId = batchId === undefined ? 0 : batchId
-    this.active = active === undefined ? true : active
+  constructor({
+    id = 0,
+    pour = 0.0,
+    volume = 0.0,
+    maxVolume = 0.0,
+    created = '',
+    batchId = 0,
+    active = true
+  } = {}) {
+    this._id = id
+    this._pour = pour === undefined ? 0.0 : pour
+    this._volume = volume === undefined ? 0.0 : volume
+    this._maxVolume = maxVolume === undefined ? 0.0 : maxVolume
+    this._created = created === undefined ? '' : created
+    this._batchId = batchId === undefined ? 0 : batchId
+    this._active = active === undefined ? true : active
   }
 
   /**
@@ -37,7 +39,15 @@ export class Pour {
    * @returns {Pour} A new Pour instance
    */
   static fromJson(p) {
-    return new Pour(p.id, p.pour, p.volume, p.maxVolume, p.created, p.batchId, p.active)
+    return new Pour({
+      id: p.id,
+      pour: p.pour,
+      volume: p.volume,
+      maxVolume: p.maxVolume,
+      created: p.created,
+      batchId: p.batchId,
+      active: p.active
+    })
   }
 
   /**

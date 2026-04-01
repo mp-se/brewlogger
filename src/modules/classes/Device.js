@@ -12,41 +12,30 @@
 export class Device {
   /**
    * Creates a new Device instance
-   * @param {number} [id=0] - Device ID
-   * @param {string} [chipId=''] - Device chip ID (unique identifier)
-   * @param {string} [chipFamily=''] - Device chip family (ESP32, ESP8266, etc.)
-   * @param {string} [software=''] - Software version
-   * @param {string} [mdns=''] - mDNS hostname (without .local)
-   * @param {string} [config=''] - Firmware configuration string
-   * @param {string} [bleColor=''] - BLE color identifier
-   * @param {string} [url=''] - Device URL/IP address (auto-cleaned for invalid URLs)
-   * @param {string} [description=''] - Device description
-   * @param {boolean} [collectLogs=false] - Enable debug logging
+   * @param {Object} params - The device properties
    */
-  constructor(
-    id,
-    chipId,
-    chipFamily,
-    software,
-    mdns,
-    config,
-    bleColor,
-    url,
-    description,
-    collectLogs
-  ) {
-    this.id = id === undefined ? 0 : id
-    this.chipId = chipId === undefined ? '' : chipId
-    this.chipFamily = chipFamily === undefined ? '' : chipFamily
-    this.software = software === undefined ? '' : software
-    this.mdns = mdns === undefined ? '' : mdns
-    this.config = config === undefined ? '' : config
-    this.bleColor = bleColor === undefined ? '' : bleColor
-    this.description = description === undefined ? '' : description
-    this.url = url === undefined ? '' : url
-    this.collectLogs = collectLogs === undefined ? false : collectLogs
-
-    if (this.url === 'http://' || this.url === 'https://') this.url = ''
+  constructor({
+    id = 0,
+    chipId = '',
+    chipFamily = '',
+    software = '',
+    mdns = '',
+    config = '',
+    bleColor = '',
+    url = '',
+    description = '',
+    collectLogs = false
+  } = {}) {
+    this._id = id
+    this._chipId = chipId
+    this._chipFamily = chipFamily
+    this._software = software
+    this._mdns = mdns
+    this._config = config
+    this._bleColor = bleColor
+    this._description = description
+    this._url = (url === 'http://' || url === 'https://') ? '' : url
+    this._collectLogs = collectLogs
   }
 
   /**
@@ -77,18 +66,18 @@ export class Device {
    * @returns {Device} A new Device instance
    */
   static fromJson(d) {
-    return new Device(
-      d.id,
-      d.chipId,
-      d.chipFamily,
-      d.software,
-      d.mdns,
-      d.config,
-      d.bleColor,
-      d.url,
-      d.description,
-      d.collectLogs
-    )
+    return new Device({
+      id: d.id,
+      chipId: d.chipId,
+      chipFamily: d.chipFamily,
+      software: d.software,
+      mdns: d.mdns,
+      config: d.config,
+      bleColor: d.bleColor,
+      url: d.url,
+      description: d.description,
+      collectLogs: d.collectLogs
+    })
   }
 
   /**

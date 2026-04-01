@@ -352,8 +352,8 @@ describe('BatchView', () => {
     it('detects batch changes when batch differs from saved', async () => {
       const wrapper = mountWrapper()
       await flushPromises()
-      wrapper.vm.batch = new Batch(1, 'Updated')
-      wrapper.vm.batchSaved = new Batch(1, 'Original')
+      wrapper.vm.batch = new Batch({ id: 1, name: 'Updated' })
+      wrapper.vm.batchSaved = new Batch({ id: 1, name: 'Original' })
       expect(wrapper.vm.batchChanged()).toBe(true)
     })
 

@@ -9,26 +9,31 @@
 export class FermentationStep {
   /**
    * Creates a new FermentationStep instance
-   * @param {string} [name=''] - Step name/description
-   * @param {number} [stepTemp=0] - Target temperature
-   * @param {number} [stepTime=0] - Duration in hours
-   * @param {string} [rampTime=''] - Temperature ramp time
+   * @param {Object} params - The fermentation step properties
    */
-  constructor(order, name, type, date, temp, days) {
-    this.order = order
-    this.name = name === undefined ? '' : name
-    this.type = type
-    this.date = date
-    this.temp = temp
-    this.days = days
+  constructor({ order, name = '', type, date, temp, days } = {}) {
+    this._order = order
+    this._name = name === undefined ? '' : name
+    this._type = type
+    this._date = date
+    this._temp = temp
+    this._days = days
   }
   /**
    * Factory method to create a FermentationStep from JSON/API response
    * @static
-   * @param {Object} f - The JSON object from API
+   * @param {Object} fs - The JSON object from API
    * @returns {FermentationStep} A new FermentationStep instance
-   */ static fromJson(fs) {
-    return new FermentationStep(fs.order, fs.name, fs.type, fs.date, fs.temp, fs.days)
+   */
+  static fromJson(fs) {
+    return new FermentationStep({
+      order: fs.order,
+      name: fs.name,
+      type: fs.type,
+      date: fs.date,
+      temp: fs.temp,
+      days: fs.days
+    })
   }
 
   static listFromJson(fsList, updateDates) {
@@ -55,14 +60,14 @@ export class FermentationStep {
     var list = []
 
     fsList.forEach((fs) => {
-      var step = new FermentationStep(
-        fs.order,
-        fs.name,
-        fs.type,
-        fs.date,
-        fs.temp,
-        fs.days
-      ).toJson()
+      var step = new FermentationStep({
+        order: fs.order,
+        name: fs.name,
+        type: fs.type,
+        date: fs.date,
+        temp: fs.temp,
+        days: fs.days
+      }).toJson()
       step.deviceId = deviceId
       list.push(step)
     })

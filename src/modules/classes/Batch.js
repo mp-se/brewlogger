@@ -35,71 +35,77 @@ export class Batch {
    * @param {number} [pourCount=0] - Number of pour events
    * @param {number} [lastPourVolume] - Last pour volume
    * @param {number} [lastPourMaxVolume] - Last pour max volume
+   * @param {number} [predictionHoursLeft] - Estimated hours until fermentation complete
+   * @param {string} [predictionAtTimestamp] - When the prediction was calculated
    * @param {Array} [gravity] - Gravity readings array
    * @param {Array} [pressure] - Pressure readings array
    * @param {Array} [pour] - Pour events array
    */
   constructor(
-    id,
-    name,
-    description,
-    chipIdGravity,
-    chipIdPressure,
-    active,
-    brewDate,
-    style,
-    brewer,
-    abv,
-    ebc,
-    ibu,
-    fg,
-    og,
-    brewfatherId,
-    fermentationChamber,
-    fermentationSteps,
-    tapList,
-    gravityCount,
-    pressureCount,
-    pourCount,
-    lastPourVolume,
-    lastPourMaxVolume,
-    gravity,
-    pressure,
-    pour
+    {
+      id = 0,
+      name = '',
+      description = '',
+      chipIdGravity = '',
+      chipIdPressure = '',
+      active = true,
+      brewDate = '',
+      style = '',
+      brewer = '',
+      abv = 0,
+      ebc = 0,
+      ibu = 0,
+      fg = 0,
+      og = 0,
+      brewfatherId = '',
+      fermentationChamber = 0,
+      fermentationSteps = '',
+      tapList = true,
+      gravityCount = 0,
+      pressureCount = 0,
+      pourCount = 0,
+      lastPourVolume = undefined,
+      lastPourMaxVolume = undefined,
+      predictionHoursLeft = undefined,
+      predictionAtTimestamp = undefined,
+      gravity = [],
+      pressure = [],
+      pour = []
+    } = {}
   ) {
-    this.id = id === undefined ? 0 : id
-    this.name = name === undefined ? '' : name
-    this.description = description === undefined ? '' : description
-    this.chipIdGravity = chipIdGravity === undefined ? '' : chipIdGravity
-    this.chipIdPressure = chipIdPressure === undefined ? '' : chipIdPressure
-    this.active = active === undefined ? true : active
-    this.tapList = tapList === undefined ? true : tapList
-    this.brewDate = brewDate === undefined ? '' : brewDate
-    this.style = style === undefined ? '' : style
-    this.brewer = brewer === undefined ? '' : brewer
-    this.abv = abv === undefined ? 0 : abv
-    this.ebc = ebc === undefined ? 0 : ebc
-    this.ibu = ibu === undefined ? 0 : ibu
-    this.fg = fg === undefined ? 0 : fg
-    this.og = og === undefined ? 0 : og
-    this.brewfatherId = brewfatherId === undefined ? '' : brewfatherId
-    this.fermentationChamber =
-      fermentationChamber === undefined || fermentationChamber === null ? 0 : fermentationChamber
-    this.fermentationSteps =
-      fermentationSteps === undefined || fermentationSteps === null ? '' : fermentationSteps
-
-    this.gravityCount = gravityCount === undefined ? 0 : gravityCount
-    this.pressureCount = pressureCount === undefined ? 0 : pressureCount
-    this.pourCount = pourCount === undefined ? 0 : pourCount
-    this.lastPourVolume =
-      lastPourVolume === undefined || lastPourVolume === null ? undefined : lastPourVolume
-    this.lastPourMaxVolume =
-      lastPourMaxVolume === undefined || lastPourMaxVolume === null ? undefined : lastPourMaxVolume
+    this._id = id
+    this._name = name
+    this._description = description
+    this._chipIdGravity = chipIdGravity
+    this._chipIdPressure = chipIdPressure
+    this._active = active
+    this._brewDate = brewDate
+    this._style = style
+    this._brewer = brewer
+    this._abv = abv
+    this._ebc = ebc
+    this._ibu = ibu
+    this._fg = fg
+    this._og = og
+    this._brewfatherId = brewfatherId
+    this._fermentationChamber = fermentationChamber === null ? 0 : fermentationChamber
+    this._fermentationSteps = fermentationSteps === null ? '' : fermentationSteps
+    this._tapList = tapList === null ? true : tapList
+    this._gravityCount = gravityCount === null ? 0 : gravityCount
+    this._pressureCount = pressureCount === null ? 0 : pressureCount
+    this._pourCount = pourCount === null ? 0 : pourCount
+    this._lastPourVolume = lastPourVolume === null ? undefined : lastPourVolume
+    this._lastPourMaxVolume = lastPourMaxVolume === null ? undefined : lastPourMaxVolume
+    this._predictionHoursLeft = predictionHoursLeft === null ? undefined : predictionHoursLeft
+    this._predictionAtTimestamp =
+      predictionAtTimestamp === null || predictionAtTimestamp === ''
+        ? undefined
+        : predictionAtTimestamp
 
     // Initialize arrays
-    this.gravity = gravity === undefined || gravity === null ? [] : gravity
-    this.pressure = pressure === undefined || pressure === null ? [] : pressure
-    this.pour = pour === undefined || pour === null ? [] : pour
+    this._gravity = gravity === null ? [] : gravity
+    this._pressure = pressure === null ? [] : pressure
+    this._pour = pour === null ? [] : pour
   }
 
   static compare(b1, b2) {
@@ -120,7 +126,9 @@ export class Batch {
       b1.og == b2.og &&
       b1.brewfatherId == b2.brewfatherId &&
       b1.fermentationChamber == b2.fermentationChamber &&
-      b1.fermentationSteps == b2.fermentationSteps
+      b1.fermentationSteps == b2.fermentationSteps &&
+      b1.predictionHoursLeft == b2.predictionHoursLeft &&
+      b1.predictionAtTimestamp == b2.predictionAtTimestamp
     )
   }
 
@@ -138,34 +146,36 @@ export class Batch {
       b.pressure !== undefined && b.pressure !== null ? b.pressure.length : b.pressureCount || 0
     const pourCount = b.pour !== undefined && b.pour !== null ? b.pour.length : b.pourCount || 0
 
-    return new Batch(
-      b.id,
-      b.name,
-      b.description,
-      b.chipIdGravity,
-      b.chipIdPressure,
-      b.active,
-      b.brewDate,
-      b.style,
-      b.brewer,
-      b.abv,
-      b.ebc,
-      b.ibu,
-      b.fg,
-      b.og,
-      b.brewfatherId,
-      b.fermentationChamber,
-      b.fermentationSteps,
-      b.tapList,
-      gravityCount,
-      pressureCount,
-      pourCount,
-      b.lastPourVolume,
-      b.lastPourMaxVolume,
-      b.gravity,
-      b.pressure,
-      b.pour
-    )
+    return new Batch({
+      id: b.id,
+      name: b.name,
+      description: b.description,
+      chipIdGravity: b.chipIdGravity,
+      chipIdPressure: b.chipIdPressure,
+      active: b.active,
+      brewDate: b.brewDate,
+      style: b.style,
+      brewer: b.brewer,
+      abv: b.abv,
+      ebc: b.ebc,
+      ibu: b.ibu,
+      fg: b.fg,
+      og: b.og,
+      brewfatherId: b.brewfatherId,
+      fermentationChamber: b.fermentationChamber,
+      fermentationSteps: b.fermentationSteps,
+      tapList: b.tapList,
+      gravityCount: gravityCount,
+      pressureCount: pressureCount,
+      pourCount: pourCount,
+      lastPourVolume: b.lastPourVolume,
+      lastPourMaxVolume: b.lastPourMaxVolume,
+      predictionHoursLeft: b.predictionHoursLeft,
+      predictionAtTimestamp: b.predictionAtTimestamp,
+      gravity: b.gravity,
+      pressure: b.pressure,
+      pour: b.pour
+    })
   }
 
   static fromDashboardJson(bd) {
@@ -180,42 +190,42 @@ export class Batch {
     if (bd.pour !== undefined && bd.pour !== null) {
       const activePours = bd.pour.filter((p) => p.active)
       activePours.sort((a, b) => Date.parse(b.created) - Date.parse(a.created))
-      if (activePours.length) {
+      if (activePours.length > 0) {
         lastPourVolume = activePours[0].volume
         lastPourMaxVolume = activePours[0].maxVolume
       }
     }
 
-    var b = new Batch(
-      bd.id,
-      bd.name,
-      '',
-      bd.chipIdGravity,
-      bd.chipIdPressure,
-      bd.active,
-      '',
-      '',
-      '',
-      0,
-      0,
-      0,
-      bd.fg,
-      bd.og,
-      0,
-      bd.fermentationChamber,
-      '',
-      bd.tapList,
+    return new Batch({
+      id: bd.id,
+      name: bd.name,
+      description: bd.description || '',
+      chipIdGravity: bd.chipIdGravity || '',
+      chipIdPressure: bd.chipIdPressure || '',
+      active: bd.active !== undefined ? bd.active : true,
+      brewDate: bd.brewDate || '',
+      style: bd.style || '',
+      brewer: bd.brewer || '',
+      abv: bd.abv || 0,
+      ebc: bd.ebc || 0,
+      ibu: bd.ibu || 0,
+      fg: bd.fg || 0,
+      og: bd.og || 0,
+      brewfatherId: bd.brewfatherId || '',
+      fermentationChamber: bd.fermentationChamber || 0,
+      fermentationSteps: bd.fermentationSteps || '',
+      tapList: bd.tapList !== undefined ? bd.tapList : true,
       gravityCount,
       pressureCount,
       pourCount,
       lastPourVolume,
       lastPourMaxVolume,
-      bd.gravity,
-      bd.pressure,
-      bd.pour
-    )
-
-    return b
+      predictionHoursLeft: bd.predictionHoursLeft,
+      predictionAtTimestamp: bd.predictionAtTimestamp,
+      gravity: bd.gravity || [],
+      pressure: bd.pressure || [],
+      pour: bd.pour || []
+    })
   }
 
   /**
@@ -242,6 +252,8 @@ export class Batch {
       brewfatherId: this.brewfatherId,
       fermentationChamber: this.fermentationChamber,
       fermentationSteps: this.fermentationSteps,
+      predictionHoursLeft: this.predictionHoursLeft,
+      predictionAtTimestamp: this.predictionAtTimestamp,
       gravity: this.gravity || [],
       pressure: this.pressure || [],
       pour: this.pour || []
@@ -332,6 +344,12 @@ export class Batch {
   get lastPourMaxVolume() {
     return this._lastPourMaxVolume
   }
+  get predictionHoursLeft() {
+    return this._predictionHoursLeft
+  }
+  get predictionAtTimestamp() {
+    return this._predictionAtTimestamp
+  }
 
   set id(id) {
     this._id = id
@@ -410,5 +428,11 @@ export class Batch {
   }
   set lastPourMaxVolume(lastPourMaxVolume) {
     this._lastPourMaxVolume = lastPourMaxVolume
+  }
+  set predictionHoursLeft(predictionHoursLeft) {
+    this._predictionHoursLeft = predictionHoursLeft
+  }
+  set predictionAtTimestamp(predictionAtTimestamp) {
+    this._predictionAtTimestamp = predictionAtTimestamp
   }
 }

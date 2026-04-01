@@ -13,53 +13,38 @@
 export class Gravity {
   /**
    * Creates a new Gravity reading instance
-   * @param {number} [id=0] - Reading ID
-   * @param {number|null} [temperature=null] - Temperature reading
-   * @param {number} [gravity=0.0] - Gravity/density value
-   * @param {number|null} [velocity=null] - Rate of change
-   * @param {number} [angle=0.0] - Tilt/angle in degrees
-   * @param {number} [battery=0.0] - Battery voltage
-   * @param {number} [rssi=0] - Signal strength (RSSI)
-   * @param {number|null} [corrGravity=null] - Corrected gravity value
-   * @param {number|null} [runTime=null] - Runtime in seconds
-   * @param {string} [created=''] - Timestamp
-   * @param {number} [batchId=0] - Associated batch ID
-   * @param {boolean} [active=true] - Reading active
-   * @param {number|null} [chamberTemperature=null] - Chamber temperature
-   * @param {number|null} [beerTemperature=null] - Beer temperature
+   * @param {Object} params - The gravity properties
    */
-  constructor(
-    id,
-    temperature,
-    gravity,
-    velocity,
-    angle,
-    battery,
-    rssi,
-    corrGravity,
-    runTime,
-    created,
-    batchId,
-    active,
-    chamberTemperature,
-    beerTemperature
-  ) {
-    this.id = id === undefined ? 0 : id
-    this.temperature = temperature === undefined || temperature === null ? null : temperature
-    this.gravity = gravity === undefined ? 0.0 : gravity
-    this.velocity = velocity === undefined || velocity === null ? null : velocity
-    this.angle = angle === undefined ? 0.0 : angle
-    this.battery = battery === undefined ? 0.0 : battery
-    this.rssi = rssi === undefined ? 0 : rssi
-    this.corrGravity = corrGravity === undefined || corrGravity === null ? null : corrGravity
-    this.runTime = runTime === undefined || runTime === null ? null : runTime
-    this.created = created === undefined ? '' : created
-    this.batchId = batchId === undefined ? 0 : batchId
-    this.active = active === undefined ? true : active
-    this.chamberTemperature =
-      chamberTemperature === undefined || chamberTemperature === null ? null : chamberTemperature
-    this.beerTemperature =
-      beerTemperature === undefined || beerTemperature === null ? null : beerTemperature
+  constructor({
+    id = 0,
+    temperature = null,
+    gravity = 0.0,
+    velocity = null,
+    angle = 0.0,
+    battery = 0.0,
+    rssi = 0,
+    corrGravity = null,
+    runTime = null,
+    created = '',
+    batchId = 0,
+    active = true,
+    chamberTemperature = null,
+    beerTemperature = null
+  } = {}) {
+    this._id = id
+    this._temperature = (temperature === undefined || temperature === null) ? null : temperature
+    this._gravity = gravity === undefined ? 0.0 : gravity
+    this._velocity = (velocity === undefined || velocity === null) ? null : velocity
+    this._angle = angle === undefined ? 0.0 : angle
+    this._battery = battery === undefined ? 0.0 : battery
+    this._rssi = rssi === undefined ? 0 : rssi
+    this._corrGravity = (corrGravity === undefined || corrGravity === null) ? null : corrGravity
+    this._runTime = (runTime === undefined || runTime === null) ? null : runTime
+    this._created = created === undefined ? '' : created
+    this._batchId = batchId === undefined ? 0 : batchId
+    this._active = active === undefined ? true : active
+    this._chamberTemperature = (chamberTemperature === undefined || chamberTemperature === null) ? null : chamberTemperature
+    this._beerTemperature = (beerTemperature === undefined || beerTemperature === null) ? null : beerTemperature
   }
 
   /**
@@ -69,22 +54,22 @@ export class Gravity {
    * @returns {Gravity} A new Gravity instance
    */
   static fromJson(g) {
-    return new Gravity(
-      g.id,
-      g.temperature,
-      g.gravity,
-      g.velocity,
-      g.angle,
-      g.battery,
-      g.rssi,
-      g.corrGravity,
-      g.runTime,
-      g.created,
-      g.batchId,
-      g.active,
-      g.chamberTemperature,
-      g.beerTemperature
-    )
+    return new Gravity({
+      id: g.id,
+      temperature: g.temperature,
+      gravity: g.gravity,
+      velocity: g.velocity,
+      angle: g.angle,
+      battery: g.battery,
+      rssi: g.rssi,
+      corrGravity: g.corrGravity,
+      runTime: g.runTime,
+      created: g.created,
+      batchId: g.batchId,
+      active: g.active,
+      chamberTemperature: g.chamberTemperature,
+      beerTemperature: g.beerTemperature
+    })
   }
 
   /**

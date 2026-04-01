@@ -55,6 +55,9 @@
 
             Age: {{ b.gravityCount > 0 ? getGravityReadingAge(b) : getPressureReadingAge(b) }}
           </p>
+          <div v-if="getPrediction(b)" class="text-center">
+            Fermentation prediction: <span :class="getPrediction(b) === 'DONE' ? 'text-success fw-bold' : ''">{{ getPrediction(b) }}</span>
+          </div>
           <div class="text-center">Gravity: {{ getGravityOG(b) }} - {{ getLastGravity(b) }}</div>
           <div class="text-center">Pressure {{ getLastPressure(b) }}</div>
           <div class="text-center">Temperature {{ getLastTemperature(b) }}</div>
@@ -210,9 +213,7 @@ import {
   getFormattedTemperature,
   getFormattedPressure,
   getFormattedVolume,
-  getFormattedPourVolume,
-  truncateString,
-  getTimeSincePosted
+  getFormattedPourVolume
 } from '@/modules/utils'
 import { logDebug, logError } from '@/modules/logger'
 import BsPageHeader from '@/components/BsPageHeader.vue'
@@ -240,14 +241,16 @@ const latestPourReadings = ref([])
 
 function prettySchedulerName(n) {
   switch (n) {
+    case 'task_process_prediction_queue':
+      return 'Fermentation ready prediction'
     case 'task_fetch_chamberctrl_temps':
-      return 'Fetch ChamberControl Temps'
+      return 'Fetch chamber control temps'
     case 'task_fermentation_control':
-      return 'Chamber Control'
+      return 'Chamber control'
     case 'task_forward_gravity':
-      return 'Forward gravity'
+      return 'Forward gravity data'
     case 'task_check_database':
-      return 'Database Maintenance'
+      return 'Database maintenance'
   }
 
   return 'Unknown mapping'
@@ -304,7 +307,7 @@ const batchCount = computed(() => {
 function getGravityReadingAge(batch) {
   logDebug('HomeView.getGravityReadingAge()')
 
-  if (batch.gravityCount == 2) {
+  if (batch.gravityCount >= 2 && batch.gravity && batch.gravity.length >= 2 && batch.gravity[1]?.created) {
     var last = Date.parse(batch.gravity[1].created)
     var now = new Date()
     return formatTime(Math.floor((now - last) / 1000))
@@ -316,13 +319,68 @@ function getGravityReadingAge(batch) {
 function getPressureReadingAge(batch) {
   logDebug('HomeView.getPressureReadingAge()')
 
-  if (batch.pressureCount == 2) {
+  if (batch.pressureCount >= 2 && batch.pressure && batch.pressure.length >= 2 && batch.pressure[1]?.created) {
     var last = Date.parse(batch.pressure[1].created)
     var now = new Date()
     return formatTime(Math.floor((now - last) / 1000))
   }
 
   return ''
+}
+
+/**
+ * Calculate and format the fermentation completion prediction.
+ * If the predicted time left is less than 0.5 hours, returns "DONE".
+ * Adjusts the prediction based on the time elapsed since the prediction was made.
+ *
+ * @param {Batch} batch - The batch object containing prediction data.
+ * @returns {string|null} - Formatted remaining time, "DONE", or null if no valid prediction.
+ */
+function getPrediction(batch) {
+  logDebug('HomeView.getPrediction()', batch)
+
+  // Check if batch and prediction data exist
+  if (!batch) {
+    return null
+  }
+
+  if (
+    batch.predictionHoursLeft === undefined ||
+    batch.predictionHoursLeft === null ||
+    batch.predictionAtTimestamp === undefined ||
+    batch.predictionAtTimestamp === null ||
+    batch.predictionAtTimestamp === ''
+  ) {
+    logDebug('HomeView.getPrediction() - No prediction data available', {
+      predictionHoursLeft: batch.predictionHoursLeft,
+      predictionAtTimestamp: batch.predictionAtTimestamp
+    })
+    return null
+  }
+
+  const predictionAt = Date.parse(batch.predictionAtTimestamp)
+  if (isNaN(predictionAt)) {
+    logError('HomeView.getPrediction() - Invalid prediction timestamp', {
+      predictionAtTimestamp: batch.predictionAtTimestamp
+    })
+    return null
+  }
+
+  const now = new Date()
+  const elapsedHours = (now - predictionAt) / (1000 * 60 * 60)
+  const remainingHours = batch.predictionHoursLeft - elapsedHours
+
+  if (remainingHours < 0.5) {
+    logDebug('HomeView.getPrediction() - Prediction completed', {
+      remainingHours: remainingHours
+    })
+    return 'DONE'
+  }
+
+  logDebug('HomeView.getPrediction() - Remaining hours calculated', {
+    remainingHours: remainingHours
+  })
+  return remainingHours.toFixed(1) + ' h'
 }
 
 function getGravityOG(batch) {

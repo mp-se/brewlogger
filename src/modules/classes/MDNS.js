@@ -11,14 +11,19 @@
 export class MDNS {
   /**
    * Creates a new MDNS service instance
-   * @param {string} [name=''] - Service name (short hostname)
-   * @param {string} [host=''] - Full hostname with .local extension
-   * @param {string} [type=''] - Service type (e.g., _http._tcp.local.)
+   * @param {Object} params - The MDNS service properties
+   * @param {string} [params.host=''] - Full hostname with .local extension
+   * @param {string} [params.name=''] - Service name (short hostname)
+   * @param {string} [params.type=''] - Service type (e.g., _http._tcp.local.)
    */
-  constructor(host, name, type) {
-    this.host = host
-    this.name = name
-    this.type = type
+  constructor({
+    host = '',
+    name = '',
+    type = ''
+  } = {}) {
+    this._host = host === undefined ? '' : host
+    this._name = name === undefined ? '' : name
+    this._type = type === undefined ? '' : type
   }
 
   /**
@@ -28,7 +33,11 @@ export class MDNS {
    * @returns {MDNS} A new MDNS instance
    */
   static fromJson(m) {
-    return new MDNS(m.host, m.name, m.type)
+    return new MDNS({
+      host: m.host,
+      name: m.name,
+      type: m.type
+    })
   }
 
   /**

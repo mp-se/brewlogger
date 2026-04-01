@@ -128,7 +128,7 @@ describe('DeviceView - Enhanced', () => {
   const setupDeviceTest = async (chipId = 'a1b2c3') => {
     const wrapper = await createWrapper()
     await flushPromises()
-    wrapper.vm.device = new Device(1, chipId, 'http://test.local', 'Test Device')
+    wrapper.vm.device = new Device({ id: 1, chipId: chipId, url: 'http://test.local', description: 'Test Device' })
     return wrapper
   }
 
@@ -242,7 +242,7 @@ describe('DeviceView - Enhanced', () => {
       wrapper.vm.validateChipId()
       expect(wrapper.vm.chipIdValid).toBe(true)
 
-      wrapper.vm.device = new Device(1, 'invalid', 'http://test.local', 'Test')
+      wrapper.vm.device = new Device({ id: 1, chipId: 'invalid', url: 'http://test.local', description: 'Test' })
       wrapper.vm.validateChipId()
       expect(wrapper.vm.chipIdValid).toBe(false)
     })
@@ -306,7 +306,7 @@ describe('DeviceView - Enhanced', () => {
   describe('Form Data Binding and Device Rendering', () => {
     it('should render form when device exists', async () => {
       const wrapper = await createWrapper()
-      piniaMocks.deviceStore.device = new Device(1, 'a1b2c3', 'http://test.local', 'Test Device')
+      piniaMocks.deviceStore.device = new Device({ id: 1, chipId: 'a1b2c3', url: 'http://test.local', description: 'Test Device' })
       await flushPromises()
 
       const form = wrapper.find('form')
@@ -330,7 +330,7 @@ describe('DeviceView - Enhanced', () => {
 
     it('should properly close invalid URLs', async () => {
       const wrapper = await createWrapper()
-      piniaMocks.deviceStore.device = new Device(1, 'a1b2c3', 'http://', 'Test')
+      piniaMocks.deviceStore.device = new Device({ id: 1, chipId: 'a1b2c3', url: 'http://', description: 'Test' })
       await flushPromises()
 
       expect(wrapper.vm.device.url).toBe('')

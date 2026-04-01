@@ -4,23 +4,23 @@ import { MDNS } from '@/modules/classes'
 describe('MDNS - Data Class', () => {
   describe('Constructor', () => {
     it('should create an MDNS service with provided values', () => {
-      const mdns = new MDNS('gravitymon.local', 'gravitymon', '_http._tcp.local.')
+      const mdns = new MDNS({ host: 'gravitymon.local', name: 'gravitymon', type: '_http._tcp.local.' })
       expect(mdns.host).toBe('gravitymon.local')
       expect(mdns.name).toBe('gravitymon')
       expect(mdns.type).toBe('_http._tcp.local.')
     })
 
-    it('should create an MDNS service with undefined values', () => {
-      const mdns = new MDNS(undefined, undefined, undefined)
-      expect(mdns.host).toBeUndefined()
-      expect(mdns.name).toBeUndefined()
-      expect(mdns.type).toBeUndefined()
+    it('should create an MDNS service with default values', () => {
+      const mdns = new MDNS()
+      expect(mdns.host).toBe('')
+      expect(mdns.name).toBe('')
+      expect(mdns.type).toBe('')
     })
 
     it('should create an MDNS service with partial values', () => {
-      const mdns = new MDNS('example.local', undefined, '_http._tcp.local.')
+      const mdns = new MDNS({ host: 'example.local', type: '_http._tcp.local.' })
       expect(mdns.host).toBe('example.local')
-      expect(mdns.name).toBeUndefined()
+      expect(mdns.name).toBe('')
       expect(mdns.type).toBe('_http._tcp.local.')
     })
   })
@@ -42,16 +42,16 @@ describe('MDNS - Data Class', () => {
       const json = { host: 'device.local' }
       const mdns = MDNS.fromJson(json)
       expect(mdns.host).toBe('device.local')
-      expect(mdns.name).toBeUndefined()
-      expect(mdns.type).toBeUndefined()
+      expect(mdns.name).toBe('')
+      expect(mdns.type).toBe('')
     })
 
     it('should handle empty JSON object', () => {
       const json = {}
       const mdns = MDNS.fromJson(json)
-      expect(mdns.host).toBeUndefined()
-      expect(mdns.name).toBeUndefined()
-      expect(mdns.type).toBeUndefined()
+      expect(mdns.host).toBe('')
+      expect(mdns.name).toBe('')
+      expect(mdns.type).toBe('')
     })
 
     it('should create multiple MDNS instances from different JSON objects', () => {
@@ -69,7 +69,7 @@ describe('MDNS - Data Class', () => {
 
   describe('toJson - Instance Method', () => {
     it('should convert MDNS to JSON', () => {
-      const mdns = new MDNS('sensor.local', 'sensor', '_http._tcp.local.')
+      const mdns = new MDNS({ host: 'sensor.local', name: 'sensor', type: '_http._tcp.local.' })
       const json = mdns.toJson()
 
       expect(json).toEqual({
@@ -79,19 +79,19 @@ describe('MDNS - Data Class', () => {
       })
     })
 
-    it('should serialize with undefined values', () => {
-      const mdns = new MDNS(undefined, 'test', undefined)
+    it('should serialize with default values', () => {
+      const mdns = new MDNS({ name: 'test' })
       const json = mdns.toJson()
 
       expect(json).toEqual({
-        host: undefined,
+        host: '',
         name: 'test',
-        type: undefined
+        type: ''
       })
     })
 
     it('should round-trip through JSON serialization', () => {
-      const original = new MDNS('gravity.local', 'gravity', '_http._tcp.local.')
+      const original = new MDNS({ host: 'gravity.local', name: 'gravity', type: '_http._tcp.local.' })
       const json = original.toJson()
       const restored = MDNS.fromJson(json)
 
@@ -101,7 +101,7 @@ describe('MDNS - Data Class', () => {
     })
 
     it('should handle special characters in hostname', () => {
-      const mdns = new MDNS('brew-monitor-01.local', 'brew-monitor-01', '_http._tcp.local.')
+      const mdns = new MDNS({ host: 'brew-monitor-01.local', name: 'brew-monitor-01', type: '_http._tcp.local.' })
       const json = mdns.toJson()
 
       expect(json.host).toBe('brew-monitor-01.local')
@@ -111,25 +111,25 @@ describe('MDNS - Data Class', () => {
 
   describe('Property Getters and Setters', () => {
     it('should get and set host', () => {
-      const mdns = new MDNS('original.local', 'name', 'type')
+      const mdns = new MDNS({ host: 'original.local', name: 'name', type: 'type' })
       mdns.host = 'updated.local'
       expect(mdns.host).toBe('updated.local')
     })
 
     it('should get and set name', () => {
-      const mdns = new MDNS('host.local', 'original', 'type')
+      const mdns = new MDNS({ host: 'host.local', name: 'original', type: 'type' })
       mdns.name = 'updated'
       expect(mdns.name).toBe('updated')
     })
 
     it('should get and set type', () => {
-      const mdns = new MDNS('host.local', 'name', '_original._tcp.local.')
+      const mdns = new MDNS({ host: 'host.local', name: 'name', type: '_original._tcp.local.' })
       mdns.type = '_http._tcp.local.'
       expect(mdns.type).toBe('_http._tcp.local.')
     })
 
     it('should allow setting all properties independently', () => {
-      const mdns = new MDNS('device.local', 'device', '_http._tcp.local.')
+      const mdns = new MDNS({ host: 'device.local', name: 'device', type: '_http._tcp.local.' })
       mdns.host = 'new-device.local'
       mdns.name = 'new-device'
       mdns.type = '_ssh._tcp.local.'
@@ -140,7 +140,7 @@ describe('MDNS - Data Class', () => {
     })
 
     it('should handle string values of different lengths', () => {
-      const mdns = new MDNS('x', 'y', 'z')
+      const mdns = new MDNS({ host: 'x', name: 'y', type: 'z' })
       expect(mdns.host).toBe('x')
       expect(mdns.name).toBe('y')
       expect(mdns.type).toBe('z')
@@ -152,14 +152,14 @@ describe('MDNS - Data Class', () => {
 
   describe('Edge Cases', () => {
     it('should handle empty strings', () => {
-      const mdns = new MDNS('', '', '')
+      const mdns = new MDNS({ host: '', name: '', type: '' })
       expect(mdns.host).toBe('')
       expect(mdns.name).toBe('')
       expect(mdns.type).toBe('')
     })
 
     it('should handle null values assigned after construction', () => {
-      const mdns = new MDNS('device.local', 'device', '_http._tcp.local.')
+      const mdns = new MDNS({ host: 'device.local', name: 'device', type: '_http._tcp.local.' })
       mdns.host = null
       mdns.name = null
       mdns.type = null
@@ -170,7 +170,7 @@ describe('MDNS - Data Class', () => {
     })
 
     it('should preserve data type consistency', () => {
-      const mdns = new MDNS('host.local', 'name', 'type')
+      const mdns = new MDNS({ host: 'host.local', name: 'name', type: 'type' })
       const json = mdns.toJson()
 
       expect(typeof json.host).toBe('string')

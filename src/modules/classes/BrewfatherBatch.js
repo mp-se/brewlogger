@@ -4,42 +4,32 @@
 export class BrewfatherBatch {
   /**
    * Creates a new BrewfatherBatch instance
-   * @param {string} [brewfatherId=''] - Brewfather ID
-   * @param {string} [name=''] - Recipe name
-   * @param {string} [brewDate=''] - Brew date
-   * @param {string} [style=''] - Beer style
-   * @param {string} [brewer=''] - Brewer name
-   * @param {number} [abv=0] - Alcohol by volume
-   * @param {number} [ebc=0] - Color in EBC units
-   * @param {number} [ibu=0] - Bitterness in IBU
-   * @param {number} [og=0] - Original gravity (SG)
-   * @param {number} [fg=0] - Final gravity (SG)
-   * @param {string} [fermentationSteps=''] - Fermentation profile
+   * @param {Object} params - The brewfather batch properties
    */
-  constructor(
-    brewfatherId,
-    name,
-    brewDate,
-    style,
-    brewer,
-    abv,
-    ebc,
-    ibu,
-    og,
-    fg,
-    fermentationSteps
-  ) {
-    this.name = name === undefined ? '' : name
-    this.brewDate = brewDate === undefined ? '' : brewDate
-    this.style = style === undefined ? '' : style
-    this.brewer = brewer === undefined ? '' : brewer
-    this.abv = abv === undefined ? 0 : abv
-    this.ebc = ebc === undefined ? 0 : ebc
-    this.ibu = ibu === undefined ? 0 : ibu
-    this.og = og === undefined ? 0 : og
-    this.fg = fg === undefined ? 0 : fg
-    this.brewfatherId = brewfatherId === undefined ? '' : brewfatherId
-    this.fermentationSteps = fermentationSteps === undefined ? '' : fermentationSteps
+  constructor({
+    brewfatherId = '',
+    name = '',
+    brewDate = '',
+    style = '',
+    brewer = '',
+    abv = 0,
+    ebc = 0,
+    ibu = 0,
+    og = 0,
+    fg = 0,
+    fermentationSteps = ''
+  } = {}) {
+    this._name = name === undefined ? '' : name
+    this._brewDate = brewDate === undefined ? '' : brewDate
+    this._style = style === undefined ? '' : style
+    this._brewer = brewer === undefined ? '' : brewer
+    this._abv = abv === undefined ? 0 : abv
+    this._ebc = ebc === undefined ? 0 : ebc
+    this._ibu = ibu === undefined ? 0 : ibu
+    this._og = og === undefined ? 0 : og
+    this._fg = fg === undefined ? 0 : fg
+    this._brewfatherId = brewfatherId === undefined ? '' : brewfatherId
+    this._fermentationSteps = fermentationSteps === undefined ? '' : fermentationSteps
   }
 
   /**
@@ -49,19 +39,19 @@ export class BrewfatherBatch {
    * @returns {BrewfatherBatch} A new BrewfatherBatch instance
    */
   static fromJson(d) {
-    return new BrewfatherBatch(
-      d.brewfatherId,
-      d.name,
-      d.brewDate,
-      d.style,
-      d.brewer,
-      d.abv,
-      d.ebc,
-      d.ibu,
-      d.og,
-      d.fg,
-      d.fermentationSteps
-    )
+    return new BrewfatherBatch({
+      brewfatherId: d.brewfatherId,
+      name: d.name,
+      brewDate: d.brewDate,
+      style: d.style,
+      brewer: d.brewer,
+      abv: d.abv,
+      ebc: d.ebc,
+      ibu: d.ibu,
+      og: d.og,
+      fg: d.fg,
+      fermentationSteps: d.fermentationSteps
+    })
   }
 
   get brewfatherId() {

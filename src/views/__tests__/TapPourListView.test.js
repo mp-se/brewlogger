@@ -175,7 +175,7 @@ describe('TapPourListView - Enhanced', () => {
 
     it('should display created date in correct format', async () => {
       const wrapper = createWrapper()
-      wrapper.vm.pourList = [new Pour(1, 50, 100, 200, '2025-05-09 10:30:45', 1, true)]
+      wrapper.vm.pourList = [new Pour({ id: 1, pour: 50, volume: 100, maxVolume: 200, created: '2025-05-09 10:30:45', batchId: 1, active: true })]
       await wrapper.vm.$nextTick()
 
       expect(wrapper.text()).toContain('2025-05-09')
@@ -186,7 +186,7 @@ describe('TapPourListView - Enhanced', () => {
   describe('Active Status Toggle', () => {
     it('should initialize active status', async () => {
       const wrapper = createWrapper()
-      wrapper.vm.pourList = [new Pour(1, 50, 100, 200, '2025-05-09 10:00:00', 1, true)]
+      wrapper.vm.pourList = [new Pour({ id: 1, pour: 50, volume: 100, maxVolume: 200, created: '2025-05-09 10:00:00', batchId: 1, active: true })]
       await wrapper.vm.$nextTick()
 
       expect(wrapper.vm.pourList[0].active).toBe(true)
@@ -194,7 +194,7 @@ describe('TapPourListView - Enhanced', () => {
 
     it('should render active checkbox as checked when active is true', async () => {
       const wrapper = createWrapper()
-      const pour = new Pour(1, 50, 100, 200, '2025-05-09 10:00:00', 1, true)
+      const pour = new Pour({ id: 1, pour: 50, volume: 100, maxVolume: 200, created: '2025-05-09 10:00:00', batchId: 1, active: true })
       wrapper.vm.pourList = [pour]
       await wrapper.vm.$nextTick()
 
@@ -204,7 +204,7 @@ describe('TapPourListView - Enhanced', () => {
 
     it('should render active checkbox as unchecked when active is false', async () => {
       const wrapper = createWrapper()
-      const pour = new Pour(1, 50, 100, 200, '2025-05-09 10:00:00', 1, false)
+      const pour = new Pour({ id: 1, pour: 50, volume: 100, maxVolume: 200, created: '2025-05-09 10:00:00', batchId: 1, active: false })
       wrapper.vm.pourList = [pour]
       await wrapper.vm.$nextTick()
 
@@ -226,7 +226,7 @@ describe('TapPourListView - Enhanced', () => {
 
     it('should bind volume correctly', async () => {
       const wrapper = createWrapper()
-      wrapper.vm.pourList = [new Pour(1, 50, 100, 200, '2025-05-09 10:00:00', 1, true)]
+      wrapper.vm.pourList = [new Pour({ id: 1, pour: 50, volume: 100, maxVolume: 200, created: '2025-05-09 10:00:00', batchId: 1, active: true })]
       await wrapper.vm.$nextTick()
 
       expect(wrapper.vm.pourList[0].volume).toBe(100)
@@ -234,7 +234,7 @@ describe('TapPourListView - Enhanced', () => {
 
     it('should bind maxVolume correctly', async () => {
       const wrapper = createWrapper()
-      wrapper.vm.pourList = [new Pour(1, 50, 100, 200, '2025-05-09 10:00:00', 1, true)]
+      wrapper.vm.pourList = [new Pour({ id: 1, pour: 50, volume: 100, maxVolume: 200, created: '2025-05-09 10:00:00', batchId: 1, active: true })]
       await wrapper.vm.$nextTick()
 
       expect(wrapper.vm.pourList[0].maxVolume).toBe(200)

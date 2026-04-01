@@ -250,23 +250,23 @@ describe('HomeView - Enhanced', () => {
     it('should format scheduler task names', () => {
       const wrapper = createWrapper()
       expect(wrapper.vm.prettySchedulerName('task_fetch_chamberctrl_temps')).toBe(
-        'Fetch ChamberControl Temps'
+        'Fetch chamber control temps'
       )
     })
 
     it('should format chamber control task name', () => {
       const wrapper = createWrapper()
-      expect(wrapper.vm.prettySchedulerName('task_fermentation_control')).toBe('Chamber Control')
+      expect(wrapper.vm.prettySchedulerName('task_fermentation_control')).toBe('Chamber control')
     })
 
     it('should format gravity forward task name', () => {
       const wrapper = createWrapper()
-      expect(wrapper.vm.prettySchedulerName('task_forward_gravity')).toBe('Forward gravity')
+      expect(wrapper.vm.prettySchedulerName('task_forward_gravity')).toBe('Forward gravity data')
     })
 
     it('should format database maintenance task name', () => {
       const wrapper = createWrapper()
-      expect(wrapper.vm.prettySchedulerName('task_check_database')).toBe('Database Maintenance')
+      expect(wrapper.vm.prettySchedulerName('task_check_database')).toBe('Database maintenance')
     })
 
     it('should return unknown mapping for unknown task', () => {
@@ -342,7 +342,7 @@ describe('HomeView - Enhanced', () => {
 
     it('should support adding batch to list', async () => {
       const wrapper = createWrapper()
-      const batch = new Batch(1, 'Test Batch')
+      const batch = new Batch({ id: 1, name: 'Test Batch' })
       wrapper.vm.activeBatchList.push(batch)
       await wrapper.vm.$nextTick()
 
@@ -579,6 +579,51 @@ describe('HomeView - Enhanced', () => {
     })
   })
 
+  describe('Prediction Methods', () => {
+    it('getPrediction should return null if prediction data is missing', () => {
+      const wrapper = createWrapper()
+      const batch = new Batch(1, 'Test')
+      expect(wrapper.vm.getPrediction(batch)).toBeNull()
+    })
+
+    it('getPrediction should return DONE if remaining time is less than 0.5h', () => {
+      const wrapper = createWrapper()
+      const batch = new Batch(1, 'Test')
+      const now = new Date()
+      batch.predictionHoursLeft = 0.4
+      batch.predictionAtTimestamp = now.toISOString()
+      expect(wrapper.vm.getPrediction(batch)).toBe('DONE')
+    })
+
+    it('getPrediction should adjust for elapsed time and return formatted hours', () => {
+      const wrapper = createWrapper()
+      const batch = new Batch(1, 'Test')
+      const predictionTime = new Date(Date.now() - 1000 * 60 * 60) // 1 hour ago
+      batch.predictionHoursLeft = 5.0
+      batch.predictionAtTimestamp = predictionTime.toISOString()
+      // 5.0 - 1.0 = 4.0
+      expect(wrapper.vm.getPrediction(batch)).toBe('4.0 h')
+    })
+
+    it('getPrediction should return DONE if elapsed time exceeds prediction', () => {
+      const wrapper = createWrapper()
+      const batch = new Batch(1, 'Test')
+      const predictionTime = new Date(Date.now() - 1000 * 60 * 60 * 10) // 10 hours ago
+      batch.predictionHoursLeft = 5.0
+      batch.predictionAtTimestamp = predictionTime.toISOString()
+      // 5.0 - 10.0 = -5.0
+      expect(wrapper.vm.getPrediction(batch)).toBe('DONE')
+    })
+
+    it('getPrediction should return null for invalid timestamp', () => {
+      const wrapper = createWrapper()
+      const batch = new Batch(1, 'Test')
+      batch.predictionHoursLeft = 5.0
+      batch.predictionAtTimestamp = 'invalid-date'
+      expect(wrapper.vm.getPrediction(batch)).toBeNull()
+    })
+  })
+
   describe('Gravity Count Computation', () => {
     it('should calculate total gravity count from all batches', () => {
       const wrapper = createWrapper()
@@ -749,14 +794,13 @@ describe('HomeView - Enhanced', () => {
 
     it('should filter only Chamber-Controller devices', async () => {
       const wrapper = createWrapper()
-      const chamberDevice = new Device(
-        1,
-        'abc123',
-        'http://chamber/',
-        'Chamber',
-        'Chamber-Controller'
-      )
-      const otherDevice = new Device(2, 'def456', 'http://other/', 'Other', 'Kegmon')
+      const chamberDevice = new Device({
+        id: 1,
+        chipId: 'abc123',
+        url: 'http://chamber/',
+        description: 'Chamber'
+      })
+      const otherDevice = new Device({ id: 2, chipId: 'def456', url: 'http://other/', description: 'Other' })
       piniaMocks.deviceStore.deviceList = [chamberDevice, otherDevice]
       piniaMocks.global.showChamberTemps = true
 
@@ -780,7 +824,7 @@ describe('HomeView - Enhanced', () => {
 
     it('should filter only Kegmon devices', async () => {
       const wrapper = createWrapper()
-      const kegmonDevice = new Device(1, 'def456', 'http://kegmon/', 'Kegmon', 'Kegmon')
+      const kegmonDevice = new Device({ id: 1, chipId: 'def456', url: 'http://kegmon/', description: 'Kegmon' })
       const otherDevice = new Device(
         2,
         'abc123',
