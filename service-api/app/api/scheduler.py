@@ -17,6 +17,11 @@ from .fermentationcontrol import fermentation_controller_run
 from .log import system_log_scheduler, system_log_purge, receive_log_purge, LogLevel
 
 logger = logging.getLogger(__name__)
+
+# Prediction queue to avoid overloading ML engine
+# Stores a set of batch IDs that need a prediction update
+prediction_queue = set()
+
 scheduler = AsyncIOScheduler()
 headers = {
     "Authorization": "Bearer " + get_settings().api_key,
@@ -28,6 +33,40 @@ def scheduler_shutdown():
     """Gracefully shutdown the background job scheduler."""
     logger.info("Shutting down scheduler")
     scheduler.shutdown()
+
+
+def add_to_prediction_queue(batch_id: int):
+    """Add a batch ID to the prediction queue if not already present."""
+    if batch_id in prediction_queue:
+        logger.debug("Batch %d already in prediction queue, skipping", batch_id)
+        return
+
+    logger.debug("Adding batch %d to prediction queue", batch_id)
+    prediction_queue.add(batch_id)
+
+
+async def task_process_prediction_queue():
+    """Process the next batch in the prediction queue."""
+    if not prediction_queue:
+        return
+
+    # Pop one batch ID from the queue to process
+    batch_id = prediction_queue.pop()
+    logger.info("Task: task_process_prediction_queue processing batch %d", batch_id)
+
+    try:
+        from .services import BatchService  # pylint: disable=import-outside-toplevel
+        db = create_session()
+        batch_service = BatchService(db)
+
+        # Call the existing ML prediction service
+        # This function handles its own DB commit or rollback
+        batch_service.update_prediction(batch_id)
+
+    except Exception as e:  # pylint: disable=broad-exception-caught
+        logger.error("Failed to process prediction queue for batch %d: %s", batch_id, e)
+    finally:
+        db.close()
 
 
 async def task_fetch_chamberctrl_temps():
@@ -63,12 +102,12 @@ async def task_forward_gravity():
 
     url = settings.gravity_forward_url
     keys = find_key("gravity_*")
-    
+
     if not keys:
         return
-    
+
     successful_count = 0
-    
+
     for k in keys:
         value = read_key(k).decode()
 
@@ -110,7 +149,7 @@ async def task_forward_gravity():
                 f"Failed to forward gravity to {url}, Uknown error {e}", error_code=0, log_level=LogLevel.ERROR
             )
             logger.error("Unknown exception %s", e)
-    
+
     if successful_count > 0:
         system_log_scheduler(
             f"Successfully forwarded {successful_count} gravity entries",
@@ -154,6 +193,11 @@ def scheduler_setup(application: FastAPI):  # pylint: disable=unused-argument
         # Setting up task to run fermentation control
         scheduler.add_job(
             task_fermentation_control, "interval", minutes=5, max_instances=1
+        )
+
+        # Setting up prediction task to run every 10 seconds
+        scheduler.add_job(
+            task_process_prediction_queue, "interval", seconds=10, max_instances=1
         )
     else:
         logger.warning("Scheduler disabled in configuration")

@@ -137,6 +137,10 @@ def migrate_database():
         "ALTER TABLE batch ADD COLUMN og FLOAT",
         "UPDATE batch SET og = 0 WHERE og IS NULL",
         "ALTER TABLE batch ALTER COLUMN og SET NOT NULL",
+        "ALTER TABLE batch ADD COLUMN prediction_hours_left FLOAT",
+        "UPDATE batch SET prediction_hours_left = 0 WHERE prediction_hours_left IS NULL",
+        "ALTER TABLE batch ALTER COLUMN prediction_hours_left SET NOT NULL",
+        "ALTER TABLE batch ADD COLUMN prediction_at_timestamp TIMESTAMP WITH TIME ZONE",
     ]
 
     with engine.connect() as con:

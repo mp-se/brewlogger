@@ -101,3 +101,72 @@ class BatchService(BaseService[models.Batch, schemas.BatchCreate, schemas.BatchU
             "Fetched batches based on brewfather_id=%s, records found %d", brewfather_id, len(objs)
         )
         return objs
+
+    def update_prediction(self, batch_id: int):
+        """Update fermentation prediction for a batch."""
+        from predict.predict_python import BrewloggerPredictor  # pylint: disable=import-outside-toplevel
+        from .gravity import GravityService  # pylint: disable=import-outside-toplevel
+        from api.ws import notify_clients  # pylint: disable=import-outside-toplevel
+        import asyncio  # pylint: disable=import-outside-toplevel
+        import time  # pylint: disable=import-outside-toplevel
+        from datetime import datetime  # pylint: disable=import-outside-toplevel
+
+        start_time_proc = time.perf_counter()
+        try:
+            batch = self.get(batch_id)
+            if not batch or not batch.active:
+                return
+
+            gravity_service = GravityService(self.db_session)
+            # Get points from last 24h
+            points = gravity_service.search_by_batch_id_last_24h(batch_id)
+            if len(points) < 2:
+                logger.debug("Not enough data for prediction (batch %d)", batch_id)
+                return
+
+            # Prepare history for predictor: (timestamp, gravity, temp)
+            history = [(p.created, p.gravity, p.temperature) for p in points]
+
+            # Get first point ever to calculate hours_elapsed
+            first_point = self.db_session.query(models.Gravity).filter(
+                models.Gravity.batch_id == batch_id
+            ).order_by(models.Gravity.created.asc()).first()
+
+            if not first_point:
+                return
+
+            hours_elapsed = (datetime.now() - first_point.created).total_seconds() / 3600
+
+            # Predict
+            predictor = BrewloggerPredictor()
+            hours_left = predictor.predict(
+                history=history,
+                current_gravity=points[-1].gravity,
+                current_temp=points[-1].temperature,
+                start_gravity=batch.og or points[0].gravity,
+                plateau_gravity=batch.fg or 1.010,
+                hours_elapsed=hours_elapsed
+            )
+
+            duration = time.perf_counter() - start_time_proc
+            if hours_left is not None:
+                batch.prediction_hours_left = float(hours_left)
+                batch.prediction_at_timestamp = datetime.utcnow()
+                self.db_session.commit()
+                logger.info("Updated prediction for batch %d: %.2f hours left (took %.4f seconds)",
+                            batch_id, hours_left, duration)
+
+                # Send WebSocket notification to trigger UI update
+                try:
+                    loop = asyncio.get_event_loop()
+                    if loop.is_running():
+                        loop.create_task(notify_clients("batch", "update", batch_id))
+                except Exception as ws_err:  # pylint: disable=broad-exception-caught
+                    logger.warning("Failed to queue WS notification for batch %d: %s",
+                                   batch_id, str(ws_err))
+            else:
+                logger.debug("Predictor skipped processing for batch %d (took %.4f seconds)",
+                             batch_id, duration)
+        except Exception as e:  # pylint: disable=broad-exception-caught
+            logger.error("Prediction failed for batch %d: %s", batch_id, str(e))
+            self.db_session.rollback()

@@ -126,6 +126,9 @@ async def create_gravity_using_ispindel_format(  # pylint: disable=too-many-loca
                 abv=0.0,
                 ebc=0.0,
                 ibu=0.0,
+                fg=0.0,
+                og=0.0,
+                hours_to_completion=0.0,
                 # fermentation_chamber=None, # This is optional and should be assigned in UI
                 fermentation_steps="",
                 tap_list=True,
@@ -210,6 +213,10 @@ async def create_gravity_using_ispindel_format(  # pylint: disable=too-many-loca
 
         g = gravity_service.create(gravity)
         background_tasks.add_task(notify_clients, "batch", "update", g.batch_id)
+
+        # Add to the internal prediction queue for the scheduler to handle
+        from ..scheduler import add_to_prediction_queue  # pylint: disable=import-outside-toplevel
+        add_to_prediction_queue(g.batch_id)
 
         # Save the record in redis for background job to forward
         if len(device_list) > 0:

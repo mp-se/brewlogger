@@ -6,3 +6,6 @@ pytest-asyncio
 pre-commit
 requests
 pylint
+httpx
+psycopg2-binary
+testing-postgresql

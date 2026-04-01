@@ -1,12 +1,13 @@
 """Configuration settings API endpoints for managing application settings."""
 import logging
-from fastapi import Depends
+from fastapi import Depends, BackgroundTasks
 from fastapi.routing import APIRouter
 from starlette.exceptions import HTTPException
 from api.services import BrewLoggerService, get_brewlogger_service
 from api.db import schemas
 from ..security import api_key_auth, get_settings
 from ..log import system_log, LogLevel
+from ..ws import notify_clients
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/api/config")
@@ -36,6 +37,7 @@ async def get_configuration(
 async def update_configuration(
     item_id: int,
     brew_logger: schemas.BrewLoggerUpdate,
+    background_tasks: BackgroundTasks,
     brewlogger_service: BrewLoggerService = Depends(get_brewlogger_service),
 ):
     """Update application configuration settings."""
@@ -44,6 +46,7 @@ async def update_configuration(
     bl = brewlogger_service.update(item_id, brew_logger)
     if bl is None:
         raise HTTPException(status_code=404, detail="Configuration not found")
+    background_tasks.add_task(notify_clients, "config", "update", item_id)
     bl.api_key_enabled = get_settings().api_key_enabled
     message = f"Configuration updated: gravity_forward_url={bool(bl.gravity_forward_url)}"
     system_log("config", message, error_code=0, log_level=LogLevel.INFO)

@@ -41,6 +41,19 @@ class GravityService(
         )
         return objs
 
+    def search_by_batch_id_last_24h(self, batch_id: int) -> List[models.Gravity]:
+        """Search gravity readings by batch ID for the last 24 hours."""
+        from datetime import datetime, timedelta
+        since = datetime.now() - timedelta(hours=25) # Extra hour to ensure we get a full 24h window for velocity
+        objs = self.db_session.query(models.Gravity).filter(
+            models.Gravity.batch_id == batch_id,
+            models.Gravity.created >= since
+        ).order_by(models.Gravity.created.asc()).all()
+        logger.info(
+            "Fetched last 24h gravity for batchId=%d, records found %d", batch_id, len(objs)
+        )
+        return objs
+
     def get_latest(self, limit: int = 10) -> List[dict]:  # pylint: disable=duplicate-code
         """Get the latest gravity readings with batch information."""
         objs = self.db_session.query(

@@ -382,6 +382,8 @@ class BatchBase(BaseModel):
     ibu: float = Field(description="Bitterness of the batch")
     fg: float = Field(default=0.0, description="Estimated Final gravity of the batch") # New 1.1
     og: float = Field(default=0.0, description="Estimated Original gravity of the batch") # New 1.1
+    prediction_hours_left: float = Field(default=0.0, description="Estimated hours to completion") # New 1.1
+    prediction_at_timestamp: Optional[datetime] = Field(default=None, description="Timestamp when prediction was made") # New 1.1
     brewfather_id: str = Field(
         min_length=0, max_length=30, description="ID used in brewfather"
     )
@@ -420,6 +422,8 @@ class BatchList(BatchBase):
     pour_count: int = Field(default=0, description="Count of pour readings")
     last_pour_volume: Optional[float] = Field(None, description="Latest pour volume")
     last_pour_max_volume: Optional[float] = Field(None, description="Latest pour max volume")
+    prediction_hours_left: float = Field(default=0.0, description="Estimated hours to completion")
+    prediction_at_timestamp: Optional[datetime] = Field(default=None, description="Timestamp when prediction was made")
 
 
 class BatchDashboard(BaseModel):
@@ -446,7 +450,7 @@ class BatchDashboard(BaseModel):
     @classmethod
     def validate_pressure_chip_id(cls, v: str) -> str:
         if len(v) != 0 and len(v) != 6:
-            raise ValueError("chip_id_gravity must be zero or 6 characters long")
+            raise ValueError("chip_id_pressure must be zero or 6 characters long")
         return v
 
     active: bool = Field(
@@ -455,30 +459,8 @@ class BatchDashboard(BaseModel):
     gravity: List[Gravity] = None
     pressure: List[Pressure] = None
     pour: List[Pour] = None
-
-
-# Used for fetching data for AI prediction of fermentation progress
-class GravityPrediction(BaseModel):
-    model_config = ConfigDict(alias_generator=to_camel, populate_by_name=True)
-
-    temperature: Optional[float] = Field(None, description="Temperature value in C")
-    gravity: float = Field(description="Calculated gravity in SG")
-    velocity: Optional[float] = Field(None, description="Gravity velocity, points per day")
-    angle: float = Field(description="Tilt or angle of the device")
-    created: Optional[datetime] | None = Field(
-        default=None, description="If undefined the current time will be used"
-    )
-
-class BatchPrediction(BaseModel):
-    model_config = ConfigDict(alias_generator=to_camel, populate_by_name=True)
-
-    name: str = Field(
-        min_length=0, max_length=40, description="Short name of the batch"
-    )
-    fg: float = Field(description="Estimated Final gravity of the batch")
-    og: float = Field(description="Estimated Original gravity of the batch")
-
-    gravity: List[GravityPrediction] = None
+    prediction_hours_left: float = Field(default=0.0, description="Estimated hours to completion")
+    prediction_at_timestamp: Optional[datetime] = Field(default=None, description="Timestamp when prediction was made")
 
 ################################################################################
 

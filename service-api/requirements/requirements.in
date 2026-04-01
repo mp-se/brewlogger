@@ -12,3 +12,11 @@ redis
 websockets
 virtualenv>=20.26.6
 urllib3>=2.2.2
+scikit-learn
+pandas
+numpy
+
+# ML Dependencies
+scikit-learn
+pandas
+numpy

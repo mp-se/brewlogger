@@ -95,7 +95,9 @@ class Batch(Base):
     ibu = Column(Float, default=0.0, nullable=False)
     fg = Column(Float, default=0.0, nullable=False) # New 1.1
     og = Column(Float, default=0.0, nullable=False) # New 1.1
-    
+    prediction_hours_left = Column(Float, default=0.0, nullable=False) # New 1.1
+    prediction_at_timestamp = Column(DateTime(timezone=True), nullable=True) # New 1.1
+
     brewfather_id = Column(String(30), nullable=False)
 
     # Chamber controller specific

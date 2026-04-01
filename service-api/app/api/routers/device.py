@@ -261,6 +261,7 @@ async def scan_for_mdns_devices() -> list[schemas.Mdns]:
 async def create_fermentation_step(
     device_id: int,
     fermentation_step_list: List[schemas.FermentationStepCreate],
+    background_tasks: BackgroundTasks,
     fermentation_step_service: FermentationStepService = Depends(
         get_fermentationstep_service
     ),
@@ -272,7 +273,9 @@ async def create_fermentation_step(
     if len(step_list) > 0:
         raise HTTPException(status_code=409, detail="Conflict Error")
 
-    return fermentation_step_service.create_list(fermentation_step_list)
+    result = fermentation_step_service.create_list(fermentation_step_list)
+    background_tasks.add_task(notify_clients, "device", "update", device_id)
+    return result
 
 
 @router.delete(
@@ -280,6 +283,7 @@ async def create_fermentation_step(
 )
 async def delete_fermentation_step_by_device_id(
     device_id: int,
+    background_tasks: BackgroundTasks,
     fermentation_step_service: FermentationStepService = Depends(
         get_fermentationstep_service
     ),
@@ -287,3 +291,4 @@ async def delete_fermentation_step_by_device_id(
     """Delete fermentation steps for a device."""
     logger.info("Endpoint DELETE /api/fermentation_step/%s", device_id)
     fermentation_step_service.delete_by_device_id(device_id)
+    background_tasks.add_task(notify_clients, "device", "update", device_id)
