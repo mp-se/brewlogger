@@ -16,7 +16,7 @@ handlers:
 #     formatter: access
 #     class: logging.StreamHandler
 #     stream: ext://sys.stdout
-# loggers:
+#loggers:
 #   uvicorn.error:
 #     level: INFO
 #     handlers:
@@ -27,13 +27,13 @@ handlers:
 #     handlers:
 #       - access
 #     propagate: yes
-#   app:
-#     level: DEBUG
-#     handlers:
-#       - default
-#     propagate: yes
+  # app:
+  #   level: DEBUG
+  #   handlers:
+  #     - default
+  #   propagate: yes
 root:
-  level: INFO
+  level: DEBUG
   handlers:
     - default
   propagate: yes
