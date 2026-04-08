@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: GPL-3.0-or-later
+// Portions copyright (c) Magnus — https://github.com/mp-se/brewlogger-ui
+
 import { ref } from 'vue'
 import { createPinia } from 'pinia'
 import { useGlobalStore } from '@/modules/globalStore'

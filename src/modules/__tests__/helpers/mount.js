@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: GPL-3.0-or-later
+// Portions copyright (c) Magnus — https://github.com/mp-se/brewlogger-ui
+
 /**
  * Shared test mount helpers to reduce boilerplate
  * Supports views, fragments, and component tests

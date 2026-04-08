@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: GPL-3.0-or-later
+// Portions copyright (c) Magnus — https://github.com/mp-se/brewlogger-ui
+
 /**
  * Device data model - represents a hardware sensor device (ESP32, ESP8266, etc.)
  *

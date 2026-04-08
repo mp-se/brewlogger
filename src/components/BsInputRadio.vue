@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: GPL-3.0-or-later
+// Portions copyright (c) Magnus — https://github.com/mp-se/brewlogger-ui
+
 <template>
   <BsInputBase :width="width" :label="label" :help="help" :badge="badge">
     <div class="btn-group" role="group">

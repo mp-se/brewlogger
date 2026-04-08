@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: GPL-3.0-or-later
+// Portions copyright (c) Magnus — https://github.com/mp-se/brewlogger-ui
+
 /**
  * Beer styles definitions from BJCP 2008 and GABF 2015
  * Extracted from BatchView for independent management and testing

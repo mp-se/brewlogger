@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: GPL-3.0-or-later
+// Portions copyright (c) Magnus — https://github.com/mp-se/brewlogger-ui
+
 import { describe, it, expect, vi } from 'vitest'
 import { detectId, detectMdns, detectPlatform, detectSoftware } from '../detect'
 

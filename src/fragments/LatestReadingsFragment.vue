@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: GPL-3.0-or-later
+// Portions copyright (c) Magnus — https://github.com/mp-se/brewlogger-ui
+
 <template>
   <div class="col-md-12" v-if="readings.length > 0">
     <BsCard :header="title" color="info" title="">
