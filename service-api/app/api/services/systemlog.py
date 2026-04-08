@@ -1,3 +1,6 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+# Portions copyright (c) Magnus — https://github.com/mp-se/brewlogger
+
 """System log service for managing application event logging and retention."""
 import logging
 from datetime import datetime, timedelta

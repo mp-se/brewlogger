@@ -1,3 +1,6 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+# Portions copyright (c) Magnus — https://github.com/mp-se/brewlogger
+
 """Fermentation control logic for managing temperature profiles and chamber controller devices."""
 import logging
 from datetime import datetime, timedelta

@@ -1,3 +1,6 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+# Portions copyright (c) Magnus — https://github.com/mp-se/brewlogger
+
 """BrewLogger service for managing application configuration settings."""
 import logging
 

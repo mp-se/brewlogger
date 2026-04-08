@@ -1,3 +1,6 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+# Portions copyright (c) Magnus — https://github.com/mp-se/brewlogger
+
 from datetime import datetime
 from typing import List, Optional
 from pydantic import BaseModel, Field, ConfigDict, field_validator

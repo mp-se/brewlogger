@@ -1,3 +1,6 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+# Portions copyright (c) Magnus — https://github.com/mp-se/brewlogger
+
 """Device service for managing brewery device configurations and operations."""
 import logging
 from typing import List

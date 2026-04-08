@@ -1,3 +1,6 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+# Portions copyright (c) Magnus — https://github.com/mp-se/brewlogger
+
 """Gravity sensor API endpoints for managing fermentation gravity readings and device data."""
 import logging
 import json

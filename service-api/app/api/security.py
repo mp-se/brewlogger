@@ -1,3 +1,6 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+# Portions copyright (c) Magnus — https://github.com/mp-se/brewlogger
+
 """API key authentication and security management for BrewLogger API."""
 import logging
 from fastapi import Depends, HTTPException, status

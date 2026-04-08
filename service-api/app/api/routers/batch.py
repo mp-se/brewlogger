@@ -1,3 +1,6 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+# Portions copyright (c) Magnus — https://github.com/mp-se/brewlogger
+
 """Batch management API endpoints for creating, updating, and managing brewing batches."""
 import logging
 from typing import List, Optional

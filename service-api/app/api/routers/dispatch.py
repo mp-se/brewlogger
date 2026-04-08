@@ -1,3 +1,6 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+# Portions copyright (c) Magnus — https://github.com/mp-se/brewlogger
+
 """Request dispatching endpoints for forwarding requests to remote brewery devices."""
 import logging
 from json import JSONDecodeError

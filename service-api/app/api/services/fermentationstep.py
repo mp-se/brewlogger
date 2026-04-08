@@ -1,3 +1,6 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+# Portions copyright (c) Magnus — https://github.com/mp-se/brewlogger
+
 """Fermentation step service for managing fermentation process steps and device configurations."""
 import logging
 from typing import List

@@ -1,3 +1,6 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+# Portions copyright (c) Magnus — https://github.com/mp-se/brewlogger
+
 """Brewfather API integration endpoints for syncing batch data from Brewfather service."""
 import json
 import logging

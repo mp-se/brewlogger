@@ -1,3 +1,6 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+# Portions copyright (c) Magnus — https://github.com/mp-se/brewlogger
+
 """Configuration settings API endpoints for managing application settings."""
 import logging
 from fastapi import Depends, BackgroundTasks

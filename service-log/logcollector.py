@@ -1,3 +1,6 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+# Portions copyright (c) Magnus — https://github.com/mp-se/brewlogger
+
 #
 # Collect logs from all devices with a valid URL registered in the Brewlogger database
 #

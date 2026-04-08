@@ -1,3 +1,6 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+# Portions copyright (c) Magnus — https://github.com/mp-se/brewlogger
+
 """Pour event API endpoints for recording and managing beer pour operations."""
 import logging
 from json.decoder import JSONDecodeError

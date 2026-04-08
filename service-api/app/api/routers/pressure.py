@@ -1,3 +1,6 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+# Portions copyright (c) Magnus — https://github.com/mp-se/brewlogger
+
 """Pressure sensor API endpoints for managing fermentation pressure readings and device data."""
 import logging
 from datetime import datetime

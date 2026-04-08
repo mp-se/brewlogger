@@ -1,3 +1,6 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+# Portions copyright (c) Magnus — https://github.com/mp-se/brewlogger
+
 from sqlalchemy import text
 from sqlalchemy.exc import OperationalError, ProgrammingError, InternalError
 from pydantic_settings import BaseSettings

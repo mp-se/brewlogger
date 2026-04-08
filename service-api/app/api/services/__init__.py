@@ -1,3 +1,6 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+# Portions copyright (c) Magnus — https://github.com/mp-se/brewlogger
+
 """Service layer providing business logic and database operations for API endpoints."""
 from fastapi import Depends
 from sqlalchemy.orm import Session

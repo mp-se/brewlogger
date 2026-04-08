@@ -1,3 +1,6 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+# Portions copyright (c) Magnus — https://github.com/mp-se/brewlogger
+
 """Tests for chamber controller integration."""
 import json
 from unittest.mock import patch, AsyncMock, MagicMock

@@ -1,3 +1,6 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+# Portions copyright (c) Magnus — https://github.com/mp-se/brewlogger
+
 """Background job scheduler for periodic tasks like syncing Brewfather data and cleaning logs."""
 import json
 import logging

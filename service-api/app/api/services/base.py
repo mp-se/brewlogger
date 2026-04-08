@@ -1,3 +1,6 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+# Portions copyright (c) Magnus — https://github.com/mp-se/brewlogger
+
 """Base service class providing generic CRUD operations for database models."""
 import logging
 from typing import Any, Generic, List, Optional, Type, TypeVar

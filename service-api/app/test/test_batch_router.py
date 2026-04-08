@@ -1,3 +1,6 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+# Portions copyright (c) Magnus — https://github.com/mp-se/brewlogger
+
 """Tests for batch router endpoints with filtering and dashboard."""
 from datetime import datetime, timedelta
 from api.config import get_settings

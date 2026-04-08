@@ -1,3 +1,6 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+# Portions copyright (c) Magnus — https://github.com/mp-se/brewlogger
+
 """WebSocket connection manager for broadcasting real-time events to connected clients."""
 import logging
 import json

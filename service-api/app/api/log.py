@@ -1,3 +1,6 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+# Portions copyright (c) Magnus — https://github.com/mp-se/brewlogger
+
 """Custom logging configuration and handlers for application event logging."""
 import logging
 from datetime import datetime, timedelta
