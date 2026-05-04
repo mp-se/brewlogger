@@ -39,10 +39,13 @@ There are a few public endpoints in brewlogger for receving data.
 
 ### Release history
 
-- 1.1.0 Refactoring to support new devices
-  - Improved unit test coverage especiually for the UI that lacked automated tests
+- 1.1.0 Support for new chamber control, disabled brewfather and AI for predicting when brew is finished
+  - Improved unit test coverage especially for the UI that lacked automated tests
   - Added Machine Learning algorithm to estimate when brew is finished, shown on dashboard when enough data has been collected
   - Added fg/og fields to the batch including fetching from brewfather
+  - Added editor for fermentation steps, which now also enables target via beer or fridge control. 
+  - Requires chamber controller version 0.8 since older versions lack the remote control API
+
   - Fixed issue that batch view could not be opened when brewfather keys are missing, now it will handle that gracefully
   - Fixed some minor bugs
 

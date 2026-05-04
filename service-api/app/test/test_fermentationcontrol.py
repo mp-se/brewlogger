@@ -240,37 +240,37 @@ async def test_fermentation_controller_multiple_steps():
     with patch("api.fermentationcontrol.DeviceService") as mock_service_class, \
          patch("api.fermentationcontrol.chamberctrl_temps") as mock_temps, \
          patch("api.fermentationcontrol.chamberctrl_set_fridge_temp") as mock_set_temp:
-        
+
         today = datetime.now()
-        
+
         # Create first step (not active)
         mock_step1 = MagicMock()
         mock_step1.date = (today - timedelta(days=5)).strftime("%Y-%m-%d")
         mock_step1.days = 2
         mock_step1.order = 0
         mock_step1.temp = 25.0
-        
+
         # Create second step (active)
         mock_step2 = MagicMock()
         mock_step2.date = today.strftime("%Y-%m-%d")
         mock_step2.days = 7
         mock_step2.order = 1
         mock_step2.temp = 20.0
-        
+
         mock_device = MagicMock()
         mock_device.id = 1
         mock_device.url = "http://localhost:8080"
         mock_device.chip_id = "ABC123"
         mock_device.fermentation_step = [mock_step1, mock_step2]
-        
+
         mock_service = MagicMock()
         mock_service.search_software.return_value = [mock_device]
         mock_service_class.return_value = mock_service
-        
+
         mock_temps.return_value = {"pid_fridge_target_temp": 18.0}
-        
+
         await fermentation_controller_run(today)
-        
+
         # Should only process the active step
         mock_temps.assert_called_once_with(1, "http://localhost:8080")
         mock_set_temp.assert_called_once_with(1, "http://localhost:8080", 20.0, "ABC123")

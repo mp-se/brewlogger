@@ -105,7 +105,7 @@ async def chamberctrl_temps(device_id: int, url: str) -> Optional[dict[str, Any]
     return None
 
 
-async def chamberctrl_set_fridge_temp(device_id: int, url: str, temp: float, chipid: str) -> bool:
+async def chamberctrl_set_mode(device_id: int, url: str, temp: float, chipid: str, control: str) -> bool:
     """Set target fridge temperature on chamber controller device.
     
     Args:
@@ -113,11 +113,12 @@ async def chamberctrl_set_fridge_temp(device_id: int, url: str, temp: float, chi
         url: The base URL of the chamber controller device
         temp: Target temperature in Celsius
         chipid: Chip ID for authorization header
+        control: Control type for the chamber controller (e.g. "fridge", "beer", "restore)
     
     Returns:
         True if successful, False if error or invalid URL
     """
-    logger.info("Set fridge temperature %s, %s, %s", url, temp, chipid)
+    logger.info("Set fridge temperature %s, %s, %s, %s", url, temp, chipid, control)
 
     timeout = httpx.Timeout(10.0, connect=10.0, read=10.0)
     headers = {"Content-Type": "application/json", "Authorization": "Bearer " + chipid}
@@ -126,21 +127,24 @@ async def chamberctrl_set_fridge_temp(device_id: int, url: str, temp: float, chi
         if not url.endswith("/"):
             url += "/"
 
-        url += "api/mode"
+        url += "api/remote"
 
         try:
-            logger.info("Setting target fridge temperature on %s to %s", url, temp)
+            logger.info("Setting target %s temperature on %s to %s", control, url, temp)
+
+            mode_map = {"fridge": "f", "beer": "b", "restore": "r"}
+            mode = mode_map.get(control, "b")
 
             async with httpx.AsyncClient(timeout=timeout) as client:
                 res = await client.put(
                     url,
-                    data=json.dumps({"new_mode": "f", "new_temperature": temp}),
+                    data=json.dumps({"new_mode": mode, "new_temperature": temp}),
                     headers=headers,
                 )
 
                 if res.status_code == 200:
                     system_log_fermentationcontrol(
-                        f"Successfully set fridge temperature on device {device_id} to {temp}°C",
+                        f"Successfully set {control} temperature on device {device_id} to {temp}°C",
                         error_code=0, log_level=LogLevel.INFO
                     )
                     return True
