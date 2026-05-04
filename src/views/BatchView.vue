@@ -30,31 +30,16 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
             </BsInputText>
           </div>
           <div class="col-md-3">
-            <BsSelect
-              v-model="batch.chipIdGravity"
-              label="Gravity Device"
-              :options="gravityDeviceOptions"
-              help=""
-              :disabled="global.disabled"
-            ></BsSelect>
+            <BsSelect v-model="batch.chipIdGravity" label="Gravity Device" :options="gravityDeviceOptions" help=""
+              :disabled="global.disabled"></BsSelect>
           </div>
           <div class="col-md-3">
-            <BsSelect
-              v-model="batch.chipIdPressure"
-              label="Pressure Device"
-              :options="pressureDeviceOptions"
-              help=""
-              :disabled="global.disabled"
-            ></BsSelect>
+            <BsSelect v-model="batch.chipIdPressure" label="Pressure Device" :options="pressureDeviceOptions" help=""
+              :disabled="global.disabled"></BsSelect>
           </div>
           <div class="col-md-3">
-            <BsSelect
-              v-model="batch.fermentationChamber"
-              label="Fermentation chamber"
-              :options="tempControlDeviceOptions"
-              help=""
-              :disabled="global.disabled"
-            ></BsSelect>
+            <BsSelect v-model="batch.fermentationChamber" label="Fermentation chamber"
+              :options="tempControlDeviceOptions" help="" :disabled="global.disabled"></BsSelect>
           </div>
           <div class="col-md-2" v-if="activeFermentationSteps.length > 0">
             <BsInputBase label="&nbsp;">
@@ -64,12 +49,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
             </BsInputBase>
           </div>
           <div class="col-md-12">
-            <BsInputText
-              v-model="batch.description"
-              label="Description"
-              help=""
-              :disabled="global.disabled"
-            >
+            <BsInputText v-model="batch.description" label="Description" help="" :disabled="global.disabled">
             </BsInputText>
           </div>
           <div class="col-md-4">
@@ -77,130 +57,61 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
             </BsInputText>
           </div>
           <div class="col-md-4">
-            <BsInputText
-              v-model="batch.brewDate"
-              label="Brew date"
-              help=""
-              :disabled="global.disabled"
-            >
+            <BsInputText v-model="batch.brewDate" label="Brew date" help="" :disabled="global.disabled">
             </BsInputText>
           </div>
           <div class="col-md-4">
-            <BsSelect
-              v-model="batch.style"
-              label="Style"
-              :options="beerStyleOptions"
-              help=""
-              :disabled="global.disabled"
-            >
+            <BsSelect v-model="batch.style" label="Style" :options="beerStyleOptions" help=""
+              :disabled="global.disabled">
             </BsSelect>
           </div>
           <div class="col-md-4">
-            <BsInputRadio
-              v-model="batch.active"
-              :options="activeOptions"
-              label="Receiving data"
-              help=""
-              :disabled="global.disabled"
-            ></BsInputRadio>
+            <BsInputRadio v-model="batch.active" :options="activeOptions" label="Receiving data" help=""
+              :disabled="global.disabled"></BsInputRadio>
           </div>
           <div class="col-md-4">
-            <BsInputRadio
-              v-model="batch.tapList"
-              :options="tapListOptions"
-              label="Tap list"
-              help=""
-              :disabled="global.disabled"
-            ></BsInputRadio>
+            <BsInputRadio v-model="batch.tapList" :options="tapListOptions" label="Tap list" help=""
+              :disabled="global.disabled"></BsInputRadio>
           </div>
           <div class="col-md-4">
-            <BsSelect
-              @change="brewfatherChanged(batch.brewfatherId)"
-              v-model="batch.brewfatherId"
-              label="Brewfather ID"
-              :options="brewfatherOptions"
-              help=""
-              :disabled="global.disabled || brewfatherOptions.length <= 1"
-            >
+            <BsSelect @change="brewfatherChanged(batch.brewfatherId)" v-model="batch.brewfatherId" label="Brewfather ID"
+              :options="brewfatherOptions" help="" :disabled="global.disabled || brewfatherOptions.length <= 1">
             </BsSelect>
           </div>
           <div class="col-md-4">
-            <BsInputNumber
-              v-model="batch.abv"
-              width="5"
-              label="Alcohol"
-              unit="% ABV"
-              min="0"
-              max="100"
-              step="0.01"
-              help=""
-              :disabled="global.disabled"
-            >
+            <BsInputNumber v-model="batch.abv" width="5" label="Alcohol" unit="% ABV" min="0" max="100" step="0.01"
+              help="" :disabled="global.disabled">
             </BsInputNumber>
           </div>
           <div class="col-md-4">
-            <BsInputNumber
-              v-model="batch.ebc"
-              width="5"
-              label="Color"
-              unit="EBC"
-              min="0"
-              max="100"
-              step="0.1"
-              help=""
-              :disabled="global.disabled"
-            >
+            <BsInputNumber v-model="batch.ebc" width="5" label="Color" unit="EBC" min="0" max="100" step="0.1" help=""
+              :disabled="global.disabled">
             </BsInputNumber>
           </div>
           <div class="col-md-4">
-            <BsInputNumber
-              v-model="batch.ibu"
-              width="5"
-              label="Bitterness"
-              unit="IBU"
-              min="0"
-              max="100"
-              step="0.1"
-              help=""
-              :disabled="global.disabled"
-            >
+            <BsInputNumber v-model="batch.ibu" width="5" label="Bitterness" unit="IBU" min="0" max="100" step="0.1"
+              help="" :disabled="global.disabled">
             </BsInputNumber>
           </div>
           <div class="col-md-4">
-            <BsInputNumber
-              v-model="ogDisplayValue"
-              width="5"
-              label="Original Gravity"
-              :unit="gravityUnit"
-              min="0"
-              max="40"
-              :step="ogStep"
-              :disabled="global.disabled"
-            >
+            <BsInputNumber v-model="ogDisplayValue" width="5" label="Original Gravity" :unit="gravityUnit" min="0"
+              max="40" :step="ogStep" :disabled="global.disabled">
             </BsInputNumber>
           </div>
           <div class="col-md-4">
-            <BsInputNumber
-              v-model="fgDisplayValue"
-              width="5"
-              label="Final Gravity"
-              :unit="gravityUnit"
-              min="0"
-              max="40"
-              :step="fgStep"
-              :disabled="global.disabled"
-            >
+            <BsInputNumber v-model="fgDisplayValue" width="5" label="Final Gravity" :unit="gravityUnit" min="0" max="40"
+              :step="fgStep" :disabled="global.disabled">
             </BsInputNumber>
           </div>
 
-          <div class="col-md-12" v-if="batch.fermentationSteps != ''">
+          <div class="col-md-12">
             <hr />
           </div>
 
-          <div class="col-md-12" v-if="batch.fermentationSteps != ''">
+          <div class="col-md-12">
             <label class="form-label fw-bold">Fermentation Steps</label>
 
-            <FermentationStepFragment :fermentationSteps="JSON.parse(batch.fermentationSteps)">
+            <FermentationStepFragment v-model:fermentationSteps="parsedFermentationSteps" :tempUnit="config.tempUnit">
             </FermentationStepFragment>
           </div>
         </div>
@@ -210,57 +121,35 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
             <hr />
           </div>
           <div class="col-md-12">
-            <button
-              type="submit"
-              class="btn btn-primary w-2"
-              :disabled="global.disabled || !batchChanged()"
-            >
-              <span
-                class="spinner-border spinner-border-sm"
-                role="status"
-                aria-hidden="true"
-                :hidden="!global.disabled"
-              ></span>
+            <button type="submit" class="btn btn-primary w-2" :disabled="global.disabled || !batchChanged()">
+              <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"
+                :hidden="!global.disabled"></span>
               <i class="bi bi-floppy"></i>
-              &nbsp;Save</button
-            >&nbsp;
+              &nbsp;Save</button>&nbsp;
             <router-link :to="{ name: 'batch-list' }">
               <button type="button" class="btn btn-secondary w-2">
                 <i class="bi bi-x-square"></i>
                 Cancel
-              </button> </router-link
-            >&nbsp;
+              </button> </router-link>&nbsp;
 
             <template v-if="batch.fermentationChamber > 0 && batch.fermentationSteps != ''">
-              <router-link
-                :to="{
-                  name: 'batch-fermentation-control',
-                  params: { id: router.currentRoute.value.params.id }
-                }"
-              >
-                <button type="button" class="btn btn-secondary w-3">
+              <router-link :to="{
+                name: 'batch-fermentation-control',
+                params: { id: router.currentRoute.value.params.id }
+              }">
+                <button type="button" class="btn btn-secondary w-3" :disabled="global.batchChanged">
                   Fermentation Control
-                </button> </router-link
-              >&nbsp;
+                </button> </router-link>&nbsp;
             </template>
 
-            <BsModalConfirm
-              :callback="deleteFermentationStepsCallback"
-              message="Do you reallu want to delete the fermentation steps"
-              id="deleteFermentationSteps"
-              title="Delete"
-              :disabled="global.disabled"
-            />
+            <BsModalConfirm :callback="deleteFermentationStepsCallback"
+              message="Do you reallu want to delete the fermentation steps" id="deleteFermentationSteps" title="Delete"
+              :disabled="global.disabled" />
 
             <template v-if="activeFermentationSteps.length > 0">
-              <button
-                type="button"
-                class="btn btn-secondary"
-                @click="deleteFermentationSteps()"
-                :disabled="global.disabled"
-              >
-                Delete steps</button
-              >&nbsp;
+              <button type="button" class="btn btn-secondary" @click="deleteFermentationSteps()"
+                :disabled="global.disabled">
+                Delete steps</button>&nbsp;
             </template>
           </div>
         </div>
@@ -278,9 +167,9 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 </template>
 
 <script setup>
-import { onMounted, ref } from 'vue'
-import { global, deviceStore, batchStore, brewfatherStore } from '@/modules/pinia'
-import { validateCurrentForm } from '@/modules/utils'
+import { onMounted, ref, watch } from 'vue'
+import { global, deviceStore, batchStore, brewfatherStore, config } from '@/modules/pinia'
+import { validateCurrentForm, tempToF, tempToC } from '@/modules/utils'
 import { Batch } from '@/modules/classes'
 import router from '@/modules/router'
 import { logDebug } from '@/modules/logger'
@@ -308,6 +197,19 @@ const tapListOptions = ref([
 ])
 
 const brewfatherOptions = ref([{ label: '- Not connected -', value: '' }])
+
+const parsedFermentationSteps = ref([])
+
+// Sync parsed steps back to batch whenever the fragment updates the array
+// Convert F→C before storing (database always stores in Celsius)
+watch(parsedFermentationSteps, (steps) => {
+  if (batch.value) {
+    const stepsInC = config.isTempF
+      ? steps.map((s) => ({ ...s, temp: tempToC(s.temp) }))
+      : steps
+    batch.value.fermentationSteps = stepsInC.length > 0 ? JSON.stringify(stepsInC) : ''
+  }
+}, { deep: true })
 
 const {
   displayValue: ogDisplayValue,
@@ -371,11 +273,25 @@ onMounted(async () => {
     if (isNew()) {
       batchSaved.value = new Batch()
       batch.value = new Batch()
+      parsedFermentationSteps.value = []
     } else {
       const batchResult = await batchStore.getBatch(router.currentRoute.value.params.id)
       if (batchResult) {
+        // Normalize fermentationSteps JSON string so Batch.compare() works correctly
+        if (batchResult.fermentationSteps) {
+          try {
+            batchResult.fermentationSteps = JSON.stringify(JSON.parse(batchResult.fermentationSteps))
+          } catch {
+            batchResult.fermentationSteps = ''
+          }
+        }
         batchSaved.value = Batch.fromJson(batchResult.toJson())
         batch.value = batchResult
+        parsedFermentationSteps.value = batchResult.fermentationSteps
+          ? JSON.parse(batchResult.fermentationSteps).map((s) =>
+            config.isTempF ? { ...s, temp: Number(tempToF(s.temp).toFixed(1)) } : s
+          )
+          : []
 
         if (batchResult.fermentationChamber > 0) {
           const deviceResult = await deviceStore.getDevice(batchResult.fermentationChamber)
@@ -388,8 +304,6 @@ onMounted(async () => {
             // global.messageError = "Failed to load device " + id
           }
         }
-
-        // logDebug(batch.value)
       } else {
         global.messageError = 'Failed to load batch ' + router.currentRoute.value.params.id
       }

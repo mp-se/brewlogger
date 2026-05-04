@@ -45,9 +45,26 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
     <div class="row" v-if="activeFermentationSteps != null && activeFermentationSteps.length > 0">
       <div class="col-md-12">
         <p class="h4">Active Fermentation Steps</p>
-        <FermentationStepFragment
-          :fermentationSteps="activeFermentationSteps"
-        ></FermentationStepFragment>
+        <table class="table table-striped" v-if="activeFermentationSteps.length > 0">
+          <thead>
+            <tr>
+              <th scope="col" class="col-1">Step</th>
+              <th scope="col" class="col-2">Type</th>
+              <th scope="col" class="col-1">Temp</th>
+              <th scope="col" class="col-1">Days</th>
+              <th scope="col" class="col-3">Date</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="(step, index) in activeFermentationSteps" :key="index">
+              <td>{{ step.order + 1 }}</td>
+              <td>{{ step.type }}</td>
+              <td>{{ config.isTempF ? tempToF(step.temp).toFixed(1) : step.temp }}°{{ config.tempUnit }}</td>
+              <td>{{ step.days }}</td>
+              <td>{{ step.date }}</td>
+            </tr>
+          </tbody>
+        </table>
       </div>
     </div>
 
@@ -62,7 +79,26 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
           alert="warning"
         />
 
-        <FermentationStepFragment :fermentationSteps="fermentationSteps"></FermentationStepFragment>
+        <table class="table table-striped" v-if="fermentationSteps.length > 0">
+          <thead>
+            <tr>
+              <th scope="col" class="col-1">Step</th>
+              <th scope="col" class="col-2">Type</th>
+              <th scope="col" class="col-1">Temp</th>
+              <th scope="col" class="col-1">Days</th>
+              <th scope="col" class="col-3">Date</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="(step, index) in fermentationSteps" :key="index">
+              <td>{{ step.order + 1 }}</td>
+              <td>{{ step.type }}</td>
+              <td>{{ config.isTempF ? tempToF(step.temp).toFixed(1) : step.temp }}°{{ config.tempUnit }}</td>
+              <td>{{ step.days }}</td>
+              <td>{{ step.date }}</td>
+            </tr>
+          </tbody>
+        </table>
       </div>
     </div>
 
@@ -91,9 +127,9 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 <script setup>
 import { onMounted, ref } from 'vue'
-import { batchStore, deviceStore, global } from '@/modules/pinia'
+import { batchStore, deviceStore, global, config } from '@/modules/pinia'
 import { FermentationStep } from '@/modules/classes'
-import FermentationStepFragment from '@/fragments/FermentationStepFragment.vue'
+import { tempToF } from '@/modules/utils'
 import router from '@/modules/router'
 import { logDebug, logInfo, logError } from '@/modules/logger'
 

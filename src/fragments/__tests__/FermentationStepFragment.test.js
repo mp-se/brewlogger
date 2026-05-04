@@ -1,342 +1,401 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 // Portions copyright (c) Magnus — https://github.com/mp-se/brewlogger-ui
 
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { mount } from '@vue/test-utils'
 import FermentationStepFragment from '../FermentationStepFragment.vue'
-import BsInputReadonly from '../../components/BsInputReadonly.vue'
-import BsInputBase from '../../components/BsInputBase.vue'
 
-describe('FermentationStepFragment - Fermentation Steps Table', () => {
-  const sampleFermentationSteps = [
+describe('FermentationStepFragment - Inline Editor', () => {
+  const sampleSteps = [
     {
       order: 0,
-      date: '2024-01-15 to 2024-01-20',
-      temp: '20°C',
-      days: '5',
-      name: 'Primary',
-      type: 'Mash'
+      date: '',
+      temp: 20,
+      days: 5,
+      type: 'Primary'
     },
     {
       order: 1,
-      date: '2024-01-20 to 2024-01-25',
-      temp: '20°C',
-      days: '5',
-      name: 'Secondary',
-      type: 'Boil'
-    },
-    {
-      order: 2,
-      date: '2024-01-25 to 2024-02-01',
-      temp: '18°C',
-      days: '7',
-      name: 'Conditioning',
-      type: 'Yeast'
+      date: '',
+      temp: 18,
+      days: 7,
+      type: 'Secondary'
     }
   ]
 
-  describe('Basic Rendering', () => {
-    it('should render when fermentationSteps is provided', () => {
+  describe('Empty State', () => {
+    it('should display empty message when no steps', () => {
       const wrapper = mount(FermentationStepFragment, {
-        props: { fermentationSteps: sampleFermentationSteps },
-        global: {
-          components: { BsInputReadonly, BsInputBase }
+        props: {
+          fermentationSteps: [],
+          tempUnit: 'C'
+        }
+      })
+      expect(wrapper.find('.alert-info').exists()).toBe(true)
+      expect(wrapper.text()).toContain('No fermentation steps defined yet.')
+    })
+
+    it('should not display table when no steps', () => {
+      const wrapper = mount(FermentationStepFragment, {
+        props: {
+          fermentationSteps: [],
+          tempUnit: 'C'
+        }
+      })
+      expect(wrapper.find('table').exists()).toBe(false)
+    })
+  })
+
+  describe('Rendering with Steps', () => {
+    it('should render table with steps', () => {
+      const wrapper = mount(FermentationStepFragment, {
+        props: {
+          fermentationSteps: sampleSteps,
+          tempUnit: 'C'
         }
       })
       expect(wrapper.find('table').exists()).toBe(true)
+      expect(wrapper.findAll('tbody tr').length).toBe(2)
     })
 
-    it('should not render when fermentationSteps is empty', () => {
+    it('should display correct column headers', () => {
       const wrapper = mount(FermentationStepFragment, {
-        props: { fermentationSteps: [] },
-        global: {
-          components: { BsInputReadonly, BsInputBase }
-        }
-      })
-      const rows = wrapper.findAll('tbody tr')
-      expect(rows.length).toBe(0)
-    })
-
-    it('should render table headers', () => {
-      const wrapper = mount(FermentationStepFragment, {
-        props: { fermentationSteps: sampleFermentationSteps },
-        global: {
-          components: { BsInputReadonly, BsInputBase }
+        props: {
+          fermentationSteps: sampleSteps,
+          tempUnit: 'C'
         }
       })
       const headers = wrapper.findAll('th')
-      expect(headers.length).toBeGreaterThan(0)
-    })
-  })
-
-  describe('Table Headers', () => {
-    it('should display column headers', () => {
-      const wrapper = mount(FermentationStepFragment, {
-        props: { fermentationSteps: sampleFermentationSteps },
-        global: {
-          components: { BsInputReadonly, BsInputBase }
-        }
-      })
-      const headerText = wrapper.text()
-      expect(headerText).toContain('Step')
-      expect(headerText).toContain('Name')
-      expect(headerText).toContain('Type')
+      const headerTexts = headers.map((h) => h.text())
+      expect(headerTexts).toContain('Step')
+      expect(headerTexts).toContain('Type')
+      expect(headerTexts).toContain('Temp')
+      expect(headerTexts).toContain('Days')
     })
 
-    it('should have table header tags', () => {
+    it('should display step numbers starting from 1', () => {
       const wrapper = mount(FermentationStepFragment, {
-        props: { fermentationSteps: sampleFermentationSteps },
-        global: {
-          components: { BsInputReadonly, BsInputBase }
-        }
-      })
-      const thead = wrapper.find('thead')
-      expect(thead.exists()).toBe(true)
-    })
-  })
-
-  describe('Table Rows', () => {
-    it('should render row for each fermentation step', () => {
-      const wrapper = mount(FermentationStepFragment, {
-        props: { fermentationSteps: sampleFermentationSteps },
-        global: {
-          components: { BsInputReadonly, BsInputBase }
+        props: {
+          fermentationSteps: sampleSteps,
+          tempUnit: 'C'
         }
       })
       const rows = wrapper.findAll('tbody tr')
-      expect(rows.length).toBe(sampleFermentationSteps.length)
-    })
-
-    it('should display step names in rows', () => {
-      const wrapper = mount(FermentationStepFragment, {
-        props: { fermentationSteps: sampleFermentationSteps },
-        global: {
-          components: { BsInputReadonly, BsInputBase }
-        }
-      })
-      const tableText = wrapper.text()
-      expect(tableText).toContain('Primary')
-      expect(tableText).toContain('Secondary')
-      expect(tableText).toContain('Conditioning')
-    })
-
-    it('should display step types in rows', () => {
-      const wrapper = mount(FermentationStepFragment, {
-        props: { fermentationSteps: sampleFermentationSteps },
-        global: {
-          components: { BsInputReadonly, BsInputBase }
-        }
-      })
-      const tableText = wrapper.text()
-      expect(tableText).toContain('Mash')
-      expect(tableText).toContain('Boil')
-      expect(tableText).toContain('Yeast')
+      expect(rows[0].text()).toContain('1')
+      expect(rows[1].text()).toContain('2')
     })
   })
 
-  describe('Table Styling', () => {
-    it('should have appropriate table classes', () => {
+  describe('Editing Functionality', () => {
+    it('should render input fields for type', async () => {
       const wrapper = mount(FermentationStepFragment, {
-        props: { fermentationSteps: sampleFermentationSteps },
-        global: {
-          components: { BsInputReadonly, BsInputBase }
+        props: {
+          fermentationSteps: sampleSteps,
+          tempUnit: 'C'
         }
       })
-      const table = wrapper.find('table')
-      expect(table.exists()).toBe(true)
+      const inputs = wrapper.findAll('input[type="text"]')
+      expect(inputs.length).toBeGreaterThan(0)
     })
 
-    it('should render thead element', () => {
+    it('should render editable temperature field', async () => {
       const wrapper = mount(FermentationStepFragment, {
-        props: { fermentationSteps: sampleFermentationSteps },
-        global: {
-          components: { BsInputReadonly, BsInputBase }
+        props: {
+          fermentationSteps: sampleSteps,
+          tempUnit: 'C'
         }
       })
-      expect(wrapper.find('thead').exists()).toBe(true)
+      const tempInputs = wrapper.findAll('input[type="number"]')
+      const tempFields = tempInputs.filter((input) => {
+        const parent = input.element.parentElement
+        return parent?.classList.contains('input-group')
+      })
+      expect(tempFields.length).toBe(2)
     })
 
-    it('should render tbody element', () => {
+    it('should render editable days field', async () => {
       const wrapper = mount(FermentationStepFragment, {
-        props: { fermentationSteps: sampleFermentationSteps },
-        global: {
-          components: { BsInputReadonly, BsInputBase }
+        props: {
+          fermentationSteps: sampleSteps,
+          tempUnit: 'C'
         }
       })
-      expect(wrapper.find('tbody').exists()).toBe(true)
+      const numberInputs = wrapper.findAll('input[type="number"]')
+      expect(numberInputs.length).toBeGreaterThan(0)
+    })
+
+    it('should update step type on input change', async () => {
+      const wrapper = mount(FermentationStepFragment, {
+        props: {
+          fermentationSteps: sampleSteps,
+          tempUnit: 'C'
+        }
+      })
+      const typeInputs = wrapper.findAll('input[type="text"]')
+      await typeInputs[0].setValue('Tertiary')
+      await wrapper.vm.$nextTick()
+      expect(typeInputs[0].element.value).toBe('Tertiary')
     })
   })
 
-  describe('V-Model Binding', () => {
-    it('should accept fermentationSteps prop', () => {
+  describe('Temperature Unit Display', () => {
+    it('should display °C when tempUnit is C', () => {
       const wrapper = mount(FermentationStepFragment, {
-        props: { fermentationSteps: sampleFermentationSteps },
-        global: {
-          components: { BsInputReadonly, BsInputBase }
+        props: {
+          fermentationSteps: sampleSteps,
+          tempUnit: 'C'
         }
       })
-      expect(wrapper.props('fermentationSteps')).toEqual(sampleFermentationSteps)
+      const unitBadges = wrapper.findAll('.input-group-text')
+      expect(unitBadges[0].text()).toContain('°C')
     })
 
-    it('should update when fermentationSteps changes', async () => {
+    it('should display °F when tempUnit is F', () => {
       const wrapper = mount(FermentationStepFragment, {
-        props: { fermentationSteps: sampleFermentationSteps },
-        global: {
-          components: { BsInputReadonly, BsInputBase }
+        props: {
+          fermentationSteps: sampleSteps,
+          tempUnit: 'F'
+        }
+      })
+      const unitBadges = wrapper.findAll('.input-group-text')
+      expect(unitBadges[0].text()).toContain('°F')
+    })
+
+    it('should have temperature input with correct bounds', () => {
+      const wrapper = mount(FermentationStepFragment, {
+        props: {
+          fermentationSteps: sampleSteps,
+          tempUnit: 'C'
+        }
+      })
+      const tempInputs = wrapper.findAll('input[type="number"]')
+      const tempInput = tempInputs.find((input) => {
+        const parent = input.element.parentElement
+        return parent?.classList.contains('input-group')
+      })
+      expect(tempInput?.attributes('min')).toBe('0')
+      expect(tempInput?.attributes('max')).toBe('99')
+    })
+  })
+
+  describe('Add Step Button', () => {
+    it('should render add step button', () => {
+      const wrapper = mount(FermentationStepFragment, {
+        props: {
+          fermentationSteps: [],
+          tempUnit: 'C'
+        }
+      })
+      const addBtn = wrapper.find('.btn-secondary')
+      expect(addBtn.exists()).toBe(true)
+      expect(addBtn.text()).toContain('Add Step')
+    })
+
+    it('should add new step when button clicked', async () => {
+      const wrapper = mount(FermentationStepFragment, {
+        props: {
+          fermentationSteps: [],
+          tempUnit: 'C'
+        }
+      })
+      const addBtn = wrapper.find('.btn-secondary')
+      await addBtn.trigger('click')
+      await wrapper.vm.$nextTick()
+      expect(wrapper.emitted('update:fermentationSteps')).toBeTruthy()
+      const emitted = wrapper.emitted('update:fermentationSteps')[0]
+      expect(emitted[0].length).toBe(1)
+    })
+
+    it('should add step with default values', async () => {
+      const wrapper = mount(FermentationStepFragment, {
+        props: {
+          fermentationSteps: [],
+          tempUnit: 'C'
+        }
+      })
+      const addBtn = wrapper.find('.btn-secondary')
+      await addBtn.trigger('click')
+      await wrapper.vm.$nextTick()
+      const emitted = wrapper.emitted('update:fermentationSteps')[0]
+      const newStep = emitted[0][0]
+      expect(newStep.order).toBe(0)
+      expect(newStep.type).toBe('')
+      expect(newStep.temp).toBe(0)
+      expect(newStep.days).toBe(1)
+    })
+
+    it('should increment order correctly for new steps', async () => {
+      const wrapper = mount(FermentationStepFragment, {
+        props: {
+          fermentationSteps: sampleSteps,
+          tempUnit: 'C'
+        }
+      })
+      const addBtn = wrapper.find('.btn-secondary')
+      await addBtn.trigger('click')
+      await wrapper.vm.$nextTick()
+      const emitted = wrapper.emitted('update:fermentationSteps')[0]
+      const newStep = emitted[0][2]
+      expect(newStep.order).toBe(2)
+    })
+  })
+
+  describe('Delete Step Button', () => {
+    it('should render delete button for each step', () => {
+      const wrapper = mount(FermentationStepFragment, {
+        props: {
+          fermentationSteps: sampleSteps,
+          tempUnit: 'C'
+        }
+      })
+      const deleteButtons = wrapper.findAll('.btn-danger')
+      expect(deleteButtons.length).toBe(2)
+    })
+
+    it('should delete step when button clicked', async () => {
+      const steps = JSON.parse(JSON.stringify(sampleSteps))
+      const wrapper = mount(FermentationStepFragment, {
+        props: {
+          fermentationSteps: steps,
+          tempUnit: 'C'
+        }
+      })
+      const deleteButtons = wrapper.findAll('.btn-danger')
+      await deleteButtons[0].trigger('click')
+      await wrapper.vm.$nextTick()
+      expect(wrapper.emitted('update:fermentationSteps')).toBeTruthy()
+      const emitted = wrapper.emitted('update:fermentationSteps')[0]
+      expect(emitted[0].length).toBe(1)
+    })
+
+    it('should reorder remaining steps after deletion', async () => {
+      const steps = JSON.parse(JSON.stringify(sampleSteps))
+      const wrapper = mount(FermentationStepFragment, {
+        props: {
+          fermentationSteps: steps,
+          tempUnit: 'C'
+        }
+      })
+      const deleteButtons = wrapper.findAll('.btn-danger')
+      await deleteButtons[0].trigger('click')
+      await wrapper.vm.$nextTick()
+      const emitted = wrapper.emitted('update:fermentationSteps')[0]
+      const remainingSteps = emitted[0]
+      expect(remainingSteps[0].order).toBe(0)
+    })
+  })
+
+  describe('v-model Integration', () => {
+    it('should sync initial model value', () => {
+      const wrapper = mount(FermentationStepFragment, {
+        props: {
+          fermentationSteps: sampleSteps,
+          tempUnit: 'C'
+        }
+      })
+      const rows = wrapper.findAll('tbody tr')
+      expect(rows.length).toBe(2)
+    })
+
+    it('should update when parent model changes', async () => {
+      const wrapper = mount(FermentationStepFragment, {
+        props: {
+          fermentationSteps: sampleSteps,
+          tempUnit: 'C'
         }
       })
       const newSteps = [
         {
           order: 0,
-          date: '2024-02-01 to 2024-02-05',
-          temp: '22°C',
-          days: '4',
-          name: 'Updated',
-          type: 'Updated Type'
+          date: '',
+          temp: 25,
+          days: 3,
+          type: 'New Step'
         }
       ]
       await wrapper.setProps({ fermentationSteps: newSteps })
-      expect(wrapper.text()).toContain('Updated')
+      const rows = wrapper.findAll('tbody tr')
+      expect(rows.length).toBe(1)
+    })
+
+    it('should handle undefined and null gracefully', () => {
+      const wrapper = mount(FermentationStepFragment, {
+        props: {
+          fermentationSteps: null,
+          tempUnit: 'C'
+        }
+      })
+      expect(wrapper.find('.alert-info').exists()).toBe(true)
     })
   })
 
-  describe('Edge Cases', () => {
-    it('should handle empty fermentation steps array', () => {
-      const wrapper = mount(FermentationStepFragment, {
-        props: { fermentationSteps: [] },
-        global: {
-          components: { BsInputReadonly, BsInputBase }
-        }
-      })
-      const rows = wrapper.findAll('tbody tr')
-      expect(rows.length).toBe(0)
-    })
-
-    it('should handle single fermentation step', () => {
-      const singleStep = [sampleFermentationSteps[0]]
-      const wrapper = mount(FermentationStepFragment, {
-        props: { fermentationSteps: singleStep },
-        global: {
-          components: { BsInputReadonly, BsInputBase }
-        }
-      })
-      const rows = wrapper.findAll('tbody tr')
-      expect(rows.length).toBe(1)
-    })
-
-    it('should render table with correct structure', () => {
-      const wrapper = mount(FermentationStepFragment, {
-        props: { fermentationSteps: sampleFermentationSteps },
-        global: {
-          components: { BsInputReadonly, BsInputBase }
-        }
-      })
-      expect(wrapper.find('table.table.table-striped').exists()).toBe(true)
-    })
-
-    it('should handle many fermentation steps', () => {
-      const manySteps = Array.from({ length: 50 }, (_, i) => ({
-        order: i,
-        date: `2024-01-${String(i + 1).padStart(2, '0')}`,
-        temp: `${20 + (i % 5)}°C`,
-        days: `${i + 1}`,
-        name: `Step ${i + 1}`,
-        type: `Type ${i % 3}`
-      }))
-      const wrapper = mount(FermentationStepFragment, {
-        props: { fermentationSteps: manySteps },
-        global: {
-          components: { BsInputReadonly, BsInputBase }
-        }
-      })
-      const rows = wrapper.findAll('tbody tr')
-      expect(rows.length).toBe(50)
-    })
-
-    it('should display "Step 1" for order 0', () => {
-      const stepsWithZeroOrder = [
+  describe('Data Preservation', () => {
+    it('should handle steps with missing fields', async () => {
+      const incompleteSteps = [
         {
           order: 0,
-          date: '2024-01-15 to 2024-01-20',
-          temp: '20°C',
-          days: '5',
-          name: 'Primary',
-          type: 'Mash'
+          type: 'Primary'
+        },
+        {
+          order: 1,
+          days: 5
         }
       ]
       const wrapper = mount(FermentationStepFragment, {
-        props: { fermentationSteps: stepsWithZeroOrder },
-        global: {
-          components: { BsInputReadonly, BsInputBase }
-        }
-      })
-      // Get the first data cell in the step order column
-      const firstCell = wrapper.find('tbody tr th[scope="row"]')
-      expect(firstCell.text()).toBe('1')
-      expect(firstCell.text()).not.toContain('0')
-    })
-
-    it('should handle steps with null temperature gracefully', () => {
-      const stepsWithNullTemp = [
-        {
-          order: 0,
-          date: '2024-01-15 to 2024-01-20',
-          temp: null,
-          days: '5',
-          name: 'Primary',
-          type: 'Mash'
-        }
-      ]
-      const wrapper = mount(FermentationStepFragment, {
-        props: { fermentationSteps: stepsWithNullTemp },
-        global: {
-          components: { BsInputReadonly, BsInputBase }
+        props: {
+          fermentationSteps: incompleteSteps,
+          tempUnit: 'C'
         }
       })
       const rows = wrapper.findAll('tbody tr')
-      expect(rows.length).toBe(1)
+      expect(rows.length).toBe(2)
     })
+  })
 
-    it('should handle steps with undefined temperature gracefully', () => {
-      const stepsWithUndefinedTemp = [
-        {
-          order: 0,
-          date: '2024-01-15 to 2024-01-20',
-          temp: undefined,
-          days: '5',
-          name: 'Primary',
-          type: 'Mash'
-        }
-      ]
+  describe('Input Validation', () => {
+    it('should enforce days minimum of 1', () => {
       const wrapper = mount(FermentationStepFragment, {
-        props: { fermentationSteps: stepsWithUndefinedTemp },
-        global: {
-          components: { BsInputReadonly, BsInputBase }
+        props: {
+          fermentationSteps: sampleSteps,
+          tempUnit: 'C'
         }
       })
-      const rows = wrapper.findAll('tbody tr')
-      expect(rows.length).toBe(1)
+      const numberInputs = wrapper.findAll('input[type="number"]')
+      const daysInputs = numberInputs.filter((input) => {
+        const parent = input.element.parentElement
+        return !parent?.classList.contains('input-group')
+      })
+      expect(daysInputs[0]?.attributes('min')).toBe('1')
     })
 
-    it('should handle empty string values gracefully', () => {
-      const stepsWithEmpty = [
-        {
-          order: 0,
-          date: '',
-          temp: '',
-          days: '',
-          name: '',
-          type: ''
-        }
-      ]
+    it('should enforce days maximum of 365', () => {
       const wrapper = mount(FermentationStepFragment, {
-        props: { fermentationSteps: stepsWithEmpty },
-        global: {
-          components: { BsInputReadonly, BsInputBase }
+        props: {
+          fermentationSteps: sampleSteps,
+          tempUnit: 'C'
         }
       })
-      const rows = wrapper.findAll('tbody tr')
-      expect(rows.length).toBe(1)
+      const numberInputs = wrapper.findAll('input[type="number"]')
+      const daysInputs = numberInputs.filter((input) => {
+        const parent = input.element.parentElement
+        return !parent?.classList.contains('input-group')
+      })
+      expect(daysInputs[0]?.attributes('max')).toBe('365')
+    })
+
+    it('should allow temperature step of 0.1', () => {
+      const wrapper = mount(FermentationStepFragment, {
+        props: {
+          fermentationSteps: sampleSteps,
+          tempUnit: 'C'
+        }
+      })
+      const tempInputs = wrapper.findAll('input[type="number"]')
+      const tempField = tempInputs.find((input) => {
+        const parent = input.element.parentElement
+        return parent?.classList.contains('input-group')
+      })
+      expect(tempField?.attributes('step')).toBe('0.1')
     })
   })
 })

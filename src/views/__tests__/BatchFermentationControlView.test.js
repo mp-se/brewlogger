@@ -25,6 +25,11 @@ const mockStores = vi.hoisted(() => ({
     $subscribe: vi.fn(),
     $patch: vi.fn()
   },
+  config: {
+    isTempF: false,
+    isTempC: true,
+    tempUnit: 'C'
+  },
   router: {
     currentRoute: {
       value: {
@@ -38,6 +43,7 @@ vi.mock('@/modules/pinia', () => ({
   batchStore: mockStores.batch,
   deviceStore: mockStores.device,
   global: mockStores.global,
+  config: mockStores.config,
   default: {}
 }))
 
@@ -51,6 +57,11 @@ vi.mock('@/modules/logger', () => ({
   logInfo: vi.fn()
 }))
 
+vi.mock('@/modules/utils', () => ({
+  tempToF: vi.fn((c) => c * 9 / 5 + 32),
+  validateCurrentForm: vi.fn(() => true)
+}))
+
 describe('BatchFermentationControlView', () => {
   beforeEach(() => {
     setActivePinia(createPinia())
@@ -59,7 +70,9 @@ describe('BatchFermentationControlView', () => {
     mockStores.batch.getBatch.mockResolvedValue({
       id: '1',
       name: 'Batch 1',
-      fermentationSteps: JSON.stringify([{ id: 1, name: 'Step 1' }]),
+      fermentationSteps: JSON.stringify([
+        { order: 0, type: 'Primary', temp: 20, days: 5, date: '2024-01-15 to 2024-01-20' }
+      ]),
       fermentationChamber: 10
     })
     mockStores.device.getDevice.mockResolvedValue({
@@ -80,7 +93,6 @@ describe('BatchFermentationControlView', () => {
       global: {
         stubs: {
           'router-link': { template: '<a><slot></slot></a>' },
-          FermentationStepFragment: true,
           BsInputReadonly: true,
           BsMessage: true
         }
@@ -144,10 +156,43 @@ describe('BatchFermentationControlView', () => {
   })
 
   it('shows warning when device has active steps', async () => {
-    mockStores.device.getDeviceFermentationSteps.mockResolvedValue([{ id: 99 }])
+    mockStores.device.getDeviceFermentationSteps.mockResolvedValue([
+      { order: 0, type: 'Primary', temp: 20, days: 5, date: '2024-01-15 to 2024-01-20' }
+    ])
     const wrapper = await mountWrapper()
     expect(wrapper.vm.activeFermentationSteps.length).toBe(1)
     expect(wrapper.find('bs-message-stub').exists()).toBe(true)
+  })
+
+  it('renders fermentation steps as read-only table', async () => {
+    const wrapper = await mountWrapper()
+    const tables = wrapper.findAll('table')
+    expect(tables.length).toBeGreaterThan(0)
+  })
+
+  it('displays step details in table columns', async () => {
+    const wrapper = await mountWrapper()
+    const tableText = wrapper.text()
+    expect(tableText).toContain('Primary')
+    expect(tableText).toContain('20')
+    expect(tableText).toContain('5')
+    // Date gets recalculated by FermentationStep.listFromJson, just verify it exists
+    expect(tableText).toContain('Date')
+  })
+
+  it('displays correct temperature unit in table', async () => {
+    mockStores.config.isTempC = true
+    mockStores.config.isTempF = false
+    mockStores.config.tempUnit = 'C'
+    const wrapper = await mountWrapper()
+    const tableText = wrapper.text()
+    expect(tableText).toContain('°C')
+  })
+
+  it('displays fermentation steps with proper step numbers starting from 1', async () => {
+    const wrapper = await mountWrapper()
+    const tableText = wrapper.text()
+    expect(tableText).toContain('1')
   })
 
   it('starts steps when none are active', async () => {

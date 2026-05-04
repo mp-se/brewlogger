@@ -19,30 +19,106 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 -->
 <template>
-  <table class="table table-striped">
-    <thead>
-      <tr>
-        <th scope="col" class="col-sm-1">Step</th>
-        <th scope="col" class="col-sm-2">Date</th>
-        <th scope="col" class="col-sm-1">Temperature</th>
-        <th scope="col" class="col-sm-1">Days</th>
-        <th scope="col" class="col-sm-2">Name</th>
-        <th scope="col" class="col-sm-2">Type</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr v-for="(step, index) in fermentationSteps" :key="index">
-        <th scope="row">{{ step.order + 1 }}</th>
-        <td>{{ step.date }}</td>
-        <td>{{ step.temp }}</td>
-        <td>{{ step.days }}</td>
-        <td>{{ step.name }}</td>
-        <td>{{ step.type }}</td>
-      </tr>
-    </tbody>
-  </table>
+  <div>
+    <table class="table table-striped" v-if="localSteps.length > 0">
+      <thead>
+        <tr>
+          <th scope="col" class="col-1">Step</th>
+          <th scope="col" class="col-2">Type</th>
+          <th scope="col" class="col-1">Temp</th>
+          <th scope="col" class="col-1">Days</th>
+          <th scope="col" class="col-1"></th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr v-for="(step, index) in localSteps" :key="index">
+          <td class="align-middle">{{ step.order + 1 }}</td>
+          <td><input v-model="step.type" class="form-control form-control-sm" type="text" placeholder="e.g., Primary" />
+          </td>
+          <td>
+            <div class="input-group input-group-sm">
+              <input v-model="step.temp" class="form-control form-control-sm" type="number" step="0.1" min="0"
+                max="99" />
+              <span class="input-group-text">°{{ props.tempUnit }}</span>
+            </div>
+          </td>
+          <td><input v-model="step.days" class="form-control form-control-sm" type="number" step="1" min="1"
+              max="365" /></td>
+          <td class="align-middle">
+            <button type="button" class="btn btn-danger btn-sm" @click="deleteStep(index)" title="Delete step">
+              <i class="bi bi-trash"></i>
+            </button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div v-else class="alert alert-info">
+      No fermentation steps defined yet.
+    </div>
+
+    <button type="button" class="btn btn-secondary w-2" @click="addStep">
+      <i class="bi bi-plus"></i>
+      Add Step
+    </button>
+  </div>
 </template>
 
 <script setup>
-const fermentationSteps = defineModel('fermentationSteps')
+import { ref, watch } from 'vue'
+
+const props = defineProps({
+  tempUnit: { type: String, default: 'C' }
+})
+
+const fermentationSteps = defineModel('fermentationSteps', {
+  type: Array,
+  default: () => []
+})
+
+const localSteps = ref([])
+let syncing = false
+
+// Convert incoming step (class instance or plain object) to a reactive plain object
+const toPlain = (step) => ({
+  order: step.order ?? 0,
+  type: step.type ?? '',
+  date: step.date ?? '',
+  temp: step.temp ?? 0,
+  days: step.days ?? 1
+})
+
+watch(
+  fermentationSteps,
+  (steps) => {
+    if (syncing) return
+    localSteps.value = Array.isArray(steps) && steps.length > 0 ? steps.map(toPlain) : []
+  },
+  { immediate: true }
+)
+
+const syncToModel = () => {
+  syncing = true
+  fermentationSteps.value = localSteps.value.map((s) => ({ ...s }))
+  syncing = false
+}
+
+const addStep = () => {
+  localSteps.value.push({
+    order: localSteps.value.length,
+    type: '',
+    date: '',
+    temp: 0,
+    days: 1
+  })
+  syncToModel()
+}
+
+const deleteStep = (index) => {
+  localSteps.value.splice(index, 1)
+  localSteps.value.forEach((step, idx) => {
+    step.order = idx
+  })
+  syncToModel()
+}
 </script>
