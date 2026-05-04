@@ -90,6 +90,7 @@ class FermentationStep(Base):
     days = Column(Integer, nullable=False)
     name = Column(String(30), nullable=False)
     type = Column(String(30), nullable=False)
+    control = Column(String(10), nullable=False)
 
     device_id = Column(Integer, ForeignKey(Device.__table__.c.id))
     device = relationship("Device", back_populates="fermentation_step")

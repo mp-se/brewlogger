@@ -161,6 +161,9 @@ def migrate_database():
         "UPDATE batch SET prediction_hours_left = 0 WHERE prediction_hours_left IS NULL",
         "ALTER TABLE batch ALTER COLUMN prediction_hours_left SET NOT NULL",
         "ALTER TABLE batch ADD COLUMN prediction_at_timestamp TIMESTAMP WITH TIME ZONE",
+        "ALTER TABLE fermentationstep ADD COLUMN control VARCHAR(10)",
+        "UPDATE fermentationstep SET control = 'fridge' WHERE control IS NULL",
+        "ALTER TABLE fermentationstep ALTER COLUMN control SET NOT NULL",
     ]
 
     with engine.connect() as con:

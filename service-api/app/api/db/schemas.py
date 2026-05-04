@@ -173,7 +173,7 @@ class FermentationStepBase(BaseModel):
     days: int = Field(description="Number of days")
     name: str = Field(min_length=0, max_length=30, description="Name of the step")
     type: str = Field(min_length=0, max_length=30, description="Type of the step")
-
+    control: str = Field(min_length=0, max_length=10, description="Control method, fridge, beer or other")
 
 class FermentationStepUpdate(FermentationStepBase):
     pass
