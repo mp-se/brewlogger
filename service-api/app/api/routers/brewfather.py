@@ -98,7 +98,7 @@ async def fetch_batch_list(status: str) -> list[schemas.BrewfatherBatch]:  # pyl
         or get_settings().brewfather_api_key == ""
     ):
         raise HTTPException(
-            status_code=400,
+            status_code=424,
             detail="Brewfather keys are not defined, unable to fetch data.",
         )
 
@@ -271,7 +271,7 @@ async def get_completed_batches_from_brewfather(
         or get_settings().brewfather_api_key == ""
     ):
         raise HTTPException(
-            status_code=400,
+            status_code=424,
             detail="Brewfather keys are not defined, unable to fetch data.",
         )
 

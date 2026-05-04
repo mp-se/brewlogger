@@ -43,6 +43,7 @@ There are a few public endpoints in brewlogger for receving data.
   - Improved unit test coverage especiually for the UI that lacked automated tests
   - Added Machine Learning algorithm to estimate when brew is finished, shown on dashboard when enough data has been collected
   - Added fg/og fields to the batch including fetching from brewfather
+  - Fixed issue that batch view could not be opened when brewfather keys are missing, now it will handle that gracefully
   - Fixed some minor bugs
 
 - 1.0.0 Refactoring to support new devices
