@@ -21,7 +21,7 @@
  * Beer styles definitions from BJCP 2008 and GABF 2015
  * Extracted from BatchView for independent management and testing
  */
-export const BEER_STYLES = [
+export const beerStyleOptions = [
   { label: '- undefined -', value: '' },
   { label: 'Adambier', value: 'Adambier' },
   { label: 'Aged Beer', value: 'Aged Beer' },

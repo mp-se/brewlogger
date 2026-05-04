@@ -56,6 +56,24 @@ export const useBrewfatherStore = defineStore('brewfatherStore', {
           }
         )
         logDebug('brewfatherStore.getBatchList()', res.status)
+        
+        // Handle 424 (Failed Dependency) - Brewfather keys not configured
+        if (res.status === 424) {
+          logDebug('brewfatherStore.getBatchList()', 'Brewfather keys not configured, returning empty array')
+          this.batches = []
+          this.valid = true
+          global.disabled = false
+          
+          // Keep valid for 5 minutes
+          setTimeout(
+            () => {
+              this.valid = false
+            },
+            60 * 5 * 1000
+          )
+          return true
+        }
+        
         if (!res.ok) throw res
         const json = await res.json()
         this.batches = []

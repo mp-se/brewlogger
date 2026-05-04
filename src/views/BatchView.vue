@@ -89,7 +89,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
             <BsSelect
               v-model="batch.style"
               label="Style"
-              :options="styleOptions"
+              :options="beerStyleOptions"
               help=""
               :disabled="global.disabled"
             >
@@ -120,7 +120,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
               label="Brewfather ID"
               :options="brewfatherOptions"
               help=""
-              :disabled="global.disabled"
+              :disabled="global.disabled || brewfatherOptions.length <= 1"
             >
             </BsSelect>
           </div>
@@ -286,7 +286,7 @@ import router from '@/modules/router'
 import { logDebug } from '@/modules/logger'
 import FermentationStepFragment from '@/fragments/FermentationStepFragment.vue'
 import { useGravityConversion } from '@/modules/useUnitConversion'
-import { BEER_STYLES } from '@/modules/constants/beerStyles'
+import { beerStyleOptions } from '@/modules/constants/beerStyles'
 import BsPageHeader from '@/components/BsPageHeader.vue'
 
 const batch = ref(null)
@@ -308,10 +308,6 @@ const tapListOptions = ref([
 ])
 
 const brewfatherOptions = ref([{ label: '- Not connected -', value: '' }])
-
-
-const styleOptions = ref(BEER_STYLES)
-
 
 const {
   displayValue: ogDisplayValue,
