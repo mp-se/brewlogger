@@ -30,13 +30,14 @@ export class FermentationStep {
    * Creates a new FermentationStep instance
    * @param {Object} params - The fermentation step properties
    */
-  constructor({ order, name = '', type, date, temp, days } = {}) {
+  constructor({ order, name = '', type, date, temp, days, control = 'fridge' } = {}) {
     this._order = order
     this._name = name === undefined ? '' : name
     this._type = type
     this._date = date
     this._temp = temp
     this._days = days
+    this._control = control === undefined ? 'fridge' : control
   }
   /**
    * Factory method to create a FermentationStep from JSON/API response
@@ -51,7 +52,8 @@ export class FermentationStep {
       type: fs.type,
       date: fs.date,
       temp: fs.temp,
-      days: fs.days
+      days: fs.days,
+      control: fs.control
     })
   }
 
@@ -85,7 +87,8 @@ export class FermentationStep {
         type: fs.type,
         date: fs.date,
         temp: fs.temp,
-        days: fs.days
+        days: fs.days,
+        control: fs.control
       }).toJson()
       step.deviceId = deviceId
       list.push(step)
@@ -105,7 +108,8 @@ export class FermentationStep {
       type: this.type,
       date: this.date,
       temp: this.temp,
-      days: this.days
+      days: this.days,
+      control: this.control
     }
   }
 
@@ -127,6 +131,9 @@ export class FermentationStep {
   get days() {
     return this._days
   }
+  get control() {
+    return this._control
+  }
 
   set order(order) {
     this._order = order
@@ -145,5 +152,8 @@ export class FermentationStep {
   }
   set days(days) {
     this._days = days
+  }
+  set control(control) {
+    this._control = control
   }
 }

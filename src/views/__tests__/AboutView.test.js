@@ -69,72 +69,66 @@ describe('AboutView', () => {
   })
 
   describe('License Section', () => {
-    it('should display MIT License heading', () => {
+    it('should display Dual License heading', () => {
       const wrapper = mount(AboutView)
-      expect(wrapper.text()).toContain('MIT License')
+      expect(wrapper.text()).toContain('Dual License')
     })
 
     it('should have h4 class for license heading', () => {
       const wrapper = mount(AboutView)
       const h4 = wrapper.find('.h4')
       expect(h4.exists()).toBe(true)
-      expect(h4.text()).toContain('MIT License')
+      expect(h4.text()).toContain('Dual License')
     })
 
     it('should display license text', () => {
       const wrapper = mount(AboutView)
-      expect(wrapper.text()).toContain('Permission is hereby granted')
+      expect(wrapper.text()).toContain('BrewLogger UI is available under two licenses')
     })
 
-    it('should include permission grant language', () => {
+    it('should include GPL v3 license information', () => {
       const wrapper = mount(AboutView)
-      expect(wrapper.text()).toContain('Permission is hereby granted')
-      expect(wrapper.text()).toContain('free of charge')
+      expect(wrapper.text()).toContain('GNU General Public License v3.0')
+      expect(wrapper.text()).toContain('GPL v3')
     })
 
-    it('should include conditions text', () => {
+    it('should include Commercial license information', () => {
       const wrapper = mount(AboutView)
-      expect(wrapper.text()).toContain('copyright notice')
-      expect(wrapper.text()).toContain('permission notice')
+      expect(wrapper.text()).toContain('Commercial License')
+      expect(wrapper.text()).toContain('company')
     })
 
-    it('should include warranty disclaimer', () => {
+    it('should mention personal/non-commercial use', () => {
       const wrapper = mount(AboutView)
-      expect(wrapper.text()).toContain('WITHOUT WARRANTY')
-      expect(wrapper.text()).toContain('IMPLIED')
+      expect(wrapper.text()).toContain('personal')
+      expect(wrapper.text()).toContain('non-commercial')
     })
 
-    it('should include liability disclaimer', () => {
+    it('should mention open source requirements', () => {
       const wrapper = mount(AboutView)
-      expect(wrapper.text()).toContain('LIABLE')
-      expect(wrapper.text()).toContain('ANY CLAIM')
+      expect(wrapper.text()).toContain('open source')
     })
 
-    it('should include reference to software dealings', () => {
+    it('should include contact information for commercial license', () => {
       const wrapper = mount(AboutView)
-      expect(wrapper.text()).toContain('IN CONNECTION WITH THE SOFTWARE')
+      expect(wrapper.text()).toContain('mpersson42')
+    })
+
+    it('should mention hobbyist distribution limits', () => {
+      const wrapper = mount(AboutView)
+      expect(wrapper.text()).toContain('100 units')
+    })
+
+    it('should reference LICENSE and LICENSE_COMMERCIAL files', () => {
+      const wrapper = mount(AboutView)
+      expect(wrapper.text()).toContain('LICENSE_COMMERCIAL')
     })
   })
 
   describe('License Permissions and Rights', () => {
-    it('should mention obtaining permission', () => {
+    it('should mention source code publication', () => {
       const wrapper = mount(AboutView)
-      expect(wrapper.text()).toContain('obtaining')
-    })
-
-    it('should mention use rights', () => {
-      const wrapper = mount(AboutView)
-      expect(wrapper.text()).toContain('without restriction')
-    })
-
-    it('should mention merge rights', () => {
-      const wrapper = mount(AboutView)
-      expect(wrapper.text()).toContain('merge')
-    })
-
-    it('should mention publish rights', () => {
-      const wrapper = mount(AboutView)
-      expect(wrapper.text()).toContain('publish')
+      expect(wrapper.text()).toContain('source code')
     })
 
     it('should mention modify rights', () => {
@@ -147,14 +141,9 @@ describe('AboutView', () => {
       expect(wrapper.text()).toContain('distribute')
     })
 
-    it('should mention sublicense rights', () => {
+    it('should mention publish rights', () => {
       const wrapper = mount(AboutView)
-      expect(wrapper.text()).toContain('sublicense')
-    })
-
-    it('should mention sell rights', () => {
-      const wrapper = mount(AboutView)
-      expect(wrapper.text()).toContain('sell copies')
+      expect(wrapper.text()).toContain('publish')
     })
   })
 
@@ -169,7 +158,7 @@ describe('AboutView', () => {
       const wrapper = mount(AboutView)
       const text = wrapper.text()
       const aboutIndex = text.indexOf('About - Brewlogger')
-      const licenseIndex = text.indexOf('MIT License')
+      const licenseIndex = text.indexOf('Dual License')
       expect(aboutIndex).toBeLessThan(licenseIndex)
     })
 
@@ -201,12 +190,11 @@ describe('AboutView', () => {
       const wrapper = mount(AboutView)
       const text = wrapper.text()
       const expectedPhrases = [
-        'Permission is hereby granted',
-        'copyright notice',
-        'THE SOFTWARE IS PROVIDED',
-        'WITHOUT WARRANTY',
-        'FITNESS',
-        'PARTICULAR PURPOSE'
+        'Dual License',
+        'GNU General Public License',
+        'Commercial License',
+        'source code',
+        'GPL v3'
       ]
       expectedPhrases.forEach((phrase) => {
         expect(text).toContain(phrase)

@@ -25,6 +25,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
         <tr>
           <th scope="col" class="col-1">Step</th>
           <th scope="col" class="col-2">Type</th>
+          <th scope="col" class="col-1">Control</th>
           <th scope="col" class="col-1">Temp</th>
           <th scope="col" class="col-1">Days</th>
           <th scope="col" class="col-1"></th>
@@ -34,6 +35,12 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
         <tr v-for="(step, index) in localSteps" :key="index">
           <td class="align-middle">{{ step.order + 1 }}</td>
           <td><input v-model="step.type" class="form-control form-control-sm" type="text" placeholder="e.g., Primary" />
+          </td>
+          <td>
+            <select v-model="step.control" class="form-control form-control-sm">
+              <option value="fridge">Fridge</option>
+              <option value="beer">Beer</option>
+            </select>
           </td>
           <td>
             <div class="input-group input-group-sm">
@@ -85,7 +92,8 @@ const toPlain = (step) => ({
   type: step.type ?? '',
   date: step.date ?? '',
   temp: step.temp ?? 0,
-  days: step.days ?? 1
+  days: step.days ?? 1,
+  control: step.control ?? 'fridge'
 })
 
 watch(
@@ -109,7 +117,8 @@ const addStep = () => {
     type: '',
     date: '',
     temp: 0,
-    days: 1
+    days: 1,
+    control: 'fridge'
   })
   syncToModel()
 }

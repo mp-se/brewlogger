@@ -29,21 +29,39 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
       devices and collect data from the devices for analysis and new feature development
     </p>
 
-    <p class="h4">MIT License</p>
+    <p class="h4">Dual License</p>
 
     <p class="fw-normal">
-      Permission is hereby granted, free of charge, to any person obtaining a copy of this software
-      and associated documentation files (the "Software"), to deal in the Software without
-      restriction, including without limitation the rights to use, copy, modify, merge, publish,
-      distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the
-      Software is furnished to do so, subject to the following conditions: The copyright notice and
-      this permission notice shall be included in all copies or substantial portions of the
-      Software. THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
-      INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
-      PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR
-      ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
-      ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-      SOFTWARE.
+      BrewLogger UI is available under two licenses:
+    </p>
+
+    <div class="alert alert-info">
+      <p class="fw-bold">License A — GNU General Public License v3.0 (GPL v3)</p>
+      <p class="fw-normal">
+        Use this license if you use, study, or modify the software for personal/non-commercial use,
+        or if you distribute the software and all modifications as open source under GPL v3.
+        Individual hobbyists may distribute up to 100 units per calendar year provided full source
+        code is published under GPL v3 and the original repository link is included.
+      </p>
+      <p class="fw-normal">
+        <strong>Obligation:</strong> You must publish your full source code under GPL v3.
+      </p>
+    </div>
+
+    <div class="alert alert-warning">
+      <p class="fw-bold">License B — Commercial License</p>
+      <p class="fw-normal">
+        You must obtain a Commercial License if you distribute this software in a product without
+        releasing your source code under GPL v3, if you are a company/business entity, if you
+        distribute more than 100 units per calendar year, or if you sell on marketplaces.
+      </p>
+      <p class="fw-normal">
+        <strong>Contact:</strong> mpersson42(at)gmail.com
+      </p>
+    </div>
+
+    <p class="fw-normal">
+      For complete license details, see the LICENSE and LICENSE_COMMERCIAL files in the repository.
     </p>
   </div>
 </template>

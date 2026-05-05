@@ -50,6 +50,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
             <tr>
               <th scope="col" class="col-1">Step</th>
               <th scope="col" class="col-2">Type</th>
+              <th scope="col" class="col-1">Control</th>
               <th scope="col" class="col-1">Temp</th>
               <th scope="col" class="col-1">Days</th>
               <th scope="col" class="col-3">Date</th>
@@ -59,6 +60,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
             <tr v-for="(step, index) in activeFermentationSteps" :key="index">
               <td>{{ step.order + 1 }}</td>
               <td>{{ step.type }}</td>
+              <td>{{ step.control }}</td>
               <td>{{ config.isTempF ? tempToF(step.temp).toFixed(1) : step.temp }}°{{ config.tempUnit }}</td>
               <td>{{ step.days }}</td>
               <td>{{ step.date }}</td>
@@ -84,6 +86,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
             <tr>
               <th scope="col" class="col-1">Step</th>
               <th scope="col" class="col-2">Type</th>
+              <th scope="col" class="col-1">Control</th>
               <th scope="col" class="col-1">Temp</th>
               <th scope="col" class="col-1">Days</th>
               <th scope="col" class="col-3">Date</th>
@@ -93,6 +96,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
             <tr v-for="(step, index) in fermentationSteps" :key="index">
               <td>{{ step.order + 1 }}</td>
               <td>{{ step.type }}</td>
+              <td>{{ step.control }}</td>
               <td>{{ config.isTempF ? tempToF(step.temp).toFixed(1) : step.temp }}°{{ config.tempUnit }}</td>
               <td>{{ step.days }}</td>
               <td>{{ step.date }}</td>
