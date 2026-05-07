@@ -6,6 +6,7 @@ services:
     restart: always
     environment:
      - API_KEY=akljnv13bvi2vfo0b0bw789jlljsdf
+     - API_HOST=brew_api:80
     networks:
       - brew_net
     ports:
@@ -25,8 +26,8 @@ services:
      - API_KEY=akljnv13bvi2vfo0b0bw789jlljsdf
      - DATABASE_URL=postgresql://postgres:password@brew_db:5432/app
      - REDIS_URL=brew_cache
-     - SELF_URL=http://brew_api:80
      - API_KEY_ENABLED=0
+     - SCHEDULER_ENABLED=0
      - BREWFATHER_API_KEY=
      - BREWFATHER_USER_KEY=
     depends_on:
@@ -43,7 +44,7 @@ services:
       - brew_net
 
   brew_db:
-    image: postgres:14
+    image: postgres:17
     hostname: brew_db
     restart: always
     #ports:
