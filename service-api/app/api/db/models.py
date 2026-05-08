@@ -17,6 +17,9 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
+"""SQLAlchemy ORM models for the BrewLogger database."""
+# pylint: disable=too-few-public-methods
+
 
 from typing import Any
 from datetime import datetime
@@ -36,6 +39,7 @@ Base: Any = declarative_base()
 
 
 class BrewLogger(Base):
+    """BrewLogger application settings and configuration."""
     __tablename__ = "brewlogger"
 
     id = Column(Integer, primary_key=True, index=True)
@@ -49,6 +53,7 @@ class BrewLogger(Base):
 
 
 class SystemLog(Base):
+    """System log entries for application events."""
     __tablename__ = "systemlog"
 
     id = Column(Integer, primary_key=True, index=True)
@@ -60,6 +65,7 @@ class SystemLog(Base):
 
 
 class Device(Base):
+    """Connected devices (Gravitymon, Chamber Controller, etc.)."""
     __tablename__ = "device"
 
     id = Column(Integer, primary_key=True, index=True)
@@ -81,6 +87,7 @@ class Device(Base):
 
 
 class FermentationStep(Base):
+    """A single step in a fermentation schedule."""
     __tablename__ = "fermentationstep"
 
     id = Column(Integer, primary_key=True, index=True, nullable=False)
@@ -97,18 +104,18 @@ class FermentationStep(Base):
 
 
 class Batch(Base):
+    """A brewing batch with associated measurements."""
     __tablename__ = "batch"
 
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String(40), nullable=False)
     chip_id_gravity = Column(String(6), nullable=False)
-    chip_id_pressure = Column(String(6), nullable=False) 
+    chip_id_pressure = Column(String(6), nullable=False)
     description = Column(String(80), nullable=False)
     active = Column(Boolean, nullable=False)
     tap_list = Column(Boolean, nullable=False)
 
     brew_date = Column(String, nullable=False)
-    description = Column(String, nullable=False)
     style = Column(String, nullable=False)
     brewer = Column(String, nullable=False)
     abv = Column(Float, default=0.0, nullable=False)
@@ -133,6 +140,7 @@ class Batch(Base):
 
 
 class Gravity(Base):
+    """Gravity measurement data from Gravitymon devices."""
     __tablename__ = "gravity"
 
     # Data from Gravitymon
@@ -163,6 +171,7 @@ class Gravity(Base):
 
 
 class Pressure(Base):
+    """Pressure measurement data from Ispindel devices."""
     __tablename__ = "pressure"
 
     id = Column(Integer, primary_key=True, index=True, nullable=False)
@@ -180,6 +189,7 @@ class Pressure(Base):
 
 
 class Pour(Base):
+    """Pour event data for tap tracking."""
     __tablename__ = "pour"
 
     id = Column(Integer, primary_key=True, index=True, nullable=False)
@@ -194,11 +204,10 @@ class Pour(Base):
 
 
 class ReceiveLog(Base):
+    """Log of received data from devices."""
     __tablename__ = "receivelog"
 
     id = Column(Integer, primary_key=True, index=True, nullable=False)
     ip_address = Column(String(45), nullable=False)
     timestamp = Column(DateTime, nullable=False, default=datetime.now)
     payload = Column(Text, nullable=False)
-
-

@@ -17,6 +17,8 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
+"""Pydantic schemas for request/response validation."""
+
 
 from datetime import datetime
 from typing import List, Optional
@@ -24,6 +26,7 @@ from pydantic import BaseModel, Field, ConfigDict, field_validator
 
 
 def to_camel(string: str) -> str:
+    """To camel."""
     if "_" not in string:
         return string
     words = string.split("_")
@@ -35,6 +38,7 @@ def to_camel(string: str) -> str:
 
 
 class ProxyRequest(BaseModel):
+    """Request model for device proxy calls."""
     url: str
     method: str
     body: Optional[str]
@@ -42,20 +46,24 @@ class ProxyRequest(BaseModel):
 
 
 class Mdns(BaseModel):
+    """mDNS service record."""
     type: str
     host: str
     name: str
 
 
 class Job(BaseModel):
+    """Background scheduler job status."""
     name: str
     nextRunIn: int
 
 class Cache(BaseModel):
+    """Cache entry key/value pair."""
     name: str
     value: str
 
 class SelfTestResult(BaseModel):
+    """Result of the self-test endpoint."""
     databaseConnection: bool
     redisConnection: bool
     backgroundJobs: List[str]
@@ -63,6 +71,7 @@ class SelfTestResult(BaseModel):
     ble: List[Cache]
 
 class BrewfatherBatch(BaseModel):
+    """Brewfather batch data."""
     name: str
     brewDate: str
     style: str
@@ -77,6 +86,7 @@ class BrewfatherBatch(BaseModel):
 
 
 class TapListBatch(BaseModel):
+    """Batch data for tap list display."""
     name: str
     brewDate: str
     style: str
@@ -91,6 +101,7 @@ class TapListBatch(BaseModel):
 
 
 class BrewLoggerBase(BaseModel):
+    """Base schema for BrewLogger settings."""
     model_config = ConfigDict(alias_generator=to_camel, populate_by_name=True)
 
     temperature_format: str = Field(
@@ -115,14 +126,15 @@ class BrewLoggerBase(BaseModel):
 
 
 class BrewLoggerUpdate(BrewLoggerBase):
-    pass
+    """Schema for updating BrewLogger settings."""
 
 
 class BrewLoggerCreate(BrewLoggerBase):
-    pass
+    """Schema for creating BrewLogger settings."""
 
 
 class BrewLogger(BrewLoggerCreate):
+    """Full BrewLogger settings schema with ID."""
     model_config = ConfigDict(from_attributes=True)
     id: int
 
@@ -133,6 +145,7 @@ class BrewLogger(BrewLoggerCreate):
 
 
 class SystemLogBase(BaseModel):
+    """Base schema for system log entries."""
     model_config = ConfigDict(alias_generator=to_camel, populate_by_name=True)
     message: str
     module: str
@@ -141,19 +154,22 @@ class SystemLogBase(BaseModel):
 
 
 class SystemLogUpdate(SystemLogBase):
-    pass
+    """Schema for updating a system log entry."""
 
 
 class SystemLogCreate(SystemLogBase):
+    """Schema for creating a system log entry."""
     timestamp: datetime
 
 
 class SystemLog(SystemLogCreate):
+    """Full system log schema with ID."""
     model_config = ConfigDict(from_attributes=True)
     id: int
 
 
 class SystemLogPaginatedResponse(BaseModel):
+    """Paginated response for system logs."""
     model_config = ConfigDict(alias_generator=to_camel, populate_by_name=True)
     total: int = Field(description="Total number of records")
     skip: int = Field(description="Number of records skipped")
@@ -165,6 +181,7 @@ class SystemLogPaginatedResponse(BaseModel):
 
 
 class FermentationStepBase(BaseModel):
+    """Base schema for a fermentation step."""
     model_config = ConfigDict(alias_generator=to_camel, populate_by_name=True)
 
     date: str = Field(min_length=0, max_length=20, description="Date this step starts")
@@ -173,17 +190,22 @@ class FermentationStepBase(BaseModel):
     days: int = Field(description="Number of days")
     name: str = Field(min_length=0, max_length=30, description="Name of the step")
     type: str = Field(min_length=0, max_length=30, description="Type of the step")
-    control: str = Field(min_length=0, max_length=10, description="Control method, fridge, beer or other")
+    control: str = Field(
+        min_length=0, max_length=10,
+        description="Control method, fridge, beer or other"
+    )
 
 class FermentationStepUpdate(FermentationStepBase):
-    pass
+    """Schema for updating a fermentation step."""
 
 
 class FermentationStepCreate(FermentationStepBase):
+    """Schema for creating a fermentation step."""
     device_id: int
 
 
 class FermentationStep(FermentationStepCreate):
+    """Full fermentation step schema with ID."""
     model_config = ConfigDict(from_attributes=True)
     id: int
 
@@ -192,6 +214,7 @@ class FermentationStep(FermentationStepCreate):
 
 
 class DeviceBase(BaseModel):
+    """Base schema for a device."""
     model_config = ConfigDict(alias_generator=to_camel, populate_by_name=True)
     chip_family: str = Field(
         min_length=0, max_length=10, description="Name of the chip type"
@@ -220,16 +243,18 @@ class DeviceBase(BaseModel):
 
 
 class DeviceUpdate(DeviceBase):
-    pass
+    """Schema for updating a device."""
 
 
 class DeviceCreate(DeviceBase):
+    """Schema for creating a device."""
     chip_id: str = Field(
         min_length=6, max_length=6, description="Chip id, must be 6 characters"
     )
 
 
 class Device(DeviceCreate):
+    """Full device schema with ID and fermentation steps."""
     model_config = ConfigDict(from_attributes=True)
     id: int
     fermentation_step: List[FermentationStep] = None
@@ -239,16 +264,23 @@ class Device(DeviceCreate):
 
 
 class GravityBase(BaseModel):
+    """Base schema for gravity measurements."""
     model_config = ConfigDict(alias_generator=to_camel, populate_by_name=True)
 
     temperature: Optional[float] = Field(None, description="Temperature value in C")
     gravity: float = Field(description="Calculated gravity in SG")
-    velocity: Optional[float] = Field(None, description="Gravity velocity, points per day")
+    velocity: Optional[float] = Field(
+        None, description="Gravity velocity, points per day"
+    )
     angle: float = Field(description="Tilt or angle of the device")
     battery: float = Field(description="Battery voltage")
     rssi: float = Field(description="WIFI signal strenght")
-    corr_gravity: Optional[float] = Field(None, description="Temperature corrected gravity")
-    run_time: Optional[float] = Field(None, description="Number of seconds the execution took")
+    corr_gravity: Optional[float] = Field(
+        None, description="Temperature corrected gravity"
+    )
+    run_time: Optional[float] = Field(
+        None, description="Number of seconds the execution took"
+    )
     created: Optional[datetime] | None = Field(
         default=None, description="If undefined the current time will be used"
     )
@@ -256,7 +288,8 @@ class GravityBase(BaseModel):
         description="If the gravity is active or not, active = shown in graphs"
     )
     chamber_temperature: Optional[float] = Field(
-        None, description="Chamber Temperature from Chamber Controller, value in C"
+        None,
+        description="Chamber Temperature from Chamber Controller, value in C"
     )
     beer_temperature: Optional[float] = Field(
         None, description="Beer Temperature from Chamber Controller, value in C"
@@ -264,20 +297,23 @@ class GravityBase(BaseModel):
 
 
 class GravityUpdate(GravityBase):
-    pass
+    """Schema for updating a gravity record."""
 
 
 class GravityCreate(GravityBase):
+    """Schema for creating a gravity record."""
     batch_id: int
 
 
 class Gravity(GravityCreate):
+    """Full gravity schema with ID."""
     model_config = ConfigDict(from_attributes=True)
     id: int
 
 
 # Used for the latest api and main dashboard
 class GravityLatest(Gravity):
+    """Latest gravity reading with batch info."""
     batch_name: str = Field(description="Name of the parent batch")
     chip_id_gravity: str = Field(description="Chip ID for gravity from parent batch")
 
@@ -286,6 +322,7 @@ class GravityLatest(Gravity):
 
 
 class PressureBase(BaseModel):
+    """Base schema for pressure measurements."""
     model_config = ConfigDict(alias_generator=to_camel, populate_by_name=True)
 
     temperature: Optional[float] = Field(None, description="Temperature value in C")
@@ -293,7 +330,9 @@ class PressureBase(BaseModel):
     pressure1: Optional[float] = Field(None, description="Measured pressure1 in kPa")
     battery: Optional[float] = Field(None, description="Battery voltage")
     rssi: float = Field(description="WIFI signal strenght")
-    run_time: Optional[float] = Field(None, description="Number of seconds the execution took")
+    run_time: Optional[float] = Field(
+        None, description="Number of seconds the execution took"
+    )
     created: Optional[datetime] | None = Field(
         default=None, description="If undefined the current time will be used"
     )
@@ -303,19 +342,22 @@ class PressureBase(BaseModel):
 
 
 class PressureUpdate(PressureBase):
-    pass
+    """Schema for updating a pressure record."""
 
 
 class PressureCreate(PressureBase):
+    """Schema for creating a pressure record."""
     batch_id: int
 
 
 class Pressure(PressureCreate):
+    """Full pressure schema with ID."""
     model_config = ConfigDict(from_attributes=True)
     id: int
 
 
 class PressureLatest(Pressure):
+    """Latest pressure reading with batch info."""
     batch_name: str = Field(description="Name of the parent batch")
     chip_id_pressure: str = Field(description="Chip ID for pressure from parent batch")
 
@@ -324,6 +366,7 @@ class PressureLatest(Pressure):
 
 
 class PourBase(BaseModel):
+    """Base schema for pour events."""
     model_config = ConfigDict(alias_generator=to_camel, populate_by_name=True)
     pour: float = Field(description="How much was poured from the device in liters")
     volume: float = Field(description="Volume left in the device in liters")
@@ -339,19 +382,22 @@ class PourBase(BaseModel):
 
 
 class PourUpdate(PourBase):
-    pass
+    """Schema for updating a pour record."""
 
 
 class PourCreate(PourBase):
+    """Schema for creating a pour record."""
     batch_id: int
 
 
 class Pour(PourCreate):
+    """Full pour schema with ID."""
     model_config = ConfigDict(from_attributes=True)
     id: int
 
 
 class PourLatest(Pour):
+    """Latest pour reading with batch info."""
     batch_name: str = Field(description="Name of the parent batch")
 
 
@@ -360,6 +406,7 @@ class PourLatest(Pour):
 
 
 class BatchBase(BaseModel):
+    """Base schema for a brewing batch."""
     model_config = ConfigDict(alias_generator=to_camel, populate_by_name=True)
     name: str = Field(
         min_length=0, max_length=40, description="Short name of the batch"
@@ -377,6 +424,7 @@ class BatchBase(BaseModel):
     @field_validator("chip_id_gravity")
     @classmethod
     def validate_gravity_chip_id(cls, v: str) -> str:
+        """Validate gravity chip id."""
         if len(v) != 0 and len(v) != 6:
             raise ValueError("chip_id_gravity must be zero or 6 characters long")
         return v
@@ -384,8 +432,9 @@ class BatchBase(BaseModel):
     @field_validator("chip_id_pressure")
     @classmethod
     def validate_pressure_chip_id(cls, v: str) -> str:
+        """Validate pressure chip id."""
         if len(v) != 0 and len(v) != 6:
-            raise ValueError("chip_id_gravity must be zero or 6 characters long")
+            raise ValueError("chip_id_pressure must be zero or 6 characters long")
         return v
 
     active: bool = Field(
@@ -400,10 +449,18 @@ class BatchBase(BaseModel):
     abv: float = Field(description="Alcohol level of the batch")
     ebc: float = Field(description="Color of the batch")
     ibu: float = Field(description="Bitterness of the batch")
-    fg: float = Field(default=0.0, description="Estimated Final gravity of the batch") # New 1.1
-    og: float = Field(default=0.0, description="Estimated Original gravity of the batch") # New 1.1
-    prediction_hours_left: float = Field(default=0.0, description="Estimated hours to completion") # New 1.1
-    prediction_at_timestamp: Optional[datetime] = Field(default=None, description="Timestamp when prediction was made") # New 1.1
+    fg: float = Field(
+        default=0.0, description="Estimated Final gravity of the batch"
+    )  # New 1.1
+    og: float = Field(
+        default=0.0, description="Estimated Original gravity of the batch"
+    )  # New 1.1
+    prediction_hours_left: float = Field(
+        default=0.0, description="Estimated hours to completion"
+    )  # New 1.1
+    prediction_at_timestamp: Optional[datetime] = Field(
+        default=None, description="Timestamp when prediction was made"
+    )  # New 1.1
     brewfather_id: str = Field(
         min_length=0, max_length=30, description="ID used in brewfather"
     )
@@ -417,16 +474,18 @@ class BatchBase(BaseModel):
 
 
 class BatchUpdate(BatchBase):
-    pass
+    """Schema for updating a batch."""
 
 
 class BatchCreate(BatchBase):
+    """Schema for creating a batch."""
     name: str = Field(
         min_length=0, max_length=40, description="Short name of the batch"
     )
 
 
 class Batch(BatchCreate):
+    """Full batch schema with ID and related data."""
     model_config = ConfigDict(from_attributes=True)
     id: int
     gravity: List[Gravity] = None
@@ -435,18 +494,28 @@ class Batch(BatchCreate):
 
 
 class BatchList(BatchBase):
-    model_config = ConfigDict(from_attributes=True, alias_generator=to_camel, populate_by_name=True)
+    """Batch summary for list views with counts."""
+    model_config = ConfigDict(
+        from_attributes=True, alias_generator=to_camel, populate_by_name=True
+    )
     id: int
     gravity_count: int = Field(default=0, description="Count of gravity readings")
     pressure_count: int = Field(default=0, description="Count of pressure readings")
     pour_count: int = Field(default=0, description="Count of pour readings")
     last_pour_volume: Optional[float] = Field(None, description="Latest pour volume")
-    last_pour_max_volume: Optional[float] = Field(None, description="Latest pour max volume")
-    prediction_hours_left: float = Field(default=0.0, description="Estimated hours to completion")
-    prediction_at_timestamp: Optional[datetime] = Field(default=None, description="Timestamp when prediction was made")
+    last_pour_max_volume: Optional[float] = Field(
+        None, description="Latest pour max volume"
+    )
+    prediction_hours_left: float = Field(
+        default=0.0, description="Estimated hours to completion"
+    )
+    prediction_at_timestamp: Optional[datetime] = Field(
+        default=None, description="Timestamp when prediction was made"
+    )
 
 
 class BatchDashboard(BaseModel):
+    """Batch data for dashboard display."""
     model_config = ConfigDict(alias_generator=to_camel, populate_by_name=True)
     id: int
     name: str = Field(
@@ -462,6 +531,7 @@ class BatchDashboard(BaseModel):
     @field_validator("chip_id_gravity")
     @classmethod
     def validate_gravity_chip_id(cls, v: str) -> str:
+        """Validate gravity chip id."""
         if len(v) != 0 and len(v) != 6:
             raise ValueError("chip_id_gravity must be zero or 6 characters long")
         return v
@@ -469,6 +539,7 @@ class BatchDashboard(BaseModel):
     @field_validator("chip_id_pressure")
     @classmethod
     def validate_pressure_chip_id(cls, v: str) -> str:
+        """Validate pressure chip id."""
         if len(v) != 0 and len(v) != 6:
             raise ValueError("chip_id_pressure must be zero or 6 characters long")
         return v
@@ -479,32 +550,40 @@ class BatchDashboard(BaseModel):
     gravity: List[Gravity] = None
     pressure: List[Pressure] = None
     pour: List[Pour] = None
-    prediction_hours_left: float = Field(default=0.0, description="Estimated hours to completion")
-    prediction_at_timestamp: Optional[datetime] = Field(default=None, description="Timestamp when prediction was made")
+    prediction_hours_left: float = Field(
+        default=0.0, description="Estimated hours to completion"
+    )
+    prediction_at_timestamp: Optional[datetime] = Field(
+        default=None, description="Timestamp when prediction was made"
+    )
 
 ################################################################################
 
 
 class ReceiveLogBase(BaseModel):
+    """Base schema for receive log entries."""
     model_config = ConfigDict(alias_generator=to_camel, populate_by_name=True)
     ip_address: str = Field(description="IP address of the client")
     payload: str = Field(description="JSON payload received as string")
 
 
 class ReceiveLogCreate(ReceiveLogBase):
-    pass
+    """Schema for creating a receive log entry."""
 
 
 class ReceiveLog(ReceiveLogBase):
-    model_config = ConfigDict(from_attributes=True, alias_generator=to_camel, populate_by_name=True)
+    """Full receive log schema with ID and timestamp."""
+    model_config = ConfigDict(
+        from_attributes=True, alias_generator=to_camel, populate_by_name=True
+    )
     id: int
     timestamp: datetime = Field(description="Timestamp when the request was received")
 
 
 class ReceiveLogPaginatedResponse(BaseModel):
+    """Paginated response for receive logs."""
     model_config = ConfigDict(alias_generator=to_camel, populate_by_name=True)
     total: int = Field(description="Total number of records")
     skip: int = Field(description="Number of records skipped")
     limit: int = Field(description="Number of records returned")
     data: List[ReceiveLog] = Field(description="List of receive logs")
-

@@ -17,6 +17,9 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
+# pylint: disable=duplicate-code
+"""Tests for the system endpoints."""
+
 
 import json
 from datetime import datetime
@@ -29,25 +32,26 @@ headers = {
 }
 
 
-def test_init(app_client):
+def test_init():
+    """Test init."""
     truncate_database()
 
 
 def test_self_test_endpoint(app_client):
     """Test the self-test endpoint"""
-    test_init(app_client)
-    
+    test_init()
+
     r = app_client.get("/api/system/self_test/", headers=headers)
     assert r.status_code == 200
     data = json.loads(r.text)
-    
+
     # Verify response structure
     assert "databaseConnection" in data
     assert "redisConnection" in data
     assert "backgroundJobs" in data
     assert "log" in data
     assert "ble" in data
-    
+
     # Check types
     assert isinstance(data["databaseConnection"], bool)
     assert isinstance(data["redisConnection"], bool)
@@ -58,24 +62,24 @@ def test_self_test_endpoint(app_client):
 
 def test_scheduler_status_endpoint(app_client):
     """Test the scheduler status endpoint"""
-    test_init(app_client)
-    
+    test_init()
+
     r = app_client.get("/api/system/scheduler/", headers=headers)
     assert r.status_code == 200
     data = json.loads(r.text)
-    
+
     # Should be a list of jobs
     assert isinstance(data, list)
 
 
 def test_system_log_get_all(app_client):
     """Test getting all system logs"""
-    test_init(app_client)
-    
+    test_init()
+
     r = app_client.get("/api/system/log/", headers=headers)
     assert r.status_code == 200
     data = json.loads(r.text)
-    
+
     # Should be a paginated response
     assert isinstance(data, dict)
     assert "data" in data
@@ -87,16 +91,16 @@ def test_system_log_get_all(app_client):
 
 def test_system_log_get_by_id_not_found(app_client):
     """Test getting system log by ID that doesn't exist"""
-    test_init(app_client)
-    
+    test_init()
+
     r = app_client.get("/api/system/log/999999", headers=headers)
     assert r.status_code == 404
 
 
 def test_system_log_add(app_client):
     """Test adding a system log entry"""
-    test_init(app_client)
-    
+    test_init()
+
     log_data = {
         "message": "Test system log message",
         "module": "test_module",
@@ -104,11 +108,11 @@ def test_system_log_add(app_client):
         "logLevel": 1,
         "timestamp": datetime.now().isoformat(),
     }
-    
+
     r = app_client.post("/api/system/log/", json=log_data, headers=headers)
     assert r.status_code == 201
     data = json.loads(r.text)
-    
+
     # Verify response contains ID
     assert "id" in data
     assert data["message"] == "Test system log message"
@@ -117,10 +121,10 @@ def test_system_log_add(app_client):
 
 def test_system_log_add_different_levels(app_client):
     """Test adding system logs with different log levels"""
-    test_init(app_client)
-    
+    test_init()
+
     levels = [0, 1, 2, 3, 4]  # Different severity levels
-    
+
     for level in levels:
         log_data = {
             "message": f"Test level {level} message",
@@ -129,7 +133,7 @@ def test_system_log_add_different_levels(app_client):
             "logLevel": level,
             "timestamp": datetime.now().isoformat(),
         }
-        
+
         r = app_client.post("/api/system/log/", json=log_data, headers=headers)
         assert r.status_code == 201
         data = json.loads(r.text)
@@ -138,10 +142,10 @@ def test_system_log_add_different_levels(app_client):
 
 def test_system_log_add_different_modules(app_client):
     """Test adding system logs from different modules"""
-    test_init(app_client)
-    
+    test_init()
+
     modules = ["api", "scheduler", "cache", "ws", "device"]
-    
+
     for module in modules:
         log_data = {
             "message": f"Log from {module}",
@@ -150,7 +154,7 @@ def test_system_log_add_different_modules(app_client):
             "logLevel": 1,
             "timestamp": datetime.now().isoformat(),
         }
-        
+
         r = app_client.post("/api/system/log/", json=log_data, headers=headers)
         assert r.status_code == 201
         data = json.loads(r.text)
@@ -159,8 +163,8 @@ def test_system_log_add_different_modules(app_client):
 
 def test_system_log_with_limit(app_client):
     """Test getting system logs with limit parameter"""
-    test_init(app_client)
-    
+    test_init()
+
     # Add multiple logs
     for i in range(5):
         log_data = {
@@ -172,7 +176,7 @@ def test_system_log_with_limit(app_client):
         }
         r = app_client.post("/api/system/log/", json=log_data, headers=headers)
         assert r.status_code == 201
-    
+
     # Get with limit=2
     r = app_client.get("/api/system/log/?limit=2", headers=headers)
     assert r.status_code == 200
@@ -183,14 +187,13 @@ def test_system_log_with_limit(app_client):
 
 def test_system_mdns_post(app_client):
     """Test posting MDNS entry"""
-    test_init(app_client)
-    
+    test_init()
+
     mdns_data = {
         "name": "test_device",
         "type": "_http._tcp",
         "host": "192.168.1.100",
     }
-    
+
     r = app_client.post("/api/system/mdns", json=mdns_data, headers=headers)
     assert r.status_code == 201
-

@@ -74,7 +74,7 @@ async def dispatch_post_to_correct_endpoint(
                 return Response(content=response.content, status_code=200)
 
     except (KeyError, JSONDecodeError) as e:
-        logging.error(e)
+        logger.error(e)
         raise HTTPException(status_code=422, detail="Unable to parse request") from e
 
     raise HTTPException(status_code=400, detail="Format not recognized")

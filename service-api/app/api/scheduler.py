@@ -148,25 +148,29 @@ async def task_forward_gravity():
             async with httpx.AsyncClient(timeout=timeout) as client:
                 logger.info("Request using get %s", url)
                 res = await client.post(url, headers=headers, data=json.dumps(value))
-                logger.info("Reqeust to %s returned code %s", url, res.status_code)
+                logger.info("Request to %s returned code %s", url, res.status_code)
                 if res.status_code == 200:
                     successful_count += 1
                 delete_key(k)
 
         except httpx.ReadTimeout:
-            system_log_scheduler(f"Failed to forward gravity to {url}, ReadTimeout", error_code=0, log_level=LogLevel.ERROR)
+            msg = f"Failed to forward gravity to {url}, ReadTimeout"
+            system_log_scheduler(msg, error_code=0, log_level=LogLevel.ERROR)
             logger.error("Unable to connect to device %s", url)
         except httpx.ConnectError:
-            system_log_scheduler(f"Failed to forward gravity to {url}, ConnectError", error_code=0, log_level=LogLevel.ERROR)
+            msg = f"Failed to forward gravity to {url}, ConnectError"
+            system_log_scheduler(msg, error_code=0, log_level=LogLevel.ERROR)
             logger.error("Unable to read from device %s", url)
         except httpx.ConnectTimeout:
+            msg = f"Failed to forward gravity to {url}, ConnectTimeout"
             system_log_scheduler(
-                f"Failed to forward gravity to {url}, ConnectTimeout", error_code=0, log_level=LogLevel.ERROR
+                msg, error_code=0, log_level=LogLevel.ERROR
             )
             logger.error("Unable to connect to device %s", url)
         except httpx.RequestError as e:
+            msg = f"Failed to forward gravity to {url}, Unknown error {e}"
             system_log_scheduler(
-                f"Failed to forward gravity to {url}, Uknown error {e}", error_code=0, log_level=LogLevel.ERROR
+                msg, error_code=0, log_level=LogLevel.ERROR
             )
             logger.error("Unknown exception %s", e)
 

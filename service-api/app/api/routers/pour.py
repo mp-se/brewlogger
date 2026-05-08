@@ -186,15 +186,21 @@ async def create_pour_using_kegmon_format(
             batch_id = int(req_json["id"])
         except (KeyError, ValueError) as e:
             logger.error("Invalid batch ID: %s", e)
-            system_log("pour", f"Invalid batch ID in request: {req_json.get('id')}", error_code=400, log_level=LogLevel.WARNING)
+            system_log(
+                "pour", f"Invalid batch ID in request: {req_json.get('id')}",
+                error_code=400, log_level=LogLevel.WARNING
+            )
             raise HTTPException(status_code=400, detail="Invalid batch ID") from e
-        
+
         logger.info("Looking up batch with ID: %s", batch_id)
         batch = batch_service.get(batch_id)
-        
+
         if batch is None:
             logger.warning("No batch found for batch ID %s", batch_id)
-            system_log("pour", f"No batch found for batch ID {batch_id}", error_code=404, log_level=LogLevel.WARNING)
+            system_log(
+                "pour", f"No batch found for batch ID {batch_id}",
+                error_code=404, log_level=LogLevel.WARNING
+            )
             raise HTTPException(status_code=409, detail="No batch found")
 
         pour_list = pour_service.search_by_batch_id(batch.id)
@@ -226,5 +232,9 @@ async def create_pour_using_kegmon_format(
 
     except (KeyError, JSONDecodeError) as e:
         logging.error(e)
-        system_log("pour", f"Failed to parse pour data: {type(e).__name__}", error_code=0, log_level=LogLevel.ERROR)
+        system_log(
+            "pour",
+            f"Failed to parse pour data: {type(e).__name__}",
+            error_code=0, log_level=LogLevel.ERROR
+        )
         raise HTTPException(status_code=422, detail="Unable to parse request") from e

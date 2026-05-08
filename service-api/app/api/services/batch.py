@@ -122,9 +122,9 @@ class BatchService(BaseService[models.Batch, schemas.BatchCreate, schemas.BatchU
         )
         return objs
 
-    def update_prediction(self, batch_id: int):
+    def update_prediction(self, batch_id: int):  # pylint: disable=too-many-locals
         """Update fermentation prediction for a batch."""
-        from predict.predict_python import BrewloggerPredictor  # pylint: disable=import-outside-toplevel
+        from predict.predict_python import BrewloggerPredictor  # pylint: disable=import-outside-toplevel,too-many-locals
         from .gravity import GravityService  # pylint: disable=import-outside-toplevel
         from api.ws import notify_clients  # pylint: disable=import-outside-toplevel
         import asyncio  # pylint: disable=import-outside-toplevel

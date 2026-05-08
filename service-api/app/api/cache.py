@@ -50,7 +50,6 @@ def delete_key(key: str | bytes) -> None:
         r.delete(key)
     except redis.exceptions.ConnectionError as e:
         logger.error("Failed to connect with redis %s.", e)
-    return
 
 
 def find_key(key: str) -> list[bytes]:

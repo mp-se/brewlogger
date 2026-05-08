@@ -67,7 +67,7 @@ class FermentationStepService(
             )
 
         device = self.db_session.get(models.Device, lst[0].device_id)
-        logger.info("Searching for batch with id=%s %s", lst[0].device_id, device)
+        logger.info("Searching for device with id=%s %s", lst[0].device_id, device)
         if device is None:
             raise HTTPException(
                 status_code=400,

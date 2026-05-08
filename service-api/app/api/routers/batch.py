@@ -213,7 +213,10 @@ async def update_batch_by_id(
     updated_batch = batch_service.update(batch_id, batch)
     if updated_batch is None:
         raise HTTPException(status_code=404, detail="Batch not found")
-    system_log("batch", f"Batch {updated_batch.name} updated", error_code=0, log_level=LogLevel.INFO)
+    system_log(
+        "batch", f"Batch {updated_batch.name} updated",
+        error_code=0, log_level=LogLevel.INFO
+    )
     background_tasks.add_task(notify_clients, "batch", "update", batch_id)
     return updated_batch
 
@@ -232,4 +235,3 @@ async def delete_batch_by_id(
     system_log("batch", f"Batch {batch.name} deleted", error_code=0, log_level=LogLevel.INFO)
     batch_service.delete(batch_id)
     background_tasks.add_task(notify_clients, "batch", "delete", batch_id)
-

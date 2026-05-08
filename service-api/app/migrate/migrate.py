@@ -17,59 +17,65 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
+# pylint: disable=duplicate-code
 
+"""Database schema migration management for BrewLogger."""
+import logging
 import time
-from sqlalchemy import text
-from sqlalchemy.exc import OperationalError, ProgrammingError, InternalError
 from pydantic_settings import BaseSettings
-from starlette.config import Config
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, text
+from sqlalchemy.exc import OperationalError, ProgrammingError, InternalError
 from sqlalchemy.orm import scoped_session, sessionmaker
-from psycopg2.errors import UndefinedTable
+from starlette.config import Config
 
+logger = logging.getLogger(__name__)
 config = Config()
 
 
 class Settings(BaseSettings):
+    """Application settings loaded from environment."""
     database_url: str = config(
         "DATABASE_URL", cast=str, default="sqlite:///./brewlogger.sqlite"
     )
 
 
 def get_settings() -> Settings:
+    """Get settings."""
     settings = Settings()
     return settings
 
 
-def create_session() -> scoped_session:
-    print("Creating database session.")
-    Session = scoped_session(
-        sessionmaker(autocommit=False, autoflush=False, bind=engine)
+def create_session(db_engine) -> scoped_session:
+    """Create session."""
+    logger.info("Creating database session.")
+    Session = scoped_session(  # pylint: disable=invalid-name
+        sessionmaker(autocommit=False, autoflush=False, bind=db_engine)
     )
     return Session
 
 
-def migrate_database():
+def migrate_database(db_engine):
+    """Migrate database."""
     if get_settings().database_url.startswith("sqlite:"):
-        print("Running on sqlite so we skip trying to migrate")
+        logger.info("Running on sqlite so we skip trying to migrate")
         return
 
-    connectionReady = False
+    connection_ready = False
 
-    while not connectionReady:
-        with engine.connect() as con:
+    while not connection_ready:
+        with db_engine.connect() as con:
             try:
                 print("Checking for database to update")
                 con.execute(text("SELECT * FROM brewlogger"))
                 con.commit()
-                connectionReady = True
+                connection_ready = True
             except OperationalError:
                 con.rollback()
-            except UndefinedTable:
+            except ProgrammingError:
                 con.rollback()
                 print("Table does not exist, database not initialized yet, exiting.")
                 return
-            except Exception:
+            except InternalError:
                 con.rollback()
                 print(
                     "Unable to search database, probably not created so there is nothing to update."
@@ -146,11 +152,14 @@ def migrate_database():
         "ALTER TABLE pressure ALTER COLUMN pressure1 DROP NOT NULL",
         "ALTER TABLE pressure ALTER COLUMN battery DROP NOT NULL",
         "ALTER TABLE pressure ALTER COLUMN run_time DROP NOT NULL",
-        "CREATE TABLE IF NOT EXISTS receivelog (id SERIAL PRIMARY KEY, ip_address VARCHAR(45) NOT NULL, timestamp TIMESTAMP NOT NULL, payload TEXT NOT NULL)",
+        "CREATE TABLE IF NOT EXISTS receivelog ("
+        "    id SERIAL PRIMARY KEY, ip_address VARCHAR(45) NOT NULL,"
+        "    timestamp TIMESTAMP NOT NULL, payload TEXT NOT NULL"
+        ")",
         "ALTER TABLE systemlog ADD COLUMN log_level INTEGER DEFAULT 3",
         "UPDATE systemlog SET log_level = 3 WHERE log_level IS NULL",
         "ALTER TABLE systemlog ALTER COLUMN log_level SET NOT NULL",
-        # Changes from v1.0 -> v1.1 
+        # Changes from v1.0 -> v1.1
         "ALTER TABLE batch ADD COLUMN fg FLOAT",
         "UPDATE batch SET fg = 0 WHERE fg IS NULL",
         "ALTER TABLE batch ALTER COLUMN fg SET NOT NULL",
@@ -166,7 +175,7 @@ def migrate_database():
         "ALTER TABLE fermentationstep ALTER COLUMN control SET NOT NULL",
     ]
 
-    with engine.connect() as con:
+    with db_engine.connect() as con:
         for db_update in db_updates:
             try:
                 print(f"Success running SQL {db_update}")
@@ -189,4 +198,4 @@ if __name__ == "__main__":
         print("This migration script will only work for Postgresx exiting...")
     else:
         engine = create_engine(db_url, pool_pre_ping=True)  # POSTGRES
-        migrate_database()
+        migrate_database(engine)

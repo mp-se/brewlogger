@@ -25,7 +25,8 @@ from fastapi.routing import APIRouter
 from starlette.exceptions import HTTPException
 from api.services import BrewLoggerService, get_brewlogger_service
 from api.db import schemas
-from ..security import api_key_auth, get_settings
+from ..config import get_settings
+from ..security import api_key_auth
 from ..log import system_log, LogLevel
 from ..ws import notify_clients
 

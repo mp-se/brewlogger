@@ -17,8 +17,9 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
+"""Tests for the settings/configuration endpoints."""
 
-import json
+
 from api.config import get_settings
 from api.utils import load_settings
 from .conftest import truncate_database
@@ -29,7 +30,7 @@ headers = {
 }
 
 
-def test_init(app_client):
+def test_init():
     """Initialize database for setting tests"""
     truncate_database()
     # Ensure the default settings record is created
@@ -38,8 +39,8 @@ def test_init(app_client):
 
 def test_get_config_requires_auth(app_client):
     """Test that GET /api/config/ requires authentication"""
-    test_init(app_client)
-    
+    test_init()
+
     # Try with invalid API key
     bad_headers = {
         "Authorization": "Bearer invalid_key",
@@ -51,13 +52,13 @@ def test_get_config_requires_auth(app_client):
 
 def test_patch_config_requires_auth(app_client):
     """Test that PATCH /api/config/{id} requires authentication"""
-    test_init(app_client)
-    
+    test_init()
+
     bad_headers = {
         "Authorization": "Bearer invalid_key",
         "Content-Type": "application/json",
     }
-    
+
     update_data = {
         "temperatureFormat": "F",
         "pressureFormat": "ps",
@@ -67,15 +68,15 @@ def test_patch_config_requires_auth(app_client):
         "darkMode": True,
         "version": "1.0.0",
     }
-    
+
     r = app_client.patch("/api/config/1", json=update_data, headers=bad_headers)
     assert r.status_code == 401
 
 
 def test_get_config_successful(app_client):
     """Test successful GET of the single config record"""
-    test_init(app_client)
-    
+    test_init()
+
     # With valid auth, should return the single BrewLogger config
     r = app_client.get("/api/config/", headers=headers)
     assert r.status_code == 200
@@ -86,8 +87,8 @@ def test_get_config_successful(app_client):
 
 def test_patch_config_successful(app_client):
     """Test successful PATCH of the single config record"""
-    test_init(app_client)
-    
+    test_init()
+
     # Patch the config with valid auth
     update_data = {
         "temperatureFormat": "C",
@@ -98,13 +99,7 @@ def test_patch_config_successful(app_client):
         "darkMode": False,
         "version": "1.0.0",
     }
-    
+
     r = app_client.patch("/api/config/1", json=update_data, headers=headers)
     # Should succeed with 200 or 204
     assert r.status_code in [200, 204]
-
-
-
-
-
-

@@ -44,7 +44,7 @@ router = APIRouter(prefix="/api/system")
 @router.get("/self_test/", response_model=schemas.SelfTestResult)
 async def self_test() -> schemas.SelfTestResult:
     """Perform system self-test checking database, redis, and scheduler connectivity.
-    
+
     Returns:
         SelfTestResult containing status of all system components
     """
@@ -100,7 +100,7 @@ async def self_test() -> schemas.SelfTestResult:
 @router.get("/scheduler/", response_model=List[schemas.Job])
 async def scheduler_status() -> List[schemas.Job]:
     """Get status of all scheduled background jobs with next run times.
-    
+
     Returns:
         List of scheduled jobs with their names and next run times
     """
@@ -131,14 +131,14 @@ async def system_log(
 ) -> schemas.SystemLogPaginatedResponse:
     """Retrieve system logs with pagination support."""
     logger.info("Endpoint GET /api/system/log/ (skip=%d, limit=%d)", skip, limit)
-    
+
     try:
         session = create_session()
         total = session.query(models.SystemLog).count()
         records = session.query(models.SystemLog).order_by(
             models.SystemLog.timestamp.desc()
         ).offset(skip).limit(limit).all()
-        
+
         return schemas.SystemLogPaginatedResponse(
             total=total,
             skip=skip,
@@ -175,10 +175,10 @@ async def create_device(
 @router.websocket("/notify")
 async def websocket_endpoint(websocket: WebSocket) -> None:
     """WebSocket endpoint for real-time notifications of data changes.
-    
+
     Requires API key authentication via query parameter:
     ws://host/api/system/notify?apiKey=YOUR_API_KEY
-    
+
     Args:
         websocket: The WebSocket connection
     """

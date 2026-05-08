@@ -17,26 +17,26 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
+"""Tests for the batch service layer."""
 
 
-import json
+
 from datetime import datetime, timedelta
 from api.db import models
+from api.db.session import create_session
 from api.services.batch import BatchService
-from api.services.gravity import GravityService
-from .conftest import truncate_database, create_session
+from .conftest import truncate_database
 
 headers = {
     "Authorization": "Bearer test_key",
     "Content-Type": "application/json",
 }
 
-def test_batch_prediction_logic(app_client):
+def test_batch_prediction_logic():
     """Test the core prediction logic in BatchService.update_prediction."""
     truncate_database()
     session = create_session()
     batch_service = BatchService(session)
-    gravity_service = GravityService(session)
 
     # 1. Create a batch
     batch = models.Batch(
@@ -63,7 +63,6 @@ def test_batch_prediction_logic(app_client):
 
     # 2. Add some gravity points over the last 24h
     now = datetime.now()
-    points = []
     # Point 24h ago
     p1 = models.Gravity(
         batch_id=batch_id,
@@ -111,7 +110,7 @@ def test_batch_prediction_logic(app_client):
 
     session.close()
 
-def test_batch_prediction_not_enough_data(app_client):
+def test_batch_prediction_not_enough_data():
     """Test prediction skips when not enough data is available."""
     truncate_database()
     session = create_session()
@@ -156,28 +155,37 @@ def test_batch_prediction_not_enough_data(app_client):
     assert batch.prediction_at_timestamp is None
     session.close()
 
-def test_batch_service_search_functions(app_client):
+def test_batch_service_search_functions():
     """Test various search functions in BatchService to increase coverage."""
     truncate_database()
     session = create_session()
     batch_service = BatchService(session)
 
     # Create multiple batches with different properties
-    b1 = models.Batch(name="Active 1", chip_id_gravity="GRAV01", chip_id_pressure="", active=True, tap_list=True, brew_date="D1", style="S1", brewer="B1", brewfather_id="BF1", description="D1", fermentation_steps="[]")
-    b2 = models.Batch(name="Active 2", chip_id_gravity="GRAV02", chip_id_pressure="", active=True, tap_list=False, brew_date="D2", style="S2", brewer="B2", brewfather_id="BF2", description="D2", fermentation_steps="[]")
-    b3 = models.Batch(name="Inactive", chip_id_gravity="GRAV01", chip_id_pressure="", active=False, tap_list=True, brew_date="D3", style="S3", brewer="B3", brewfather_id="BF3", description="D3", fermentation_steps="[]")
-    
+    b1 = models.Batch(
+        name="Active 1", chip_id_gravity="GRAV01", chip_id_pressure="",
+        active=True, tap_list=True, brew_date="D1", style="S1", brewer="B1",
+        brewfather_id="BF1", description="D1", fermentation_steps="[]")
+    b2 = models.Batch(
+        name="Active 2", chip_id_gravity="GRAV02", chip_id_pressure="",
+        active=True, tap_list=False, brew_date="D2", style="S2", brewer="B2",
+        brewfather_id="BF2", description="D2", fermentation_steps="[]")
+    b3 = models.Batch(
+        name="Inactive", chip_id_gravity="GRAV01", chip_id_pressure="",
+        active=False, tap_list=True, brew_date="D3", style="S3", brewer="B3",
+        brewfather_id="BF3", description="D3", fermentation_steps="[]")
+
     session.add_all([b1, b2, b3])
     session.commit()
 
     # Test search_chip_id
     res = batch_service.search_chip_id("GRAV01")
     assert len(res) == 2
-    
+
     # Test search_tap_list
     res = batch_service.search_tap_list()
     assert len(res) == 2
-    
+
     # Test search_active
     res = batch_service.search_active(True)
     assert len(res) == 2

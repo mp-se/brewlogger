@@ -19,12 +19,10 @@
 #
 
 """Tests for batch router endpoints with filtering and dashboard."""
-from datetime import datetime, timedelta
 from api.config import get_settings
 from api.db.session import create_session
-from api.db.schemas import BatchCreate, GravityCreate
+from api.db.schemas import BatchCreate
 from api.services.batch import BatchService
-from api.services.gravity import GravityService
 from .conftest import truncate_database
 
 headers = {
@@ -33,14 +31,14 @@ headers = {
 }
 
 
-def test_init(app_client):
+def test_init():
     """Initialize database for batch router tests"""
     truncate_database()
-    
+
     # Create test batch in database
     session = create_session()
     batch_service = BatchService(session)
-    
+
     # Create a batch using Pydantic schema with all required fields
     batch_data = BatchCreate(
         name="Test Batch",
@@ -66,8 +64,8 @@ def test_init(app_client):
 
 def test_get_batches_no_filter(app_client):
     """Test GET /api/batch/ with no filter parameters"""
-    test_init(app_client)
-    
+    test_init()
+
     response = app_client.get("/api/batch/", headers=headers)
     assert response.status_code == 200
     data = response.json()
@@ -83,8 +81,8 @@ def test_get_batches_no_filter(app_client):
 
 def test_get_batches_with_chipid_filter(app_client):
     """Test GET /api/batch/?chipId=test_chip_001"""
-    test_init(app_client)
-    
+    test_init()
+
     response = app_client.get(
         "/api/batch/",
         params={"chipId": "test_chip_001"},
@@ -99,8 +97,8 @@ def test_get_batches_with_chipid_filter(app_client):
 
 def test_get_batches_with_chipid_and_active_true(app_client):
     """Test GET /api/batch/?chipId=test_chip_001&active=True"""
-    test_init(app_client)
-    
+    test_init()
+
     response = app_client.get(
         "/api/batch/",
         params={"chipId": "test_chip_001", "active": "True"},
@@ -113,8 +111,8 @@ def test_get_batches_with_chipid_and_active_true(app_client):
 
 def test_get_batches_with_chipid_and_active_false(app_client):
     """Test GET /api/batch/?chipId=test_chip_001&active=False"""
-    test_init(app_client)
-    
+    test_init()
+
     response = app_client.get(
         "/api/batch/",
         params={"chipId": "test_chip_001", "active": "False"},
@@ -127,8 +125,8 @@ def test_get_batches_with_chipid_and_active_false(app_client):
 
 def test_get_batches_with_active_true_only(app_client):
     """Test GET /api/batch/?active=True"""
-    test_init(app_client)
-    
+    test_init()
+
     response = app_client.get(
         "/api/batch/",
         params={"active": "True"},
@@ -141,8 +139,8 @@ def test_get_batches_with_active_true_only(app_client):
 
 def test_get_batches_with_active_false_only(app_client):
     """Test GET /api/batch/?active=False"""
-    test_init(app_client)
-    
+    test_init()
+
     response = app_client.get(
         "/api/batch/",
         params={"active": "False"},
@@ -155,8 +153,8 @@ def test_get_batches_with_active_false_only(app_client):
 
 def test_get_batch_by_id(app_client):
     """Test GET /api/batch/{batch_id}"""
-    test_init(app_client)
-    
+    test_init()
+
     # Get first batch
     list_response = app_client.get("/api/batch/", headers=headers)
     batches = list_response.json()
@@ -170,16 +168,16 @@ def test_get_batch_by_id(app_client):
 
 def test_get_batch_by_id_not_found(app_client):
     """Test GET /api/batch/9999 with non-existent ID"""
-    test_init(app_client)
-    
+    test_init()
+
     response = app_client.get("/api/batch/9999", headers=headers)
     assert response.status_code == 404
 
 
 def test_get_taplist(app_client):
     """Test GET /api/batch/taplist"""
-    test_init(app_client)
-    
+    test_init()
+
     response = app_client.get("/api/batch/taplist")
     assert response.status_code == 200
     data = response.json()
@@ -188,8 +186,8 @@ def test_get_taplist(app_client):
 
 def test_get_batch_unauthorized(app_client):
     """Test that GET /api/batch/{id} requires authorization"""
-    test_init(app_client)
-    
+    test_init()
+
     # Try without auth header
     response = app_client.get("/api/batch/1")
     assert response.status_code == 401

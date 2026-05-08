@@ -17,6 +17,9 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
+# pylint: disable=duplicate-code,too-many-lines
+"""Tests for gravity data endpoints and services."""
+
 
 import json
 from api.config import get_settings
@@ -29,6 +32,7 @@ headers = {
 
 
 def test_init(app_client):
+    """Test init."""
     truncate_database()
 
     data = {
@@ -55,6 +59,7 @@ def test_init(app_client):
 
 
 def test_add(app_client):
+    """Test add."""
     data = {
         "batchId": 1,
         "temperature": 0.2,
@@ -99,19 +104,20 @@ def test_add(app_client):
 
 
 def test_list(app_client):
+    """Test list."""
     # Test listing all gravities
     r = app_client.get("/api/gravity/", headers=headers)
     assert r.status_code == 200
     data = json.loads(r.text)
     assert len(data) == 1
-    
+
     # Test listing gravities by batchId
     r = app_client.get("/api/gravity/?batchId=1", headers=headers)
     assert r.status_code == 200
     data = json.loads(r.text)
     assert len(data) == 1
     assert data[0]["batchId"] == 1
-    
+
     # Test listing gravities with non-existent batchId
     r = app_client.get("/api/gravity/?batchId=999", headers=headers)
     assert r.status_code == 200
@@ -120,6 +126,7 @@ def test_list(app_client):
 
 
 def test_update(app_client):
+    """Test update."""
     data = {
         "temperature": 1.2,
         "gravity": 1.3,
@@ -160,6 +167,7 @@ def test_update(app_client):
 
 
 def test_delete(app_client):
+    """Test delete."""
     # Delete
     r = app_client.delete("/api/gravity/1", headers=headers)
     assert r.status_code == 204
@@ -174,7 +182,7 @@ def test_delete(app_client):
 def test_create_multiple_gravities(app_client):
     """Test creating multiple gravity readings in a single request."""
     truncate_database()
-    
+
     # First create a batch for the gravity readings
     batch_data = {
         "name": "test_batch_multi",
@@ -193,11 +201,11 @@ def test_create_multiple_gravities(app_client):
         "fermentationSteps": "",
         "tapList": False,
     }
-    
+
     batch_response = app_client.post("/api/batch/", json=batch_data, headers=headers)
     assert batch_response.status_code == 201
     batch_id = json.loads(batch_response.text)["id"]
-    
+
     # Now create multiple gravity readings
     data = [
         {
@@ -243,8 +251,9 @@ def test_create_multiple_gravities(app_client):
 
 
 def test_gravity_batch(app_client):
+    """Test gravity batch."""
     test_init(app_client)
-    
+
     data = {
         "batchId": 1,
         "temperature": 0.2,
@@ -292,6 +301,7 @@ def test_gravity_batch(app_client):
 
 
 def test_public(app_client):
+    """Test public."""
     test_init(app_client)
     data = {
         "name": "name",
@@ -317,7 +327,7 @@ def test_public(app_client):
     assert len(data2) == 1
     assert data2[0]["gravityCount"] == 1
     batch_id = data2[0]["id"]
-    
+
     # Get the batch details which includes gravity records
     r = app_client.get(f"/api/batch/{batch_id}", headers=headers)
     assert r.status_code == 200
@@ -357,9 +367,10 @@ def test_public(app_client):
     }
     r = app_client.post("/api/gravity/public", json=data)
     assert r.status_code == 200
- 
+
 
 def test_public2(app_client):
+    """Test public2."""
     test_init(app_client)
 
     data = {
@@ -390,7 +401,7 @@ def test_public2(app_client):
 def test_public_with_none_values(app_client):
     """Test that optional fields with None values are handled correctly"""
     truncate_database()
-    
+
     # Test with corr-gravity as None - should not crash
     gravity_data = {
         "name": "test",
@@ -410,7 +421,7 @@ def test_public_with_none_values(app_client):
     }
     r = app_client.post("/api/gravity/public", json=gravity_data)
     assert r.status_code == 200
-    
+
     # Verify the first gravity reading was stored
     r = app_client.get("/api/gravity/latest?limit=1", headers=headers)
     assert r.status_code == 200
@@ -419,7 +430,7 @@ def test_public_with_none_values(app_client):
     assert gravities[0]["gravity"] == 1.05
     assert gravities[0]["temperature"] == 20.2
     assert gravities[0]["battery"] == 3.85
-    
+
     # Test with all optional extension fields as None
     gravity_data = {
         "name": "test",
@@ -439,7 +450,7 @@ def test_public_with_none_values(app_client):
     }
     r = app_client.post("/api/gravity/public", json=gravity_data)
     assert r.status_code == 200
-    
+
     # Verify the second gravity reading was stored
     r = app_client.get("/api/gravity/latest?limit=1", headers=headers)
     assert r.status_code == 200
@@ -450,14 +461,14 @@ def test_public_with_none_values(app_client):
     assert gravities[0]["battery"] == 3.5
 
 
-def test_validation(app_client):
-    pass
+def test_validation():
+    """Test validation."""
 
 
 def test_list_by_batchid(app_client):
     """Test listing gravities filtered by batchId"""
     truncate_database()
-    
+
     # Create two batches
     batch1 = {
         "name": "batch1",
@@ -476,19 +487,19 @@ def test_list_by_batchid(app_client):
         "fermentationSteps": "",
         "tapList": True,
     }
-    
+
     batch2 = batch1.copy()
     batch2["name"] = "batch2"
     batch2["chipIdGravity"] = "BBBBBB"
-    
+
     r = app_client.post("/api/batch/", json=batch1, headers=headers)
     assert r.status_code == 201
     batch1_id = json.loads(r.text)["id"]
-    
+
     r = app_client.post("/api/batch/", json=batch2, headers=headers)
     assert r.status_code == 201
     batch2_id = json.loads(r.text)["id"]
-    
+
     # Add gravities to batch 1
     gravity_data = {
         "batchId": batch1_id,
@@ -502,30 +513,30 @@ def test_list_by_batchid(app_client):
         "runTime": 0.8,
         "active": True,
     }
-    
-    for i in range(3):
+
+    for _ in range(3):
         r = app_client.post("/api/gravity/", json=gravity_data, headers=headers)
         assert r.status_code == 201
-    
+
     # Add gravities to batch 2
     gravity_data["batchId"] = batch2_id
-    for i in range(2):
+    for _ in range(2):
         r = app_client.post("/api/gravity/", json=gravity_data, headers=headers)
         assert r.status_code == 201
-    
+
     # List all gravities
     r = app_client.get("/api/gravity/", headers=headers)
     assert r.status_code == 200
     data = json.loads(r.text)
     assert len(data) == 5
-    
+
     # Filter by batch 1 (should get 3)
     r = app_client.get(f"/api/gravity/?batchId={batch1_id}", headers=headers)
     assert r.status_code == 200
     data = json.loads(r.text)
     assert len(data) == 3
     assert all(g["batchId"] == batch1_id for g in data)
-    
+
     # Filter by batch 2 (should get 2)
     r = app_client.get(f"/api/gravity/?batchId={batch2_id}", headers=headers)
     assert r.status_code == 200
@@ -537,7 +548,7 @@ def test_list_by_batchid(app_client):
 def test_latest(app_client):
     """Test getting the latest gravity measurements"""
     test_init(app_client)
-    
+
     # Add 5 gravity records
     data = {
         "batchId": 1,
@@ -554,13 +565,13 @@ def test_latest(app_client):
         "beerTemperature": 0,
         "fermentationSteps": "",
     }
-    
+
     for i in range(5):
         data["temperature"] = 0.2 + i
         data["gravity"] = 0.3 + i
         r = app_client.post("/api/gravity/", json=data, headers=headers)
         assert r.status_code == 201
-    
+
     # Get latest 3
     r = app_client.get("/api/gravity/latest?limit=3", headers=headers)
     assert r.status_code == 200
@@ -570,26 +581,29 @@ def test_latest(app_client):
     assert res[0]["gravity"] == 4.3  # Last added (i=4, 0.3 + 4)
     assert res[1]["gravity"] == 3.3  # i=3
     assert res[2]["gravity"] == 2.3  # i=2
-    
+
     # Verify batch metadata is included
     assert res[0]["batchName"] == "f1"
     assert res[0]["chipIdGravity"] == "AAAAAA"
-    
+
     # Get latest 10 (default)
     r = app_client.get("/api/gravity/latest", headers=headers)
     assert r.status_code == 200
     res = json.loads(r.text)
     assert len(res) == 5  # Only 5 records exist
-    
+
     # Get latest 1
     r = app_client.get("/api/gravity/latest?limit=1", headers=headers)
     assert r.status_code == 200
 
 
 def test_nullable_gravity_fields_in_create(app_client):
-    """Test that nullable gravity fields (temperature, velocity, corr_gravity) can be None when creating"""
+    """Test that nullable gravity fields can be None when creating.
+
+    Nullable fields: temperature, velocity, corr_gravity.
+    """
     truncate_database()
-    
+
     # Create batch
     batch_data = {
         "name": "test_batch",
@@ -610,7 +624,7 @@ def test_nullable_gravity_fields_in_create(app_client):
     }
     r = app_client.post("/api/batch/", json=batch_data, headers=headers)
     assert r.status_code == 201
-    
+
     # Test 1: Create gravity with null temperature
     gravity_data = {
         "batchId": 1,
@@ -629,7 +643,7 @@ def test_nullable_gravity_fields_in_create(app_client):
     res = json.loads(r.text)
     assert res["temperature"] is None
     assert res["gravity"] == 1.050
-    
+
     # Test 2: Create gravity with null velocity
     gravity_data = {
         "batchId": 1,
@@ -648,7 +662,7 @@ def test_nullable_gravity_fields_in_create(app_client):
     res = json.loads(r.text)
     assert res["velocity"] is None
     assert res["gravity"] == 1.052
-    
+
     # Test 3: Create gravity with null corr_gravity
     gravity_data = {
         "batchId": 1,
@@ -667,7 +681,7 @@ def test_nullable_gravity_fields_in_create(app_client):
     res = json.loads(r.text)
     assert res["corrGravity"] is None
     assert res["gravity"] == 1.054
-    
+
     # Test 4: Create gravity with all nullable fields as None
     gravity_data = {
         "batchId": 1,
@@ -688,7 +702,7 @@ def test_nullable_gravity_fields_in_create(app_client):
     assert res["velocity"] is None
     assert res["corrGravity"] is None
     assert res["gravity"] == 1.056
-    
+
     # Verify all 4 records were created
     r = app_client.get("/api/gravity/", headers=headers)
     assert r.status_code == 200
@@ -699,7 +713,7 @@ def test_nullable_gravity_fields_in_create(app_client):
 def test_nullable_gravity_fields_in_update(app_client):
     """Test that nullable gravity fields can be updated to None"""
     truncate_database()
-    
+
     # Create batch and initial gravity
     batch_data = {
         "name": "test_batch",
@@ -720,7 +734,7 @@ def test_nullable_gravity_fields_in_update(app_client):
     }
     r = app_client.post("/api/batch/", json=batch_data, headers=headers)
     assert r.status_code == 201
-    
+
     gravity_data = {
         "batchId": 1,
         "temperature": 20.0,
@@ -736,7 +750,7 @@ def test_nullable_gravity_fields_in_update(app_client):
     r = app_client.post("/api/gravity/", json=gravity_data, headers=headers)
     assert r.status_code == 201
     gravity_id = json.loads(r.text)["id"]
-    
+
     # Update temperature to None
     update_data = {
         "temperature": None,
@@ -751,7 +765,7 @@ def test_nullable_gravity_fields_in_update(app_client):
     }
     r = app_client.patch(f"/api/gravity/{gravity_id}", json=update_data, headers=headers)
     assert r.status_code == 200
-    
+
     # Verify update
     r = app_client.get(f"/api/gravity/{gravity_id}", headers=headers)
     assert r.status_code == 200
@@ -764,7 +778,7 @@ def test_nullable_gravity_fields_in_update(app_client):
 def test_nullable_gravity_fields_in_latest(app_client):
     """Test that /latest endpoint handles nullable fields correctly"""
     truncate_database()
-    
+
     # Create batch
     batch_data = {
         "name": "test_batch",
@@ -785,7 +799,7 @@ def test_nullable_gravity_fields_in_latest(app_client):
     }
     r = app_client.post("/api/batch/", json=batch_data, headers=headers)
     assert r.status_code == 201
-    
+
     # Create gravity with nullable fields
     gravity_data = {
         "batchId": 1,
@@ -801,7 +815,7 @@ def test_nullable_gravity_fields_in_latest(app_client):
     }
     r = app_client.post("/api/gravity/", json=gravity_data, headers=headers)
     assert r.status_code == 201
-    
+
     # Verify /latest endpoint returns the data with nulls
     r = app_client.get("/api/gravity/latest?limit=1", headers=headers)
     assert r.status_code == 200
@@ -817,7 +831,7 @@ def test_nullable_gravity_fields_in_latest(app_client):
 def test_nullable_chamber_and_beer_temperature(app_client):
     """Test that chamber_temperature and beer_temperature can be None"""
     truncate_database()
-    
+
     # Create batch
     batch_data = {
         "name": "test_batch",
@@ -838,7 +852,7 @@ def test_nullable_chamber_and_beer_temperature(app_client):
     }
     r = app_client.post("/api/batch/", json=batch_data, headers=headers)
     assert r.status_code == 201
-    
+
     # Test 1: Create gravity with null chamber_temperature and beer_temperature
     gravity_data = {
         "batchId": 1,
@@ -861,7 +875,7 @@ def test_nullable_chamber_and_beer_temperature(app_client):
     assert res["beerTemperature"] is None
     assert res["gravity"] == 1.050
     gravity_id = res["id"]
-    
+
     # Test 2: Update to add chamber and beer temperatures
     update_data = {
         "temperature": 20.0,
@@ -881,7 +895,7 @@ def test_nullable_chamber_and_beer_temperature(app_client):
     res = json.loads(r.text)
     assert res["chamberTemperature"] == 18.5
     assert res["beerTemperature"] == 19.2
-    
+
     # Test 3: Update back to None
     update_data["chamberTemperature"] = None
     update_data["beerTemperature"] = None
@@ -895,7 +909,7 @@ def test_nullable_chamber_and_beer_temperature(app_client):
 def test_nullable_run_time(app_client):
     """Test that run_time can be None"""
     truncate_database()
-    
+
     # Create batch
     batch_data = {
         "name": "test_batch",
@@ -916,7 +930,7 @@ def test_nullable_run_time(app_client):
     }
     r = app_client.post("/api/batch/", json=batch_data, headers=headers)
     assert r.status_code == 201
-    
+
     # Create gravity with null run_time
     gravity_data = {
         "batchId": 1,
@@ -936,7 +950,7 @@ def test_nullable_run_time(app_client):
     assert res["runTime"] is None
     assert res["gravity"] == 1.050
     gravity_id = res["id"]
-    
+
     # Update run_time with a value
     update_data = {
         "temperature": 20.0,
@@ -953,7 +967,7 @@ def test_nullable_run_time(app_client):
     assert r.status_code == 200
     res = json.loads(r.text)
     assert res["runTime"] == 2.5
-    
+
     # Update back to None
     update_data["runTime"] = None
     r = app_client.patch(f"/api/gravity/{gravity_id}", json=update_data, headers=headers)
@@ -965,7 +979,7 @@ def test_nullable_run_time(app_client):
 def test_all_nullable_fields_together(app_client):
     """Test creating and updating gravity with all nullable fields as None"""
     truncate_database()
-    
+
     # Create batch
     batch_data = {
         "name": "test_batch",
@@ -986,7 +1000,7 @@ def test_all_nullable_fields_together(app_client):
     }
     r = app_client.post("/api/batch/", json=batch_data, headers=headers)
     assert r.status_code == 201
-    
+
     # Create gravity with ALL nullable fields as None
     gravity_data = {
         "batchId": 1,
@@ -1015,7 +1029,7 @@ def test_all_nullable_fields_together(app_client):
     assert res["angle"] == 45.0
     assert res["battery"] == 3.8
     gravity_id = res["id"]
-    
+
     # Verify GET returns the same
     r = app_client.get(f"/api/gravity/{gravity_id}", headers=headers)
     assert r.status_code == 200
@@ -1026,7 +1040,7 @@ def test_all_nullable_fields_together(app_client):
     assert res["runTime"] is None
     assert res["chamberTemperature"] is None
     assert res["beerTemperature"] is None
-    
+
     # Update all nullable fields with actual values
     update_data = {
         "temperature": 20.5,

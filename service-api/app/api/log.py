@@ -53,7 +53,12 @@ def _truncate_message(message: str, max_length: int = 300) -> str:
     return message[:max_length - 3] + "..."
 
 
-def system_log(module: str, message: str, error_code: int = 0, log_level: int = LogLevel.INFO) -> None:
+def system_log(
+    module: str,
+    message: str,
+    error_code: int = 0,
+    log_level: int = LogLevel.INFO,
+) -> None:
     """Log a system event to the database.
     
     Args:
@@ -73,7 +78,7 @@ def system_log(module: str, message: str, error_code: int = 0, log_level: int = 
 
         systemlog_service = SystemLogService(create_session())
         systemlog_service.create(entry)
-    except (SQLAlchemyError, Exception) as e:
+    except SQLAlchemyError as e:
         logger.error("Failed to write system log: %s", e)
 
 
@@ -85,12 +90,20 @@ def system_log_purge(days: int = 60):
     logger.info("Deleted %s records from system log", count)
 
 
-def system_log_scheduler(message: str, error_code: int = 0, log_level: int = LogLevel.INFO) -> None:
+def system_log_scheduler(
+    message: str,
+    error_code: int = 0,
+    log_level: int = LogLevel.INFO,
+) -> None:
     """Log a scheduler-related system event."""
     system_log("scheduler", message=message, error_code=error_code, log_level=log_level)
 
 
-def system_log_fermentationcontrol(message: str, error_code: int = 0, log_level: int = LogLevel.INFO) -> None:
+def system_log_fermentationcontrol(
+    message: str,
+    error_code: int = 0,
+    log_level: int = LogLevel.INFO,
+) -> None:
     """Log a fermentation control-related system event."""
     system_log("fermentation_control", message=message, error_code=error_code, log_level=log_level)
 

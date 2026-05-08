@@ -35,18 +35,18 @@ from api.db.session import create_session
 from .conftest import truncate_database
 
 
-def test_init(app_client):
+def test_init():
     """Initialize database for log tests"""
     truncate_database()
 
 
-def test_system_log_creates_entry(app_client):
+def test_system_log_creates_entry():
     """Test that system_log creates a database entry"""
-    test_init(app_client)
-    
+    test_init()
+
     # Log an entry
     system_log("test_module", "Test message", 1001)
-    
+
     # Verify it was created
     session = create_session()
     service = SystemLogService(session)
@@ -57,69 +57,72 @@ def test_system_log_creates_entry(app_client):
     assert logs[-1].error_code == 1001
 
 
-def test_system_log_scheduler(app_client):
+def test_system_log_scheduler():
     """Test that system_log_scheduler logs to scheduler module"""
-    test_init(app_client)
-    
+    test_init()
+
     system_log_scheduler("Scheduler test", 2001)
-    
+
     session = create_session()
     service = SystemLogService(session)
     logs = service.list()
     assert any(log.module == "scheduler" and log.message == "Scheduler test" for log in logs)
 
 
-def test_system_log_fermentationcontrol(app_client):
+def test_system_log_fermentationcontrol():
     """Test that system_log_fermentationcontrol logs to fermentation_control module"""
-    test_init(app_client)
-    
+    test_init()
+
     system_log_fermentationcontrol("Fermentation test", 3001)
-    
+
     session = create_session()
     service = SystemLogService(session)
     logs = service.list()
-    assert any(log.module == "fermentation_control" and log.message == "Fermentation test" for log in logs)
+    assert any(
+        log.module == "fermentation_control" and log.message == "Fermentation test"
+        for log in logs
+    )
 
 
-def test_system_log_security(app_client):
+def test_system_log_security():
     """Test that system_log_security logs to security module"""
-    test_init(app_client)
-    
+    test_init()
+
     system_log_security("Security test", 4001)
-    
+
     session = create_session()
     service = SystemLogService(session)
     logs = service.list()
     assert any(log.module == "security" and log.message == "Security test" for log in logs)
 
 
-def test_system_log_purge(app_client):
+def test_system_log_purge():
     """Test that system_log_purge deletes old records"""
-    test_init(app_client)
-    
+    test_init()
+
     # Create some log entries
     system_log("test1", "Message 1", 1001)
     system_log("test2", "Message 2", 1002)
-    
+
     session = create_session()
     service = SystemLogService(session)
-    
+
     # Count before purge
     logs_before = len(service.list())
     assert logs_before >= 2
-    
+
     # Purge old records (60+ days old - won't delete recent ones)
-    count = system_log_purge()
-    
+    system_log_purge()
+
     # Recent logs should still be there
     logs_after = len(service.list())
     assert logs_after >= 2
 
 
-def test_receive_log_purge_no_old_records(app_client):
+def test_receive_log_purge_no_old_records():
     """Test receive_log_purge when no records are old enough to delete"""
-    test_init(app_client)
-    
+    test_init()
+
     # Add a recent receive log
     session = create_session()
     receive_log = models.ReceiveLog(
@@ -130,30 +133,30 @@ def test_receive_log_purge_no_old_records(app_client):
     session.add(receive_log)
     session.commit()
     session.close()
-    
+
     # Count before purge
     session = create_session()
     count_before = session.query(models.ReceiveLog).count()
     session.close()
-    
+
     # Purge records older than 90 days
     receive_log_purge(days=90)
-    
+
     # Recent record should still exist
     session = create_session()
     count_after = session.query(models.ReceiveLog).count()
     session.close()
-    
+
     assert count_after == count_before
     assert count_after == 1
 
 
-def test_receive_log_purge_with_old_records(app_client):
+def test_receive_log_purge_with_old_records():
     """Test receive_log_purge deletes records older than specified days"""
-    test_init(app_client)
-    
+    test_init()
+
     session = create_session()
-    
+
     # Add an old receive log (120 days ago)
     old_log = models.ReceiveLog(
         ip_address="192.168.1.1",
@@ -161,7 +164,7 @@ def test_receive_log_purge_with_old_records(app_client):
         timestamp=datetime.now() - timedelta(days=120)
     )
     session.add(old_log)
-    
+
     # Add a recent receive log
     recent_log = models.ReceiveLog(
         ip_address="127.0.0.1",
@@ -171,33 +174,33 @@ def test_receive_log_purge_with_old_records(app_client):
     session.add(recent_log)
     session.commit()
     session.close()
-    
+
     # Count before purge
     session = create_session()
     count_before = session.query(models.ReceiveLog).count()
     session.close()
     assert count_before == 2
-    
+
     # Purge records older than 90 days
     receive_log_purge(days=90)
-    
+
     # Old record should be deleted, recent should remain
     session = create_session()
     count_after = session.query(models.ReceiveLog).count()
     remaining = session.query(models.ReceiveLog).all()
     session.close()
-    
+
     assert count_after == 1
     assert remaining[0].payload == json.dumps({"recent": "data"})
 
 
-def test_receive_log_purge_empty_table(app_client):
+def test_receive_log_purge_empty_table():
     """Test receive_log_purge handles empty table gracefully"""
-    test_init(app_client)
-    
+    test_init()
+
     # Should not raise any exceptions on empty table
     receive_log_purge(days=90)
-    
+
     session = create_session()
     count = session.query(models.ReceiveLog).count()
     session.close()

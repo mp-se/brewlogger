@@ -17,6 +17,9 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
+# pylint: disable=duplicate-code
+"""Tests for the dispatch router."""
+
 
 import json
 from unittest.mock import AsyncMock, patch
@@ -30,14 +33,15 @@ headers = {
 }
 
 
-def test_init(app_client):
+def test_init():
+    """Test init."""
     truncate_database()
 
 
 def test_dispatch_invalid_json(app_client):
     """Test that dispatch endpoint handles invalid JSON"""
-    test_init(app_client)
-    
+    test_init()
+
     # Send malformed JSON
     r = app_client.post(
         "/api/dispatch/public",
@@ -49,8 +53,8 @@ def test_dispatch_invalid_json(app_client):
 
 def test_dispatch_missing_required_field(app_client):
     """Test that dispatch endpoint rejects data without gravity or pressure"""
-    test_init(app_client)
-    
+    test_init()
+
     # No gravity or pressure field
     r = app_client.post("/api/dispatch/public", json={"some_field": "value"})
     assert r.status_code == 400
@@ -60,8 +64,8 @@ def test_dispatch_missing_required_field(app_client):
 
 def test_dispatch_empty_object(app_client):
     """Test that dispatch endpoint rejects empty object"""
-    test_init(app_client)
-    
+    test_init()
+
     r = app_client.post("/api/dispatch/public", json={})
     assert r.status_code == 400
 
@@ -69,23 +73,23 @@ def test_dispatch_empty_object(app_client):
 @patch("api.routers.dispatch.httpx.AsyncClient")
 def test_dispatch_gravity_forward_success(mock_client, app_client):
     """Test successful forwarding of gravity data to brew_api"""
-    test_init(app_client)
-    
+    test_init()
+
     # Mock the AsyncClient and response
     mock_response = AsyncMock()
     mock_response.content = b'{"status": "received"}'
-    
+
     mock_async_client = AsyncMock()
     mock_async_client.post = AsyncMock(return_value=mock_response)
     mock_async_client.__aenter__ = AsyncMock(return_value=mock_async_client)
     mock_async_client.__aexit__ = AsyncMock(return_value=None)
-    
+
     mock_client.return_value = mock_async_client
-    
+
     # Send gravity data
     payload = {"gravity": 1.055, "angle": 45, "temperature": 68}
     r = app_client.post("/api/dispatch/public", json=payload)
-    
+
     # Verify the response
     assert r.status_code == 200
     # Verify httpx was called with correct parameters
@@ -98,23 +102,23 @@ def test_dispatch_gravity_forward_success(mock_client, app_client):
 @patch("api.routers.dispatch.httpx.AsyncClient")
 def test_dispatch_pressure_forward_success(mock_client, app_client):
     """Test successful forwarding of pressure data to brew_api"""
-    test_init(app_client)
-    
+    test_init()
+
     # Mock the AsyncClient and response
     mock_response = AsyncMock()
     mock_response.content = b'{"status": "received"}'
-    
+
     mock_async_client = AsyncMock()
     mock_async_client.post = AsyncMock(return_value=mock_response)
     mock_async_client.__aenter__ = AsyncMock(return_value=mock_async_client)
     mock_async_client.__aexit__ = AsyncMock(return_value=None)
-    
+
     mock_client.return_value = mock_async_client
-    
+
     # Send pressure data
     payload = {"pressure": 15.5, "temperature": 68}
     r = app_client.post("/api/dispatch/public", json=payload)
-    
+
     # Verify the response
     assert r.status_code == 200
     # Verify httpx was called with correct parameters
@@ -122,8 +126,3 @@ def test_dispatch_pressure_forward_success(mock_client, app_client):
         "http://brew_api:80/api/pressure/public",
         json=payload
     )
-
-
-
-
-

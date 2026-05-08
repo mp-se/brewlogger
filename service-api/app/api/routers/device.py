@@ -165,7 +165,10 @@ async def delete_device_by_id(
     device = devices_service.get(device_id)
     if not device:
         raise HTTPException(status_code=404, detail="Device not found")
-    system_log("device", f"Device {device_id} ({device.chip_id}) deleted", error_code=0, log_level=LogLevel.INFO)
+    system_log(
+        "device", f"Device {device_id} ({device.chip_id}) deleted",
+        error_code=0, log_level=LogLevel.INFO
+    )
     devices_service.delete(device_id)
     background_tasks.add_task(notify_clients, "device", "delete", device_id)
 

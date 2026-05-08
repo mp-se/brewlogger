@@ -21,6 +21,7 @@
 """Gravity service for managing fermentation gravity readings and batch associations."""
 # pylint: disable=duplicate-code
 import logging
+from datetime import datetime, timedelta
 from typing import List
 
 from fastapi import HTTPException
@@ -53,6 +54,7 @@ class GravityService(
             )
         self._validate_batch_exists(lst[0].batch_id)
         return super().create_list(lst)
+
     def search_by_batch_id(self, batch_id: int) -> List[models.Gravity]:
         """Search gravity readings by batch ID."""
         objs = self._search_by_filter({"batch_id": batch_id})
@@ -63,8 +65,7 @@ class GravityService(
 
     def search_by_batch_id_last_24h(self, batch_id: int) -> List[models.Gravity]:
         """Search gravity readings by batch ID for the last 24 hours."""
-        from datetime import datetime, timedelta
-        since = datetime.now() - timedelta(hours=25) # Extra hour to ensure we get a full 24h window for velocity
+        since = datetime.now() - timedelta(hours=25)
         objs = self.db_session.query(models.Gravity).filter(
             models.Gravity.batch_id == batch_id,
             models.Gravity.created >= since

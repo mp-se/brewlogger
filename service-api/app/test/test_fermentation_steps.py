@@ -17,6 +17,9 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
+# pylint: disable=duplicate-code
+"""Tests for fermentation step endpoints."""
+
 
 import json
 import pytest
@@ -32,6 +35,7 @@ pytest_plugins = ("pytest_asyncio",)
 
 
 def test_init(app_client):
+    """Test init."""
     truncate_database()
 
     data = {
@@ -52,6 +56,7 @@ def test_init(app_client):
 
 
 def test_add(app_client):
+    """Test add."""
     data = [
         {
             "order": 0,
@@ -60,6 +65,7 @@ def test_add(app_client):
             "date": "2024-10-05",
             "temp": 12,
             "days": 2,
+            "control": "fridge",
             "deviceId": 1,
         },
         {
@@ -69,6 +75,7 @@ def test_add(app_client):
             "date": "2024-10-08",
             "temp": 2,
             "days": 4,
+            "control": "fridge",
             "deviceId": 1,
         },
     ]
@@ -86,12 +93,13 @@ def test_add(app_client):
     assert data1["fermentationStep"][0]["order"] == 0
 
 
+@pytest.mark.skip(reason="Placeholder test - requires full integration setup")
 @pytest.mark.asyncio
 async def test_controller():
-    pass
-    # await fermentation_controller_run(datetime.now())
+    """Test fermentation controller integration."""
 
 
 def test_delete(app_client):
+    """Test delete."""
     r = app_client.delete("/api/device/1/step", headers=headers)
     assert r.status_code == 204

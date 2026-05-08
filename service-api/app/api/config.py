@@ -30,7 +30,7 @@ logger = logging.getLogger(__name__)
 config = Config()
 
 
-def generate_api_key(key_length):
+def generate_api_key(key_length: int) -> str:
     """Generate a random API key of specified length."""
     characters = string.ascii_letters + string.digits
     api_key = "".join(random.choice(characters) for _ in range(key_length))

@@ -17,6 +17,9 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
+# pylint: disable=duplicate-code
+"""Tests for batch endpoints and services."""
+
 
 import json
 
@@ -29,11 +32,13 @@ headers = {
 }
 
 
-def test_init(app_client):
+def test_init():
+    """Test init."""
     truncate_database()
 
 
 def test_add(app_client):
+    """Test add."""
     data = {
         "name": "f1",
         "chipIdGravity": "BBBBBB",
@@ -114,6 +119,7 @@ def test_add(app_client):
 
 
 def test_list(app_client):
+    """Test list."""
     r = app_client.get("/api/batch/", headers=headers)
     assert r.status_code == 200
     data = json.loads(r.text)
@@ -121,6 +127,7 @@ def test_list(app_client):
 
 
 def test_update(app_client):
+    """Test update."""
     data = {
         "name": "ff1",
         "chipIdGravity": "BBBBBB",
@@ -171,6 +178,7 @@ def test_update(app_client):
 
 
 def test_delete(app_client):
+    """Test delete."""
     # Delete
     r = app_client.delete("/api/batch/1", headers=headers)
     assert r.status_code == 204
@@ -183,6 +191,7 @@ def test_delete(app_client):
 
 
 def test_query(app_client):
+    """Test query."""
     data = {
         "name": "f1",
         "chipIdGravity": "BBBBB2",
@@ -224,6 +233,7 @@ def test_query(app_client):
 
 
 def test_validation(app_client):
+    """Test validation."""
     data = {
         "name": "f1",
         "chipIdGravity": "BBBBBBB",  # Failure point
@@ -294,7 +304,10 @@ def test_validation(app_client):
         "name": "f1",
         "chipIdGravity": "012345",
         "chipIdPressure": "",
-        "description": "0123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890",  # Failure point
+        "description": (
+            "01234567890123456789012345678901234567890"  # Failure point
+            "2345678901234567890123456789012345678901234"  # long
+        ),
         "brewDate": "f4",
         "style": "f5",
         "brewer": "f6",
@@ -363,7 +376,10 @@ def test_validation(app_client):
         "description": "f2",
         "brewDate": "f3",
         "style": "f4",
-        "brewer": "012345678901234567890012345678901234567890012345678901234567890",  # Failure point
+        "brewer": (
+            "012345678901234567890012345678901234567890"  # Failure point
+            "012345678901234567890"  # long
+        ),
         "brewfatherId": "1",
         "active": True,
         "abv": 0.1,
@@ -381,8 +397,8 @@ def test_validation(app_client):
 
 def test_taplist(app_client):
     """Test getting batches in tap list"""
-    test_init(app_client)
-    
+    test_init()
+
     # Create batch with tapList = True
     data = {
         "name": "Tap List Batch",
@@ -401,18 +417,18 @@ def test_taplist(app_client):
         "fermentationSteps": "",
         "tapList": True,
     }
-    
+
     r = app_client.post("/api/batch/", json=data, headers=headers)
     assert r.status_code == 201
-    
+
     # Create batch with tapList = False
     data["name"] = "Not in Tap List"
     data["chipIdGravity"] = "BBBBBB"
     data["tapList"] = False
-    
+
     r = app_client.post("/api/batch/", json=data, headers=headers)
     assert r.status_code == 201
-    
+
     # Get tap list (should only include first batch)
     r = app_client.get("/api/batch/taplist")
     assert r.status_code == 200
@@ -425,8 +441,8 @@ def test_taplist(app_client):
 
 def test_search_by_active_flag(app_client):
     """Test searching batches by active flag"""
-    test_init(app_client)
-    
+    test_init()
+
     # Create active batch
     active_data = {
         "name": "Active Batch",
@@ -445,40 +461,40 @@ def test_search_by_active_flag(app_client):
         "fermentationSteps": "",
         "tapList": True,
     }
-    
+
     r = app_client.post("/api/batch/", json=active_data, headers=headers)
     assert r.status_code == 201
-    
+
     # Create inactive batch
     inactive_data = active_data.copy()
     inactive_data["name"] = "Inactive Batch"
     inactive_data["chipIdGravity"] = "BBBBBB"
     inactive_data["active"] = False
-    
+
     r = app_client.post("/api/batch/", json=inactive_data, headers=headers)
     assert r.status_code == 201
-    
+
     # Search for active only
     r = app_client.get("/api/batch/?active=true", headers=headers)
     assert r.status_code == 200
     res = json.loads(r.text)
     assert len(res) == 1
     assert res[0]["name"] == "Active Batch"
-    assert res[0]["active"] == True
-    
+    assert res[0]["active"] is True
+
     # Search for inactive only
     r = app_client.get("/api/batch/?active=false", headers=headers)
     assert r.status_code == 200
     res = json.loads(r.text)
     assert len(res) == 1
     assert res[0]["name"] == "Inactive Batch"
-    assert res[0]["active"] == False
+    assert res[0]["active"] is False
 
 
 def test_batch_with_gravity_and_pressure(app_client):
     """Test batch with related gravity and pressure records"""
-    test_init(app_client)
-    
+    test_init()
+
     # Create batch
     batch_data = {
         "name": "Test Batch",
@@ -497,11 +513,11 @@ def test_batch_with_gravity_and_pressure(app_client):
         "fermentationSteps": "",
         "tapList": True,
     }
-    
+
     r = app_client.post("/api/batch/", json=batch_data, headers=headers)
     assert r.status_code == 201
     batch_id = json.loads(r.text)["id"]
-    
+
     # Add gravity record
     gravity_data = {
         "batchId": batch_id,
@@ -515,10 +531,10 @@ def test_batch_with_gravity_and_pressure(app_client):
         "runTime": 0.8,
         "active": True,
     }
-    
+
     r = app_client.post("/api/gravity/", json=gravity_data, headers=headers)
     assert r.status_code == 201
-    
+
     # Add pressure record
     pressure_data = {
         "batchId": batch_id,
@@ -530,17 +546,17 @@ def test_batch_with_gravity_and_pressure(app_client):
         "runTime": 0.8,
         "active": True,
     }
-    
+
     r = app_client.post("/api/pressure/", json=pressure_data, headers=headers)
     assert r.status_code == 201
-    
+
     # Get batch and verify counts
     r = app_client.get(f"/api/batch/{batch_id}", headers=headers)
     assert r.status_code == 200
     res = json.loads(r.text)
     assert len(res["gravity"]) == 1
     assert len(res["pressure"]) == 1
-    
+
     # Get batch list and verify counts in list
     r = app_client.get("/api/batch/", headers=headers)
     assert r.status_code == 200
@@ -551,7 +567,7 @@ def test_batch_with_gravity_and_pressure(app_client):
 def test_batch_dashboard_inactive_batch(app_client):
     """Test dashboard endpoint returns 404 for inactive batch."""
     truncate_database()
-    
+
     # Create an inactive batch
     data = {
         "name": "inactive_batch",
@@ -570,11 +586,11 @@ def test_batch_dashboard_inactive_batch(app_client):
         "fermentationSteps": "",
         "tapList": False,
     }
-    
+
     r = app_client.post("/api/batch/", json=data, headers=headers)
     assert r.status_code == 201
     batch_id = json.loads(r.text)["id"]
-    
+
     # Try to get dashboard for inactive batch
     r = app_client.get(f"/api/batch/{batch_id}/dashboard", headers=headers)
     assert r.status_code == 404
@@ -584,7 +600,7 @@ def test_batch_dashboard_inactive_batch(app_client):
 def test_batch_dashboard_with_gravity_and_pressure(app_client):
     """Test dashboard endpoint with gravity and pressure data."""
     truncate_database()
-    
+
     # Create active batch
     batch_data = {
         "name": "test_batch",
@@ -603,10 +619,10 @@ def test_batch_dashboard_with_gravity_and_pressure(app_client):
         "fermentationSteps": "",
         "tapList": True,
     }
-    
+
     r = app_client.post("/api/batch/", json=batch_data, headers=headers)
     batch_id = json.loads(r.text)["id"]
-    
+
     # Add gravity readings with all required fields
     gravity_data = {
         "batchId": batch_id,
@@ -626,7 +642,7 @@ def test_batch_dashboard_with_gravity_and_pressure(app_client):
     app_client.post("/api/gravity/", json=gravity_data, headers=headers)
     app_client.post("/api/gravity/", json=gravity_data, headers=headers)
     app_client.post("/api/gravity/", json=gravity_data, headers=headers)
-    
+
     # Add pressure readings with all required fields
     pressure_data = {
         "batchId": batch_id,
@@ -641,7 +657,7 @@ def test_batch_dashboard_with_gravity_and_pressure(app_client):
     app_client.post("/api/pressure/", json=pressure_data, headers=headers)
     app_client.post("/api/pressure/", json=pressure_data, headers=headers)
     app_client.post("/api/pressure/", json=pressure_data, headers=headers)
-    
+
     # Add pour readings with all required fields
     pour_data = {
         "pour": 0.0,
@@ -653,11 +669,11 @@ def test_batch_dashboard_with_gravity_and_pressure(app_client):
     app_client.post("/api/pour/", json=pour_data, headers=headers)
     app_client.post("/api/pour/", json=pour_data, headers=headers)
     app_client.post("/api/pour/", json=pour_data, headers=headers)
-    
+
     # Get dashboard
     r = app_client.get(f"/api/batch/{batch_id}/dashboard", headers=headers)
     assert r.status_code == 200
-    
+
     dash = json.loads(r.text)
     assert dash["id"] == batch_id
     assert dash["name"] == "test_batch"
@@ -669,7 +685,7 @@ def test_batch_dashboard_with_gravity_and_pressure(app_client):
 def test_batch_dashboard_with_single_readings(app_client):
     """Test dashboard endpoint with only one reading of each type."""
     truncate_database()
-    
+
     # Create active batch
     batch_data = {
         "name": "test_batch",
@@ -688,10 +704,10 @@ def test_batch_dashboard_with_single_readings(app_client):
         "fermentationSteps": "",
         "tapList": True,
     }
-    
+
     r = app_client.post("/api/batch/", json=batch_data, headers=headers)
     batch_id = json.loads(r.text)["id"]
-    
+
     # Add single gravity reading
     gravity_data = {
         "batchId": batch_id,
@@ -709,11 +725,11 @@ def test_batch_dashboard_with_single_readings(app_client):
         "fermentationSteps": "",
     }
     app_client.post("/api/gravity/", json=gravity_data, headers=headers)
-    
+
     # Get dashboard
     r = app_client.get(f"/api/batch/{batch_id}/dashboard", headers=headers)
     assert r.status_code == 200
-    
+
     dash = json.loads(r.text)
     assert len(dash["gravity"]) == 0  # Not enough for first+last
     assert len(dash["pressure"]) == 0

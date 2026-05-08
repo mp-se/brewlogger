@@ -70,8 +70,12 @@ async def chamberctrl_temps(device_id: int, url: str) -> Optional[dict[str, Any]
                 )
 
         except JSONDecodeError:
+            msg = (
+                f"Failed to parse temps from chamber controller device {device_id}, "
+                "JSONDecodeError"
+            )
             system_log_fermentationcontrol(
-                f"Failed to parse temps from chamber controller device {device_id}, JSONDecodeError",
+                msg,
                 error_code=0, log_level=LogLevel.ERROR
             )
             logger.error("Unable to parse JSON response %s", url)
@@ -94,8 +98,12 @@ async def chamberctrl_temps(device_id: int, url: str) -> Optional[dict[str, Any]
             )
             logger.error("Unable to connect to device %s", url)
     else:
+        msg = (
+            f"Chamber controller device {device_id} has no defined URL, "
+            "unable to fetch temperatures"
+        )
         system_log_fermentationcontrol(
-            f"Chamber controller device {device_id} has no defined URL, unable to fetch temperatures",
+            msg,
             error_code=0, log_level=LogLevel.WARNING
         )
         logger.error(
@@ -105,16 +113,22 @@ async def chamberctrl_temps(device_id: int, url: str) -> Optional[dict[str, Any]
     return None
 
 
-async def chamberctrl_set_mode(device_id: int, url: str, temp: float, chipid: str, control: str) -> bool:
+async def chamberctrl_set_mode(
+    device_id: int,
+    url: str,
+    temp: float,
+    chipid: str,
+    control: str,
+) -> bool:
     """Set target fridge temperature on chamber controller device.
-    
+
     Args:
         device_id: The device ID for logging
         url: The base URL of the chamber controller device
         temp: Target temperature in Celsius
         chipid: Chip ID for authorization header
         control: Control type for the chamber controller (e.g. "fridge", "beer", "restore)
-    
+
     Returns:
         True if successful, False if error or invalid URL
     """
@@ -149,7 +163,8 @@ async def chamberctrl_set_mode(device_id: int, url: str, temp: float, chipid: st
                     )
                     return True
                 system_log_fermentationcontrol(
-                    f"Http response {res.status_code} from chamber controller device {device_id}",
+                    f"Http response {res.status_code} from chamber "
+                    f"controller device {device_id}",
                     error_code=res.status_code, log_level=LogLevel.ERROR
                 )
                 logger.error(
@@ -157,8 +172,12 @@ async def chamberctrl_set_mode(device_id: int, url: str, temp: float, chipid: st
                 )
 
         except JSONDecodeError:
+            msg = (
+                f"Failed to parse response from chamber controller device {device_id}, "
+                "JSONDecodeError"
+            )
             system_log_fermentationcontrol(
-                f"Failed to parse response from chamber controller device {device_id}, JSONDecodeError",
+                msg,
                 error_code=0, log_level=LogLevel.ERROR
             )
             logger.error("Unable to parse JSON response %s", url)

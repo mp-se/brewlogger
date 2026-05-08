@@ -17,7 +17,10 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
+"""Tests for the main application setup."""
+
 
 def test_health(app_client):
+    """Test health."""
     r = app_client.get("/health")
     assert r.status_code == 200

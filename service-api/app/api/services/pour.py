@@ -51,6 +51,7 @@ class PourService(BaseService[models.Pour, schemas.PourCreate, schemas.PourUpdat
             )
         self._validate_batch_exists(lst[0].batch_id)
         return super().create_list(lst)
+
     def search_by_batch_id(self, batch_id: int) -> List[models.Pour]:
         """Search pour events by batch ID."""
         objs = self._search_by_filter({"batch_id": batch_id})

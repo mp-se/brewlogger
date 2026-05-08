@@ -33,7 +33,7 @@ logger = logging.getLogger(__name__)
 
 async def fermentation_controller_run(curr_date: datetime) -> None:
     """Check and update fermentation profiles for active fermentation steps.
-    
+
     Args:
         curr_date: Current date to check against fermentation step dates
     """
@@ -41,7 +41,7 @@ async def fermentation_controller_run(curr_date: datetime) -> None:
     logger.info("Fermentation controller checking profile for date %s", curr_date)
 
     devices = DeviceService(create_session()).search_software("Chamber-Controller")
-    
+
     if not devices:
         return
 
@@ -50,7 +50,7 @@ async def fermentation_controller_run(curr_date: datetime) -> None:
 
     for device in devices:
         logger.info("Processing chamber controller device %s, %s", device.id, device.url)
-        
+
         if not device.fermentation_step:
             continue
 
@@ -67,12 +67,16 @@ async def fermentation_controller_run(curr_date: datetime) -> None:
                     "Found step that is active; %s => %s - %s, Temp: %s",
                     step.order, first_date, last_date, step.temp
                 )
-                
+
                 # Log fermentation step activation (only on first day)
                 if curr_date == first_date:
+                    msg = (
+                        f"Device {device.id}: Fermentation step {step.order} activated: "
+                        f"{step.temp}°C for {step.days} days "
+                        f"({first_date.date()} to {last_date.date()})"
+                    )
                     system_log_fermentationcontrol(
-                        f"Device {device.id}: Fermentation step {step.order} activated: {step.temp}°C "
-                        f"for {step.days} days ({first_date.date()} to {last_date.date()})",
+                        msg,
                         error_code=0, log_level=LogLevel.INFO
                     )
 
@@ -82,23 +86,35 @@ async def fermentation_controller_run(curr_date: datetime) -> None:
                     "Setting %s temperature to %s (current %s)",
                     step.control, step.temp, current_temp
                 )
+                msg = (
+                    f"Device {device.id}: Setting {step.control} temperature to "
+                    f"{step.temp}°C (current {current_temp}°C)"
+                )
                 system_log_fermentationcontrol(
-                    f"Device {device.id}: Setting {step.control} temperature to {step.temp}°C (current {current_temp}°C)",
+                    msg,
                     error_code=0, log_level=LogLevel.INFO
                 )
                 success = await chamberctrl_set_mode(
                     device.id, url, step.temp, device.chip_id, step.control
                 )
                 if success:
+                    msg = (
+                        f"Device {device.id}: Successfully set "
+                        f"{step.control} temperature to {step.temp}°C"
+                    )
                     system_log_fermentationcontrol(
-                        f"Device {device.id}: Successfully set {step.control} temperature to {step.temp}°C",
+                        msg,
                         error_code=0, log_level=LogLevel.INFO
                     )
                     temp_changes_count += 1
-            
+
             elif curr_date == last_date + timedelta(days=1):
+                msg = (
+                    f"Device {device.id}: Fermentation step {step.order} completed "
+                    f"(ended {last_date.date()})"
+                )
                 system_log_fermentationcontrol(
-                    f"Device {device.id}: Fermentation step {step.order} completed (ended {last_date.date()})",
+                    msg,
                     error_code=0, log_level=LogLevel.INFO
                 )
 
@@ -111,8 +127,12 @@ async def fermentation_controller_run(curr_date: datetime) -> None:
                         device.id, url, step.temp, device.chip_id, "restore"
                     )
                     if success:
+                        msg = (
+                            f"Device {device.id}: Successfully restored fridge control "
+                            f"after final step {step.order}"
+                        )
                         system_log_fermentationcontrol(
-                            f"Device {device.id}: Successfully restored fridge control after final step {step.order}",
+                            msg,
                             error_code=0, log_level=LogLevel.INFO
                         )
 

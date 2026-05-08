@@ -17,8 +17,10 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
+# pylint: disable=import-outside-toplevel
+"""Tests for the receive log endpoints."""
 
-import json
+
 from datetime import datetime
 from api.config import get_settings
 from api.db import models
@@ -31,15 +33,15 @@ headers = {
 }
 
 
-def test_init(app_client):
+def test_init():
     """Initialize database for receive log tests"""
     truncate_database()
 
 
 def test_receive_logs_requires_auth(app_client):
     """Test that GET /api/system/receive requires authentication"""
-    test_init(app_client)
-    
+    test_init()
+
     # Try with invalid API key
     bad_headers = {
         "Authorization": "Bearer invalid_key",
@@ -51,8 +53,8 @@ def test_receive_logs_requires_auth(app_client):
 
 def test_receive_logs_empty(app_client):
     """Test GET /api/system/receive returns empty list when no records exist"""
-    test_init(app_client)
-    
+    test_init()
+
     r = app_client.get("/api/system/receive", headers=headers)
     assert r.status_code == 200
     data = r.json()
@@ -64,8 +66,8 @@ def test_receive_logs_empty(app_client):
 
 def test_receive_logs_with_single_record(app_client):
     """Test GET /api/system/receive returns single record"""
-    test_init(app_client)
-    
+    test_init()
+
     # Insert a test record directly into the database
     session = create_session()
     log = models.ReceiveLog(
@@ -76,7 +78,7 @@ def test_receive_logs_with_single_record(app_client):
     session.add(log)
     session.commit()
     session.close()
-    
+
     r = app_client.get("/api/system/receive", headers=headers)
     assert r.status_code == 200
     data = r.json()
@@ -88,8 +90,8 @@ def test_receive_logs_with_single_record(app_client):
 
 def test_receive_logs_pagination_skip(app_client):
     """Test pagination with skip parameter"""
-    test_init(app_client)
-    
+    test_init()
+
     # Insert 5 test records
     session = create_session()
     for i in range(5):
@@ -101,7 +103,7 @@ def test_receive_logs_pagination_skip(app_client):
         session.add(log)
     session.commit()
     session.close()
-    
+
     # Get with skip=2
     r = app_client.get("/api/system/receive?skip=2&limit=2", headers=headers)
     assert r.status_code == 200
@@ -114,8 +116,8 @@ def test_receive_logs_pagination_skip(app_client):
 
 def test_receive_logs_pagination_limit(app_client):
     """Test pagination with limit parameter"""
-    test_init(app_client)
-    
+    test_init()
+
     # Insert 10 test records
     session = create_session()
     for i in range(10):
@@ -127,7 +129,7 @@ def test_receive_logs_pagination_limit(app_client):
         session.add(log)
     session.commit()
     session.close()
-    
+
     # Get with limit=3
     r = app_client.get("/api/system/receive?limit=3", headers=headers)
     assert r.status_code == 200
@@ -140,8 +142,8 @@ def test_receive_logs_pagination_limit(app_client):
 
 def test_receive_logs_default_limit(app_client):
     """Test that default limit is 50"""
-    test_init(app_client)
-    
+    test_init()
+
     # Insert 60 test records
     session = create_session()
     for i in range(60):
@@ -153,7 +155,7 @@ def test_receive_logs_default_limit(app_client):
         session.add(log)
     session.commit()
     session.close()
-    
+
     # Get without limit specified
     r = app_client.get("/api/system/receive", headers=headers)
     assert r.status_code == 200
@@ -165,8 +167,8 @@ def test_receive_logs_default_limit(app_client):
 
 def test_receive_logs_max_limit(app_client):
     """Test that limit cannot exceed 500"""
-    test_init(app_client)
-    
+    test_init()
+
     # Try with limit > 500
     r = app_client.get("/api/system/receive?limit=600", headers=headers)
     assert r.status_code == 422  # Validation error
@@ -174,13 +176,13 @@ def test_receive_logs_max_limit(app_client):
 
 def test_receive_logs_ordering(app_client):
     """Test that records are ordered by timestamp descending"""
-    test_init(app_client)
-    
+    test_init()
+
     # Insert records with different timestamps
     session = create_session()
     from datetime import timedelta
     now = datetime.now()
-    
+
     for i in range(3):
         log = models.ReceiveLog(
             ip_address=f"192.168.1.{100 + i}",
@@ -190,7 +192,7 @@ def test_receive_logs_ordering(app_client):
         session.add(log)
     session.commit()
     session.close()
-    
+
     r = app_client.get("/api/system/receive", headers=headers)
     assert r.status_code == 200
     data = r.json()
@@ -203,8 +205,8 @@ def test_receive_logs_ordering(app_client):
 
 def test_receive_logs_ip_address_formats(app_client):
     """Test that various IP address formats are stored correctly"""
-    test_init(app_client)
-    
+    test_init()
+
     session = create_session()
     # Test IPv4
     log1 = models.ReceiveLog(
@@ -222,7 +224,7 @@ def test_receive_logs_ip_address_formats(app_client):
     session.add(log2)
     session.commit()
     session.close()
-    
+
     r = app_client.get("/api/system/receive?limit=10", headers=headers)
     assert r.status_code == 200
     data = r.json()

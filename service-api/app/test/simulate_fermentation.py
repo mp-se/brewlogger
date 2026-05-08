@@ -56,9 +56,12 @@ DEVICE = {
 }
 
 FERMENTATION_STEPS = [
-    {"order": 0, "date": "2026-05-04", "temp": 19.4, "days": 2, "name": "", "type": "Primary",     "control": "fridge"},
-    {"order": 1, "date": "2026-05-06", "temp": 18.3, "days": 2, "name": "", "type": "Secondary",   "control": "fridge"},
-    {"order": 2, "date": "2026-05-08", "temp": 10.2, "days": 2, "name": "", "type": "Conditioning","control": "fridge"},
+    {"order": 0, "date": "2026-05-04", "temp": 19.4, "days": 2,
+     "name": "", "type": "Primary", "control": "fridge"},
+    {"order": 1, "date": "2026-05-06", "temp": 18.3, "days": 2,
+     "name": "", "type": "Secondary", "control": "fridge"},
+    {"order": 2, "date": "2026-05-08", "temp": 10.2, "days": 2,
+     "name": "", "type": "Conditioning", "control": "fridge"},
 ]
 
 START_DATE = datetime.strptime(FERMENTATION_STEPS[0]["date"], "%Y-%m-%d")
@@ -91,6 +94,7 @@ def seed_database() -> int:
 
 
 def fetch_new_logs(since_id: int) -> list:
+    """Fetch new logs."""
     session = create_session()
     logs = (
         session.query(models.SystemLog)
@@ -103,6 +107,7 @@ def fetch_new_logs(since_id: int) -> list:
 
 
 def last_log_id() -> int:
+    """Last log id."""
     session = create_session()
     row = session.query(models.SystemLog).order_by(models.SystemLog.id.desc()).first()
     session.remove()
@@ -110,6 +115,7 @@ def last_log_id() -> int:
 
 
 async def main():
+    """Main."""
     print("=== Fermentation Control Simulation ===")
     print(f"Seeding database with device and {len(FERMENTATION_STEPS)} fermentation steps...")
     device_id = seed_database()

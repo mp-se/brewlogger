@@ -74,7 +74,7 @@ async def get_latest_pressures(
 
 
 @router.post("/public", response_model=schemas.Pressure, status_code=200)
-async def create_pressure_using_json(  # pylint: disable=too-many-locals,duplicate-code
+async def create_pressure_using_json(  # pylint: disable=too-many-locals,duplicate-code,too-many-statements
     request: Request,
     background_tasks: BackgroundTasks,
     pressure_service: PressureService = Depends(get_pressure_service),
@@ -120,12 +120,14 @@ async def create_pressure_using_json(  # pylint: disable=too-many-locals,duplica
                 tapList=True,
             )
             batch = batch_service.create(batch)
-            system_log("pressure", f"Batch auto-created from public endpoint: {batch.name}", error_code=0, log_level=LogLevel.INFO)
+            msg = f"Batch auto-created from public endpoint: {batch.name}"
+            system_log("pressure", msg, error_code=0, log_level=LogLevel.INFO)
             background_tasks.add_task(notify_clients, "batch", "create", batch.id)
             batch_list = batch_service.search_chip_id_active(chip_id, True)
 
         if len(batch_list) == 0:
-            system_log("pressure", f"No batch found for device {req_json['ID']}", error_code=409, log_level=LogLevel.WARNING)
+            msg = f"No batch found for device {req_json['ID']}"
+            system_log("pressure", msg, error_code=409, log_level=LogLevel.WARNING)
             raise HTTPException(status_code=409, detail="No batch found")
 
         # Check if there is an device registered
@@ -144,7 +146,8 @@ async def create_pressure_using_json(  # pylint: disable=too-many-locals,duplica
                 collectLogs=False,
             )
             device = device_service.create(device)
-            system_log("pressure", f"Device auto-created from public endpoint: {device.chip_id}", error_code=0, log_level=LogLevel.INFO)
+            msg = f"Device auto-created from public endpoint: {device.chip_id}"
+            system_log("pressure", msg, error_code=0, log_level=LogLevel.INFO)
             background_tasks.add_task(notify_clients, "device", "create", device.id)
 
         # Example payload from pressuremon v0.4
@@ -208,7 +211,10 @@ async def create_pressure_using_json(  # pylint: disable=too-many-locals,duplica
         return Response(content="", status_code=200)
 
     except JSONDecodeError as exc:
-        system_log("pressure", "Failed to parse pressure data: JSONDecodeError", error_code=0, log_level=LogLevel.ERROR)
+        system_log(
+            "pressure", "Failed to parse pressure data: JSONDecodeError",
+            error_code=0, log_level=LogLevel.ERROR
+        )
         raise HTTPException(status_code=422, detail="Unable to parse request") from exc
 
 

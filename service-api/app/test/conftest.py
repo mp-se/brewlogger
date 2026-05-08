@@ -17,18 +17,22 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
+"""Pytest configuration and shared fixtures."""
+
 
 import pytest
-from api.main import register_handlers
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
-from api.db.session import engine, create_session
 from sqlalchemy import text
+from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import sessionmaker
+from api.db.session import engine
+from api.main import register_handlers
 
 
 @pytest.fixture()
 def app_client():
+    """App client."""
     app = FastAPI()
     register_handlers(app)
     yield TestClient(app)
@@ -37,66 +41,67 @@ def app_client():
 @pytest.fixture()
 def db_session():
     """Provide a fresh database session for unit tests."""
-    Session = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+    Session = sessionmaker(autocommit=False, autoflush=False, bind=engine)  # pylint: disable=invalid-name,too-many-statements
     session = Session()
     yield session
     session.close()
 
 
-def truncate_database():
+def truncate_database():  # pylint: disable=too-many-statements
+    """Truncate database."""
     print("Truncate all tables")
     with engine.connect() as con:
         try:
             con.execute(text("DELETE FROM pressure"))
             con.commit()
-        except Exception as e:
+        except SQLAlchemyError as e:
             con.rollback()
             print(e)
 
         try:
             con.execute(text("DELETE FROM gravity"))
             con.commit()
-        except Exception as e:
+        except SQLAlchemyError as e:
             con.rollback()
             print(e)
 
         try:
             con.execute(text("DELETE FROM pour"))
             con.commit()
-        except Exception as e:
+        except SQLAlchemyError as e:
             con.rollback()
             print(e)
 
         try:
             con.execute(text("DELETE FROM device"))
             con.commit()
-        except Exception as e:
+        except SQLAlchemyError as e:
             con.rollback()
             print(e)
 
         try:
             con.execute(text("DELETE FROM batch"))
             con.commit()
-        except Exception as e:
+        except SQLAlchemyError as e:
             con.rollback()
             print(e)
 
         try:
             con.execute(text("DELETE FROM fermentationstep"))
             con.commit()
-        except Exception as e:
+        except SQLAlchemyError as e:
             con.rollback()
             print(e)
 
         try:
             con.execute(text("DELETE FROM systemlog"))
             con.commit()
-        except Exception as e:
+        except SQLAlchemyError as e:
             con.rollback()
             print(e)
         try:
             con.execute(text("DELETE FROM receivelog"))
             con.commit()
-        except Exception as e:
+        except SQLAlchemyError as e:
             con.rollback()
             print(e)
