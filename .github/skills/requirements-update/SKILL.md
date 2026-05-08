@@ -10,9 +10,9 @@ Manages Python package dependencies across all brewlogger services using `pip-co
 
 ## Environment
 
-- **Python venv**: `/Users/dev/brewlogger/.env/`
-- **pip-compile binary**: `/Users/dev/brewlogger/.env/bin/pip-compile`
-- **pip binary**: `/Users/dev/brewlogger/.env/bin/pip`
+- **Python venv**: `.env/` (project root)
+- **pip-compile binary**: `.env/bin/pip-compile`
+- **pip binary**: `.env/bin/pip`
 
 ## Repository Structure
 
@@ -33,24 +33,28 @@ Each service has a `requirements.in` source file that is compiled to `requiremen
 ### Upgrade all services to latest versions
 
 ```bash
-PIP_COMPILE=/Users/dev/brewlogger/.env/bin/pip-compile
+PIP_COMPILE=.env/bin/pip-compile
 
 # service-api
-cd /Users/dev/brewlogger/service-api
+cd service-api
 $PIP_COMPILE --upgrade --output-file=requirements/requirements.txt requirements/requirements.in
 $PIP_COMPILE --upgrade --output-file=requirements/test-requirements.txt requirements/test-requirements.in
+cd ..
 
 # service-ble (hashes required)
-cd /Users/dev/brewlogger/service-ble
+cd service-ble
 $PIP_COMPILE --upgrade --generate-hashes --strip-extras --output-file=requirements.txt requirements.in
+cd ..
 
 # service-log
-cd /Users/dev/brewlogger/service-log
+cd service-log
 $PIP_COMPILE --upgrade --output-file=requirements.txt requirements.in
+cd ..
 
 # service-mdns
-cd /Users/dev/brewlogger/service-mdns
+cd service-mdns
 $PIP_COMPILE --upgrade --output-file=requirements.txt requirements.in
+cd ..
 ```
 
 ### Add a new package
@@ -59,7 +63,7 @@ $PIP_COMPILE --upgrade --output-file=requirements.txt requirements.in
 2. Run pip-compile for that service (without `--upgrade` to only resolve the new package):
 
 ```bash
-/Users/dev/brewlogger/.env/bin/pip-compile --output-file=requirements/requirements.txt requirements/requirements.in
+.env/bin/pip-compile --output-file=requirements/requirements.txt requirements/requirements.in
 ```
 
 ### Pin a specific version
@@ -74,14 +78,14 @@ Omit `--upgrade` — pip-compile will keep existing pins and only resolve new/ch
 
 1. **Install updated deps** in the venv:
    ```bash
-   /Users/dev/brewlogger/.env/bin/pip install -r service-api/requirements/requirements.txt
-   /Users/dev/brewlogger/.env/bin/pip install -r service-api/requirements/test-requirements.txt
+   .env/bin/pip install -r service-api/requirements/requirements.txt
+   .env/bin/pip install -r service-api/requirements/test-requirements.txt
    ```
 
 2. **Run tests** to verify nothing is broken:
    ```bash
-   cd /Users/dev/brewlogger/service-api
-   /Users/dev/brewlogger/.env/bin/pytest app/test/ -q
+   cd service-api
+   ../.env/bin/pytest app/test/ -q
    ```
 
 3. **Commit** the updated `.txt` files (and any `.in` changes):

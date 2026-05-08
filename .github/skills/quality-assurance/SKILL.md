@@ -10,19 +10,19 @@ Full QA pipeline for the `service-api`: pylint must score **10.00/10**, all test
 
 ## Environment
 
-- **Python venv**: `/Users/dev/brewlogger/.env/`
-- **Working directory**: `/Users/dev/brewlogger/service-api/`
-- **Pytest binary**: `/Users/dev/brewlogger/.env/bin/pytest`
-- **Pylint binary**: `/Users/dev/brewlogger/.env/bin/pylint`
-- **Pylint target**: `app/` directory
+- **Python venv**: `.env/` (project root)
+- **Working directory**: `service-api/`
+- **Pytest binary**: `.env/bin/pytest`
+- **Pylint binary**: `.env/bin/pylint`
+- **Pylint target**: `app/` directory (run from `service-api/`)
 
 ## Procedure
 
 ### 1. Run Tests
 
 ```bash
-cd /Users/dev/brewlogger/service-api
-/Users/dev/brewlogger/.env/bin/pytest app/test/ -q
+cd service-api
+../.env/bin/pytest app/test/ -q
 ```
 
 All tests must pass. If tests fail, fix them before proceeding to lint.
@@ -30,14 +30,14 @@ All tests must pass. If tests fail, fix them before proceeding to lint.
 To check coverage:
 
 ```bash
-/Users/dev/brewlogger/.env/bin/pytest app/test/ --cov=app --cov-report=term-missing -q
+../.env/bin/pytest app/test/ --cov=app --cov-report=term-missing -q
 ```
 
 ### 2. Run Pylint
 
 ```bash
-cd /Users/dev/brewlogger/service-api
-/Users/dev/brewlogger/.env/bin/pylint app/
+cd service-api
+../.env/bin/pylint app/
 ```
 
 Target score: **10.00/10**. The final line of output shows the score:
@@ -110,13 +110,13 @@ These have already been approved and are present in the codebase:
 After all fixes and approved suppressions:
 
 ```bash
-cd /Users/dev/brewlogger/service-api
+cd service-api
 
 # Tests must pass
-/Users/dev/brewlogger/.env/bin/pytest app/test/ -q
+../.env/bin/pytest app/test/ -q
 
 # Lint must be 10.00/10
-/Users/dev/brewlogger/.env/bin/pylint app/
+../.env/bin/pylint app/
 ```
 
 Both must succeed before committing.
@@ -132,6 +132,6 @@ Fix in this order:
 
 ## Tips
 
-- Run `pylint app/ 2>&1 | grep -E "^[A-Z]" | sort | uniq -c | sort -rn` for a summary of issue counts by code
-- Use `pylint app/ --output-format=text 2>&1 | grep "C0116"` to filter a specific code
+- Run `../.env/bin/pylint app/ 2>&1 | grep -E "^[A-Z]" | sort | uniq -c | sort -rn` for a summary of issue counts by code
+- Use `../.env/bin/pylint app/ --output-format=text 2>&1 | grep "C0116"` to filter a specific code
 - The `--score=y` flag (default) always shows the final score line
