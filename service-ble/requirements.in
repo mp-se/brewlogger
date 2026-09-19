@@ -1,4 +1,5 @@
-bleak>=0.21.0
-requests
-construct
+bleak==3.0.2
+requests==2.34.2
+construct==2.10.70
+redis==8.1.0
 redis

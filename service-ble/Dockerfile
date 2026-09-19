@@ -6,9 +6,7 @@ WORKDIR /app
 RUN apt-get update && apt-get install -y --no-install-recommends     bluez     libcap2-bin     gcc     python3-dev     && rm -rf /var/lib/apt/cache/*
 
 COPY requirements.in .
-
-# Install dependencies using requirements.in to avoid macOS-specific wheel resolution
-RUN pip install --no-cache-dir --upgrade pip &&     pip install --no-cache-dir bleak requests construct redis
+RUN pip install --no-cache-dir -r requirements.in
 
 COPY . .
 

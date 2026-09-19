@@ -8,4 +8,8 @@ const localStorageMock = {
   clear: vi.fn()
 }
 
-global.localStorage = localStorageMock
+Object.defineProperty(globalThis, 'localStorage', {
+  value: localStorageMock,
+  configurable: true,
+  writable: true
+})
