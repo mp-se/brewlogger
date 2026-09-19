@@ -1,7 +1,7 @@
 services:
   brew_web:
     # This is hosted in its own repository
-    image: mpse2/brewlogger-web
+    build: service-web
     hostname: brew_web
     restart: always
     environment:
