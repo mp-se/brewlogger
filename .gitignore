@@ -13,6 +13,7 @@ certs/
 *.json
 *.txt
 *.sql
-docker-compose*.yaml
 .DS_Store
 .coverage
+docker-compose*.yaml
+.env*
