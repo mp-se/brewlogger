@@ -17,3 +17,5 @@ certs/
 .coverage
 docker-compose*.yaml
 .env*
+.ruff_cache/
+bug/
