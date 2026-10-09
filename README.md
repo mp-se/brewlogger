@@ -5,6 +5,8 @@
 
 # BrewLogger
 
+> **Note:** This project has been replaced by [BrewGraph](https://www.brewgraph.com). Please visit www.brewgraph.com for the successor.
+
 This project started as a testing suite for my brewing device software, especially Gravitymon. I needed a way to collect
 and analyse the data for further improving the software. It has since been extended to be used as my fermentation tracking
 software as a complement to Brewfather which I use for recepie design and tracking what beer I have.
