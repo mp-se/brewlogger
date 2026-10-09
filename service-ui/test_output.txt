@@ -1,0 +1,553 @@
+
+[1m[46m RUN [49m[22m [36mv4.1.2 [39m[90m/Users/dev/brewlogger-ui[39m
+
+[90mstderr[2m | src/views/__tests__/DeviceListView.test.js[2m > [22m[2mDeviceListView.vue[2m > [22m[2mrenders and loads data on mount
+[22m[39m[Vue warn]: Invalid watch source:  [90mundefined[39m A watch source can only be a getter/effect function, a ref, a reactive object, or an array of these types. 
+  at <DeviceListView ref="VTU_COMPONENT" > 
+  at <VTUROOT>
+[Vue warn]: Invalid watch source:  [90mundefined[39m A watch source can only be a getter/effect function, a ref, a reactive object, or an array of these types. 
+  at <DeviceListView ref="VTU_COMPONENT" > 
+  at <VTUROOT>
+[Vue warn]: Failed setting prop "options" on <select>: value [object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object] is invalid. TypeError: 'set' on proxy: trap returned falsish for property 'options'
+    at patchDOMProp [90m(/Users/dev/brewlogger-ui/[39mnode_modules/[4m@vue/runtime-dom[24m/dist/runtime-dom.cjs.js:603:13[90m)[39m
+    at patchProp [90m(/Users/dev/brewlogger-ui/[39mnode_modules/[4m@vue/runtime-dom[24m/dist/runtime-dom.cjs.js:714:5[90m)[39m
+    at mountElement [90m(/Users/dev/brewlogger-ui/[39mnode_modules/[4m@vue/runtime-core[24m/dist/runtime-core.cjs.js:4893:11[90m)[39m
+    at processElement [90m(/Users/dev/brewlogger-ui/[39mnode_modules/[4m@vue/runtime-core[24m/dist/runtime-core.cjs.js:4840:7[90m)[39m
+    at patch [90m(/Users/dev/brewlogger-ui/[39mnode_modules/[4m@vue/runtime-core[24m/dist/runtime-core.cjs.js:4706:11[90m)[39m
+    at ReactiveEffect.componentUpdateFn [as fn] [90m(/Users/dev/brewlogger-ui/[39mnode_modules/[4m@vue/runtime-core[24m/dist/runtime-core.cjs.js:5337:11[90m)[39m
+    at ReactiveEffect.run [90m(/Users/dev/brewlogger-ui/[39mnode_modules/[4m@vue/reactivity[24m/dist/reactivity.cjs.js:241:19[90m)[39m
+    at setupRenderEffect [90m(/Users/dev/brewlogger-ui/[39mnode_modules/[4m@vue/runtime-core[24m/dist/runtime-core.cjs.js:5465:5[90m)[39m
+    at mountComponent [90m(/Users/dev/brewlogger-ui/[39mnode_modules/[4m@vue/runtime-core[24m/dist/runtime-core.cjs.js:5239:7[90m)[39m
+    at processComponent [90m(/Users/dev/brewlogger-ui/[39mnode_modules/[4m@vue/runtime-core[24m/dist/runtime-core.cjs.js:5191:9[90m)[39m 
+  at <Anonymous modelValue="*" onUpdate:modelValue=fn options= [
+  { label: [32m'(All)'[39m, value: [32m'*'[39m },
+  { label: [32m'(Blank)'[39m, value: [32m''[39m },
+  { label: [32m'Gravitymon'[39m, value: [32m'Gravitymon'[39m },
+  { label: [32m'Gravitymon Gateway'[39m, value: [32m'Gravitymon-Gateway'[39m },
+  { label: [32m'Chamber Controller'[39m, value: [32m'Chamber-Controller'[39m },
+  { label: [32m'Kegmon'[39m, value: [32m'Kegmon'[39m },
+  { label: [32m'Pressuremon'[39m, value: [32m'Pressuremon'[39m }
+]  ... > 
+  at <DeviceListView ref="VTU_COMPONENT" > 
+  at <VTUROOT>
+
+[90mstderr[2m | src/views/__tests__/DeviceListView.test.js[2m > [22m[2mDeviceListView.vue[2m > [22m[2mrenders and loads data on mount
+[22m[39m[Vue warn]: Unhandled error during execution of render function 
+  at <DeviceListView ref="VTU_COMPONENT" > 
+  at <VTUROOT>
+[Vue warn]: Unhandled error during execution of component update 
+  at <DeviceListView ref="VTU_COMPONENT" > 
+  at <VTUROOT>
+
+[90mstderr[2m | src/views/__tests__/DeviceListView.test.js[2m > [22m[2mDeviceListView.vue[2m > [22m[2mfilters by software
+[22m[39m[Vue warn]: Invalid watch source:  [90mundefined[39m A watch source can only be a getter/effect function, a ref, a reactive object, or an array of these types. 
+  at <DeviceListView ref="VTU_COMPONENT" > 
+  at <VTUROOT>
+[Vue warn]: Invalid watch source:  [90mundefined[39m A watch source can only be a getter/effect function, a ref, a reactive object, or an array of these types. 
+  at <DeviceListView ref="VTU_COMPONENT" > 
+  at <VTUROOT>
+[Vue warn]: Failed setting prop "options" on <select>: value [object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object] is invalid. TypeError: 'set' on proxy: trap returned falsish for property 'options'
+    at patchDOMProp [90m(/Users/dev/brewlogger-ui/[39mnode_modules/[4m@vue/runtime-dom[24m/dist/runtime-dom.cjs.js:603:13[90m)[39m
+    at patchProp [90m(/Users/dev/brewlogger-ui/[39mnode_modules/[4m@vue/runtime-dom[24m/dist/runtime-dom.cjs.js:714:5[90m)[39m
+    at mountElement [90m(/Users/dev/brewlogger-ui/[39mnode_modules/[4m@vue/runtime-core[24m/dist/runtime-core.cjs.js:4893:11[90m)[39m
+    at processElement [90m(/Users/dev/brewlogger-ui/[39mnode_modules/[4m@vue/runtime-core[24m/dist/runtime-core.cjs.js:4840:7[90m)[39m
+    at patch [90m(/Users/dev/brewlogger-ui/[39mnode_modules/[4m@vue/runtime-core[24m/dist/runtime-core.cjs.js:4706:11[90m)[39m
+    at ReactiveEffect.componentUpdateFn [as fn] [90m(/Users/dev/brewlogger-ui/[39mnode_modules/[4m@vue/runtime-core[24m/dist/runtime-core.cjs.js:5337:11[90m)[39m
+    at ReactiveEffect.run [90m(/Users/dev/brewlogger-ui/[39mnode_modules/[4m@vue/reactivity[24m/dist/reactivity.cjs.js:241:19[90m)[39m
+    at setupRenderEffect [90m(/Users/dev/brewlogger-ui/[39mnode_modules/[4m@vue/runtime-core[24m/dist/runtime-core.cjs.js:5465:5[90m)[39m
+    at mountComponent [90m(/Users/dev/brewlogger-ui/[39mnode_modules/[4m@vue/runtime-core[24m/dist/runtime-core.cjs.js:5239:7[90m)[39m
+    at processComponent [90m(/Users/dev/brewlogger-ui/[39mnode_modules/[4m@vue/runtime-core[24m/dist/runtime-core.cjs.js:5191:9[90m)[39m 
+  at <Anonymous modelValue="Gravitymon" onUpdate:modelValue=fn options= [
+  { label: [32m'(All)'[39m, value: [32m'*'[39m },
+  { label: [32m'(Blank)'[39m, value: [32m''[39m },
+  { label: [32m'Gravitymon'[39m, value: [32m'Gravitymon'[39m },
+  { label: [32m'Gravitymon Gateway'[39m, value: [32m'Gravitymon-Gateway'[39m },
+  { label: [32m'Chamber Controller'[39m, value: [32m'Chamber-Controller'[39m },
+  { label: [32m'Kegmon'[39m, value: [32m'Kegmon'[39m },
+  { label: [32m'Pressuremon'[39m, value: [32m'Pressuremon'[39m }
+]  ... > 
+  at <DeviceListView ref="VTU_COMPONENT" > 
+  at <VTUROOT>
+
+[90mstderr[2m | src/views/__tests__/DeviceListView.test.js[2m > [22m[2mDeviceListView.vue[2m > [22m[2mfilters by software
+[22m[39m[Vue warn]: Unhandled error during execution of render function 
+  at <DeviceListView ref="VTU_COMPONENT" > 
+  at <VTUROOT>
+[Vue warn]: Unhandled error during execution of component update 
+  at <DeviceListView ref="VTU_COMPONENT" > 
+  at <VTUROOT>
+
+[90mstderr[2m | src/views/__tests__/DeviceListView.test.js[2m > [22m[2mDeviceListView.vue[2m > [22m[2mnavigates to device view on edit click
+[22m[39m[Vue warn]: Invalid watch source:  [90mundefined[39m A watch source can only be a getter/effect function, a ref, a reactive object, or an array of these types. 
+  at <DeviceListView ref="VTU_COMPONENT" > 
+  at <VTUROOT>
+[Vue warn]: Invalid watch source:  [90mundefined[39m A watch source can only be a getter/effect function, a ref, a reactive object, or an array of these types. 
+  at <DeviceListView ref="VTU_COMPONENT" > 
+  at <VTUROOT>
+[Vue warn]: Failed setting prop "options" on <select>: value [object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object] is invalid. TypeError: 'set' on proxy: trap returned falsish for property 'options'
+    at patchDOMProp [90m(/Users/dev/brewlogger-ui/[39mnode_modules/[4m@vue/runtime-dom[24m/dist/runtime-dom.cjs.js:603:13[90m)[39m
+    at patchProp [90m(/Users/dev/brewlogger-ui/[39mnode_modules/[4m@vue/runtime-dom[24m/dist/runtime-dom.cjs.js:714:5[90m)[39m
+    at mountElement [90m(/Users/dev/brewlogger-ui/[39mnode_modules/[4m@vue/runtime-core[24m/dist/runtime-core.cjs.js:4893:11[90m)[39m
+    at processElement [90m(/Users/dev/brewlogger-ui/[39mnode_modules/[4m@vue/runtime-core[24m/dist/runtime-core.cjs.js:4840:7[90m)[39m
+    at patch [90m(/Users/dev/brewlogger-ui/[39mnode_modules/[4m@vue/runtime-core[24m/dist/runtime-core.cjs.js:4706:11[90m)[39m
+    at ReactiveEffect.componentUpdateFn [as fn] [90m(/Users/dev/brewlogger-ui/[39mnode_modules/[4m@vue/runtime-core[24m/dist/runtime-core.cjs.js:5337:11[90m)[39m
+    at ReactiveEffect.run [90m(/Users/dev/brewlogger-ui/[39mnode_modules/[4m@vue/reactivity[24m/dist/reactivity.cjs.js:241:19[90m)[39m
+    at setupRenderEffect [90m(/Users/dev/brewlogger-ui/[39mnode_modules/[4m@vue/runtime-core[24m/dist/runtime-core.cjs.js:5465:5[90m)[39m
+    at mountComponent [90m(/Users/dev/brewlogger-ui/[39mnode_modules/[4m@vue/runtime-core[24m/dist/runtime-core.cjs.js:5239:7[90m)[39m
+    at processComponent [90m(/Users/dev/brewlogger-ui/[39mnode_modules/[4m@vue/runtime-core[24m/dist/runtime-core.cjs.js:5191:9[90m)[39m 
+  at <Anonymous modelValue="*" onUpdate:modelValue=fn options= [
+  { label: [32m'(All)'[39m, value: [32m'*'[39m },
+  { label: [32m'(Blank)'[39m, value: [32m''[39m },
+  { label: [32m'Gravitymon'[39m, value: [32m'Gravitymon'[39m },
+  { label: [32m'Gravitymon Gateway'[39m, value: [32m'Gravitymon-Gateway'[39m },
+  { label: [32m'Chamber Controller'[39m, value: [32m'Chamber-Controller'[39m },
+  { label: [32m'Kegmon'[39m, value: [32m'Kegmon'[39m },
+  { label: [32m'Pressuremon'[39m, value: [32m'Pressuremon'[39m }
+]  ... > 
+  at <DeviceListView ref="VTU_COMPONENT" > 
+  at <VTUROOT>
+
+[90mstderr[2m | src/views/__tests__/DeviceListView.test.js[2m > [22m[2mDeviceListView.vue[2m > [22m[2mnavigates to device view on edit click
+[22m[39m[Vue warn]: Unhandled error during execution of render function 
+  at <DeviceListView ref="VTU_COMPONENT" > 
+  at <VTUROOT>
+[Vue warn]: Unhandled error during execution of component update 
+  at <DeviceListView ref="VTU_COMPONENT" > 
+  at <VTUROOT>
+
+[90mstderr[2m | src/views/__tests__/DeviceListView.test.js[2m > [22m[2mDeviceListView.vue[2m > [22m[2mcalls deleteDevice on confirm
+[22m[39m[Vue warn]: Invalid watch source:  [90mundefined[39m A watch source can only be a getter/effect function, a ref, a reactive object, or an array of these types. 
+  at <DeviceListView ref="VTU_COMPONENT" > 
+  at <VTUROOT>
+[Vue warn]: Invalid watch source:  [90mundefined[39m A watch source can only be a getter/effect function, a ref, a reactive object, or an array of these types. 
+  at <DeviceListView ref="VTU_COMPONENT" > 
+  at <VTUROOT>
+[Vue warn]: Failed setting prop "options" on <select>: value [object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object] is invalid. TypeError: 'set' on proxy: trap returned falsish for property 'options'
+    at patchDOMProp [90m(/Users/dev/brewlogger-ui/[39mnode_modules/[4m@vue/runtime-dom[24m/dist/runtime-dom.cjs.js:603:13[90m)[39m
+    at patchProp [90m(/Users/dev/brewlogger-ui/[39mnode_modules/[4m@vue/runtime-dom[24m/dist/runtime-dom.cjs.js:714:5[90m)[39m
+    at mountElement [90m(/Users/dev/brewlogger-ui/[39mnode_modules/[4m@vue/runtime-core[24m/dist/runtime-core.cjs.js:4893:11[90m)[39m
+    at processElement [90m(/Users/dev/brewlogger-ui/[39mnode_modules/[4m@vue/runtime-core[24m/dist/runtime-core.cjs.js:4840:7[90m)[39m
+    at patch [90m(/Users/dev/brewlogger-ui/[39mnode_modules/[4m@vue/runtime-core[24m/dist/runtime-core.cjs.js:4706:11[90m)[39m
+    at ReactiveEffect.componentUpdateFn [as fn] [90m(/Users/dev/brewlogger-ui/[39mnode_modules/[4m@vue/runtime-core[24m/dist/runtime-core.cjs.js:5337:11[90m)[39m
+    at ReactiveEffect.run [90m(/Users/dev/brewlogger-ui/[39mnode_modules/[4m@vue/reactivity[24m/dist/reactivity.cjs.js:241:19[90m)[39m
+    at setupRenderEffect [90m(/Users/dev/brewlogger-ui/[39mnode_modules/[4m@vue/runtime-core[24m/dist/runtime-core.cjs.js:5465:5[90m)[39m
+    at mountComponent [90m(/Users/dev/brewlogger-ui/[39mnode_modules/[4m@vue/runtime-core[24m/dist/runtime-core.cjs.js:5239:7[90m)[39m
+    at processComponent [90m(/Users/dev/brewlogger-ui/[39mnode_modules/[4m@vue/runtime-core[24m/dist/runtime-core.cjs.js:5191:9[90m)[39m 
+  at <Anonymous modelValue="*" onUpdate:modelValue=fn options= [
+  { label: [32m'(All)'[39m, value: [32m'*'[39m },
+  { label: [32m'(Blank)'[39m, value: [32m''[39m },
+  { label: [32m'Gravitymon'[39m, value: [32m'Gravitymon'[39m },
+  { label: [32m'Gravitymon Gateway'[39m, value: [32m'Gravitymon-Gateway'[39m },
+  { label: [32m'Chamber Controller'[39m, value: [32m'Chamber-Controller'[39m },
+  { label: [32m'Kegmon'[39m, value: [32m'Kegmon'[39m },
+  { label: [32m'Pressuremon'[39m, value: [32m'Pressuremon'[39m }
+]  ... > 
+  at <DeviceListView ref="VTU_COMPONENT" > 
+  at <VTUROOT>
+
+[90mstderr[2m | src/views/__tests__/DeviceListView.test.js[2m > [22m[2mDeviceListView.vue[2m > [22m[2mcalls deleteDevice on confirm
+[22m[39m[Vue warn]: Unhandled error during execution of render function 
+  at <DeviceListView ref="VTU_COMPONENT" > 
+  at <VTUROOT>
+[Vue warn]: Unhandled error during execution of component update 
+  at <DeviceListView ref="VTU_COMPONENT" > 
+  at <VTUROOT>
+
+[90mstderr[2m | src/views/__tests__/DeviceListView.test.js[2m > [22m[2mDeviceListView.vue[2m > [22m[2mtoggles log collection
+[22m[39m[Vue warn]: Invalid watch source:  [90mundefined[39m A watch source can only be a getter/effect function, a ref, a reactive object, or an array of these types. 
+  at <DeviceListView ref="VTU_COMPONENT" > 
+  at <VTUROOT>
+[Vue warn]: Invalid watch source:  [90mundefined[39m A watch source can only be a getter/effect function, a ref, a reactive object, or an array of these types. 
+  at <DeviceListView ref="VTU_COMPONENT" > 
+  at <VTUROOT>
+[Vue warn]: Failed setting prop "options" on <select>: value [object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object] is invalid. TypeError: 'set' on proxy: trap returned falsish for property 'options'
+    at patchDOMProp [90m(/Users/dev/brewlogger-ui/[39mnode_modules/[4m@vue/runtime-dom[24m/dist/runtime-dom.cjs.js:603:13[90m)[39m
+    at patchProp [90m(/Users/dev/brewlogger-ui/[39mnode_modules/[4m@vue/runtime-dom[24m/dist/runtime-dom.cjs.js:714:5[90m)[39m
+    at mountElement [90m(/Users/dev/brewlogger-ui/[39mnode_modules/[4m@vue/runtime-core[24m/dist/runtime-core.cjs.js:4893:11[90m)[39m
+    at processElement [90m(/Users/dev/brewlogger-ui/[39mnode_modules/[4m@vue/runtime-core[24m/dist/runtime-core.cjs.js:4840:7[90m)[39m
+    at patch [90m(/Users/dev/brewlogger-ui/[39mnode_modules/[4m@vue/runtime-core[24m/dist/runtime-core.cjs.js:4706:11[90m)[39m
+    at ReactiveEffect.componentUpdateFn [as fn] [90m(/Users/dev/brewlogger-ui/[39mnode_modules/[4m@vue/runtime-core[24m/dist/runtime-core.cjs.js:5337:11[90m)[39m
+    at ReactiveEffect.run [90m(/Users/dev/brewlogger-ui/[39mnode_modules/[4m@vue/reactivity[24m/dist/reactivity.cjs.js:241:19[90m)[39m
+    at setupRenderEffect [90m(/Users/dev/brewlogger-ui/[39mnode_modules/[4m@vue/runtime-core[24m/dist/runtime-core.cjs.js:5465:5[90m)[39m
+    at mountComponent [90m(/Users/dev/brewlogger-ui/[39mnode_modules/[4m@vue/runtime-core[24m/dist/runtime-core.cjs.js:5239:7[90m)[39m
+    at processComponent [90m(/Users/dev/brewlogger-ui/[39mnode_modules/[4m@vue/runtime-core[24m/dist/runtime-core.cjs.js:5191:9[90m)[39m 
+  at <Anonymous modelValue="*" onUpdate:modelValue=fn options= [
+  { label: [32m'(All)'[39m, value: [32m'*'[39m },
+  { label: [32m'(Blank)'[39m, value: [32m''[39m },
+  { label: [32m'Gravitymon'[39m, value: [32m'Gravitymon'[39m },
+  { label: [32m'Gravitymon Gateway'[39m, value: [32m'Gravitymon-Gateway'[39m },
+  { label: [32m'Chamber Controller'[39m, value: [32m'Chamber-Controller'[39m },
+  { label: [32m'Kegmon'[39m, value: [32m'Kegmon'[39m },
+  { label: [32m'Pressuremon'[39m, value: [32m'Pressuremon'[39m }
+]  ... > 
+  at <DeviceListView ref="VTU_COMPONENT" > 
+  at <VTUROOT>
+
+[90mstderr[2m | src/views/__tests__/DeviceListView.test.js[2m > [22m[2mDeviceListView.vue[2m > [22m[2mtoggles log collection
+[22m[39m[Vue warn]: Unhandled error during execution of render function 
+  at <DeviceListView ref="VTU_COMPONENT" > 
+  at <VTUROOT>
+[Vue warn]: Unhandled error during execution of component update 
+  at <DeviceListView ref="VTU_COMPONENT" > 
+  at <VTUROOT>
+
+[90mstderr[2m | src/views/__tests__/DeviceListView.test.js[2m > [22m[2mDeviceListView.vue[2m > [22m[2mhandles MDNS search
+[22m[39m[Vue warn]: Invalid watch source:  [90mundefined[39m A watch source can only be a getter/effect function, a ref, a reactive object, or an array of these types. 
+  at <DeviceListView ref="VTU_COMPONENT" > 
+  at <VTUROOT>
+[Vue warn]: Invalid watch source:  [90mundefined[39m A watch source can only be a getter/effect function, a ref, a reactive object, or an array of these types. 
+  at <DeviceListView ref="VTU_COMPONENT" > 
+  at <VTUROOT>
+[Vue warn]: Failed setting prop "options" on <select>: value [object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object] is invalid. TypeError: 'set' on proxy: trap returned falsish for property 'options'
+    at patchDOMProp [90m(/Users/dev/brewlogger-ui/[39mnode_modules/[4m@vue/runtime-dom[24m/dist/runtime-dom.cjs.js:603:13[90m)[39m
+    at patchProp [90m(/Users/dev/brewlogger-ui/[39mnode_modules/[4m@vue/runtime-dom[24m/dist/runtime-dom.cjs.js:714:5[90m)[39m
+    at mountElement [90m(/Users/dev/brewlogger-ui/[39mnode_modules/[4m@vue/runtime-core[24m/dist/runtime-core.cjs.js:4893:11[90m)[39m
+    at processElement [90m(/Users/dev/brewlogger-ui/[39mnode_modules/[4m@vue/runtime-core[24m/dist/runtime-core.cjs.js:4840:7[90m)[39m
+    at patch [90m(/Users/dev/brewlogger-ui/[39mnode_modules/[4m@vue/runtime-core[24m/dist/runtime-core.cjs.js:4706:11[90m)[39m
+    at ReactiveEffect.componentUpdateFn [as fn] [90m(/Users/dev/brewlogger-ui/[39mnode_modules/[4m@vue/runtime-core[24m/dist/runtime-core.cjs.js:5337:11[90m)[39m
+    at ReactiveEffect.run [90m(/Users/dev/brewlogger-ui/[39mnode_modules/[4m@vue/reactivity[24m/dist/reactivity.cjs.js:241:19[90m)[39m
+    at setupRenderEffect [90m(/Users/dev/brewlogger-ui/[39mnode_modules/[4m@vue/runtime-core[24m/dist/runtime-core.cjs.js:5465:5[90m)[39m
+    at mountComponent [90m(/Users/dev/brewlogger-ui/[39mnode_modules/[4m@vue/runtime-core[24m/dist/runtime-core.cjs.js:5239:7[90m)[39m
+    at processComponent [90m(/Users/dev/brewlogger-ui/[39mnode_modules/[4m@vue/runtime-core[24m/dist/runtime-core.cjs.js:5191:9[90m)[39m 
+  at <Anonymous modelValue="*" onUpdate:modelValue=fn options= [
+  { label: [32m'(All)'[39m, value: [32m'*'[39m },
+  { label: [32m'(Blank)'[39m, value: [32m''[39m },
+  { label: [32m'Gravitymon'[39m, value: [32m'Gravitymon'[39m },
+  { label: [32m'Gravitymon Gateway'[39m, value: [32m'Gravitymon-Gateway'[39m },
+  { label: [32m'Chamber Controller'[39m, value: [32m'Chamber-Controller'[39m },
+  { label: [32m'Kegmon'[39m, value: [32m'Kegmon'[39m },
+  { label: [32m'Pressuremon'[39m, value: [32m'Pressuremon'[39m }
+]  ... > 
+  at <DeviceListView ref="VTU_COMPONENT" > 
+  at <VTUROOT>
+
+[90mstderr[2m | src/views/__tests__/DeviceListView.test.js[2m > [22m[2mDeviceListView.vue[2m > [22m[2mhandles MDNS search
+[22m[39m[Vue warn]: Unhandled error during execution of render function 
+  at <DeviceListView ref="VTU_COMPONENT" > 
+  at <VTUROOT>
+[Vue warn]: Unhandled error during execution of component update 
+  at <DeviceListView ref="VTU_COMPONENT" > 
+  at <VTUROOT>
+
+[90mstderr[2m | src/views/__tests__/DeviceListView.test.js[2m > [22m[2mDeviceListView.vue[2m > [22m[2mcalls search on mount if query param present
+[22m[39m[Vue warn]: Invalid watch source:  [90mundefined[39m A watch source can only be a getter/effect function, a ref, a reactive object, or an array of these types. 
+  at <DeviceListView ref="VTU_COMPONENT" > 
+  at <VTUROOT>
+[Vue warn]: Invalid watch source:  [90mundefined[39m A watch source can only be a getter/effect function, a ref, a reactive object, or an array of these types. 
+  at <DeviceListView ref="VTU_COMPONENT" > 
+  at <VTUROOT>
+[Vue warn]: Failed setting prop "options" on <select>: value [object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object] is invalid. TypeError: 'set' on proxy: trap returned falsish for property 'options'
+    at patchDOMProp [90m(/Users/dev/brewlogger-ui/[39mnode_modules/[4m@vue/runtime-dom[24m/dist/runtime-dom.cjs.js:603:13[90m)[39m
+    at patchProp [90m(/Users/dev/brewlogger-ui/[39mnode_modules/[4m@vue/runtime-dom[24m/dist/runtime-dom.cjs.js:714:5[90m)[39m
+    at mountElement [90m(/Users/dev/brewlogger-ui/[39mnode_modules/[4m@vue/runtime-core[24m/dist/runtime-core.cjs.js:4893:11[90m)[39m
+    at processElement [90m(/Users/dev/brewlogger-ui/[39mnode_modules/[4m@vue/runtime-core[24m/dist/runtime-core.cjs.js:4840:7[90m)[39m
+    at patch [90m(/Users/dev/brewlogger-ui/[39mnode_modules/[4m@vue/runtime-core[24m/dist/runtime-core.cjs.js:4706:11[90m)[39m
+    at ReactiveEffect.componentUpdateFn [as fn] [90m(/Users/dev/brewlogger-ui/[39mnode_modules/[4m@vue/runtime-core[24m/dist/runtime-core.cjs.js:5337:11[90m)[39m
+    at ReactiveEffect.run [90m(/Users/dev/brewlogger-ui/[39mnode_modules/[4m@vue/reactivity[24m/dist/reactivity.cjs.js:241:19[90m)[39m
+    at setupRenderEffect [90m(/Users/dev/brewlogger-ui/[39mnode_modules/[4m@vue/runtime-core[24m/dist/runtime-core.cjs.js:5465:5[90m)[39m
+    at mountComponent [90m(/Users/dev/brewlogger-ui/[39mnode_modules/[4m@vue/runtime-core[24m/dist/runtime-core.cjs.js:5239:7[90m)[39m
+    at processComponent [90m(/Users/dev/brewlogger-ui/[39mnode_modules/[4m@vue/runtime-core[24m/dist/runtime-core.cjs.js:5191:9[90m)[39m 
+  at <Anonymous modelValue="*" onUpdate:modelValue=fn options= [
+  { label: [32m'(All)'[39m, value: [32m'*'[39m },
+  { label: [32m'(Blank)'[39m, value: [32m''[39m },
+  { label: [32m'Gravitymon'[39m, value: [32m'Gravitymon'[39m },
+  { label: [32m'Gravitymon Gateway'[39m, value: [32m'Gravitymon-Gateway'[39m },
+  { label: [32m'Chamber Controller'[39m, value: [32m'Chamber-Controller'[39m },
+  { label: [32m'Kegmon'[39m, value: [32m'Kegmon'[39m },
+  { label: [32m'Pressuremon'[39m, value: [32m'Pressuremon'[39m }
+]  ... > 
+  at <DeviceListView ref="VTU_COMPONENT" > 
+  at <VTUROOT>
+
+[90mstderr[2m | src/views/__tests__/DeviceListView.test.js[2m > [22m[2mDeviceListView.vue[2m > [22m[2mcalls search on mount if query param present
+[22m[39m[Vue warn]: Unhandled error during execution of render function 
+  at <DeviceListView ref="VTU_COMPONENT" > 
+  at <VTUROOT>
+[Vue warn]: Unhandled error during execution of component update 
+  at <DeviceListView ref="VTU_COMPONENT" > 
+  at <VTUROOT>
+
+ [31m❯[39m src/views/__tests__/DeviceListView.test.js [2m([22m[2m7 tests[22m[2m | [22m[31m7 failed[39m[2m)[22m[32m 37[2mms[22m[39m
+[31m     [31m×[31m renders and loads data on mount[39m[32m 22[2mms[22m[39m
+[31m     [31m×[31m filters by software[39m[32m 3[2mms[22m[39m
+[31m     [31m×[31m navigates to device view on edit click[39m[32m 2[2mms[22m[39m
+[31m     [31m×[31m calls deleteDevice on confirm[39m[32m 2[2mms[22m[39m
+[31m     [31m×[31m toggles log collection[39m[32m 2[2mms[22m[39m
+[31m     [31m×[31m handles MDNS search[39m[32m 2[2mms[22m[39m
+[31m     [31m×[31m calls search on mount if query param present[39m[32m 4[2mms[22m[39m
+
+[31m⎯⎯⎯⎯⎯⎯⎯[39m[1m[41m Failed Tests 7 [49m[22m[31m⎯⎯⎯⎯⎯⎯⎯[39m
+
+[41m[1m FAIL [22m[49m src/views/__tests__/DeviceListView.test.js[2m > [22mDeviceListView.vue[2m > [22mrenders and loads data on mount
+[31m[1mAssertionError[22m: expected +0 to be 2 // Object.is equality[39m
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- 2[39m
+[31m+ 0[39m
+
+[36m [2m❯[22m src/views/__tests__/DeviceListView.test.js:[2m115:48[22m[39m
+    [90m113|[39m     [35mawait[39m [34mflushPromises[39m()
+    [90m114|[39m     [34mexpect[39m(mockUi[33m.[39msetSortingDefault)[33m.[39m[34mtoHaveBeenCalled[39m()
+    [90m115|[39m     [34mexpect[39m(wrapper[33m.[39m[34mfindAll[39m([32m'tbody tr'[39m)[33m.[39mlength)[33m.[39m[34mtoBe[39m([34m2[39m)
+    [90m   |[39m                                                [31m^[39m
+    [90m116|[39m   })
+    [90m117|[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/7]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m src/views/__tests__/DeviceListView.test.js[2m > [22mDeviceListView.vue[2m > [22mfilters by software
+[31m[1mAssertionError[22m: expected +0 to be 1 // Object.is equality[39m
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- 1[39m
+[31m+ 0[39m
+
+[36m [2m❯[22m src/views/__tests__/DeviceListView.test.js:[2m122:48[22m[39m
+    [90m120|[39m     wrapper [33m=[39m [34mmountWrapper[39m()
+    [90m121|[39m     [35mawait[39m [34mflushPromises[39m()
+    [90m122|[39m     [34mexpect[39m(wrapper[33m.[39m[34mfindAll[39m([32m'tbody tr'[39m)[33m.[39mlength)[33m.[39m[34mtoBe[39m([34m1[39m)
+    [90m   |[39m                                                [31m^[39m
+    [90m123|[39m     [34mexpect[39m(wrapper[33m.[39m[34mfind[39m([32m'tbody tr'[39m)[33m.[39m[34mtext[39m())[33m.[39m[34mtoContain[39m([32m'device1'[39m)
+    [90m124|[39m   })
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/7]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m src/views/__tests__/DeviceListView.test.js[2m > [22mDeviceListView.vue[2m > [22mnavigates to device view on edit click
+[31m[1mTypeError[22m: Cannot read properties of undefined (reading 'trigger')[39m
+[36m [2m❯[22m src/views/__tests__/DeviceListView.test.js:[2m131:19[22m[39m
+    [90m129|[39m     [35mconst[39m btns [33m=[39m wrapper[33m.[39m[34mfindAll[39m([32m'button'[39m)
+    [90m130|[39m     const editBtn = btns.find(b => b.attributes('title')?.includes('Co…
+    [90m131|[39m     [35mawait[39m editBtn[33m.[39m[34mtrigger[39m([32m'click'[39m)
+    [90m   |[39m                   [31m^[39m
+    [90m132|[39m     [34mexpect[39m(mockRouter[33m.[39mpush)[33m.[39m[34mtoHaveBeenCalled[39m()
+    [90m133|[39m   })
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/7]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m src/views/__tests__/DeviceListView.test.js[2m > [22mDeviceListView.vue[2m > [22mcalls deleteDevice on confirm
+[31m[1mTypeError[22m: Cannot read properties of undefined (reading 'trigger')[39m
+[36m [2m❯[22m src/views/__tests__/DeviceListView.test.js:[2m139:21[22m[39m
+    [90m137|[39m     [35mawait[39m [34mflushPromises[39m()
+    [90m138|[39m     const deleteBtn = wrapper.findAll('button').find(b => b.attributes…
+    [90m139|[39m     [35mawait[39m deleteBtn[33m.[39m[34mtrigger[39m([32m'click'[39m)
+    [90m   |[39m                     [31m^[39m
+    [90m140|[39m     [35mconst[39m modal [33m=[39m wrapper[33m.[39m[34mfind[39m([32m'#idModalDeviceDelete'[39m)
+    [90m141|[39m     [35mconst[39m confirmBtn [33m=[39m modal[33m.[39m[34mfind[39m([32m'button.confirm'[39m)
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/7]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m src/views/__tests__/DeviceListView.test.js[2m > [22mDeviceListView.vue[2m > [22mtoggles log collection
+[31m[1mTypeError[22m: Cannot read properties of undefined (reading 'trigger')[39m
+[36m [2m❯[22m src/views/__tests__/DeviceListView.test.js:[2m150:18[22m[39m
+    [90m148|[39m     [35mawait[39m [34mflushPromises[39m()
+    [90m149|[39m     const logBtn = wrapper.findAll('button').find(b => b.attributes('t…
+    [90m150|[39m     [35mawait[39m logBtn[33m.[39m[34mtrigger[39m([32m'click'[39m)
+    [90m   |[39m                  [31m^[39m
+    [90m151|[39m     [34mexpect[39m(mockDeviceStore[33m.[39mupdateDevice)[33m.[39m[34mtoHaveBeenCalled[39m()
+    [90m152|[39m   })
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/7]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m src/views/__tests__/DeviceListView.test.js[2m > [22mDeviceListView.vue[2m > [22mhandles MDNS search
+[31m[1mTypeError[22m: Cannot read properties of undefined (reading 'trigger')[39m
+[36m [2m❯[22m src/views/__tests__/DeviceListView.test.js:[2m159:21[22m[39m
+    [90m157|[39m     [35mawait[39m [34mflushPromises[39m()
+    [90m158|[39m     const searchBtn = wrapper.findAll('button').find(b => b.text().inc…
+    [90m159|[39m     [35mawait[39m searchBtn[33m.[39m[34mtrigger[39m([32m'click'[39m)
+    [90m   |[39m                     [31m^[39m
+    [90m160|[39m     [34mexpect[39m(mockDeviceStore[33m.[39msearchNetwork)[33m.[39m[34mtoHaveBeenCalled[39m()
+    [90m161|[39m   })
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/7]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m src/views/__tests__/DeviceListView.test.js[2m > [22mDeviceListView.vue[2m > [22mcalls search on mount if query param present
+[31m[1mAssertionError[22m: expected "vi.fn()" to be called at least once[39m
+[36m [2m❯[22m src/views/__tests__/DeviceListView.test.js:[2m167:43[22m[39m
+    [90m165|[39m     wrapper [33m=[39m [34mmountWrapper[39m()
+    [90m166|[39m     [35mawait[39m [34mflushPromises[39m()
+    [90m167|[39m     [34mexpect[39m(mockDeviceStore[33m.[39msearchNetwork)[33m.[39m[34mtoHaveBeenCalled[39m()
+    [90m   |[39m                                           [31m^[39m
+    [90m168|[39m   })
+    [90m169|[39m })
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/7]⎯[22m[39m
+
+[31m⎯⎯⎯⎯⎯⎯[39m[1m[41m Unhandled Errors [49m[22m[31m⎯⎯⎯⎯⎯⎯[39m
+[31m[1m
+Vitest caught 7 unhandled errors during the test run.
+This might cause false positive tests. Resolve unhandled errors to make sure your tests are not affected.[22m[39m
+
+[31m⎯⎯⎯⎯[39m[1m[41m Unhandled Rejection [49m[22m[31m⎯⎯⎯⎯⎯[39m
+[31m[1mTypeError[22m: $setup.batchStore.anyBatchesForDevice is not a function[39m
+[36m [2m❯[22m src/views/DeviceListView.vue:[2m116:42[22m[39m
+    [90m114|[39m               >&nbsp;
+    [90m115|[39m
+    [90m116|[39m               <template v-if="batchStore.anyBatchesForDevice(d.chipId)…
+    [90m   |[39m                                          [31m^[39m
+    [90m117|[39m                 <router-link :to="{ name: 'batch-list', query: { chipI…
+    [90m118|[39m                   <button
+[90m [2m❯[22m renderList node_modules/@vue/runtime-core/dist/runtime-core.cjs.js:[2m2949:16[22m[39m
+[90m [2m❯[22m Proxy._sfc_render src/views/DeviceListView.vue:[2m163:16[22m[39m
+[90m [2m❯[22m renderComponentRoot node_modules/@vue/runtime-core/dist/runtime-core.cjs.js:[2m6530:16[22m[39m
+[90m [2m❯[22m ReactiveEffect.componentUpdateFn [as fn] node_modules/@vue/runtime-core/dist/runtime-core.cjs.js:[2m5408:26[22m[39m
+[90m [2m❯[22m ReactiveEffect.run node_modules/@vue/reactivity/dist/reactivity.cjs.js:[2m241:19[22m[39m
+[90m [2m❯[22m ReactiveEffect.runIfDirty node_modules/@vue/reactivity/dist/reactivity.cjs.js:[2m279:12[22m[39m
+[90m [2m❯[22m callWithErrorHandling node_modules/@vue/runtime-core/dist/runtime-core.cjs.js:[2m200:33[22m[39m
+[90m [2m❯[22m flushJobs node_modules/@vue/runtime-core/dist/runtime-core.cjs.js:[2m405:9[22m[39m
+[90m [2m❯[22m processTicksAndRejections node:internal/process/task_queues:[2m104:5[22m[39m
+
+[31mThis error originated in "[1msrc/views/__tests__/DeviceListView.test.js[22m" test file. It doesn't mean the error was thrown inside the file itself, but while it was running.[39m
+[31mThe latest test that might've caused the error is "[1mrenders and loads data on mount[22m". It might mean one of the following:
+- The error was thrown, while Vitest was running this test.
+- If the error occurred after the test had been completed, this was the last documented test before it was thrown.[39m
+
+[31m⎯⎯⎯⎯[39m[1m[41m Unhandled Rejection [49m[22m[31m⎯⎯⎯⎯⎯[39m
+[31m[1mTypeError[22m: $setup.batchStore.anyBatchesForDevice is not a function[39m
+[36m [2m❯[22m src/views/DeviceListView.vue:[2m116:42[22m[39m
+    [90m114|[39m               >&nbsp;
+    [90m115|[39m
+    [90m116|[39m               <template v-if="batchStore.anyBatchesForDevice(d.chipId)…
+    [90m   |[39m                                          [31m^[39m
+    [90m117|[39m                 <router-link :to="{ name: 'batch-list', query: { chipI…
+    [90m118|[39m                   <button
+[90m [2m❯[22m renderList node_modules/@vue/runtime-core/dist/runtime-core.cjs.js:[2m2949:16[22m[39m
+[90m [2m❯[22m Proxy._sfc_render src/views/DeviceListView.vue:[2m163:16[22m[39m
+[90m [2m❯[22m renderComponentRoot node_modules/@vue/runtime-core/dist/runtime-core.cjs.js:[2m6530:16[22m[39m
+[90m [2m❯[22m ReactiveEffect.componentUpdateFn [as fn] node_modules/@vue/runtime-core/dist/runtime-core.cjs.js:[2m5408:26[22m[39m
+[90m [2m❯[22m ReactiveEffect.run node_modules/@vue/reactivity/dist/reactivity.cjs.js:[2m241:19[22m[39m
+[90m [2m❯[22m ReactiveEffect.runIfDirty node_modules/@vue/reactivity/dist/reactivity.cjs.js:[2m279:12[22m[39m
+[90m [2m❯[22m callWithErrorHandling node_modules/@vue/runtime-core/dist/runtime-core.cjs.js:[2m200:33[22m[39m
+[90m [2m❯[22m flushJobs node_modules/@vue/runtime-core/dist/runtime-core.cjs.js:[2m405:9[22m[39m
+
+[31mThis error originated in "[1msrc/views/__tests__/DeviceListView.test.js[22m" test file. It doesn't mean the error was thrown inside the file itself, but while it was running.[39m
+[31mThe latest test that might've caused the error is "[1mfilters by software[22m". It might mean one of the following:
+- The error was thrown, while Vitest was running this test.
+- If the error occurred after the test had been completed, this was the last documented test before it was thrown.[39m
+
+[31m⎯⎯⎯⎯[39m[1m[41m Unhandled Rejection [49m[22m[31m⎯⎯⎯⎯⎯[39m
+[31m[1mTypeError[22m: $setup.batchStore.anyBatchesForDevice is not a function[39m
+[36m [2m❯[22m src/views/DeviceListView.vue:[2m116:42[22m[39m
+    [90m114|[39m               >&nbsp;
+    [90m115|[39m
+    [90m116|[39m               <template v-if="batchStore.anyBatchesForDevice(d.chipId)…
+    [90m   |[39m                                          [31m^[39m
+    [90m117|[39m                 <router-link :to="{ name: 'batch-list', query: { chipI…
+    [90m118|[39m                   <button
+[90m [2m❯[22m renderList node_modules/@vue/runtime-core/dist/runtime-core.cjs.js:[2m2949:16[22m[39m
+[90m [2m❯[22m Proxy._sfc_render src/views/DeviceListView.vue:[2m163:16[22m[39m
+[90m [2m❯[22m renderComponentRoot node_modules/@vue/runtime-core/dist/runtime-core.cjs.js:[2m6530:16[22m[39m
+[90m [2m❯[22m ReactiveEffect.componentUpdateFn [as fn] node_modules/@vue/runtime-core/dist/runtime-core.cjs.js:[2m5408:26[22m[39m
+[90m [2m❯[22m ReactiveEffect.run node_modules/@vue/reactivity/dist/reactivity.cjs.js:[2m241:19[22m[39m
+[90m [2m❯[22m ReactiveEffect.runIfDirty node_modules/@vue/reactivity/dist/reactivity.cjs.js:[2m279:12[22m[39m
+[90m [2m❯[22m callWithErrorHandling node_modules/@vue/runtime-core/dist/runtime-core.cjs.js:[2m200:33[22m[39m
+[90m [2m❯[22m flushJobs node_modules/@vue/runtime-core/dist/runtime-core.cjs.js:[2m405:9[22m[39m
+
+[31mThis error originated in "[1msrc/views/__tests__/DeviceListView.test.js[22m" test file. It doesn't mean the error was thrown inside the file itself, but while it was running.[39m
+[31mThe latest test that might've caused the error is "[1mnavigates to device view on edit click[22m". It might mean one of the following:
+- The error was thrown, while Vitest was running this test.
+- If the error occurred after the test had been completed, this was the last documented test before it was thrown.[39m
+
+[31m⎯⎯⎯⎯[39m[1m[41m Unhandled Rejection [49m[22m[31m⎯⎯⎯⎯⎯[39m
+[31m[1mTypeError[22m: $setup.batchStore.anyBatchesForDevice is not a function[39m
+[36m [2m❯[22m src/views/DeviceListView.vue:[2m116:42[22m[39m
+    [90m114|[39m               >&nbsp;
+    [90m115|[39m
+    [90m116|[39m               <template v-if="batchStore.anyBatchesForDevice(d.chipId)…
+    [90m   |[39m                                          [31m^[39m
+    [90m117|[39m                 <router-link :to="{ name: 'batch-list', query: { chipI…
+    [90m118|[39m                   <button
+[90m [2m❯[22m renderList node_modules/@vue/runtime-core/dist/runtime-core.cjs.js:[2m2949:16[22m[39m
+[90m [2m❯[22m Proxy._sfc_render src/views/DeviceListView.vue:[2m163:16[22m[39m
+[90m [2m❯[22m renderComponentRoot node_modules/@vue/runtime-core/dist/runtime-core.cjs.js:[2m6530:16[22m[39m
+[90m [2m❯[22m ReactiveEffect.componentUpdateFn [as fn] node_modules/@vue/runtime-core/dist/runtime-core.cjs.js:[2m5408:26[22m[39m
+[90m [2m❯[22m ReactiveEffect.run node_modules/@vue/reactivity/dist/reactivity.cjs.js:[2m241:19[22m[39m
+[90m [2m❯[22m ReactiveEffect.runIfDirty node_modules/@vue/reactivity/dist/reactivity.cjs.js:[2m279:12[22m[39m
+[90m [2m❯[22m callWithErrorHandling node_modules/@vue/runtime-core/dist/runtime-core.cjs.js:[2m200:33[22m[39m
+[90m [2m❯[22m flushJobs node_modules/@vue/runtime-core/dist/runtime-core.cjs.js:[2m405:9[22m[39m
+
+[31mThis error originated in "[1msrc/views/__tests__/DeviceListView.test.js[22m" test file. It doesn't mean the error was thrown inside the file itself, but while it was running.[39m
+[31mThe latest test that might've caused the error is "[1mcalls deleteDevice on confirm[22m". It might mean one of the following:
+- The error was thrown, while Vitest was running this test.
+- If the error occurred after the test had been completed, this was the last documented test before it was thrown.[39m
+
+[31m⎯⎯⎯⎯[39m[1m[41m Unhandled Rejection [49m[22m[31m⎯⎯⎯⎯⎯[39m
+[31m[1mTypeError[22m: $setup.batchStore.anyBatchesForDevice is not a function[39m
+[36m [2m❯[22m src/views/DeviceListView.vue:[2m116:42[22m[39m
+    [90m114|[39m               >&nbsp;
+    [90m115|[39m
+    [90m116|[39m               <template v-if="batchStore.anyBatchesForDevice(d.chipId)…
+    [90m   |[39m                                          [31m^[39m
+    [90m117|[39m                 <router-link :to="{ name: 'batch-list', query: { chipI…
+    [90m118|[39m                   <button
+[90m [2m❯[22m renderList node_modules/@vue/runtime-core/dist/runtime-core.cjs.js:[2m2949:16[22m[39m
+[90m [2m❯[22m Proxy._sfc_render src/views/DeviceListView.vue:[2m163:16[22m[39m
+[90m [2m❯[22m renderComponentRoot node_modules/@vue/runtime-core/dist/runtime-core.cjs.js:[2m6530:16[22m[39m
+[90m [2m❯[22m ReactiveEffect.componentUpdateFn [as fn] node_modules/@vue/runtime-core/dist/runtime-core.cjs.js:[2m5408:26[22m[39m
+[90m [2m❯[22m ReactiveEffect.run node_modules/@vue/reactivity/dist/reactivity.cjs.js:[2m241:19[22m[39m
+[90m [2m❯[22m ReactiveEffect.runIfDirty node_modules/@vue/reactivity/dist/reactivity.cjs.js:[2m279:12[22m[39m
+[90m [2m❯[22m callWithErrorHandling node_modules/@vue/runtime-core/dist/runtime-core.cjs.js:[2m200:33[22m[39m
+[90m [2m❯[22m flushJobs node_modules/@vue/runtime-core/dist/runtime-core.cjs.js:[2m405:9[22m[39m
+
+[31mThis error originated in "[1msrc/views/__tests__/DeviceListView.test.js[22m" test file. It doesn't mean the error was thrown inside the file itself, but while it was running.[39m
+[31mThe latest test that might've caused the error is "[1mtoggles log collection[22m". It might mean one of the following:
+- The error was thrown, while Vitest was running this test.
+- If the error occurred after the test had been completed, this was the last documented test before it was thrown.[39m
+
+[31m⎯⎯⎯⎯[39m[1m[41m Unhandled Rejection [49m[22m[31m⎯⎯⎯⎯⎯[39m
+[31m[1mTypeError[22m: $setup.batchStore.anyBatchesForDevice is not a function[39m
+[36m [2m❯[22m src/views/DeviceListView.vue:[2m116:42[22m[39m
+    [90m114|[39m               >&nbsp;
+    [90m115|[39m
+    [90m116|[39m               <template v-if="batchStore.anyBatchesForDevice(d.chipId)…
+    [90m   |[39m                                          [31m^[39m
+    [90m117|[39m                 <router-link :to="{ name: 'batch-list', query: { chipI…
+    [90m118|[39m                   <button
+[90m [2m❯[22m renderList node_modules/@vue/runtime-core/dist/runtime-core.cjs.js:[2m2949:16[22m[39m
+[90m [2m❯[22m Proxy._sfc_render src/views/DeviceListView.vue:[2m163:16[22m[39m
+[90m [2m❯[22m renderComponentRoot node_modules/@vue/runtime-core/dist/runtime-core.cjs.js:[2m6530:16[22m[39m
+[90m [2m❯[22m ReactiveEffect.componentUpdateFn [as fn] node_modules/@vue/runtime-core/dist/runtime-core.cjs.js:[2m5408:26[22m[39m
+[90m [2m❯[22m ReactiveEffect.run node_modules/@vue/reactivity/dist/reactivity.cjs.js:[2m241:19[22m[39m
+[90m [2m❯[22m ReactiveEffect.runIfDirty node_modules/@vue/reactivity/dist/reactivity.cjs.js:[2m279:12[22m[39m
+[90m [2m❯[22m callWithErrorHandling node_modules/@vue/runtime-core/dist/runtime-core.cjs.js:[2m200:33[22m[39m
+[90m [2m❯[22m flushJobs node_modules/@vue/runtime-core/dist/runtime-core.cjs.js:[2m405:9[22m[39m
+
+[31mThis error originated in "[1msrc/views/__tests__/DeviceListView.test.js[22m" test file. It doesn't mean the error was thrown inside the file itself, but while it was running.[39m
+[31mThe latest test that might've caused the error is "[1mhandles MDNS search[22m". It might mean one of the following:
+- The error was thrown, while Vitest was running this test.
+- If the error occurred after the test had been completed, this was the last documented test before it was thrown.[39m
+
+[31m⎯⎯⎯⎯[39m[1m[41m Unhandled Rejection [49m[22m[31m⎯⎯⎯⎯⎯[39m
+[31m[1mTypeError[22m: $setup.batchStore.anyBatchesForDevice is not a function[39m
+[36m [2m❯[22m src/views/DeviceListView.vue:[2m116:42[22m[39m
+    [90m114|[39m               >&nbsp;
+    [90m115|[39m
+    [90m116|[39m               <template v-if="batchStore.anyBatchesForDevice(d.chipId)…
+    [90m   |[39m                                          [31m^[39m
+    [90m117|[39m                 <router-link :to="{ name: 'batch-list', query: { chipI…
+    [90m118|[39m                   <button
+[90m [2m❯[22m renderList node_modules/@vue/runtime-core/dist/runtime-core.cjs.js:[2m2949:16[22m[39m
+[90m [2m❯[22m Proxy._sfc_render src/views/DeviceListView.vue:[2m163:16[22m[39m
+[90m [2m❯[22m renderComponentRoot node_modules/@vue/runtime-core/dist/runtime-core.cjs.js:[2m6530:16[22m[39m
+[90m [2m❯[22m ReactiveEffect.componentUpdateFn [as fn] node_modules/@vue/runtime-core/dist/runtime-core.cjs.js:[2m5408:26[22m[39m
+[90m [2m❯[22m ReactiveEffect.run node_modules/@vue/reactivity/dist/reactivity.cjs.js:[2m241:19[22m[39m
+[90m [2m❯[22m ReactiveEffect.runIfDirty node_modules/@vue/reactivity/dist/reactivity.cjs.js:[2m279:12[22m[39m
+[90m [2m❯[22m callWithErrorHandling node_modules/@vue/runtime-core/dist/runtime-core.cjs.js:[2m200:33[22m[39m
+[90m [2m❯[22m flushJobs node_modules/@vue/runtime-core/dist/runtime-core.cjs.js:[2m405:9[22m[39m
+
+[31mThis error originated in "[1msrc/views/__tests__/DeviceListView.test.js[22m" test file. It doesn't mean the error was thrown inside the file itself, but while it was running.[39m
+[31mThe latest test that might've caused the error is "[1mcalls search on mount if query param present[22m". It might mean one of the following:
+- The error was thrown, while Vitest was running this test.
+- If the error occurred after the test had been completed, this was the last documented test before it was thrown.[39m
+[31m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[39m
+
+
+[2m Test Files [22m [1m[31m1 failed[39m[22m[90m (1)[39m
+[2m      Tests [22m [1m[31m7 failed[39m[22m[90m (7)[39m
+[2m     Errors [22m [1m[31m7 errors[39m[22m
+[2m   Start at [22m 14:15:30
+[2m   Duration [22m 499ms[2m (transform 75ms, setup 15ms, import 109ms, tests 37ms, environment 224ms)[22m
+

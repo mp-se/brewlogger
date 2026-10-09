@@ -1,0 +1,243 @@
+<!--
+BrewLogger
+Copyright (c) 2021-2026 Magnus
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+Alternatively, this software may be used under the terms of a
+commercial license. See LICENSE_COMMERCIAL for details.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <https://www.gnu.org/licenses/>.
+-->
+<template>
+  <div class="container">
+    <p></p>
+    <p class="h3">Batch Fermentation Control - '{{ batchName }}'</p>
+    <hr />
+
+    <div class="row" v-if="device != null">
+      <div class="col-md-12">
+        <p class="h4">Fermentation controller</p>
+      </div>
+      <div class="col-md-3">
+        <BsInputReadonly v-model="device.software" label="Software"></BsInputReadonly>
+      </div>
+      <div class="col-md-3">
+        <BsInputReadonly v-model="device.description" label="Description"></BsInputReadonly>
+      </div>
+      <div class="col-md-3">
+        <BsInputReadonly v-model="device.mdns" label="MDNS"></BsInputReadonly>
+      </div>
+      <div class="col-md-3">
+        <BsInputReadonly v-model="device.url" label="URL"></BsInputReadonly>
+      </div>
+    </div>
+
+    <div class="row" v-if="activeFermentationSteps != null && activeFermentationSteps.length > 0">
+      <div class="col-md-12">
+        <p class="h4">Active Fermentation Steps</p>
+        <table class="table table-striped" v-if="activeFermentationSteps.length > 0">
+          <thead>
+            <tr>
+              <th scope="col" class="col-1">Step</th>
+              <th scope="col" class="col-2">Type</th>
+              <th scope="col" class="col-1">Control</th>
+              <th scope="col" class="col-1">Temp</th>
+              <th scope="col" class="col-1">Days</th>
+              <th scope="col" class="col-3">Date</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="(step, index) in activeFermentationSteps" :key="index">
+              <td>{{ step.order + 1 }}</td>
+              <td>{{ step.type }}</td>
+              <td>{{ step.control }}</td>
+              <td>{{ config.isTempF ? tempToF(step.temp).toFixed(1) : step.temp }}°{{ config.tempUnit }}</td>
+              <td>{{ step.days }}</td>
+              <td>{{ step.date }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="row" v-if="fermentationSteps != null">
+      <div class="col-md-12">
+        <p class="h4">Fermentation Steps</p>
+
+        <BsMessage
+          v-if="activeFermentationSteps != null && activeFermentationSteps.length > 0"
+          :dismissable="false"
+          message="The fermentation device has active fermentation steps, Starting will overwrite those!"
+          alert="warning"
+        />
+
+        <table class="table table-striped" v-if="fermentationSteps.length > 0">
+          <thead>
+            <tr>
+              <th scope="col" class="col-1">Step</th>
+              <th scope="col" class="col-2">Type</th>
+              <th scope="col" class="col-1">Control</th>
+              <th scope="col" class="col-1">Temp</th>
+              <th scope="col" class="col-1">Days</th>
+              <th scope="col" class="col-3">Date</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="(step, index) in fermentationSteps" :key="index">
+              <td>{{ step.order + 1 }}</td>
+              <td>{{ step.type }}</td>
+              <td>{{ step.control }}</td>
+              <td>{{ config.isTempF ? tempToF(step.temp).toFixed(1) : step.temp }}°{{ config.tempUnit }}</td>
+              <td>{{ step.days }}</td>
+              <td>{{ step.date }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="col-md-6">
+        <button
+          type="button"
+          class="btn btn-primary w-3"
+          @click="startSteps()"
+          v-if="device != null && fermentationSteps != null"
+        >
+          Start</button
+        >&nbsp;
+
+        <router-link :to="{ name: 'batch', params: { id: router.currentRoute.value.params.id } }">
+          <button type="button" class="btn btn-secondary w-3">Cancel</button> </router-link
+        >&nbsp;
+
+        <router-link :to="{ name: 'batch', params: { id: router.currentRoute.value.params.id } }">
+          <button type="button" class="btn btn-secondary w-3">Back</button> </router-link
+        >&nbsp;
+      </div>
+    </div>
+  </div>
+</template>
+
+<script setup>
+import { onMounted, ref } from 'vue'
+import { batchStore, deviceStore, global, config } from '@/modules/pinia'
+import { FermentationStep } from '@/modules/classes'
+import { tempToF } from '@/modules/utils'
+import router from '@/modules/router'
+import { logDebug, logInfo, logError } from '@/modules/logger'
+
+const fermentationSteps = ref(null)
+const batchName = ref('')
+const device = ref(null)
+const activeFermentationSteps = ref(null)
+
+onMounted(() => {
+  logDebug('BatchFermentationControlView.onMounted()')
+  loadProfile()
+})
+
+async function loadProfile() {
+  logDebug('BatchFermentationControlView.loadProfile()')
+
+  fermentationSteps.value = null
+  device.value = null
+  batchName.value = ''
+
+  global.clearMessages()
+  global.disabled = true
+
+  const b = await batchStore.getBatch(router.currentRoute.value.params.id)
+  if (b) {
+    batchName.value = b.name
+
+    // Try to parse fermentation steps if defined in batch (should be imported from brewfather)
+    try {
+      fermentationSteps.value = FermentationStep.listFromJson(JSON.parse(b.fermentationSteps), true) // Set new dates based on today
+      logDebug(fermentationSteps.value)
+    } catch (e) {
+      logError('BatchFermentationControlView.onMounted()', e)
+      global.messageError =
+        'No fermentation profile found on batch, please connect with brewfather batch.'
+      global.disabled = false
+      return
+    }
+
+    // Try to load the fermentation controller if defined in batch (selected in UI)
+    if (b.fermentationChamber > 0) {
+      const d = await deviceStore.getDevice(b.fermentationChamber)
+      if (d && d.device) {
+        device.value = d.device
+        logInfo('BatchFermentationControlView.onMounted()', d)
+      } else {
+        global.messageError =
+          'Failed to load the device configuration, check connected fermentation device.'
+        global.disabled = false
+        return
+      }
+    } else {
+      global.messageError = 'No fermentation controller is selected for this batch.'
+      global.disabled = false
+      return
+    }
+
+    // Check if there are defined fermentation steps for the device
+    const fsList = await deviceStore.getDeviceFermentationSteps(b.fermentationChamber)
+    if (fsList) {
+      activeFermentationSteps.value = fsList
+    } else {
+      global.messageError = 'Failed to check for active fermentration steps.'
+      global.disabled = false
+      return
+    }
+  } else {
+    global.messageError = 'Failed to load the batch.'
+    global.disabled = false
+  }
+}
+
+async function startSteps() {
+  global.clearMessages()
+  global.disabled = true
+
+  if (activeFermentationSteps.value.length > 0) {
+    await deviceStore.deleteDeviceFermentationSteps(device.value.id)
+    activeFermentationSteps.value = []
+    addSteps()
+  } else {
+    addSteps()
+  }
+}
+
+async function addSteps() {
+  logInfo('BatchFermentationControlView.addSteps()')
+
+  // TODO: Some more validation is needed, check that controller is chamber controller device, check if steps alreay exist for this device => replace
+  // TODO: This should not be accessible if device and steps are not loaded correctly
+
+  const success = await deviceStore.addDeviceFermentationSteps(
+    device.value.id,
+    fermentationSteps.value
+  )
+  if (success) {
+    logInfo('BatchFermentationControlView.addSteps()', 'Success')
+    loadProfile()
+    global.messageSuccess =
+      'Fermentation steps for device has been created, it will take a few minutes for execution to start.'
+  } else {
+    logInfo('BatchFermentationControlView.addSteps()', 'Success')
+    global.messageError = 'Failed to load the device.'
+    global.disabled = false
+  }
+}
+</script>

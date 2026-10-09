@@ -1,0 +1,481 @@
+<!--
+BrewLogger
+Copyright (c) 2021-2026 Magnus
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+Alternatively, this software may be used under the terms of a
+commercial license. See LICENSE_COMMERCIAL for details.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <https://www.gnu.org/licenses/>.
+-->
+<template>
+  <div class="container">
+    <BsPageHeader title="Device" />
+
+    <template v-if="device != null">
+      <form @submit.prevent="save" class="needs-validation" novalidate>
+        <div class="row">
+          <div class="col-md-12">
+            <BsInputText
+              v-model="device.chipId"
+              label="Chip ID"
+              width="4"
+              maxlength="6"
+              help=""
+              :disabled="global.disabled || !isNew()"
+              @keyup="validateChipId()"
+              :error-message="chipIdValid ? '' : 'Please enter a valid chip ID'"
+            >
+            </BsInputText>
+          </div>
+          <div class="col-md-12">
+            <BsInputText
+              v-model="device.mdns"
+              label="mDNS"
+              width="6"
+              help=""
+              :disabled="global.disabled"
+            >
+            </BsInputText>
+          </div>
+          <div class="col-md-12">
+            <BsInputText
+              v-model="device.url"
+              type="url"
+              label="URL"
+              width="11"
+              help=""
+              :disabled="global.disabled"
+            >
+            </BsInputText>
+          </div>
+          <div class="col-md-12">
+            <BsInputText
+              v-model="device.description"
+              label="Description"
+              width="11"
+              help=""
+              :disabled="global.disabled"
+            >
+            </BsInputText>
+          </div>
+          <div class="col-md-8">
+            <BsInputRadio
+              v-model="device.chipFamily"
+              :options="chipFamilyOptions"
+              label="Chip Family"
+              help=""
+              :disabled="global.disabled"
+            ></BsInputRadio>
+          </div>
+
+          <div class="col-md-4">
+            <BsInputSwitch
+              v-model="device.collectLogs"
+              label="Collect logs"
+              help=""
+              :disabled="global.disabled"
+            >
+            </BsInputSwitch>
+          </div>
+
+          <div class="col-md-12">
+            <BsInputRadio
+              v-model="device.software"
+              :options="softwareOptions"
+              label="Software"
+              help=""
+              :disabled="global.disabled"
+            ></BsInputRadio>
+          </div>
+          <div class="col-md-12" v-if="device.software == 'Gravitymon'">
+            <BsInputRadio
+              v-model="device.bleColor"
+              :options="bleColorOptions"
+              label="BLE Color"
+              help="Used for receving gravity readings via Tilt"
+              :disabled="disableTilt"
+            ></BsInputRadio>
+          </div>
+          <div class="col-md-11">
+            <BsInputText v-model="device.config" label="Configuration" width="11" help="" disabled>
+            </BsInputText>
+          </div>
+          <div class="col-md-1">
+            <BsInputBase label="&nbsp;">
+              <button
+                type="button"
+                class="btn btn-secondary btn-sm"
+                @click="copyToClipboard()"
+                :disabled="global.disabled"
+              >
+                <i class="bi bi-clipboard"></i></button
+              >&nbsp;
+            </BsInputBase>
+          </div>
+        </div>
+
+        <div class="row gy-2" v-if="activeFermentationSteps != null">
+          <div class="col-md-12">
+            <hr />
+          </div>
+          <div class="row">
+            <div class="col-md-12">
+              <p class="h4">Active Fermentation Steps</p>
+              <FermentationStepFragment
+                :fermentationSteps="activeFermentationSteps"
+              ></FermentationStepFragment>
+            </div>
+          </div>
+        </div>
+
+        <div class="row gy-2">
+          <div class="col-md-12">
+            <hr />
+          </div>
+          <div class="col-md-12">
+            <button
+              type="submit"
+              class="btn btn-primary w-2"
+              :disabled="global.disabled || !deviceChanged()"
+            >
+              <span
+                class="spinner-border spinner-border-sm"
+                role="status"
+                aria-hidden="true"
+                :hidden="!global.disabled"
+              ></span>
+              <i class="bi bi-floppy"></i>
+              &nbsp;Save</button
+            >&nbsp;
+            <router-link :to="{ name: 'device-list' }">
+              <button type="button" class="btn btn-secondary w-2">
+                <i class="bi bi-x-square"></i>
+                Cancel
+              </button> </router-link
+            >&nbsp;
+
+            <template v-if="device.software != 'Brewwpi'">
+              <button
+                type="button"
+                class="btn btn-secondary"
+                @click="fetchConfigFromDevice()"
+                :disabled="global.disabled || device.url == ''"
+              >
+                <i class="bi bi-box-arrow-down"></i> Fetch config</button
+              >&nbsp;
+            </template>
+
+            <BsModal
+              @click="viewConfig()"
+              v-model="render"
+              :code="true"
+              title="Vire configuration"
+              button="View config"
+              :disabled="global.disabled || device.config == ''"
+            />&nbsp;
+
+            <BsModalConfirm
+              :callback="deleteFermentationStepsCallback"
+              message="Do you really want to delete the fermentation steps"
+              id="deleteFermentationSteps"
+              title="Delete"
+              :disabled="global.disabled"
+            />
+
+            <template v-if="activeFermentationSteps != null">
+              <button
+                type="button"
+                class="btn btn-secondary"
+                @click="deleteFermentationSteps()"
+                :disabled="global.disabled"
+              >
+                Delete steps</button
+              >&nbsp;
+            </template>
+          </div>
+        </div>
+      </form>
+    </template>
+    <template v-else>
+      <BsMessage
+        :dismissable="false"
+        :message="'Unable to find device with id ' + $route.params.id"
+        alert="danger"
+      />
+      <div class="row gy-2">
+        <div class="col-md-12"></div>
+      </div>
+    </template>
+  </div>
+</template>
+
+<script setup>
+import { computed, onMounted, ref } from 'vue'
+import { global, deviceStore } from '@/modules/pinia'
+import { validateCurrentForm } from '@/modules/utils'
+import { Device } from '@/modules/classes'
+import FermentationStepFragment from '@/fragments/FermentationStepFragment.vue'
+import router from '@/modules/router'
+import { logDebug, logError, logInfo } from '@/modules/logger'
+import BsInputBase from '@/components/BsInputBase.vue'
+import { detectMdns, detectPlatform, detectSoftware } from '@/modules/detect'
+
+const render = ref('')
+const device = ref(null)
+const deviceSaved = ref(null)
+const chipIdValid = ref(false)
+const activeFermentationSteps = ref(null)
+
+const chipFamilyOptions = ref([
+  { label: '- unknown -', value: '' },
+  { label: 'ESP8266', value: 'esp8266' },
+  { label: 'ESP32', value: 'esp32' },
+  { label: 'ESP32-C3', value: 'esp32c3' },
+  { label: 'ESP32-S2', value: 'esp32s2' },
+  { label: 'ESP32-S3', value: 'esp32s3' }
+])
+
+const softwareOptions = ref([
+  { label: '- unknown -', value: '' },
+  { label: 'Gravitymon', value: 'Gravitymon' },
+  { label: 'Gravitymon Gateway', value: 'Gravitymon-Gateway' },
+  { label: 'Kegmon', value: 'Kegmon' },
+  { label: 'Chamber Controller', value: 'Chamber-Controller' },
+  { label: 'Pressuremon', value: 'Pressuremon' }
+  // { label: 'iSpindel', value: 'iSpindel' }
+])
+
+const bleColorOptions = ref([
+  { label: '- disabled -', value: '' },
+  { label: 'Red', value: 'red' },
+  { label: 'Green', value: 'green' },
+  { label: 'Black', value: 'black' },
+  { label: 'Purple', value: 'purple' },
+  { label: 'Orange', value: 'orange' },
+  { label: 'Blue', value: 'blue' },
+  { label: 'Yellow', value: 'yellow' },
+  { label: 'Pink', value: 'pink' }
+])
+
+function deviceChanged() {
+  logDebug('DeviceView.deviceChanged()')
+
+  if (device.value == null) return false
+
+  global.deviceChanged = !Device.compare(device.value, deviceSaved.value)
+  return global.deviceChanged
+}
+
+const viewConfig = () => {
+  render.value = device.value.config
+}
+
+const disableTilt = computed(() => {
+  if (device.value.software != 'Gravitymon') return true
+
+  if (
+    device.value.chipFamily != 'esp32' &&
+    device.value.chipFamily != 'esp32c3' &&
+    device.value.chipFamily != 'esp32s3'
+  )
+    return true
+
+  return global.disabled
+})
+
+function isNew() {
+  return router.currentRoute.value.params.id == 'new' ? true : false
+}
+
+onMounted(async () => {
+  logDebug('DeviceView.onMounted()')
+
+  device.value = null
+  activeFermentationSteps.value = null
+  chipIdValid.value = true
+
+  if (isNew()) {
+    deviceSaved.value = new Device()
+    device.value = new Device()
+  } else {
+    const result = await deviceStore.getDevice(router.currentRoute.value.params.id)
+    if (result && result.device) {
+      deviceSaved.value = Device.fromJson(result.device.toJson())
+      device.value = result.device
+      if (result.stepList.length > 0) {
+        activeFermentationSteps.value = result.stepList
+      }
+    } else {
+      // global.messageError = "Failed to load device " + id
+    }
+  }
+})
+
+function validateChipId() {
+  logDebug('DeviceView.validateChipId()')
+
+  const regex = new RegExp(/^[0-9a-f]{6}$/)
+
+  if (regex.test(device.value.chipId)) {
+    chipIdValid.value = true
+  } else {
+    chipIdValid.value = false
+  }
+
+  return chipIdValid.value
+}
+
+async function copyToClipboard() {
+  logInfo('DeviceView.copyToClipboard()')
+  navigator.clipboard.writeText(device.value.config)
+  global.messageSuccess = 'Configuration is copied to clipboard'
+}
+
+async function fetchConfigFromDevice() {
+  logInfo('DeviceView.fetchConfigFromDevice()')
+
+  global.clearMessages()
+  global.disabled = true
+  validateUrl()
+  await fetchConfigEspFwkV1() // Applies to Kegmon 1.x and Gravitymon 2.x
+  global.disabled = false
+}
+
+
+async function fetchConfigEspFwkV1() {
+  try {
+    var data = {}
+
+    // Fetch from /api/atatus
+    const status = await deviceStore.proxyRequest('GET', device.value.url + 'api/status', '', '')
+    logDebug('DeviceView.fetchConfigEspFwkV1()', '/status', status)
+    data.status = status
+    device.value.mdns = detectMdns(status)
+    device.value.chipFamily = detectPlatform(status)
+    device.value.software = detectSoftware(status)
+
+    // Fetch from /api/auth
+    const header = 'Authorization: Basic ' + btoa('username:password')
+    const auth = await deviceStore.proxyRequest('GET', device.value.url + 'api/auth', header, '')
+    logDebug('DeviceView.fetchConfigEspFwkV1()', '/auth', auth)
+
+    // Fetch from /api/config
+    const header2 = 'Authorization: Bearer ' + auth.token
+    const config = await deviceStore.proxyRequest(
+      'GET',
+      device.value.url + 'api/config',
+      header2,
+      ''
+    )
+    logDebug('DeviceView.fetchConfigEspFwkV1()', '/config', config)
+    data.config = config
+
+    // Fetch from /api/feature
+    const feature = await deviceStore.proxyRequest(
+      'GET',
+      device.value.url + 'api/feature',
+      header2,
+      ''
+    )
+    logDebug('DeviceView.fetchConfigEspFwkV1()', '/feature', feature)
+    data.feature = feature
+    // Newer versions have the platform attribute in the feature endpoint
+    if (feature) device.value.chipFamily = detectPlatform(feature)
+
+    // Gravitymon
+    if (config.ble_tilt_color !== undefined) {
+      device.value.bleColor = config.ble_tilt_color
+    }
+
+    if (device.value.software == 'Gravitymon') {
+      const format = await deviceStore.proxyRequest(
+        'GET',
+        device.value.url + 'api/format',
+        header2,
+        ''
+      )
+      logDebug('DeviceView.fetchConfigEspFwkV1()', '/format', format)
+      data.format = format
+    }
+
+    device.value.config = JSON.stringify(data)
+    return true
+  } catch (err) {
+    logError('DeviceView.fetchConfigEspFwkV1()', err)
+    global.messageError = 'Error when trying to retrive data from device'
+  }
+
+  return false
+}
+
+function validateUrl() {
+  device.value.url =
+    device.value.url.endsWith('/') || device.value.url.length < 7
+      ? device.value.url
+      : device.value.url + '/'
+}
+
+const save = async () => {
+  logDebug('DeviceView.save()')
+
+  validateUrl()
+  if (!validateChipId()) return
+  if (!validateCurrentForm()) return
+
+  global.clearMessages()
+  deviceSaved.value = Device.fromJson(device.value.toJson())
+
+  if (isNew()) {
+    // Check if a device with the current chipId already exist
+    for (var i = 0; i < deviceStore.devices.length; i++) {
+      if (deviceStore.devices[i].chipId == device.value.chipId) {
+        global.messageWarning = 'A device with this chip ID already exists'
+        return
+      }
+    }
+
+    const result = await deviceStore.addDevice(device.value)
+    logDebug('DeviceView.addDevice()', 'Add device', result)
+    if (result) {
+      device.value = result
+      router.push({ name: 'device', params: { id: device.value.id } })
+    } else {
+      global.messageError = 'Failed to add device'
+    }
+  } else {
+    const success = await deviceStore.updateDevice(device.value)
+    logDebug('DeviceView.saveDevice()', 'Update device', success)
+    if (success) global.messageSuccess = 'Saved device'
+    else global.messageError = 'Failed to save device'
+  }
+}
+
+function deleteFermentationSteps() {
+  logDebug('DeviceView.deleteFermentationSteps()')
+  document.getElementById('deleteFermentationSteps').click()
+}
+
+async function deleteFermentationStepsCallback() {
+  logDebug('DeviceView.deleteFermentationStepsCallback()')
+
+  const success = await deviceStore.deleteDeviceFermentationSteps(device.value.id)
+  logDebug('DeviceView.deleteFermentationSteps()', success)
+  if (success) {
+    global.messageSuccess = 'Fermentation steps removed'
+    activeFermentationSteps.value = null
+  } else {
+    global.messageError = 'Failed to remove fermentation steps'
+  }
+}
+</script>

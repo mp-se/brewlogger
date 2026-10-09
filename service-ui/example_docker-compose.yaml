@@ -1,0 +1,83 @@
+# Simplified version, see brewlogger project for complete setup
+
+services:
+  brew_web:
+    build: .
+    hostname: brew_web
+    restart: always
+    environment:
+     - API_KEY=mykey
+     - API_HOST=brew_api
+    networks:
+      - brew_net
+    ports:
+      - 80:80
+    # - 443:443
+    # Optional: Mount SSL certificates directory for HTTPS support
+    # volumes:
+    #   - ./certs:/etc/nginx/ssl:ro
+    depends_on:
+      - brew_api
+
+  brew_log:
+    image: mpse2/brewlogger-log
+    hostname: brew_log
+    restart: always
+    environment:
+     - API_HOST=brew_api
+     - API_KEY=key
+     - MAX_FILE_SIZE=1000000
+     - REDIS_HOST=brew_cache
+    volumes:
+      - log:/app/log
+    networks:
+      - brew_net
+    depends_on:
+     - brew_api
+
+  brew_api:
+    image: mpse2/brewlogger-api
+    hostname: brew_api
+    restart: always
+    networks:
+      - brew_net
+    environment:
+     - API_KEY=mykey
+     - DATABASE_URL=postgresql://postgres:password@brew_db:5432/app
+     - BREWFATHER_API_KEY=
+     - BREWFATHER_USER_KEY=
+    depends_on:
+     - brew_db
+
+  brew_db:
+    image: postgres:17
+    hostname: brew_db
+    restart: always
+    networks:
+      - brew_net
+    volumes:
+      - pg-data:/var/lib/postgresql/data/pgdata
+    environment:
+      - PGDATA=/var/lib/postgresql/data/pgdata
+      - POSTGRES_SERVER=brew_db
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=password
+      - POSTGRES_DB=app
+
+  brew_cache:
+    image: redis:8
+    hostname: brew_cache
+    restart: always
+    ports:
+      - 6379:6379
+    networks:
+      - brew_net
+
+
+networks:
+  brew_net:
+
+volumes:
+  pg-data:      
+  pgadmin-data:
+  

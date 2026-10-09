@@ -1,0 +1,1 @@
+window.VITE_APP_TOKEN="__TOKEN__"
