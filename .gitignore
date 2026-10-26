@@ -16,6 +16,7 @@ certs/
 .DS_Store
 .coverage
 docker-compose*.yaml
+docker-compose.yaml
 .env*
 .ruff_cache/
 bug/
