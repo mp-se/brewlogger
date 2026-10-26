@@ -1,4 +1,4 @@
-FROM node:22-bookworm-slim AS build
+FROM node:24-bookworm-slim AS build
 
 WORKDIR /app
 
@@ -8,7 +8,7 @@ RUN npm ci
 COPY . .
 RUN npm run build
 
-FROM nginx:latest
+FROM nginx:1.31.8-alpine3.24-slim
 
 RUN mkdir -p /etc/nginx/templates /etc/nginx/ssl
 COPY service-web/nginx.http.conf /etc/nginx/templates/nginx.http.conf
